@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { T } from "@/lib/theme";
@@ -15,7 +15,7 @@ const DEMO_APPLICANTS = [
 
 const KOREAN_LABELS = { none: "한국어 불필요", beginner: "초급", intermediate: "중급", advanced: "고급" };
 
-export default function ApplicantsPage() {
+function ApplicantsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const jobId = searchParams.get("jobId");
@@ -243,5 +243,13 @@ export default function ApplicantsPage() {
         onComplete={handleChatComplete}
       />
     </div>
+  );
+}
+
+export default function ApplicantsPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 40, textAlign: "center" }}>로딩 중...</div>}>
+      <ApplicantsContent />
+    </Suspense>
   );
 }
