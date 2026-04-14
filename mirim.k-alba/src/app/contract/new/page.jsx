@@ -38,7 +38,6 @@ function NewContractContent() {
       const p = await getProfile(u.id);
       setProfile(p);
       if (u.user_metadata?.user_type !== "employer") {
-        // 구직자는 이 페이지 접근 불가
         router.push("/my-contracts");
         return;
       }
@@ -63,7 +62,6 @@ function NewContractContent() {
     if (!error && data) {
       router.push(`/contract/${data.id}`);
     } else if (error) {
-      // 로컬 데모 모드 - id 생성해서 이동
       const demoId = "demo-" + Date.now();
       if (typeof window !== "undefined") {
         localStorage.setItem(`contract-${demoId}`, JSON.stringify({ ...contractData, id: demoId }));
@@ -77,14 +75,14 @@ function NewContractContent() {
   return (
     <div style={{ padding: 20, maxWidth: 600, margin: "0 auto" }}>
       <Link href="/my-jobs" style={{ color: T.g500, fontSize: 14, marginBottom: 16, display: "inline-block" }}>← 내 공고</Link>
-      <h2 style={{ fontSize: 22, fontWeight: 800, color: T.navy, marginBottom: 4 }}>📝 {t("contract.newTitle")}</h2>
-      <p style={{ color: T.g500, fontSize: 13, marginBottom: 20 }}>{t("contract.newSubtitle")}</p>
+      <h2 style={{ fontSize: 22, fontWeight: 800, color: T.navy, marginBottom: 4 }}>📝 근로계약서 작성</h2>
+      <p style={{ color: T.g500, fontSize: 13, marginBottom: 20 }}>공고 정보가 자동으로 채워져 3분만에 완성!</p>
 
       {/* Step 1: 공고 선택 */}
       <Card style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
           <div style={{ width: 24, height: 24, borderRadius: 6, background: T.coral, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12 }}>1</div>
-          <div style={{ fontWeight: 700, color: T.navy, fontSize: 15 }}>{t("contract.step1")}</div>
+          <div style={{ fontWeight: 700, color: T.navy, fontSize: 15 }}>공고 선택</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {myJobs.map((j) => {
@@ -123,16 +121,16 @@ function NewContractContent() {
         <Card style={{ marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
             <div style={{ width: 24, height: 24, borderRadius: 6, background: T.coral, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12 }}>2</div>
-            <div style={{ fontWeight: 700, color: T.navy, fontSize: 15 }}>{t("contract.step2")}</div>
+            <div style={{ fontWeight: 700, color: T.navy, fontSize: 15 }}>근로자 정보</div>
           </div>
-          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.navy, marginBottom: 6 }}>t("contract.workerName") + " *"</label>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.navy, marginBottom: 6 }}>근로자 이름 *</label>
           <input
             value={workerName}
             onChange={(e) => setWorkerName(e.target.value)}
             placeholder="예: Linh T."
             style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `2px solid ${T.g200}`, fontSize: 14, fontFamily: "inherit", outline: "none", marginBottom: 12, boxSizing: "border-box" }}
           />
-          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.navy, marginBottom: 6 }}>t("contract.workerPhone")</label>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.navy, marginBottom: 6 }}>연락처 (선택)</label>
           <input
             value={workerPhone}
             onChange={(e) => setWorkerPhone(e.target.value)}
@@ -147,7 +145,7 @@ function NewContractContent() {
         <Card style={{ marginBottom: 16, background: `linear-gradient(135deg,${T.coralL},#FFE4E0)`, border: `1.5px solid ${T.coral}40` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
             <span style={{ fontSize: 18 }}>✨</span>
-            <div style={{ fontWeight: 700, color: T.coral, fontSize: 13 }}>{t("contract.autoFillTitle")}</div>
+            <div style={{ fontWeight: 700, color: T.coral, fontSize: 13 }}>이 정보가 자동으로 채워져요!</div>
           </div>
           <div style={{ fontSize: 12, lineHeight: 2, color: T.g700 }}>
             ✓ 업체명: <strong>{selectedJob.company_name}</strong><br />
@@ -161,10 +159,10 @@ function NewContractContent() {
       )}
 
       <Btn primary full onClick={handleCreate} disabled={!selectedJob || !workerName.trim() || loading}>
-        {loading ? "t("contract.creating")" : "t("contract.createBtn")"}
+        {loading ? "생성 중..." : "계약서 생성하고 챗봇 시작 →"}
       </Btn>
       <p style={{ textAlign: "center", fontSize: 11, color: T.g500, marginTop: 10 }}>
-        t("contract.creatingNote")
+        생성 후 근로자에게 카카오톡 서명 링크가 전송됩니다
       </p>
     </div>
   );
