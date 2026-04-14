@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>알바계약서 — 탭 통합 시뮬레이터</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@500&display=swap');
+:root{
+  --kakao:#FEE500; --dark:#1A1A2E; --ink:#111; --ink2:#555; --ink3:#AAA;
+  --green:#00A86B; --orange:#E85D04; --red:#E02020;
+  --bg:#F9F8F4; --bg2:#F0EEEA; --line:#E8E4DB; --white:#FFF;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans KR',sans-serif;background:#EDEDEA;min-height:100vh;display:flex;flex-direction:column;}
+
+/* ── 헤더 ── */
+.header{
+  background:var(--dark);padding:11px 28px;
+  display:flex;align-items:center;gap:12px;flex-shrink:0;
+}
+.logo{font-size:16px;font-weight:900;color:#fff;letter-spacing:-.5px;}
+.logo span{color:var(--kakao);}
+.hbadge{font-size:10px;font-weight:700;background:var(--kakao);color:var(--dark);padding:2px 9px;border-radius:100px;font-family:'JetBrains Mono';}
+.hright{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.status-pill{font-size:11px;font-weight:700;padding:4px 12px;border-radius:100px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);font-family:'JetBrains Mono';}
+.status-pill.live{background:#E8F5E9;color:var(--green);}
+
+/* ── 탭 바 ── */
+.tab-bar{
+  background:var(--white);border-bottom:2px solid var(--line);
+  display:flex;align-items:stretch;flex-shrink:0;
+}
+.view-tab{
+  flex:1;padding:0;cursor:pointer;
+  border:none;background:transparent;
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:13px;font-weight:700;color:var(--ink3);
+  border-bottom:3px solid transparent;margin-bottom:-2px;
+  transition:all .18s;display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px 0;
+}
+.view-tab:hover{color:var(--dark);background:var(--bg);}
+.view-tab.active{color:var(--dark);border-bottom-color:var(--kakao);}
+.tab-dot{width:7px;height:7px;border-radius:50%;background:var(--line);transition:all .2s;}
+.view-tab.active .tab-dot{background:var(--green);}
+.tab-badge{
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;
+  background:var(--bg2);color:var(--ink3);font-family:'JetBrains Mono';
+  transition:all .2s;
+}
+.view-tab.active .tab-badge{background:var(--kakao);color:var(--dark);}
+.tab-sep{width:1px;background:var(--line);margin:10px 0;}
+
+/* ── 플로우 탭 (알바생/사장님) ── */
+.flow-tab-bar{
+  background:var(--bg);border-bottom:1px solid var(--line);
+  padding:8px 20px;display:flex;align-items:center;gap:8px;flex-shrink:0;
+}
+.flow-tab{
+  padding:6px 16px;border-radius:100px;font-size:12px;font-weight:700;
+  cursor:pointer;border:1.5px solid transparent;
+  background:var(--white);color:var(--ink2);transition:all .15s;
+}
+.flow-tab.active{background:var(--dark);color:#fff;}
+.flow-sep{flex:1;}
+.ctrl-group{display:flex;gap:6px;}
+.ctrl-btn{
+  padding:7px 16px;border-radius:100px;font-size:12px;font-weight:700;
+  cursor:pointer;border:1.5px solid var(--dark);background:var(--white);
+  color:var(--dark);font-family:'Noto Sans KR';transition:all .15s;
+}
+.ctrl-btn:hover{background:var(--dark);color:#fff;}
+.ctrl-btn.go{background:var(--dark);color:#fff;font-size:13px;padding:7px 20px;}
+.ctrl-btn.go:hover{background:#000;}
+.ctrl-btn.danger{border-color:var(--red);color:var(--red);}
+.ctrl-btn.danger:hover{background:var(--red);color:#fff;}
+.step-indicator{
+  font-size:11px;font-weight:700;color:var(--ink3);
+  font-family:'JetBrains Mono';padding:6px 12px;
+  background:var(--white);border-radius:100px;border:1px solid var(--line);
+}
+
+/* ── 메인 컨텐츠 ── */
+.content{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.view{flex:1;display:none;overflow:hidden;}
+.view.active{display:flex;}
+
+/* ────────────────────────────
+   챗봇 뷰
+──────────────────────────── */
+.chatbot-view{
+  flex:1;display:flex;justify-content:center;
+  align-items:flex-start;padding:20px;background:#EDEDEA;
+  overflow-y:auto;
+}
+.phone{
+  width:390px;background:var(--white);
+  border-radius:36px;
+  box-shadow:0 20px 60px rgba(0,0,0,.15),0 0 0 1px rgba(0,0,0,.05);
+  overflow:hidden;display:flex;flex-direction:column;
+  height:620px;flex-shrink:0;
+}
+.phone-bar{
+  background:var(--kakao);padding:12px 18px;
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.phone-av{
+  width:34px;height:34px;background:var(--dark);
+  border-radius:11px;display:flex;align-items:center;
+  justify-content:center;font-size:16px;flex-shrink:0;
+}
+.phone-tit{font-size:14px;font-weight:700;color:var(--dark);}
+.phone-sub{font-size:10px;color:var(--dark);opacity:.6;}
+.chat-body{
+  flex:1;overflow-y:auto;background:#B5B5AF;
+  padding:12px 12px;display:flex;flex-direction:column;gap:8px;
+  scroll-behavior:smooth;
+}
+.chat-body::-webkit-scrollbar{width:3px;}
+.chat-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:3px;}
+.msg{display:flex;gap:6px;align-items:flex-end;}
+.msg.bot{align-self:flex-start;}
+.msg.user{align-self:flex-end;flex-direction:row-reverse;}
+.bot-ic{width:28px;height:28px;border-radius:9px;background:var(--dark);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;align-self:flex-start;}
+.bubble{max-width:245px;padding:8px 12px;border-radius:16px;font-size:12px;line-height:1.65;}
+.msg.bot .bubble{background:#fff;border-bottom-left-radius:3px;color:var(--ink);}
+.msg.user .bubble{background:var(--kakao);border-bottom-right-radius:3px;color:var(--dark);font-weight:700;}
+.rich-wrap{max-width:260px;}
+.wv-bbl{background:linear-gradient(135deg,#1A1A2E,#2D2D5E);color:#fff;border-radius:14px;border-bottom-left-radius:3px;padding:12px 14px;}
+.wv-ic{font-size:20px;margin-bottom:4px;}
+.wv-tit{font-size:12px;font-weight:700;margin-bottom:3px;}
+.wv-desc{font-size:11px;color:rgba(255,255,255,.7);margin-bottom:8px;line-height:1.5;}
+.wv-btn{background:var(--kakao);color:var(--dark);border:none;border-radius:7px;padding:7px 12px;font-size:11px;font-weight:700;cursor:pointer;width:100%;font-family:'Noto Sans KR';}
+.card-bbl{background:#fff;border-radius:14px;border-bottom-left-radius:3px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.card-img{height:56px;background:linear-gradient(135deg,var(--dark),#2D2D5E);display:flex;align-items:center;justify-content:center;font-size:22px;}
+.card-bd{padding:10px 12px;}
+.card-tit{font-size:12px;font-weight:700;margin-bottom:3px;}
+.card-desc{font-size:11px;color:var(--ink2);line-height:1.5;margin-bottom:7px;}
+.card-btn{display:block;width:100%;padding:7px;background:var(--dark);color:#fff;border-radius:7px;border:none;font-size:11px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR';margin-bottom:3px;}
+.sign-bbl{background:#fff;border-radius:14px;border-bottom-left-radius:3px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.sign-hdr{background:var(--dark);color:#fff;padding:8px 12px;font-size:11px;font-weight:700;}
+.sign-cnv{margin:8px 12px 0;height:55px;border:1.5px dashed var(--line);border-radius:7px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink3);}
+.sign-cnv.done{border-style:solid;border-color:var(--green);background:#F0FBF6;color:var(--green);font-weight:700;}
+.sign-nr{display:flex;justify-content:space-between;padding:5px 12px 0;font-size:11px;}
+.sign-nm{font-weight:700;}
+.sign-dt{font-size:10px;color:var(--ink3);}
+.sign-acts{display:flex;gap:5px;padding:6px 12px 10px;}
+.sign-btn{flex:1;padding:7px;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR';}
+.sign-btn.ok{background:var(--green);color:#fff;}
+.sign-btn.ng{background:var(--bg2);color:var(--ink2);}
+.sign-btn:disabled{opacity:.4;cursor:not-allowed;}
+.qr-wrap{display:flex;flex-wrap:wrap;gap:5px;padding:5px 0;max-width:260px;}
+.qr-btn{padding:6px 12px;background:#fff;border:1.5px solid var(--line);border-radius:100px;font-size:11px;font-weight:600;cursor:pointer;color:var(--dark);font-family:'Noto Sans KR';}
+.qr-btn:hover{background:var(--kakao);border-color:var(--kakao);}
+.typing-dots{display:flex;gap:3px;padding:8px 12px;background:#fff;border-radius:16px;align-items:center;}
+.typing-dots span{width:5px;height:5px;border-radius:50%;background:var(--ink3);animation:bounce .8s infinite;}
+.typing-dots span:nth-child(2){animation-delay:.15s;}
+.typing-dots span:nth-child(3){animation-delay:.3s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
+.chat-input-row{flex-shrink:0;background:#fff;border-top:1px solid var(--line);padding:8px 12px;display:flex;gap:6px;}
+.chat-inp{flex:1;padding:7px 12px;border:1.5px solid var(--line);border-radius:100px;font-size:12px;font-family:'Noto Sans KR';outline:none;}
+.chat-inp:focus{border-color:var(--dark);}
+.chat-send{width:32px;height:32px;background:var(--kakao);border:none;border-radius:100px;font-size:13px;cursor:pointer;}
+
+/* 챗봇 우측 단계 패널 */
+.step-side{
+  width:180px;flex-shrink:0;margin-left:16px;
+  background:var(--white);border-radius:20px;
+  padding:14px 12px;height:fit-content;
+  box-shadow:0 4px 20px rgba(0,0,0,.06);
+  align-self:flex-start;margin-top:0;
+}
+.step-side-title{font-size:11px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;}
+.step-list{display:flex;flex-direction:column;}
+.step-item{display:flex;align-items:flex-start;gap:8px;padding:4px 0;position:relative;}
+.step-item:not(:last-child)::after{content:'';position:absolute;left:10px;top:26px;width:1px;height:calc(100% - 8px);background:var(--line);}
+.step-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;border:2px solid var(--line);background:#fff;color:var(--ink3);transition:all .3s;}
+.step-dot.done{background:var(--green);border-color:var(--green);color:#fff;}
+.step-dot.cur{background:var(--dark);border-color:var(--dark);color:var(--kakao);}
+.step-info{flex:1;padding-top:1px;}
+.step-nm{font-size:10px;font-weight:700;color:var(--ink2);}
+.step-nm.cur{color:var(--dark);}
+.step-nm.done{color:var(--green);}
+.step-ds{font-size:9px;color:var(--ink3);}
+
+/* ────────────────────────────
+   웹앱 뷰 - 알바생 폼
+──────────────────────────── */
+.webapp-view{
+  flex:1;overflow-y:auto;background:#EDEDEA;
+  padding:20px 28px;
+}
+.webapp-view::-webkit-scrollbar{width:4px;}
+.webapp-view::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px;}
+
+/* 동기화 배너 */
+.sync-banner{
+  background:linear-gradient(135deg,var(--dark),#2D3A6E);
+  border-radius:14px;padding:12px 18px;
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:18px;color:#fff;
+}
+.sync-icon{font-size:20px;}
+.sync-txt{flex:1;}
+.sync-tit{font-size:12px;font-weight:700;margin-bottom:2px;}
+.sync-sub{font-size:11px;color:rgba(255,255,255,.6);}
+.sync-count{
+  font-family:'JetBrains Mono';font-size:11px;font-weight:700;
+  background:var(--kakao);color:var(--dark);
+  padding:4px 10px;border-radius:100px;
+}
+
+.wa-row{display:flex;gap:16px;align-items:flex-start;}
+.wa-col{flex:1;min-width:0;}
+.wa-card{background:var(--white);border-radius:16px;padding:18px 20px;margin-bottom:16px;border:1px solid var(--line);}
+.wa-card-title{font-size:13px;font-weight:700;color:var(--dark);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.wa-label{font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:5px;display:block;}
+.wa-input{
+  width:100%;padding:9px 13px;
+  border:1.5px solid var(--line);border-radius:10px;
+  font-size:13px;font-family:'Noto Sans KR';outline:none;
+  background:#fff;color:var(--ink);margin-bottom:11px;
+  transition:all .25s;
+}
+.wa-input:focus{border-color:var(--dark);}
+.wa-input.synced{border-color:var(--green);background:#F0FBF6;}
+.wa-input.synced-flash{border-color:var(--kakao);background:#FFFDE7;animation:flash .6s ease;}
+@keyframes flash{0%{transform:scale(1.02);}50%{transform:scale(1.02);}100%{transform:scale(1);}}
+
+.day-grid{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:11px;}
+.day-btn{width:36px;height:36px;border-radius:9px;border:1.5px solid var(--line);background:#fff;font-size:12px;font-weight:700;cursor:default;color:var(--ink2);font-family:'Noto Sans KR';}
+.day-btn.on{background:var(--dark);color:var(--kakao);border-color:var(--dark);}
+.day-btn.synced-on{background:var(--green);color:#fff;border-color:var(--green);}
+
+.time-display{display:flex;gap:8px;align-items:center;margin-bottom:11px;}
+.time-val{flex:1;padding:9px 13px;border:1.5px solid var(--line);border-radius:10px;font-size:13px;font-weight:700;background:#fff;text-align:center;transition:all .25s;}
+.time-val.synced{border-color:var(--green);background:#F0FBF6;}
+.time-sep{color:var(--ink3);}
+
+.wage-display{display:flex;gap:8px;align-items:center;margin-bottom:11px;}
+.wage-val{flex:1;padding:9px 13px;border:1.5px solid var(--line);border-radius:10px;font-size:16px;font-weight:700;background:#fff;transition:all .25s;}
+.wage-val.synced{border-color:var(--green);background:#F0FBF6;}
+.wage-badge{padding:5px 11px;border-radius:100px;font-size:11px;font-weight:700;background:var(--bg2);color:var(--ink3);}
+.wage-badge.ok{background:#E8F5E9;color:var(--green);}
+
+/* ── 계약서 뷰 ── */
+.doc-view{
+  flex:1;overflow-y:auto;background:#EDEDEA;
+  padding:20px 28px;
+}
+.doc-view::-webkit-scrollbar{width:4px;}
+.doc-view::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px;}
+
+.doc-paper{
+  background:#fff;border-radius:18px;
+  border:1px solid var(--line);overflow:hidden;
+  max-width:720px;margin:0 auto;
+}
+.doc-hdr{background:var(--dark);padding:18px 24px;text-align:center;}
+.doc-hdr-title{font-size:22px;font-weight:900;color:#fff;letter-spacing:7px;}
+.doc-hdr-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:4px;}
+.doc-sec{border-top:1px solid var(--line);}
+.doc-sec-bar{background:var(--dark);padding:7px 18px;display:flex;gap:8px;align-items:center;}
+.doc-sec-bar em{font-size:12px;font-weight:700;color:var(--kakao);font-style:normal;}
+.doc-sec-bar span{font-size:12px;font-weight:700;color:#fff;}
+.doc-row{display:flex;border-bottom:1px solid var(--bg2);}
+.doc-key{width:96px;flex-shrink:0;background:var(--bg2);color:var(--ink2);font-weight:700;padding:7px 12px;font-size:11px;}
+.doc-val{padding:7px 12px;color:var(--ink);flex:1;font-size:12px;transition:all .3s;}
+.doc-val.hl{color:var(--orange);font-weight:700;}
+.doc-val.gr{color:var(--green);font-weight:600;}
+.doc-val.synced{background:#FFFDE7;}
+
+/* 서명 */
+.sign-section{padding:20px 24px 0;}
+.sign-row{display:flex;gap:16px;}
+.sign-box{
+  flex:1;border:1.5px solid var(--line);
+  border-radius:14px;padding:14px;text-align:center;transition:all .3s;
+}
+.sign-box.signed{border-color:var(--green);background:#F0FBF6;}
+.sign-box-lbl{font-size:11px;color:var(--ink3);margin-bottom:8px;}
+.sign-box-area{
+  height:64px;border:1.5px dashed var(--line);border-radius:8px;
+  background:var(--bg);display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:var(--ink3);margin-bottom:8px;transition:all .3s;
+}
+.sign-box.signed .sign-box-area{border-style:solid;border-color:var(--green);background:#E8F5E9;color:var(--green);font-weight:700;}
+.sign-box-name{font-size:15px;font-weight:900;color:var(--dark);}
+.sign-box-date{font-size:11px;color:var(--ink3);margin-top:4px;}
+.law-badge{
+  display:flex;align-items:center;gap:14px;
+  background:var(--bg);border-radius:12px;
+  padding:14px 18px;margin:16px 24px 24px;
+  border:1px solid var(--line);
+}
+.law-ic{width:38px;height:38px;background:var(--dark);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.law-txt{flex:1;}
+.law-tit{font-size:12px;font-weight:700;margin-bottom:2px;}
+.law-sub{font-size:11px;color:var(--ink2);}
+.law-pill{background:var(--dark);color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:100px;font-family:'JetBrains Mono';}
+
+/* 토스트 */
+.toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:var(--dark);color:#fff;
+  padding:9px 18px;border-radius:100px;
+  font-size:12px;font-weight:700;z-index:999;
+  opacity:0;transition:opacity .25s;pointer-events:none;
+  display:flex;align-items:center;gap:8px;white-space:nowrap;
+}
+.toast.show{opacity:1;}
+/* ── K-ALBA 연동 스타일 ── */
+.kalba-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:linear-gradient(135deg,#FF6B5A,#FF8A7A);
+  color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:6px;
+  font-family:'JetBrains Mono';letter-spacing:.3px;
+}
+.prefilled-hint{
+  background:#FFF0EE;border:1px solid #FFD4CE;border-radius:10px;
+  padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;
+  font-size:12px;color:#B83D2F;
+}
+.prefilled-hint strong{color:#FF6B5A;}
+.wa-input.prefilled,.doc-val.prefilled{
+  background:linear-gradient(90deg,#FFF5F3 0%,#FFFDFC 100%)!important;
+  border-color:#FFD4CE!important;color:#B83D2F!important;font-weight:700!important;
+  animation:prefillPop .5s ease-out;
+}
+.doc-val.prefilled{padding:2px 6px;border-radius:4px;}
+@keyframes prefillPop{
+  0%{opacity:0;transform:translateY(-4px);}
+  100%{opacity:1;transform:translateY(0);}
+}
+
+/* 공고 선택 오버레이 */
+.job-overlay{
+  position:fixed;inset:0;background:rgba(26,26,46,0.75);z-index:9999;
+  display:none;align-items:center;justify-content:center;padding:20px;
+  animation:fadeOverlay .3s ease-out;
+}
+.job-overlay.show{display:flex;}
+@keyframes fadeOverlay{from{opacity:0;}to{opacity:1;}}
+.job-picker{
+  background:#fff;border-radius:20px;max-width:540px;width:100%;
+  max-height:85vh;display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,0.3);
+}
+.jp-head{
+  padding:20px 24px 16px;border-bottom:1px solid var(--line);
+  background:linear-gradient(135deg,#FF6B5A,#FF8A7A);color:#fff;
+}
+.jp-head-top{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.jp-logo{
+  width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,0.2);
+  display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;
+}
+.jp-title{font-size:18px;font-weight:900;letter-spacing:-.5px;}
+.jp-subtitle{font-size:12px;opacity:0.9;line-height:1.6;}
+.jp-list{overflow-y:auto;padding:16px 20px;}
+.jp-section-label{font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+.jp-card{
+  border:2px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;
+  cursor:pointer;transition:all .15s;background:#fff;
+}
+.jp-card:hover{border-color:#FF6B5A;transform:translateY(-1px);box-shadow:0 4px 12px rgba(255,107,90,0.15);}
+.jp-card.selected{border-color:#FF6B5A;background:#FFF5F3;}
+.jp-card-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.jp-icon{font-size:26px;}
+.jp-info{flex:1;min-width:0;}
+.jp-ttl{font-size:14px;font-weight:800;color:var(--dark);margin-bottom:2px;}
+.jp-sub{font-size:11px;color:var(--ink2);}
+.jp-pay{font-size:14px;font-weight:900;color:var(--green);flex-shrink:0;}
+.jp-tags{display:flex;flex-wrap:wrap;gap:4px;}
+.jp-tag{
+  font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;
+  background:#EEF2FF;color:#4F46E5;
+}
+.jp-tag.kor{background:#FFF4E6;color:#D97706;}
+.jp-tag.days{background:#ECFDF5;color:#059669;}
+.jp-foot{
+  padding:14px 20px;border-top:1px solid var(--line);background:#FAFAF8;
+  display:flex;gap:8px;align-items:center;
+}
+.jp-skip{
+  background:transparent;border:none;color:var(--ink2);font-size:12px;
+  cursor:pointer;font-family:inherit;font-weight:600;padding:8px 12px;
+}
+.jp-skip:hover{color:var(--dark);}
+.jp-start{
+  flex:1;background:#FF6B5A;color:#fff;border:none;padding:12px;
+  border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;
+  font-family:inherit;transition:all .15s;
+}
+.jp-start:hover{background:#E85D4B;}
+.jp-start:disabled{background:var(--line);color:var(--ink3);cursor:not-allowed;}
+
+/* 헤더 K-ALBA 뱃지 */
+.kalba-link{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 9px;
+  background:#FF6B5A;color:#fff;border-radius:6px;
+  font-size:10px;font-weight:800;font-family:'JetBrains Mono';
+}
+</style>
+</head>
+<body>
+
+<!-- K-ALBA 공고 선택 오버레이 -->
+<div class="job-overlay show" id="job-overlay">
+  <div class="job-picker">
+    <div class="jp-head">
+      <div class="jp-head-top">
+        <div class="jp-logo">K</div>
+        <div class="jp-title">K-ALBA에서 공고 선택</div>
+      </div>
+      <div class="jp-subtitle">
+        📋 등록한 공고를 선택하시면 대부분의 정보가 자동으로 채워져요.<br>
+        챗봇 질문이 <strong>12개 → 3개</strong>로 줄어듭니다!
+      </div>
+    </div>
+    <div class="jp-list" id="jp-list">
+      <!-- 데모 공고 리스트는 JS에서 채움 -->
+    </div>
+    <div class="jp-foot">
+      <button class="jp-skip" onclick="startWithoutJob()">건너뛰기 (수동 입력)</button>
+      <button class="jp-start" id="jp-start-btn" disabled onclick="startWithJob()">공고 선택하여 시작 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- 헤더 -->
+<div class="header">
+  <div class="logo">알바<span>계약서</span></div>
+  <div class="hbadge">TAB SIMULATOR</div>
+  <div class="kalba-link" onclick="reopenJobPicker()" style="cursor:pointer;">🔗 K-ALBA 공고 선택</div>
+  <div class="hright">
+    <div class="status-pill" id="status-pill">대기 중</div>
+  </div>
+</div>
+
+<!-- 뷰 탭 -->
+<div class="tab-bar">
+  <button class="view-tab active" id="vtab-chatbot" onclick="switchView('chatbot')">
+    <div class="tab-dot"></div>
+    💬 카카오 챗봇
+    <div class="tab-badge" id="badge-chatbot">시뮬레이터</div>
+  </button>
+  <div class="tab-sep"></div>
+  <button class="view-tab" id="vtab-webapp" onclick="switchView('webapp')">
+    <div class="tab-dot"></div>
+    📱 웹앱 폼
+    <div class="tab-badge" id="badge-webapp">입력 화면</div>
+  </button>
+  <div class="tab-sep"></div>
+  <button class="view-tab" id="vtab-contract" onclick="switchView('contract')">
+    <div class="tab-dot"></div>
+    📄 계약서 미리보기
+    <div class="tab-badge" id="badge-contract">미리보기</div>
+  </button>
+</div>
+
+<!-- 플로우 탭 & 컨트롤 -->
+<div class="flow-tab-bar">
+  <div class="flow-tab active" id="ftab-worker" onclick="setMode('worker')">👩‍💼 알바생 플로우</div>
+  <div class="flow-tab" id="ftab-boss" onclick="setMode('boss')">🧑‍💼 사장님 플로우</div>
+  <div class="flow-sep"></div>
+  <div class="ctrl-group">
+    <div class="step-indicator" id="step-indicator">0 / 12</div>
+    <button class="ctrl-btn go" onclick="nextStep()">▶ 다음 단계</button>
+    <button class="ctrl-btn" id="btn-auto" onclick="autoPlay()">⏩ 자동 진행</button>
+    <button class="ctrl-btn danger" onclick="resetSim()">↺ 처음부터</button>
+  </div>
+</div>
+
+<!-- 컨텐츠 -->
+<div class="content">
+
+  <!-- 챗봇 뷰 -->
+  <div class="view active" id="view-chatbot">
+    <div class="chatbot-view">
+      <div class="phone">
+        <div class="phone-bar">
+          <div class="phone-av">🤖</div>
+          <div>
+            <div class="phone-tit">알바계약서</div>
+            <div class="phone-sub">카카오 공식 채널</div>
+          </div>
+        </div>
+        <div class="chat-body" id="chat"></div>
+        <div class="chat-input-row">
+          <input class="chat-inp" id="chat-input" placeholder="메시지 입력..." onkeydown="if(event.key==='Enter')sendMsg()">
+          <button class="chat-send" onclick="sendMsg()">↑</button>
+        </div>
+      </div>
+
+      <!-- 단계 패널 -->
+      <div class="step-side">
+        <div class="step-side-title">진행 단계</div>
+        <div class="step-list" id="step-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 웹앱 폼 뷰 -->
+  <div class="view" id="view-webapp">
+    <div class="webapp-view">
+      <div class="sync-banner">
+        <div class="sync-icon">🔄</div>
+        <div class="sync-txt">
+          <div class="sync-tit">챗봇과 실시간 연동 중</div>
+          <div class="sync-sub">챗봇에서 단계가 진행되면 이 화면이 자동으로 채워져요</div>
+        </div>
+        <div class="sync-count" id="sync-count">0개 동기화됨</div>
+      </div>
+
+      <!-- 알바생 폼 -->
+      <div id="form-worker">
+        <div class="wa-row">
+          <div class="wa-col">
+            <div class="wa-card">
+              <div class="wa-card-title">📋 계약 조건</div>
+              <label class="wa-label">계약 형태</label>
+              <input class="wa-input" id="wa-type" placeholder="선택 대기 중..." readonly>
+              <div style="display:flex;gap:8px;">
+                <div style="flex:1;"><label class="wa-label">시작일</label><input class="wa-input" id="wa-start" placeholder="—" readonly></div>
+                <div style="flex:1;"><label class="wa-label">종료일</label><input class="wa-input" id="wa-end" placeholder="—" readonly></div>
+              </div>
+              <label class="wa-label">근무 요일</label>
+              <div class="day-grid">
+                <div class="day-btn" id="wd-월">월</div>
+                <div class="day-btn" id="wd-화">화</div>
+                <div class="day-btn" id="wd-수">수</div>
+                <div class="day-btn" id="wd-목">목</div>
+                <div class="day-btn" id="wd-금">금</div>
+                <div class="day-btn" id="wd-토">토</div>
+                <div class="day-btn" id="wd-일">일</div>
+              </div>
+              <label class="wa-label">근무 시간</label>
+              <div class="time-display">
+                <div class="time-val" id="wa-stime">—</div>
+                <div class="time-sep">~</div>
+                <div class="time-val" id="wa-etime">—</div>
+              </div>
+            </div>
+          </div>
+          <div class="wa-col">
+            <div class="wa-card">
+              <div class="wa-card-title">💰 시급</div>
+              <div class="wage-display">
+                <div class="wage-val" id="wa-wage">—</div>
+                <span style="color:var(--ink3);">원</span>
+                <div class="wage-badge" id="wa-wbadge">대기 중</div>
+              </div>
+            </div>
+            <div class="wa-card">
+              <div class="wa-card-title">👤 당사자</div>
+              <label class="wa-label">근로자 이름</label>
+              <input class="wa-input" id="wa-worker" placeholder="입력 대기 중..." readonly>
+              <label class="wa-label">사장님 성함</label>
+              <input class="wa-input" id="wa-boss" placeholder="입력 대기 중..." readonly>
+              <label class="wa-label">가게 상호명</label>
+              <input class="wa-input" id="wa-shop" placeholder="입력 대기 중..." readonly>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 사장님 폼 -->
+      <div id="form-boss" style="display:none;">
+        <div class="wa-row">
+          <div class="wa-col">
+            <div class="wa-card">
+              <div class="wa-card-title">🏪 가게 정보</div>
+              <label class="wa-label">상호명</label>
+              <input class="wa-input" id="wa-b-shop" placeholder="입력 대기 중..." readonly>
+              <label class="wa-label">사장님 성함</label>
+              <input class="wa-input" id="wa-b-name" placeholder="입력 대기 중..." readonly>
+              <label class="wa-label">전화번호</label>
+              <input class="wa-input" id="wa-b-contact" placeholder="입력 대기 중..." readonly>
+              <label class="wa-label">사업자등록번호 <span style="color:var(--red);font-weight:700;">*</span></label>
+              <input class="wa-input" id="wa-b-biznum" placeholder="필수 입력 대기 중..." readonly>
+              <label class="wa-label">사업장 주소</label>
+              <input class="wa-input" id="wa-b-address" placeholder="입력 대기 중..." readonly>
+              <label class="wa-label">업무 내용</label>
+              <input class="wa-input" id="wa-b-jobdesc" placeholder="입력 대기 중..." readonly>
+            </div>
+          </div>
+          <div class="wa-col">
+            <div class="wa-card">
+              <div class="wa-card-title">💰 희망 시급</div>
+              <div class="wage-display">
+                <div class="wage-val" id="wa-b-wage">—</div>
+                <span style="color:var(--ink3);">원</span>
+                <div class="wage-badge" id="wa-b-wbadge">대기 중</div>
+              </div>
+            </div>
+            <div class="wa-card">
+              <div class="wa-card-title">📋 계약 조건</div>
+              <label class="wa-label">계약 형태</label>
+              <input class="wa-input" id="wa-b-type" placeholder="선택 대기 중..." readonly>
+              <label class="wa-label">근무 요일</label>
+              <div class="day-grid">
+                <div class="day-btn" id="bd-월">월</div>
+                <div class="day-btn" id="bd-화">화</div>
+                <div class="day-btn" id="bd-수">수</div>
+                <div class="day-btn" id="bd-목">목</div>
+                <div class="day-btn" id="bd-금">금</div>
+                <div class="day-btn" id="bd-토">토</div>
+                <div class="day-btn" id="bd-일">일</div>
+              </div>
+              <label class="wa-label">근무 시간</label>
+              <div class="time-display">
+                <div class="time-val" id="wa-b-stime">—</div>
+                <div class="time-sep">~</div>
+                <div class="time-val" id="wa-b-etime">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 계약서 뷰 -->
+  <div class="view" id="view-contract">
+    <div class="doc-view">
+      <div class="doc-paper">
+        <div class="doc-hdr">
+          <div class="doc-hdr-title">근 로 계 약 서</div>
+          <div class="doc-hdr-sub">EMPLOYMENT CONTRACT · <span id="doc-date">작성 대기 중</span></div>
+        </div>
+        <div class="doc-sec">
+          <div class="doc-sec-bar"><em>제1조</em><span>당사자</span></div>
+          <div class="doc-row"><div class="doc-key">사 업 주</div><div class="doc-val" id="doc-boss">—</div></div>
+          <div class="doc-row"><div class="doc-key">전화번호</div><div class="doc-val" id="doc-contact">—</div></div>
+          <div class="doc-row"><div class="doc-key">사업자번호</div><div class="doc-val" id="doc-biznum">—</div></div>
+          <div class="doc-row"><div class="doc-key">사업장주소</div><div class="doc-val" id="doc-address">—</div></div>
+          <div class="doc-row"><div class="doc-key">근 로 자</div><div class="doc-val" id="doc-worker">—</div></div>
+        </div>
+        <div class="doc-sec">
+          <div class="doc-sec-bar"><em>제2조</em><span>계약 형태</span></div>
+          <div class="doc-row"><div class="doc-key">계약 유형</div><div class="doc-val hl" id="doc-type">—</div></div>
+          <div class="doc-row"><div class="doc-key">근무 기간</div><div class="doc-val" id="doc-period">—</div></div>
+        </div>
+        <div class="doc-sec">
+          <div class="doc-sec-bar"><em>제3조</em><span>근무 조건</span></div>
+          <div class="doc-row"><div class="doc-key">근무 요일</div><div class="doc-val" id="doc-days">—</div></div>
+          <div class="doc-row"><div class="doc-key">근무 시간</div><div class="doc-val" id="doc-time">—</div></div>
+          <div class="doc-row"><div class="doc-key">업무 내용</div><div class="doc-val" id="doc-job">—</div></div>
+        </div>
+        <div class="doc-sec">
+          <div class="doc-sec-bar"><em>제4조</em><span>임금</span></div>
+          <div class="doc-row"><div class="doc-key">시  급</div><div class="doc-val hl" id="doc-wage">—</div></div>
+          <div class="doc-row"><div class="doc-key">기본급</div><div class="doc-val" id="doc-basic">—</div></div>
+          <div class="doc-row"><div class="doc-key">주휴수당</div><div class="doc-val" id="doc-holiday">—</div></div>
+          <div class="doc-row"><div class="doc-key">예상 월급여</div><div class="doc-val hl" id="doc-total">—</div></div>
+        </div>
+        <div class="doc-sec">
+          <div class="doc-sec-bar"><em>제5조</em><span>사회보험</span></div>
+          <div class="doc-row"><div class="doc-key">국민·건강</div><div class="doc-val gr" id="doc-ins">—</div></div>
+          <div class="doc-row"><div class="doc-key">고용·산재</div><div class="doc-val gr">✓ 자동 가입</div></div>
+        </div>
+        <div class="doc-sec">
+          <div class="doc-sec-bar"><em>제6조</em><span>퇴직금</span></div>
+          <div class="doc-row"><div class="doc-key">퇴직금</div><div class="doc-val" id="doc-severance">—</div></div>
+        </div>
+        <div class="doc-sec">
+          <div class="doc-sec-bar"><em>제7조</em><span>계약 해지 및 기타</span></div>
+          <div class="doc-row"><div class="doc-key">계약 만료</div><div class="doc-val">기간 종료 시 자동 해지. 재계약 시 재체결 필요.</div></div>
+          <div class="doc-row"><div class="doc-key">분쟁 해결</div><div class="doc-val">관할 노동위원회 및 법원</div></div>
+        </div>
+        <div class="sign-section">
+          <div style="font-size:12px;color:var(--ink2);margin-bottom:12px;">본 계약서의 내용을 충분히 확인하고 동의하여 아래와 같이 서명합니다.</div>
+          <div class="sign-row">
+            <div class="sign-box" id="sign-w-box">
+              <div class="sign-box-lbl">👩‍💼 근로자 (Worker)</div>
+              <div class="sign-box-area" id="sign-w-area">서명란</div>
+              <div class="sign-box-name" id="sign-w-name">—</div>
+              <div class="sign-box-date" id="sign-w-date">____년 ____월 ____일</div>
+            </div>
+            <div class="sign-box" id="sign-b-box">
+              <div class="sign-box-lbl">🧑‍💼 사업주 (Employer)</div>
+              <div class="sign-box-area" id="sign-b-area">서명란</div>
+              <div class="sign-box-name" id="sign-b-name">—</div>
+              <div class="sign-box-date" id="sign-b-date">____년 ____월 ____일</div>
+            </div>
+          </div>
+        </div>
+        <div class="law-badge">
+          <div class="law-ic">⚖️</div>
+          <div class="law-txt">
+            <div class="law-tit">법률 검토 완료</div>
+            <div class="law-sub">본 계약서는 <strong>법무법인 수성 김익환 변호사</strong>님이 검토하셨습니다.</div>
+          </div>
+          <div class="law-pill">VERIFIED</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast">🔄 <span id="toast-msg">동기화됨</span></div>
+
+<script>
+var MODE = 'worker';
+var stepIdx = 0;
+var autoTimer = null;
+var running = false;
+var wSigned = false;
+var bSigned = false;
+var syncedCount = 0;
+
+// K-ALBA 공고 데이터베이스 (사장님이 K-ALBA에 올린 공고들)
+var KALBA_JOBS = [
+  {
+    id: 'k1', icon: '☕',
+    title: '카페 바리스타 모집',
+    company: '블루보틀 강남점',
+    address: '서울특별시 강남구 테헤란로 152, 1층',
+    addressShort: '서울 강남',
+    bossName: '김지훈',
+    bossPhone: '010-2345-6789',
+    biznum: '214-86-12345',
+    jobType: '카페',
+    jobDesc: '커피 음료 제조, 매장 청소, 재고 관리 보조',
+    wage: 12000, wageType: '시급',
+    workDays: ['월','수','금'],
+    workStart: '14:00', workEnd: '20:00',
+    contractType: '기간제 근로계약',
+    contractStart: '2026-05-01', contractEnd: '2026-10-31',
+    koreanLevel: '초급',
+    visaTypes: ['D-2','F-2','F-4','H-2'],
+  },
+  {
+    id: 'k2', icon: '🌾',
+    title: '딸기 수확 작업자 (비닐하우스)',
+    company: '논산 OO농장',
+    address: '충청남도 논산시 강경읍 계백로 99',
+    addressShort: '충남 논산',
+    bossName: '박영호',
+    bossPhone: '010-5678-1234',
+    biznum: '305-12-98765',
+    jobType: '농업',
+    jobDesc: '딸기 수확, 선별, 포장 작업. 비닐하우스 내 작업.',
+    wage: 150000, wageType: '일급',
+    workDays: ['월','화','수','목','금','토'],
+    workStart: '06:00', workEnd: '15:00',
+    contractType: '단기 근로계약',
+    contractStart: '2026-04-20', contractEnd: '2026-07-20',
+    koreanLevel: '불필요',
+    visaTypes: ['E-9','H-2','F-4'],
+  },
+  {
+    id: 'k3', icon: '🍜',
+    title: '한식당 서빙/주방보조',
+    company: '이태원 정 본점',
+    address: '서울특별시 용산구 이태원로 200',
+    addressShort: '서울 이태원',
+    bossName: '김민수',
+    bossPhone: '010-8901-2345',
+    biznum: '106-45-78901',
+    jobType: '식당',
+    jobDesc: '서빙, 테이블 세팅, 주방 보조, 간단한 청소',
+    wage: 11500, wageType: '시급',
+    workDays: ['금','토','일'],
+    workStart: '17:00', workEnd: '22:00',
+    contractType: '기간제 근로계약',
+    contractStart: '2026-05-01', contractEnd: '2026-11-30',
+    koreanLevel: '중급',
+    visaTypes: ['D-2','D-4','E-9','F-6','H-2'],
+  },
+];
+
+// 선택된 공고 (null이면 수동 입력 모드)
+var SELECTED_JOB = null;
+
+// 계약서/폼용 변환 데이터 (선택 공고 기반)
+var DATA = {
+  worker:'', boss:'', shop:'',
+  contact:'', biznum:'',
+  address:'',
+  job:'',
+  wage:10500, basic:683033, holiday:228113, total:911146
+};
+
+// 기본 알바생 정보 (프리필 안 됨 - 근로자가 직접 입력)
+var WORKER_DEFAULTS = { name: '홍길동' };
+
+// 근무시간 기반 월급 계산
+function calcWage(hourlyWage, hoursPerWeek) {
+  var weeklyHours = hoursPerWeek;
+  var monthlyBasic = Math.round(hourlyWage * weeklyHours * 4.345);
+  var weeklyHoliday = hourlyWage * (weeklyHours / 5) * (weeklyHours >= 15 ? 1 : 0);
+  var monthlyHoliday = Math.round(weeklyHoliday * 4.345);
+  return { basic: monthlyBasic, holiday: monthlyHoliday, total: monthlyBasic + monthlyHoliday };
+}
+
+// 공고 정보를 DATA로 옮기기
+function applyJobToData(job) {
+  if (!job) return;
+  DATA.boss = job.bossName;
+  DATA.shop = job.company;
+  DATA.contact = job.bossPhone;
+  DATA.biznum = job.biznum;
+  DATA.address = job.address;
+  DATA.job = job.jobDesc;
+  DATA.wage = job.wage;
+
+  // 주간 근무시간 계산
+  var startH = parseInt(job.workStart.split(':')[0], 10);
+  var endH = parseInt(job.workEnd.split(':')[0], 10);
+  var hoursPerDay = endH - startH;
+  var daysPerWeek = job.workDays.length;
+
+  if (job.wageType === '시급') {
+    var w = calcWage(job.wage, hoursPerDay * daysPerWeek);
+    DATA.basic = w.basic; DATA.holiday = w.holiday; DATA.total = w.total;
+  } else if (job.wageType === '일급') {
+    // 일급 x 월 근무일
+    var monthlyDays = Math.round(daysPerWeek * 4.345);
+    DATA.basic = job.wage * monthlyDays;
+    DATA.holiday = 0;
+    DATA.total = DATA.basic;
+  }
+}
+
+var WORKER_STEPS = [
+  {name:'공고 선택',desc:'K-ALBA 공고'},
+  {name:'공고 확인',desc:'자동 프리필'},
+  {name:'① 근무 조건 검토',desc:'공고 조건 확인'},
+  {name:'② 이름',desc:'근로자 성함'},
+  {name:'③ 계약서 확인',desc:'미리보기 생성'},
+  {name:'✍️ 근로자 서명',desc:'전자서명'},
+  {name:'사장님 전송',desc:'카카오 전달'},
+  {name:'✍️ 사장님 서명',desc:'최종 서명'},
+  {name:'🎉 완료',desc:'PDF 발송'}
+];
+var BOSS_STEPS = [
+  {name:'공고 선택',desc:'K-ALBA 공고'},
+  {name:'공고 확인',desc:'자동 프리필'},
+  {name:'① 계약 조건',desc:'검토·수정'},
+  {name:'② 최종 확인',desc:'미리보기'},
+  {name:'링크 생성',desc:'알바생 공유'},
+  {name:'✍️ 알바생 서명',desc:'링크 서명'},
+  {name:'✍️ 사장님 서명',desc:'최종 서명'},
+  {name:'🎉 완료',desc:'PDF 발송'}
+];
+
+// ── 뷰 전환 ──
+function switchView(v) {
+  ['chatbot','webapp','contract'].forEach(function(n){
+    document.getElementById('view-'+n).classList.toggle('active', n===v);
+    document.getElementById('vtab-'+n).classList.toggle('active', n===v);
+  });
+}
+
+// ── 동기화 헬퍼 ──
+function syncInput(id, val) {
+  var e = document.getElementById(id);
+  if (!e) return;
+  if (e.tagName === 'INPUT') {
+    e.value = val;
+    e.className = e.className.replace(' synced','').replace(' synced-flash','') + ' synced-flash';
+    setTimeout(function(){ e.className = e.className.replace(' synced-flash','') + ' synced'; }, 700);
+  } else {
+    e.textContent = val;
+    e.className = e.className.replace(' synced','') + ' synced';
+  }
+  syncedCount++;
+  document.getElementById('sync-count').textContent = syncedCount + '개 동기화됨';
+}
+function syncDoc(id, val, cls) {
+  var e = document.getElementById(id);
+  if (!e) return;
+  e.textContent = val;
+  e.className = 'doc-val' + (cls ? ' '+cls : '') + ' synced';
+  setTimeout(function(){ e.className = 'doc-val' + (cls ? ' '+cls : ''); }, 1500);
+}
+function setDays(prefix, activeList) {
+  ['월','화','수','목','금','토','일'].forEach(function(d){
+    var e = document.getElementById(prefix+d);
+    if (!e) return;
+    var isOn = activeList.indexOf(d) >= 0;
+    e.className = 'day-btn' + (isOn ? ' synced-on' : '');
+    setTimeout(function(){ if(isOn) e.className='day-btn on'; }, 800);
+  });
+}
+function toast(msg) {
+  var t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+function setStatus(txt, live) {
+  var p = document.getElementById('status-pill');
+  p.textContent = txt;
+  p.className = 'status-pill' + (live ? ' live' : '');
+}
+function setTabBadge(tab, txt) {
+  var e = document.getElementById('badge-'+tab);
+  if (e) e.textContent = txt;
+}
+function nowStr(){ var d=new Date(); return d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일'; }
+
+// ── 채팅 헬퍼 ──
+function mkEl(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!==undefined)e.innerHTML=html;return e;}
+function scrollChat(){var c=document.getElementById('chat');c.scrollTop=c.scrollHeight;}
+function addBot(html,cb){
+  var chat=document.getElementById('chat');
+  var tmp=mkEl('div','msg bot');tmp.id='typing-tmp';
+  var ic=mkEl('div','bot-ic','🤖');
+  var dots=mkEl('div','typing-dots','<span></span><span></span><span></span>');
+  tmp.appendChild(ic);tmp.appendChild(dots);chat.appendChild(tmp);scrollChat();
+  setTimeout(function(){
+    var old=document.getElementById('typing-tmp');if(old)old.remove();
+    var w=mkEl('div','msg bot');
+    w.appendChild(mkEl('div','bot-ic','🤖'));
+    w.appendChild(mkEl('div','bubble',html));
+    chat.appendChild(w);scrollChat();if(cb)cb();
+  },550);
+}
+function addUser(html,cb){
+  var chat=document.getElementById('chat');
+  var w=mkEl('div','msg user');w.appendChild(mkEl('div','bubble',html));
+  chat.appendChild(w);scrollChat();if(cb)setTimeout(cb,180);
+}
+function addRich(node,cb){
+  var chat=document.getElementById('chat');
+  var tmp=mkEl('div','msg bot');tmp.id='typing-tmp';
+  var ic=mkEl('div','bot-ic','🤖');
+  var dots=mkEl('div','typing-dots','<span></span><span></span><span></span>');
+  tmp.appendChild(ic);tmp.appendChild(dots);chat.appendChild(tmp);scrollChat();
+  setTimeout(function(){
+    var old=document.getElementById('typing-tmp');if(old)old.remove();
+    var w=mkEl('div','msg bot');
+    w.appendChild(mkEl('div','bot-ic','🤖'));
+    var rw=mkEl('div','rich-wrap');rw.appendChild(node);w.appendChild(rw);
+    chat.appendChild(w);scrollChat();if(cb)cb();
+  },550);
+}
+function addQR(labels,cb){
+  var chat=document.getElementById('chat');
+  var w=mkEl('div','msg bot');
+  var ic=mkEl('div','bot-ic','🤖');ic.style.visibility='hidden';
+  var qw=mkEl('div','qr-wrap');
+  labels.forEach(function(lbl){
+    var btn=mkEl('button','qr-btn',lbl);btn.onclick=function(){w.remove();};qw.appendChild(btn);
+  });
+  w.appendChild(ic);w.appendChild(qw);chat.appendChild(w);scrollChat();if(cb)cb();
+}
+function mkWV(icon,title,desc,btnTxt){
+  var wrap=mkEl('div','wv-bbl');
+  wrap.appendChild(mkEl('div','wv-ic',icon));
+  wrap.appendChild(mkEl('div','wv-tit',title));
+  wrap.appendChild(mkEl('div','wv-desc',desc));
+  var btn=mkEl('button','wv-btn',btnTxt);
+  btn.onclick=function(){btn.innerHTML='✅ 완료';};
+  wrap.appendChild(btn);return wrap;
+}
+function mkSign(title,name,isWorker,uid){
+  var cid='sc-'+uid,bid='sb-'+uid,did='sd-'+uid;
+  var wrap=mkEl('div','sign-bbl');
+  wrap.appendChild(mkEl('div','sign-hdr','✍️ '+title));
+  var cnv=mkEl('div','sign-cnv','여기를 클릭하여 서명');cnv.id=cid;wrap.appendChild(cnv);
+  var nr=mkEl('div','sign-nr');
+  nr.appendChild(mkEl('div','sign-nm',name));
+  var dt=mkEl('div','sign-dt','____년 ____월 ____일');dt.id=did;nr.appendChild(dt);wrap.appendChild(nr);
+  var acts=mkEl('div','sign-acts');
+  var ok=mkEl('button','sign-btn ok','✅ 서명 완료');ok.id=bid;
+  ok.onclick=isWorker?function(){doWSign(cid,bid,did);}:function(){doBSign(cid,bid,did);};
+  acts.appendChild(ok);acts.appendChild(mkEl('button','sign-btn ng','취소'));wrap.appendChild(acts);return wrap;
+}
+function doWSign(cid,bid,did){
+  wSigned=true;
+  var c=document.getElementById(cid),b=document.getElementById(bid),d=document.getElementById(did);
+  if(c){c.className='sign-cnv done';c.textContent='서명 완료';}
+  if(b)b.disabled=true;if(d)d.textContent=nowStr();
+  document.getElementById('sign-w-box').classList.add('signed');
+  document.getElementById('sign-w-area').textContent='✍️ 서명 완료';
+  document.getElementById('sign-w-date').textContent=nowStr();
+  setTabBadge('contract','✅ 근로자 서명');
+  toast('✍️ 근로자 서명 완료 → 계약서 탭에 반영됨');
+}
+function doBSign(cid,bid,did){
+  bSigned=true;
+  var c=document.getElementById(cid),b=document.getElementById(bid),d=document.getElementById(did);
+  if(c){c.className='sign-cnv done';c.textContent='서명 완료';}
+  if(b)b.disabled=true;if(d)d.textContent=nowStr();
+  document.getElementById('sign-b-box').classList.add('signed');
+  document.getElementById('sign-b-area').textContent='✍️ 서명 완료';
+  document.getElementById('sign-b-date').textContent=nowStr();
+  setTabBadge('contract','🎉 계약 완료');
+  toast('✍️ 사장님 서명 → 계약서 탭에 반영됨');
+}
+
+// ── 플로우 정의 (K-ALBA 연동) ──
+
+// K-ALBA 공고 정보를 폼/계약서에 주입
+function prefillFromJob() {
+  if (!SELECTED_JOB) return;
+  var job = SELECTED_JOB;
+  applyJobToData(job);
+
+  var mode = MODE;
+  var prefix = mode === 'worker' ? 'wa-' : 'wa-b-';
+  var dayPrefix = mode === 'worker' ? 'wd-' : 'bd-';
+
+  // 공통 프리필
+  if (mode === 'worker') {
+    syncInputPrefilled('wa-boss', job.bossName);
+    syncInputPrefilled('wa-shop', job.company);
+    syncInputPrefilled('wa-type', job.contractType);
+    syncInputPrefilled('wa-start', job.contractStart);
+    syncInputPrefilled('wa-end', job.contractEnd);
+  } else {
+    syncInputPrefilled('wa-b-shop', job.company);
+    syncInputPrefilled('wa-b-name', job.bossName);
+    syncInputPrefilled('wa-b-contact', job.bossPhone);
+    syncInputPrefilled('wa-b-biznum', job.biznum);
+    syncInputPrefilled('wa-b-address', job.address);
+    syncInputPrefilled('wa-b-jobdesc', job.jobDesc);
+    syncInputPrefilled('wa-b-type', job.contractType);
+  }
+
+  // 요일
+  setDaysPrefilled(dayPrefix, job.workDays);
+
+  // 근무시간
+  var sTimeId = mode === 'worker' ? 'wa-stime' : 'wa-b-stime';
+  var eTimeId = mode === 'worker' ? 'wa-etime' : 'wa-b-etime';
+  document.getElementById(sTimeId).textContent = job.workStart;
+  document.getElementById(sTimeId).className = 'time-val synced';
+  document.getElementById(eTimeId).textContent = job.workEnd;
+  document.getElementById(eTimeId).className = 'time-val synced';
+
+  // 시급
+  var wageId = mode === 'worker' ? 'wa-wage' : 'wa-b-wage';
+  var wbadgeId = mode === 'worker' ? 'wa-wbadge' : 'wa-b-wbadge';
+  document.getElementById(wageId).textContent = job.wage.toLocaleString();
+  document.getElementById(wageId).className = 'wage-val synced prefilled';
+  document.getElementById(wbadgeId).textContent = '✓ K-ALBA 공고';
+  document.getElementById(wbadgeId).className = 'wage-badge ok';
+
+  // 계약서 프리필
+  syncDocPrefilled('doc-boss', job.bossName + ' | ' + job.company);
+  syncDocPrefilled('doc-contact', job.bossPhone);
+  syncDocPrefilled('doc-biznum', job.biznum);
+  syncDocPrefilled('doc-address', job.address);
+  syncDocPrefilled('doc-job', job.jobDesc);
+  syncDocPrefilled('doc-type', job.contractType);
+  syncDocPrefilled('doc-period', job.contractStart + ' ~ ' + job.contractEnd);
+
+  var dayStr = job.workDays.join('·') + ' (주 ' + job.workDays.length + '일)';
+  syncDocPrefilled('doc-days', dayStr);
+
+  var startH = parseInt(job.workStart.split(':')[0], 10);
+  var endH = parseInt(job.workEnd.split(':')[0], 10);
+  var hoursPerDay = endH - startH;
+  var timeStr = job.workStart + ' ~ ' + job.workEnd + ' (일 ' + hoursPerDay + '시간 · 주 ' + (hoursPerDay * job.workDays.length) + '시간)';
+  syncDocPrefilled('doc-time', timeStr);
+
+  var wageStr = job.wage.toLocaleString() + '원 (' + job.wageType + ')';
+  syncDocPrefilled('doc-wage', wageStr);
+  syncDocPrefilled('doc-basic', DATA.basic.toLocaleString() + '원/월');
+  syncDocPrefilled('doc-holiday', DATA.holiday.toLocaleString() + '원/월');
+  syncDocPrefilled('doc-total', '약 ' + DATA.total.toLocaleString() + '원');
+
+  var weeklyHours = hoursPerDay * job.workDays.length;
+  if (weeklyHours >= 15) {
+    syncDocPrefilled('doc-ins', '✓ 가입 대상 (주 ' + weeklyHours + '시간)');
+  } else {
+    syncDocPrefilled('doc-ins', '선택 가입 (주 ' + weeklyHours + '시간 미만)');
+  }
+  syncDocPrefilled('doc-severance', '근무 기간에 따라 발생');
+
+  document.getElementById('doc-date').textContent = job.contractStart.replace(/-/g, '년 ').replace(/년 /g, function(m, i) {
+    return i < 5 ? '년 ' : (i < 9 ? '월 ' : '일');
+  }) + ' 기준';
+
+  // 사인 이름
+  if (mode === 'worker') {
+    document.getElementById('sign-w-name').textContent = '___  ___  ___';
+  } else {
+    document.getElementById('sign-b-name').textContent = job.bossName.split('').join('  ');
+  }
+}
+
+// 프리필 스타일로 값 주입
+function syncInputPrefilled(id, val) {
+  var e = document.getElementById(id);
+  if (!e) return;
+  e.value = val;
+  e.className = 'wa-input prefilled';
+}
+function syncDocPrefilled(id, val) {
+  var e = document.getElementById(id);
+  if (!e) return;
+  e.textContent = val;
+  e.className = 'doc-val prefilled';
+}
+function setDaysPrefilled(prefix, activeList) {
+  ['월','화','수','목','금','토','일'].forEach(function(d){
+    var e = document.getElementById(prefix + d);
+    if (!e) return;
+    e.className = activeList.indexOf(d) >= 0 ? 'day-btn on' : 'day-btn';
+  });
+}
+
+// 공고 정보 카드 렌더
+function mkJobCard(job) {
+  var wrap = mkEl('div','kalba-job-card');
+  wrap.style.cssText = 'background:linear-gradient(135deg,#FFF5F3,#FFFDFC);border:2px solid #FFD4CE;border-radius:14px;padding:14px 16px;';
+  wrap.innerHTML =
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px dashed #FFD4CE;">'
+      +'<span style="background:linear-gradient(135deg,#FF6B5A,#FF8A7A);color:#fff;font-size:9px;font-weight:800;padding:3px 8px;border-radius:5px;">K-ALBA 공고</span>'
+      +'<span style="font-size:11px;color:#B83D2F;font-weight:700;">자동 프리필됨</span>'
+    +'</div>'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'
+      +'<div style="font-size:28px;">'+job.icon+'</div>'
+      +'<div style="flex:1;">'
+        +'<div style="font-size:14px;font-weight:800;color:#1A1A2E;">'+job.title+'</div>'
+        +'<div style="font-size:11px;color:#555;margin-top:2px;">'+job.company+' · '+job.addressShort+'</div>'
+      +'</div>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;font-size:11px;color:#555;">'
+      +'<div><strong style="color:#1A1A2E;">💰 급여:</strong> '+job.wageType+' '+job.wage.toLocaleString()+'원</div>'
+      +'<div><strong style="color:#1A1A2E;">📅 요일:</strong> '+job.workDays.join('·')+'</div>'
+      +'<div><strong style="color:#1A1A2E;">⏰ 시간:</strong> '+job.workStart+'~'+job.workEnd+'</div>'
+      +'<div><strong style="color:#1A1A2E;">📋 계약:</strong> '+job.contractType+'</div>'
+    +'</div>';
+  return wrap;
+}
+
+// ──────────────────────────────────
+// 근로자 플로우 (9단계 - 간소화됨)
+// ──────────────────────────────────
+var WORKER_Q=[
+  function(done){
+    document.getElementById('form-worker').style.display='';
+    document.getElementById('form-boss').style.display='none';
+
+    if (SELECTED_JOB) {
+      addBot('안녕하세요! 👋 알바 근로계약서 도우미예요.<br><strong>'+SELECTED_JOB.title+'</strong> 공고에 지원하셨네요!<br>📋 K-ALBA에서 대부분 정보를 가져왔어요. 확인만 하시면 돼요!', function(){
+        addQR(['✅ 공고 확인','❓ 서비스 안내'],done);
+      });
+    } else {
+      addBot('안녕하세요! 👋 알바 근로계약서 도우미예요.<br>📱 <strong>웹앱 폼</strong>과 <strong>계약서 미리보기</strong> 탭을 함께 보세요!<br>챗봇 진행 시 자동으로 채워져요 🔄', function(){
+        addQR(['📝 계약서 만들기','❓ 서비스 안내'],done);
+      });
+    }
+  },
+
+  // 공고 정보 자동 주입 + 확인
+  function(done){
+    addUser(SELECTED_JOB ? '공고 확인' : '계약서 만들기', function(){
+      if (SELECTED_JOB) {
+        prefillFromJob();
+        addRich(mkJobCard(SELECTED_JOB), function(){
+          setTabBadge('webapp','✨ 자동 프리필');
+          setTabBadge('contract','📝 작성 중');
+          toast('🔗 K-ALBA 공고 → 폼 + 계약서 자동 반영 🔄');
+          done();
+        });
+      } else {
+        // 공고 없이 진입한 경우 기존 흐름으로
+        addBot('수동 입력 모드입니다. 공고 정보를 직접 입력해 주세요.', done);
+      }
+    });
+  },
+
+  // 근무 조건 검토 (이미 프리필된 정보 확인)
+  function(done){
+    addBot('📋 <strong>근무 조건</strong>을 확인해 주세요!<br>'+
+      '✓ '+(SELECTED_JOB?SELECTED_JOB.contractType:'기간제 근로계약')+'<br>'+
+      '✓ 요일: '+(SELECTED_JOB?SELECTED_JOB.workDays.join('·'):'월·수·금')+'<br>'+
+      '✓ 시간: '+(SELECTED_JOB?SELECTED_JOB.workStart+'~'+SELECTED_JOB.workEnd:'10:00~15:00')+'<br>'+
+      '✓ 시급: '+(SELECTED_JOB?SELECTED_JOB.wage.toLocaleString():'10,500')+'원<br><br>'+
+      '이 조건으로 계약 진행하시겠어요?', function(){
+      addQR(['✅ 네, 진행할게요','✏️ 수정 요청'], function(){
+        addUser('✅ 네, 진행할게요', function(){
+          addBot('좋아요! 나머지는 아주 간단해요 😊', done);
+        });
+      });
+    });
+  },
+
+  // 이름만 입력 (K-ALBA 프로필에서 가져올 수도 있으나 확인용으로 입력)
+  function(done){
+    addBot('성함(근로자 이름)을 입력해 주세요.<br>💡 K-ALBA 프로필 이름을 사용하시면 타이핑 없이 바로 확인 가능해요.',function(){
+      addUser('홍길동',function(){
+        addBot('✅ 홍길동님으로 설정됐어요!',function(){
+          syncInput('wa-worker','홍길동');
+          syncDoc('doc-worker','홍길동');
+          document.getElementById('sign-w-name').textContent='홍  길  동';
+          setTabBadge('webapp','✅ 이름 추가');
+          toast('근로자 이름 반영됨 🔄');
+          done();
+        });
+      });
+    });
+  },
+
+  // 계약서 확인
+  function(done){
+    addBot('🎉 계약서가 완성됐어요!<br>👉 <strong>계약서 미리보기</strong> 탭에서 확인하세요!',function(){
+      addQR(['✍️ 서명하기','✏️ 수정하기'], function(){
+        addUser('✍️ 서명하기', function(){
+          addBot('📱 서명 창을 열어드릴게요...', done);
+        });
+      });
+    });
+  },
+
+  // 근로자 서명
+  function(done){
+    var workerName = document.getElementById('wa-worker').value || '홍  길  동';
+    addRich(mkSign('근로자 전자서명', workerName, true, 'w1'),function(){
+      setStatus('근로자 서명 대기', true);
+      addBot('👉 서명 버튼을 클릭하거나,<br><strong>계약서 미리보기</strong> 탭에서 서명 상태를 확인하세요!',null);
+      done();
+    });
+  },
+
+  // 사장님 전송 완료 (실제 서명 처리)
+  function(done){
+    if(!wSigned)doWSign('sc-w1','sb-w1','sd-w1');
+    setTimeout(function(){
+      addBot('✅ 근로자 서명 완료!<br>📱 사장님께 카카오톡으로 전달됐어요!',function(){
+        setStatus('사장님 서명 대기',true);done();
+      });
+    },400);
+  },
+
+  // 사장님 서명
+  function(done){
+    var bossName = SELECTED_JOB ? SELECTED_JOB.bossName.split('').join('  ') : '김  철  수';
+    addBot('🔔 사장님이 서명 중...',function(){
+      addRich(mkSign('사업주 최종 서명', bossName, false, 'b1'),done);
+    });
+  },
+
+  // 완료
+  function(done){
+    if(!bSigned)doBSign('sc-b1','sb-b1','sd-b1');
+    setTimeout(function(){
+      addBot('🎉 <strong>계약 완료!</strong><br>📄 PDF 양측 카카오톡으로 발송됨<br>✅ K-ALBA 알바 근무 시작!<br>⚖️ 법무법인 수성 김익환 변호사 검토 완료',function(){
+        setStatus('🎉 계약 완료',true);
+        setTabBadge('contract','🎉 계약 완료');
+        done();
+      });
+    },400);
+  }
+];
+
+// ──────────────────────────────────
+// 사장님 플로우 (8단계 - 간소화됨)
+// ──────────────────────────────────
+var BOSS_Q=[
+  function(done){
+    document.getElementById('form-boss').style.display='';
+    document.getElementById('form-worker').style.display='none';
+
+    if (SELECTED_JOB) {
+      var wrap=mkEl('div','phone-card');
+      wrap.appendChild(mkEl('div','card-img','🔗'));
+      var bd=mkEl('div','card-bd');
+      bd.appendChild(mkEl('div','card-tit','K-ALBA 공고 연동'));
+      bd.appendChild(mkEl('div','card-desc','"'+SELECTED_JOB.title+'" 공고 정보로<br>근로계약서를 자동 생성합니다.<br>📱 <strong>웹앱 폼</strong> 탭에서 확인하세요!'));
+      wrap.appendChild(bd);
+      addRich(wrap,done);
+    } else {
+      var wrap=mkEl('div','phone-card');
+      wrap.appendChild(mkEl('div','card-img','🧑‍💼'));
+      var bd=mkEl('div','card-bd');
+      bd.appendChild(mkEl('div','card-tit','사장님 모드 (수동)'));
+      bd.appendChild(mkEl('div','card-desc','수동 입력 모드입니다.<br>공고를 선택하면 자동 프리필이 되어 더 편리해요!'));
+      wrap.appendChild(bd);
+      addRich(wrap,done);
+    }
+  },
+
+  // 공고 정보 자동 주입
+  function(done){
+    if (SELECTED_JOB) {
+      prefillFromJob();
+      addBot('📋 <strong>'+SELECTED_JOB.title+'</strong> 공고에서 정보를 가져왔어요!',function(){
+        addRich(mkJobCard(SELECTED_JOB), function(){
+          setTabBadge('webapp','✨ 자동 프리필');
+          setTabBadge('contract','📝 작성 중');
+          toast('🔗 K-ALBA 공고 → 모든 정보 자동 반영 🔄');
+          done();
+        });
+      });
+    } else {
+      addBot('공고 없이 진행합니다. 정보를 하나씩 입력해 주세요.',done);
+    }
+  },
+
+  // 계약 조건 검토·수정
+  function(done){
+    addBot('📋 <strong>계약 조건</strong>을 확인해 주세요!<br>'+
+      '✓ 업체: '+(SELECTED_JOB?SELECTED_JOB.company:'—')+'<br>'+
+      '✓ 계약: '+(SELECTED_JOB?SELECTED_JOB.contractType:'—')+'<br>'+
+      '✓ 급여: '+(SELECTED_JOB?SELECTED_JOB.wageType+' '+SELECTED_JOB.wage.toLocaleString()+'원':'—')+'<br>'+
+      '✓ 근무: '+(SELECTED_JOB?SELECTED_JOB.workDays.join('·')+' '+SELECTED_JOB.workStart+'~'+SELECTED_JOB.workEnd:'—')+'<br><br>'+
+      '수정할 내용이 있나요?', function(){
+      addQR(['✅ 이대로 진행','✏️ 급여 수정','✏️ 시간 수정'], function(){
+        addUser('✅ 이대로 진행',function(){
+          addBot('좋습니다! 최종 확인으로 넘어갈게요 ✅',done);
+        });
+      });
+    });
+  },
+
+  // 최종 확인
+  function(done){
+    addBot('📋 계약 내용이 완성됐어요!<br>👉 <strong>계약서 미리보기</strong> 탭에서 전체 확인하세요!',function(){
+      addQR(['🔗 알바생 링크 생성','✏️ 수정하기'], function(){
+        addUser('🔗 알바생 링크 생성',done);
+      });
+    });
+  },
+
+  // 링크 생성
+  function(done){
+    addBot('✅ 알바생 서명 링크 생성!<br>📱 카카오톡으로 전송 중...<br>🔗 kko.co/AbC123',function(){
+      setStatus('알바생 서명 대기',true);
+      setTabBadge('chatbot','⏳ 알바생 대기');
+      done();
+    });
+  },
+
+  // 알바생 서명
+  function(done){
+    addBot('👤 알바생이 서명 중...',function(){
+      addRich(mkSign('근로자 전자서명', '홍  길  동', true, 'w2'),function(){
+        setTimeout(function(){
+          if(!wSigned)doWSign('sc-w2','sb-w2','sd-w2');
+          addBot('✅ 알바생 서명 완료!<br>이제 사장님이 최종 서명하세요.',done);
+        },800);
+      });
+    });
+  },
+
+  // 사장님 서명
+  function(done){
+    var bossName = SELECTED_JOB ? SELECTED_JOB.bossName.split('').join('  ') : '김  철  수';
+    addRich(mkSign('사업주 최종 서명', bossName, false, 'b2'),done);
+  },
+
+  // 완료
+  function(done){
+    if(!bSigned)doBSign('sc-b2','sb-b2','sd-b2');
+    setTimeout(function(){
+      addBot('🎉 <strong>계약 완료!</strong><br>📄 PDF 양측 발송됨<br>✅ K-ALBA에 근로 기록 자동 저장<br>⚖️ 법무법인 수성 김익환 변호사 검토 완료',function(){
+        setStatus('🎉 계약 완료',true);
+        setTabBadge('contract','🎉 계약 완료');
+        done();
+      });
+    },400);
+  }
+];
+
+
+// ── 단계 렌더 ──
+function renderSteps(){
+  var steps=MODE==='worker'?WORKER_STEPS:BOSS_STEPS;
+  var total=steps.length;
+  document.getElementById('step-indicator').textContent=stepIdx+' / '+total;
+  var html='';
+  steps.forEach(function(s,i){
+    var dc=i<stepIdx?'done':i===stepIdx?'cur':'';
+    var nc=i<stepIdx?'done':i===stepIdx?'cur':'';
+    var dot=i<stepIdx?'✓':String(i+1);
+    html+='<div class="step-item">'
+      +'<div class="step-dot '+dc+'">'+dot+'</div>'
+      +'<div class="step-info">'
+      +'<div class="step-nm '+nc+'">'+s.name+'</div>'
+      +'<div class="step-ds">'+s.desc+'</div>'
+      +'</div></div>';
+  });
+  document.getElementById('step-list').innerHTML=html;
+}
+
+// ── 컨트롤 ──
+function nextStep(){
+  if(running)return;
+  var q=MODE==='worker'?WORKER_Q:BOSS_Q;
+  if(stepIdx>=q.length)return;
+  running=true;renderSteps();
+  q[stepIdx](function(){stepIdx++;renderSteps();running=false;});
+}
+function autoPlay(){
+  if(autoTimer){
+    clearInterval(autoTimer);autoTimer=null;
+    document.getElementById('btn-auto').textContent='⏩ 자동 진행';return;
+  }
+  document.getElementById('btn-auto').textContent='⏸ 일시정지';
+  autoTimer=setInterval(function(){
+    var q=MODE==='worker'?WORKER_Q:BOSS_Q;
+    if(stepIdx>=q.length){
+      clearInterval(autoTimer);autoTimer=null;
+      document.getElementById('btn-auto').textContent='⏩ 자동 진행';return;
+    }
+    if(!running)nextStep();
+  },2200);
+}
+function resetSim(){
+  if(autoTimer){clearInterval(autoTimer);autoTimer=null;}
+  stepIdx=0;running=false;wSigned=false;bSigned=false;syncedCount=0;
+  document.getElementById('chat').innerHTML='';
+  document.getElementById('btn-auto').textContent='⏩ 자동 진행';
+  document.getElementById('sync-count').textContent='0개 동기화됨';
+  setStatus('대기 중',false);
+  setTabBadge('webapp','입력 화면');
+  setTabBadge('contract','미리보기');
+
+  // 폼 초기화
+  ['wa-type','wa-start','wa-end','wa-worker','wa-boss','wa-shop',
+   'wa-b-shop','wa-b-name','wa-b-contact','wa-b-biznum','wa-b-address','wa-b-jobdesc','wa-b-type'
+  ].forEach(function(id){
+    var e=document.getElementById(id);
+    if(e){e.value='';e.className='wa-input';}
+  });
+  ['wa-wage','wa-b-wage'].forEach(function(id){
+    var e=document.getElementById(id);if(e){e.textContent='—';e.className='wage-val';}
+  });
+  ['wa-wbadge','wa-b-wbadge'].forEach(function(id){
+    var e=document.getElementById(id);if(e){e.textContent='대기 중';e.className='wage-badge';}
+  });
+  ['wa-stime','wa-etime','wa-b-stime','wa-b-etime'].forEach(function(id){
+    var e=document.getElementById(id);if(e){e.textContent='—';e.className='time-val';}
+  });
+  ['월','화','수','목','금','토','일'].forEach(function(d){
+    ['wd-','bd-'].forEach(function(p){
+      var e=document.getElementById(p+d);if(e)e.className='day-btn';
+    });
+  });
+  // 계약서 초기화
+  ['doc-boss','doc-contact','doc-biznum','doc-address','doc-worker',
+   'doc-type','doc-period','doc-days','doc-time','doc-job',
+   'doc-wage','doc-basic','doc-holiday','doc-total','doc-ins','doc-severance'
+  ].forEach(function(id){var e=document.getElementById(id);if(e){e.textContent='—';e.className='doc-val'+(id==='doc-type'?' hl':id==='doc-ins'?' gr':'');}});
+  document.getElementById('doc-date').textContent='작성 대기 중';
+  // 서명 초기화
+  ['sign-w-box','sign-b-box'].forEach(function(id){var e=document.getElementById(id);if(e)e.classList.remove('signed');});
+  ['sign-w-area','sign-b-area'].forEach(function(id){var e=document.getElementById(id);if(e)e.textContent='서명란';});
+  ['sign-w-name','sign-b-name'].forEach(function(id){var e=document.getElementById(id);if(e)e.textContent='—';});
+  ['sign-w-date','sign-b-date'].forEach(function(id){var e=document.getElementById(id);if(e)e.textContent='____년 ____월 ____일';});
+
+  renderSteps();
+  switchView('chatbot');
+  setTimeout(function(){
+    if (SELECTED_JOB) {
+      addBot('🔗 <strong>K-ALBA 공고 연동 모드</strong><br>선택한 공고: <strong>'+SELECTED_JOB.title+'</strong><br>공고 정보로 대부분 자동 채워집니다!<br><br>\'▶ 다음 단계\' 버튼을 눌러 시작하세요!',null);
+    } else {
+      addBot('안녕하세요! 👋 <strong>K-ALBA 연동 근로계약서 시뮬레이터</strong>입니다.<br><br>🔗 상단 <strong>"K-ALBA 공고 선택"</strong> 버튼을 눌러 공고를 선택하시면,<br>챗봇 질문이 <strong>12개 → 3~4개</strong>로 줄어듭니다!<br><br>\'▶ 다음 단계\' 버튼을 눌러 시작하세요.',null);
+    }
+  },250);
+}
+function setMode(m){
+  MODE=m;
+  document.getElementById('ftab-worker').classList.toggle('active',m==='worker');
+  document.getElementById('ftab-boss').classList.toggle('active',m==='boss');
+  resetSim();
+}
+function sendMsg(){
+  var inp=document.getElementById('chat-input');
+  var val=inp.value.trim();if(!val)return;
+  addUser(val,null);inp.value='';
+  setTimeout(function(){addBot('입력됐어요! \'▶ 다음 단계\'를 눌러 계속 진행하세요.',null);},700);
+}
+
+// ──────────────────────────────────
+// K-ALBA 공고 선택 로직
+// ──────────────────────────────────
+function renderJobList(){
+  var list = document.getElementById('jp-list');
+  list.innerHTML = '<div class="jp-section-label">📋 등록한 공고 목록 (3건)</div>';
+
+  KALBA_JOBS.forEach(function(job){
+    var card = document.createElement('div');
+    card.className = 'jp-card';
+    card.dataset.jobId = job.id;
+    card.onclick = function(){ selectJob(job.id); };
+
+    var korLabel = job.koreanLevel;
+    var wage = job.wage.toLocaleString();
+    var wageType = job.wageType;
+
+    card.innerHTML =
+      '<div class="jp-card-top">'
+        +'<div class="jp-icon">'+job.icon+'</div>'
+        +'<div class="jp-info">'
+          +'<div class="jp-ttl">'+job.title+'</div>'
+          +'<div class="jp-sub">'+job.company+' · '+job.addressShort+'</div>'
+        +'</div>'
+        +'<div class="jp-pay">'+wageType+' ₩'+wage+'</div>'
+      +'</div>'
+      +'<div class="jp-tags">'
+        +'<span class="jp-tag days">'+job.workDays.join('·')+' '+job.workStart+'~'+job.workEnd+'</span>'
+        +'<span class="jp-tag kor">한국어 '+korLabel+'</span>'
+        +job.visaTypes.slice(0,3).map(function(v){return '<span class="jp-tag">'+v+'</span>';}).join('')
+      +'</div>';
+
+    list.appendChild(card);
+  });
+}
+
+function selectJob(jobId){
+  SELECTED_JOB = KALBA_JOBS.find(function(j){ return j.id === jobId; });
+  document.querySelectorAll('.jp-card').forEach(function(c){
+    c.classList.toggle('selected', c.dataset.jobId === jobId);
+  });
+  document.getElementById('jp-start-btn').disabled = false;
+}
+
+function startWithJob(){
+  if (!SELECTED_JOB) return;
+  document.getElementById('job-overlay').classList.remove('show');
+  toast('🔗 K-ALBA 공고 연동 시작: '+SELECTED_JOB.title);
+  setStatus('공고 선택됨: '+SELECTED_JOB.company, true);
+}
+
+function startWithoutJob(){
+  SELECTED_JOB = null;
+  document.getElementById('job-overlay').classList.remove('show');
+  toast('수동 입력 모드로 시작합니다');
+}
+
+function reopenJobPicker(){
+  // 공고 재선택 (리셋과 함께)
+  resetSim();
+  SELECTED_JOB = null;
+  document.getElementById('jp-start-btn').disabled = true;
+  document.querySelectorAll('.jp-card').forEach(function(c){c.classList.remove('selected');});
+  document.getElementById('job-overlay').classList.add('show');
+}
+
+// ──────────────────────────────────
+// 초기화
+// ──────────────────────────────────
+renderJobList();
+renderSteps();
+
+// URL 파라미터로 자동 설정 (K-ALBA 사이트 임베드용)
+(function autoSetupFromURL(){
+  var params = new URLSearchParams(window.location.search);
+  var mode = params.get('mode');           // 'worker' or 'boss'
+  var jobId = params.get('job');           // 'k1', 'k2', 'k3'
+  var autoStart = params.get('autostart'); // '1' to skip job picker
+
+  // 모드 자동 전환
+  if (mode === 'boss' || mode === 'worker') {
+    setMode(mode);
+  }
+
+  // 공고 자동 선택
+  if (jobId) {
+    var found = KALBA_JOBS.find(function(j){ return j.id === jobId; });
+    if (found) {
+      selectJob(jobId);
+    }
+  }
+
+  // 자동 시작 (공고 선택 화면 건너뜀)
+  if (autoStart === '1') {
+    setTimeout(function(){
+      if (jobId && SELECTED_JOB) {
+        startWithJob();
+      } else {
+        startWithoutJob();
+      }
+    }, 200);
+  }
+})();
+</script>
+</body>
+</html>

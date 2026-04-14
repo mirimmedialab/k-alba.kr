@@ -1,0 +1,25 @@
+{
+  "name": "k-alba",
+  "version": "2.0.0",
+  "private": true,
+  "description": "K-ALBA - 한국의 외국인을 위한 맞춤형 알바 플랫폼",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "jspdf": "^2.5.2",
+    "html2canvas": "^1.4.1"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8.4.0",
+    "autoprefixer": "^10.4.0"
+  }
+}
