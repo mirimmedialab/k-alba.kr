@@ -91,8 +91,28 @@ export default function SignupPage() {
       <Inp label={t("auth.passwordConfirm")} type="password" placeholder={t("auth.passwordConfirmPlaceholder")} value={form.password2} onChange={(e) => setForm({ ...form, password2: e.target.value })} />
 
       <label style={{ padding: "14px 16px", background: T.g100, borderRadius: 12, marginBottom: 16, display: "flex", alignItems: "start", gap: 10, cursor: "pointer" }}>
-        <input type="checkbox" checked={form.agree} onChange={(e) => setForm({ ...form, agree: e.target.checked })} style={{ marginTop: 3, accentColor: T.mint, width: 16, height: 16 }} />
-        <div style={{ fontSize: 12, color: T.g500, lineHeight: 1.6 }}>{t("auth.agree")}</div>
+        <input type="checkbox" checked={form.agree} onChange={(e) => setForm({ ...form, agree: e.target.checked })} style={{ marginTop: 3, accentColor: T.mint, width: 16, height: 16, flexShrink: 0 }} />
+        <div style={{ fontSize: 12, color: T.g500, lineHeight: 1.6 }}>
+          (필수){" "}
+          <Link
+            href="/terms"
+            target="_blank"
+            onClick={(e) => e.stopPropagation()}
+            style={{ color: T.coral, fontWeight: 700, textDecoration: "underline" }}
+          >
+            이용약관
+          </Link>
+          {" 및 "}
+          <Link
+            href="/privacy"
+            target="_blank"
+            onClick={(e) => e.stopPropagation()}
+            style={{ color: T.coral, fontWeight: 700, textDecoration: "underline" }}
+          >
+            개인정보처리방침
+          </Link>
+          에 동의합니다.
+        </div>
       </label>
 
       {error && <div style={{ padding: 12, background: "#FEE2E2", color: "#DC2626", borderRadius: 10, fontSize: 13, marginBottom: 12 }}>{error}</div>}

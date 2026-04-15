@@ -1,5 +1,6 @@
 import "./globals.css";
 import NavBar from "@/components/NavBar";
+import Footer from "@/components/Footer";
 import { I18nProvider } from "@/lib/i18n";
 
 export const metadata = {
@@ -20,6 +21,7 @@ export default function RootLayout({ children }) {
         <I18nProvider>
           <NavBar />
           <main className="page-enter">{children}</main>
+          <Footer />
         </I18nProvider>
       </body>
     </html>
