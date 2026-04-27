@@ -1,20 +1,29 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './lib/**/*.{js,ts,jsx,tsx,mdx}',
+    './hooks/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
       colors: {
-        coral: "#FF6B5A",
-        coralL: "#FFF0EE",
-        mint: "#0BD8A2",
-        mintL: "#E8FFF7",
-        navy: "#1A1F3D",
-        navyL: "#2D3461",
+        n9:  '#0A1628',
+        n7:  '#1B365D',
+        ink: '#0A1628',
+        ink2: '#3F5273',
+        ink3: '#6B7A95',
+        p:   '#FFFFFF',
+        p2:  '#F7F5F0',
+        r:   '#D9D4C7',
+        g:   '#B8944A',
+        gl:  '#E8D9B5',
+        ac:  '#C2512A',
       },
       fontFamily: {
-        sans: ["Noto Sans KR", "system-ui", "sans-serif"],
+        sans: ['Pretendard', 'system-ui', '-apple-system', 'BlinkMacSystemFont',
+               'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
       },
     },
   },

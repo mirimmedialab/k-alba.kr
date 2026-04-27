@@ -1,0 +1,111 @@
+/* ✅ Pretendard 폰트 (랜딩 페이지와 동일) */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ────────── CSS 변수 (랜딩 페이지와 동일한 팔레트) ────────── */
+:root {
+  --n9: #0A1628;
+  --n7: #1B365D;
+  --ink: #0A1628;
+  --ink2: #3F5273;
+  --ink3: #6B7A95;
+  --p: #FFFFFF;
+  --p2: #F7F5F0;
+  --r: #D9D4C7;
+  --g: #B8944A;
+  --gl: #E8D9B5;
+  --ac: #C2512A;
+  --abg: #F5E8E2;
+  --gn: #2A7A4A;
+  --rd: #A83B2B;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: "Pretendard", -apple-system, "Apple SD Gothic Neo", BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--p);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+html { scroll-behavior: smooth; }
+
+button { font-family: inherit; }
+
+a { color: inherit; text-decoration: none; }
+
+/* 입력요소 일관성 */
+input, textarea, select {
+  font-family: inherit;
+  letter-spacing: -0.01em;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--n9) !important;
+}
+
+/* ────────── 애니메이션 ────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heroFade {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes kalbaShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.page-enter {
+  animation: fadeIn 0.25s ease-out;
+}
+
+/* ────────── 에디토리얼 클래스 (웹 랜딩과 공통) ────────── */
+.editorial-title {
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.editorial-title em {
+  font-style: normal;
+  color: var(--g);
+}
+
+.editorial-title strong {
+  color: var(--ac);
+  font-weight: 800;
+}
+
+.editorial-stat {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--ac);
+  letter-spacing: -0.025em;
+  line-height: 1;
+}

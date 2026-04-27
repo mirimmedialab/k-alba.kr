@@ -1,27 +1,58 @@
 {
   "name": "k-alba",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "private": true,
-  "description": "K-ALBA - 한국의 외국인을 위한 맞춤형 알바 플랫폼",
+  "description": "K-ALBA - 한국의 외국인을 위한 통합 알바 매칭 + 시간제취업 플랫폼 (웹 + 하이브리드 앱)",
+  "author": "미림미디어랩(주) · 대표 남기환",
+  "license": "UNLICENSED",
+  "homepage": "https://k-alba.kr",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "cap:sync": "next build && npx cap sync",
+    "cap:open:ios": "npx cap open ios",
+    "cap:open:android": "npx cap open android",
+    "cap:build:ios": "next build && npx cap sync ios && npx cap open ios",
+    "cap:build:android": "next build && npx cap sync android && npx cap open android",
+    "supabase:push": "npx supabase db push"
   },
   "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/geolocation": "^6.0.1",
+    "@capacitor/ios": "^6.1.2",
+    "@capacitor/push-notifications": "^6.0.2",
+    "@capacitor/splash-screen": "^6.0.2",
+    "@capacitor/status-bar": "^6.0.1",
+    "@pdf-lib/fontkit": "^1.1.1",
     "@supabase/supabase-js": "^2.45.0",
     "html2canvas": "^1.4.1",
-    "jspdf": "^2.5.2",
-    "next": "^14.2.0",
+    "jspdf": "^4.2.1",
+    "next": "^16.2.4",
+    "pdf-lib": "^1.17.1",
     "react": "^18.3.0",
-    "react-dom": "^18.3.0"
+    "react-dom": "^18.3.0",
+    "resend": "^4.0.0"
   },
   "devDependencies": {
-    "@types/react": "19.2.14",
+    "@capacitor/cli": "^8.3.1",
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.0",
-    "postcss": "^8.4.0",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "^16.2.4",
+    "postcss": "^8.5.10",
+    "supabase": "^2.95.3",
     "tailwindcss": "^3.4.0",
-    "typescript": "6.0.2"
+    "typescript": "^5.5.3"
+  },
+  "overrides": {
+    "postcss": "^8.5.10"
+  },
+  "engines": {
+    "node": ">=18.17.0"
   }
 }
