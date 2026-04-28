@@ -64,6 +64,65 @@ ALTER TABLE partwork_applications
 COMMENT ON COLUMN partwork_applications.requested_documents IS '국제처 담당자가 요청한 추가 서류 목록';
 COMMENT ON COLUMN partwork_applications.documents_requested_at IS '요청 시각 (학생에게 알림 발송용)';
 
+-- ═══ 2.5. contracts 테이블 컬럼 보강 (base_schema 버전 차이 대비) ═══
+-- 후속 my_signed_contracts 뷰가 참조하는 컬럼들을 모두 보장
+-- (사용자 환경에 따라 base_schema에 일부 컬럼이 없을 수 있음 — IF NOT EXISTS로 안전하게 처리)
+ALTER TABLE contracts
+  ADD COLUMN IF NOT EXISTS job_id           BIGINT,
+  ADD COLUMN IF NOT EXISTS employer_name    TEXT,
+  ADD COLUMN IF NOT EXISTS company_name     TEXT,
+  ADD COLUMN IF NOT EXISTS business_number  TEXT,
+  ADD COLUMN IF NOT EXISTS business_address TEXT,
+  ADD COLUMN IF NOT EXISTS employer_phone   TEXT,
+  ADD COLUMN IF NOT EXISTS worker_id        UUID,
+  ADD COLUMN IF NOT EXISTS worker_name      TEXT,
+  ADD COLUMN IF NOT EXISTS job_description  TEXT,
+  ADD COLUMN IF NOT EXISTS job_type         TEXT,
+  ADD COLUMN IF NOT EXISTS work_days        TEXT[],
+  ADD COLUMN IF NOT EXISTS work_start       TIME,
+  ADD COLUMN IF NOT EXISTS work_end         TIME,
+  ADD COLUMN IF NOT EXISTS pay_type         TEXT,
+  ADD COLUMN IF NOT EXISTS pay_amount       INTEGER,
+  ADD COLUMN IF NOT EXISTS contract_start   DATE,
+  ADD COLUMN IF NOT EXISTS contract_end     DATE,
+  ADD COLUMN IF NOT EXISTS status           TEXT DEFAULT 'draft',
+  ADD COLUMN IF NOT EXISTS pdf_url          TEXT;
+
+-- ═══ 2.6. work_days 컬럼 타입 강제 변환 (TEXT → TEXT[]) ═══
+-- base_schema 버전에 따라 work_days가 TEXT일 수 있음.
+-- my_signed_contracts 뷰가 array_length를 호출하므로 반드시 TEXT[]여야 함.
+DO $$
+DECLARE
+  v_type TEXT;
+BEGIN
+  SELECT data_type INTO v_type
+  FROM information_schema.columns
+  WHERE table_name = 'contracts' AND column_name = 'work_days';
+
+  IF v_type = 'text' THEN
+    -- TEXT를 TEXT[]로 안전하게 변환 (기존 데이터 보존)
+    ALTER TABLE contracts
+      ALTER COLUMN work_days TYPE TEXT[] USING
+        CASE
+          WHEN work_days IS NULL OR trim(work_days) = '' THEN NULL
+          ELSE string_to_array(regexp_replace(work_days, '\s*,\s*', ',', 'g'), ',')
+        END;
+  END IF;
+END $$;
+
+-- ═══ 2.7. contract_start/contract_end 백필 (start_date/end_date에서 복사) ═══
+-- base_schema 버전에 따라 start_date/end_date만 있을 수 있음 → contract_start/contract_end로 백필
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contracts' AND column_name='start_date')
+     AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contracts' AND column_name='contract_start') THEN
+    UPDATE contracts
+       SET contract_start = COALESCE(contract_start, start_date),
+           contract_end   = COALESCE(contract_end,   end_date)
+     WHERE contract_start IS NULL OR contract_end IS NULL;
+  END IF;
+END $$;
+
 -- ═══ 3. 계약서 자동 연동을 위한 뷰 ═══
 -- 학생이 partwork 신청할 때 본인의 서명 완료 계약서 조회
 CREATE OR REPLACE VIEW my_signed_contracts AS

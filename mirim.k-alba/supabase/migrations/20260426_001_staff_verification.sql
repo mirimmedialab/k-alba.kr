@@ -34,8 +34,29 @@ ALTER TABLE university_staff
   ADD COLUMN IF NOT EXISTS id_card_verified_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS phone_verified    BOOLEAN DEFAULT false,
   ADD COLUMN IF NOT EXISTS last_verified_at  TIMESTAMPTZ DEFAULT now(),
-  ADD COLUMN IF NOT EXISTS verification_due_at TIMESTAMPTZ
-    GENERATED ALWAYS AS (last_verified_at + INTERVAL '1 year') STORED;
+  ADD COLUMN IF NOT EXISTS verification_due_at TIMESTAMPTZ;
+
+-- verification_due_at 자동 계산 (last_verified_at + 1 year)
+-- GENERATED ALWAYS는 INTERVAL이 immutable이 아니라서 사용 불가 → 트리거로 처리
+CREATE OR REPLACE FUNCTION calculate_verification_due_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.last_verified_at IS NOT NULL THEN
+    NEW.verification_due_at := NEW.last_verified_at + INTERVAL '1 year';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_verification_due_at ON university_staff;
+CREATE TRIGGER trg_verification_due_at
+  BEFORE INSERT OR UPDATE OF last_verified_at ON university_staff
+  FOR EACH ROW EXECUTE FUNCTION calculate_verification_due_at();
+
+-- 기존 행에도 적용
+UPDATE university_staff
+SET verification_due_at = last_verified_at + INTERVAL '1 year'
+WHERE last_verified_at IS NOT NULL AND verification_due_at IS NULL;
 
 COMMENT ON COLUMN university_staff.last_verified_at IS '마지막 재검증 시각 (1년마다 갱신 필요)';
 COMMENT ON COLUMN university_staff.verification_due_at IS '재검증 만료일 (자동 계산)';
@@ -48,7 +69,7 @@ CREATE TABLE IF NOT EXISTS staff_registrations (
 
   -- 신청 학교
   university_name TEXT NOT NULL,
-  university_id   BIGINT REFERENCES universities(id), -- 운영팀이 매칭
+  university_id   INT REFERENCES universities(id), -- 운영팀이 매칭
 
   -- 신청자 정보
   applicant_name      TEXT NOT NULL,
@@ -207,7 +228,7 @@ CREATE TABLE IF NOT EXISTS staff_misconduct_reports (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   reporter_id     UUID NOT NULL REFERENCES auth.users(id), -- 신고한 학생
   staff_id        UUID REFERENCES university_staff(id),    -- 신고 대상 담당자 (선택)
-  application_id  BIGINT REFERENCES partwork_applications(id), -- 관련 신청서 (선택)
+  application_id  UUID REFERENCES partwork_applications(id), -- 관련 신청서 (선택)
   category        TEXT NOT NULL CHECK (category IN (
                     'wrong_rejection',    -- 부당한 반려
                     'delayed_review',     -- 검토 지연

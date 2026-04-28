@@ -17,32 +17,27 @@
 --   - alteration_residence  (체류지 변경신고)
 --   - register_change       (등록사항 변경신고)
 
--- ═══ 1. 신청자 프로필 확장 ═══
--- 통합신청서에 필요한 추가 정보 저장 (재사용 가능)
-ALTER TABLE auth.users ADD COLUMN IF NOT EXISTS dummy INT;  -- 안전 가드 (실제로는 user_profiles 테이블 사용)
-
--- user_profiles 확장 (이미 있다면 컬럼만 추가)
-DO $$
-BEGIN
-  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'user_profiles') THEN
-    ALTER TABLE user_profiles
-      -- 영문 이름 (여권 영문)
-      ADD COLUMN IF NOT EXISTS surname_en       TEXT,                -- 성 (대문자)
-      ADD COLUMN IF NOT EXISTS given_names_en   TEXT,                -- 명 (대문자)
-      -- 여권 정보
-      ADD COLUMN IF NOT EXISTS passport_number  TEXT,
-      ADD COLUMN IF NOT EXISTS passport_issue_date    DATE,
-      ADD COLUMN IF NOT EXISTS passport_expiry_date   DATE,
-      -- 주소
-      ADD COLUMN IF NOT EXISTS address_korea            TEXT,        -- 대한민국 내 주소 (체류지)
-      ADD COLUMN IF NOT EXISTS address_korea_phone      TEXT,        -- 한국 거주지 전화 (선택)
-      ADD COLUMN IF NOT EXISTS address_home_country     TEXT,        -- 본국 주소
-      ADD COLUMN IF NOT EXISTS address_home_phone       TEXT,        -- 본국 전화
-      -- 기타
-      ADD COLUMN IF NOT EXISTS occupation         TEXT DEFAULT '학생',
-      ADD COLUMN IF NOT EXISTS bank_account_for_refund TEXT;          -- 반환용 계좌 (외국인등록 시)
-  END IF;
-END $$;
+-- ═══ 1. 신청자 프로필 확장 (profiles 테이블에 통합신청서용 컬럼 추가) ═══
+-- 출입국 통합신청서에 필요한 추가 정보를 profiles에 저장 (재사용 가능)
+-- 기존 profiles 테이블이 있다면 컬럼만 추가
+ALTER TABLE profiles
+  -- 영문 이름 (여권 영문)
+  ADD COLUMN IF NOT EXISTS surname_en       TEXT,                -- 성 (대문자)
+  ADD COLUMN IF NOT EXISTS given_names_en   TEXT,                -- 명 (대문자)
+  -- 여권 정보
+  ADD COLUMN IF NOT EXISTS passport_number  TEXT,
+  ADD COLUMN IF NOT EXISTS passport_issue_date    DATE,
+  ADD COLUMN IF NOT EXISTS passport_expiry_date   DATE,
+  -- 주소
+  ADD COLUMN IF NOT EXISTS address_korea            TEXT,        -- 대한민국 내 주소 (체류지)
+  ADD COLUMN IF NOT EXISTS address_korea_phone      TEXT,        -- 한국 거주지 전화 (선택)
+  ADD COLUMN IF NOT EXISTS address_home_country     TEXT,        -- 본국 주소
+  ADD COLUMN IF NOT EXISTS address_home_phone       TEXT,        -- 본국 전화
+  -- 외국인등록번호 (이전 마이그레이션에서 추가됐을 수 있음)
+  ADD COLUMN IF NOT EXISTS alien_reg_number        TEXT,
+  -- 기타
+  ADD COLUMN IF NOT EXISTS occupation              TEXT DEFAULT '학생',
+  ADD COLUMN IF NOT EXISTS bank_account_for_refund TEXT;          -- 반환용 계좌 (외국인등록 시)
 
 
 -- ═══ 2. 통합신청서 테이블 ═══
@@ -51,7 +46,7 @@ CREATE TABLE IF NOT EXISTS immigration_applications (
   user_id         UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
 
   -- 연결된 시간제취업 신청서 (담당자 승인 완료된 것)
-  partwork_application_id BIGINT REFERENCES partwork_applications(id),
+  partwork_application_id UUID REFERENCES partwork_applications(id),
 
   -- ─── 신청 종류 (출입국관리법 시행규칙 별지 34호의 7가지) ───
   application_type TEXT NOT NULL CHECK (application_type IN (
@@ -187,8 +182,8 @@ BEGIN
     RAISE EXCEPTION '승인되지 않은 신청서입니다 (id: %)', p_partwork_id;
   END IF;
 
-  -- 사용자 프로필 조회
-  SELECT * INTO v_profile FROM user_profiles WHERE user_id = v_partwork.user_id;
+  -- 사용자 프로필 조회 (profiles 테이블 사용)
+  SELECT * INTO v_profile FROM profiles WHERE id = v_partwork.user_id;
   SELECT * INTO v_user    FROM auth.users    WHERE id = v_partwork.user_id;
 
   -- 외국인등록번호로 생년월일 + 성별 추출

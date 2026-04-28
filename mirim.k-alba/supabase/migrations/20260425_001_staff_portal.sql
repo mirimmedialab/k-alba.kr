@@ -89,10 +89,7 @@ ALTER TABLE partwork_applications
   ADD COLUMN IF NOT EXISTS approved_at       TIMESTAMPTZ,    -- 승인 시각
   ADD COLUMN IF NOT EXISTS rejected_at       TIMESTAMPTZ,    -- 반려 시각
   ADD COLUMN IF NOT EXISTS rejection_reason  TEXT,           -- 반려 사유
-  -- 추가 서류 요청
-  ADD COLUMN IF NOT EXISTS documents_requested  TEXT[],      -- 추가 요청 서류 종류 (e.g. ['transcript', 'attendance'])
-  ADD COLUMN IF NOT EXISTS documents_requested_at TIMESTAMPTZ,
-  ADD COLUMN IF NOT EXISTS documents_requested_note TEXT,
+  -- 추가 서류 요청 (9번 마이그레이션 partwork_documents에서 정의된 requested_documents, documents_requested_at, documents_request_note 사용)
   -- 담당자 서명 (시간제취업확인서에 들어감)
   ADD COLUMN IF NOT EXISTS staff_signature      TEXT,        -- base64 서명 이미지
   ADD COLUMN IF NOT EXISTS staff_signature_at   TIMESTAMPTZ,
@@ -123,13 +120,13 @@ CREATE INDEX IF NOT EXISTS idx_partwork_status_uni
   ON partwork_applications(university_name, status, submitted_at DESC);
 
 COMMENT ON COLUMN partwork_applications.staff_signature IS '담당자 서명 (시간제취업확인서 유학생담당자 확인란)';
-COMMENT ON COLUMN partwork_applications.documents_requested IS '추가 서류 요청 목록 (성적증명서, 출석확인서 등)';
+-- requested_documents는 9번 마이그레이션 (partwork_documents)에서 COMMENT 정의됨
 
 
 -- ═══ 4. 처리 이력 테이블 (감사 로그) ═══
 CREATE TABLE IF NOT EXISTS partwork_review_log (
   id              BIGSERIAL PRIMARY KEY,
-  application_id  BIGINT NOT NULL REFERENCES partwork_applications(id) ON DELETE CASCADE,
+  application_id  UUID NOT NULL REFERENCES partwork_applications(id) ON DELETE CASCADE,
   staff_id        UUID REFERENCES university_staff(id),
   action          TEXT NOT NULL CHECK (action IN (
                     'opened',          -- 신청서 열어봄
@@ -162,7 +159,7 @@ CREATE TRIGGER prevent_review_log_update
 -- ═══ 5. 담당자 초대 테이블 (이메일 인증 기반) ═══
 CREATE TABLE IF NOT EXISTS staff_invitations (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  university_id   BIGINT NOT NULL REFERENCES universities(id) ON DELETE CASCADE,
+  university_id   INT NOT NULL REFERENCES universities(id) ON DELETE CASCADE,
   email           TEXT NOT NULL,
   staff_name      TEXT,
   staff_position  TEXT,

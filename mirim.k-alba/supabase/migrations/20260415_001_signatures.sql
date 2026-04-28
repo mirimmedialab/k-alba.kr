@@ -106,17 +106,29 @@ DROP POLICY IF EXISTS "audit_log_no_delete" ON signature_audit_log;
 CREATE POLICY "audit_log_no_delete" ON signature_audit_log FOR DELETE USING (false);
 
 -- ═══ 3. contracts에 서명 메타 추가 ═══
+-- 계약 기본 컬럼은 base_schema에서 이미 정의됨.
+-- 여기서는 서명 관련 컬럼만 ADD.
 ALTER TABLE contracts
+  -- 서명 상태
+  ADD COLUMN IF NOT EXISTS worker_signed BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS employer_signed BOOLEAN DEFAULT false,
+  -- 서명 데이터 (Canvas base64)
+  ADD COLUMN IF NOT EXISTS worker_signature TEXT,
+  ADD COLUMN IF NOT EXISTS employer_signature TEXT,
+  -- 서명 메타
   ADD COLUMN IF NOT EXISTS worker_signature_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS employer_signature_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS worker_signature_ip INET,
   ADD COLUMN IF NOT EXISTS employer_signature_ip INET,
+  -- 무결성 검증
   ADD COLUMN IF NOT EXISTS document_hash_at_signing TEXT,
-  ADD COLUMN IF NOT EXISTS pdf_url TEXT,
+  -- PDF 메타
   ADD COLUMN IF NOT EXISTS pdf_generated_at TIMESTAMPTZ;
 
+COMMENT ON COLUMN contracts.worker_signed IS '알바생 서명 완료 여부';
+COMMENT ON COLUMN contracts.employer_signed IS '사장님 서명 완료 여부';
+COMMENT ON COLUMN contracts.worker_signature IS 'Canvas base64 서명 데이터';
 COMMENT ON COLUMN contracts.document_hash_at_signing IS '양측 서명 완료 시점의 계약서 내용 해시 (위변조 감지)';
-COMMENT ON COLUMN contracts.pdf_url IS '서명이 삽입된 최종 PDF Supabase Storage URL';
 
 -- ═══ 4. partwork_applications에 서명 필드 추가 ═══
 ALTER TABLE partwork_applications
