@@ -178,17 +178,30 @@ export default function SignupPage() {
     if (error) {
       setError(error.message);
     } else {
-      router.push(role === "student" ? "/jobs" : "/my/jobs");
+      router.push(role === "worker" ? "/jobs" : "/my/jobs");
     }
   };
 
   const handleSocial = async (provider) => {
+    // role이 선택되지 않은 상태면 OAuth 차단
+    if (!role || (role !== "worker" && role !== "employer")) {
+      setError("먼저 가입 유형(구직자 또는 사장님)을 선택해주세요.");
+      return;
+    }
+
+    // OAuth 콜백에서 user_type 매핑하기 위해 sessionStorage에 저장
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("k-alba-oauth-intent", "signup");
+      sessionStorage.setItem("k-alba-oauth-role", role);
+    }
+
     setLoading(true);
     const { error } = await signInWithOAuth(provider);
     if (error) {
       setError(error.message);
       setLoading(false);
     }
+    // 성공 시 OAuth provider로 redirect되므로 이후 코드 실행 안 됨
   };
 
   // ──────────────── Step 0: 역할 선택 ────────────────
@@ -239,7 +252,7 @@ export default function SignupPage() {
           </p>
 
           {[
-            ["student", t("auth.asSeeker"), t("auth.asSeekerDesc"), T.gold],
+            ["worker", t("auth.asSeeker"), t("auth.asSeekerDesc"), T.gold],
             ["employer", t("auth.asEmployer"), t("auth.asEmployerDesc"), T.accent],
           ].map(([r, ti, de, accent]) => (
             <button
@@ -323,7 +336,7 @@ export default function SignupPage() {
           style={{
             width: 40,
             height: 3,
-            background: role === "student" ? T.gold : T.accent,
+            background: role === "worker" ? T.gold : T.accent,
             marginBottom: 20,
           }}
         />
@@ -337,8 +350,8 @@ export default function SignupPage() {
             marginBottom: 10,
           }}
         >
-          {role === "student" ? t("auth.forWorkers") : t("auth.forEmployers")} ·{" "}
-          {role === "student" ? t("auth.seekerLabel") : t("auth.employerLabel")}
+          {role === "worker" ? t("auth.forWorkers") : t("auth.forEmployers")} ·{" "}
+          {role === "worker" ? t("auth.seekerLabel") : t("auth.employerLabel")}
         </div>
         <h2
           style={{
@@ -349,7 +362,7 @@ export default function SignupPage() {
             marginBottom: 24,
           }}
         >
-          {role === "student" ? t("auth.asSeeker") : t("auth.asEmployer")}
+          {role === "worker" ? t("auth.asSeeker") : t("auth.asEmployer")}
         </h2>
 
         {/* 소셜 로그인 */}

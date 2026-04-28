@@ -51,7 +51,7 @@ export default function ContractDetailPage() {
     });
   }, [params.id, router]);
 
-  const userType = user?.user_metadata?.user_type || "student";
+  const userType = user?.user_metadata?.user_type || "worker";
   const isEmployer = userType === "employer";
   const isWorker = !isEmployer;
 

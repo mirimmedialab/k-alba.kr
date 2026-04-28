@@ -30,12 +30,18 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
     } else {
-      const userType = data?.user?.user_metadata?.user_type || "student";
+      const userType = data?.user?.user_metadata?.user_type || "worker";
       router.push(userType === "employer" ? "/my/jobs" : "/jobs");
     }
   };
 
   const handleSocial = async (provider) => {
+    // 로그인 흐름임을 콜백에 알림
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("k-alba-oauth-intent", "login");
+      sessionStorage.removeItem("k-alba-oauth-role");
+    }
+
     setLoading(true);
     const { error } = await signInWithOAuth(provider);
     if (error) {

@@ -38,11 +38,18 @@ export async function signIn(email, password) {
   return await supabase.auth.signInWithPassword({ email, password });
 }
 
-export async function signInWithOAuth(provider) {
+export async function signInWithOAuth(provider, options = {}) {
   if (!supabase) return { error: { message: "Supabase not configured" } };
+
+  // OAuth 콜백을 /auth/callback으로 받아서 거기서 user_type 처리 후 분기
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
   return await supabase.auth.signInWithOAuth({
     provider,
-    options: { redirectTo: typeof window !== "undefined" ? `${window.location.origin}/jobs` : undefined },
+    options: {
+      redirectTo: `${origin}/auth/callback`,
+      // 카카오는 일부 추가 정보를 위해 scopes 권장 (선택)
+      ...(options.scopes ? { scopes: options.scopes } : {}),
+    },
   });
 }
 

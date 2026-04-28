@@ -32,14 +32,14 @@ export default function NavBar() {
     getSession().then((session) => {
       if (session?.user) {
         setUser(session.user);
-        setUserType(session.user.user_metadata?.user_type || "student");
+        setUserType(session.user.user_metadata?.user_type || "worker");
       }
       setAuthChecked(true);
     });
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUser(session.user);
-        setUserType(session.user.user_metadata?.user_type || "student");
+        setUserType(session.user.user_metadata?.user_type || "worker");
       } else {
         setUser(null);
         setUserType(null);
