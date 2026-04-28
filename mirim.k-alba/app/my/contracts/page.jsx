@@ -9,10 +9,10 @@ import { useT } from "@/lib/i18n";
 import { ListPageSkel } from "@/components/Wireframe"; // ✅ 스켈레톤
 
 const STATUS_INFO = {
-  draft: { label: "초안", color: T.ink3, bg: T.cream, icon: "📝" },
-  worker_signing: { label: "근로자 서명 대기", color: "#A17810", bg: "#F7F5F0", icon: "⏳" },
-  employer_signing: { label: "사장님 서명 대기", color: "#A17810", bg: "#F7F5F0", icon: "⏳" },
-  completed: { label: "계약 완료", color: "#2A7A4A", bg: "#E8F5EC", icon: "✓" },
+  draft: { color: T.ink3, bg: T.cream, icon: "📝" },
+  worker_signing: { color: "#A17810", bg: "#F7F5F0", icon: "⏳" },
+  employer_signing: { color: "#A17810", bg: "#F7F5F0", icon: "⏳" },
+  completed: { color: "#2A7A4A", bg: "#E8F5EC", icon: "✓" },
 };
 
 const DEMO_CONTRACTS = [
@@ -44,11 +44,6 @@ const DEMO_CONTRACTS = [
   },
 ];
 
-// ✅ t()는 키가 없어도 키 문자열을 반환하므로 fallback이 제대로 작동하게 하는 헬퍼
-function translatedOrFallback(t, key, fallback) {
-  const translated = t(key);
-  return translated === key ? fallback : translated;
-}
 
 export default function MyContractsPage() {
   const router = useRouter();
@@ -100,7 +95,7 @@ export default function MyContractsPage() {
         fontSize: 11, fontWeight: 700, color: T.ink3,
         letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8,
       }}>
-        Contracts · 근로계약서
+        {t("myContracts.header")}
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24, gap: 16, flexWrap: "wrap" }}>
@@ -109,13 +104,13 @@ export default function MyContractsPage() {
             fontSize: 28, fontWeight: 800, color: T.ink,
             letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.25,
           }}>
-            내 계약서 {contracts.length}건
+            {t("myContracts.title").replace("{count}", contracts.length)}
           </h1>
           <p style={{ color: T.ink2, fontSize: 14, lineHeight: 1.6 }}>
-            {completedCount > 0 && `${completedCount}건 완료`}
+            {completedCount > 0 && t("myContracts.completedCount").replace("{count}", completedCount)}
             {completedCount > 0 && pendingCount > 0 && " · "}
-            {pendingCount > 0 && `${pendingCount}건 서명 대기`}
-            {completedCount === 0 && pendingCount === 0 && "근로계약서를 안전하게 관리하세요"}
+            {pendingCount > 0 && t("myContracts.pendingCount").replace("{count}", pendingCount)}
+            {completedCount === 0 && pendingCount === 0 && t("myContracts.statusOverview")}
           </p>
         </div>
         {isEmployer && (
@@ -132,7 +127,7 @@ export default function MyContractsPage() {
               fontFamily: "inherit",
               letterSpacing: "-0.01em",
             }}>
-              + 새 계약서
+              {t("myContracts.newContractBtn")}
             </button>
           </Link>
         )}
@@ -154,12 +149,12 @@ export default function MyContractsPage() {
             marginBottom: 8,
             letterSpacing: "-0.02em",
           }}>
-            {translatedOrFallback(t, "contract.noContracts", "아직 계약서가 없습니다")}
+            {t("myContracts.noContracts")}
           </div>
           <p style={{ fontSize: 13, color: T.ink2, marginBottom: 20, lineHeight: 1.6 }}>
             {isEmployer
-              ? translatedOrFallback(t, "contract.noContractsEmployer", "합격한 지원자와 계약서를 작성해 보세요")
-              : translatedOrFallback(t, "contract.noContractsWorker", "합격 시 사장님이 계약서를 보내드립니다")
+              ? t("myContracts.noContractsEmployer")
+              : t("myContracts.noContractsWorker")
             }
           </p>
           {isEmployer && (
@@ -174,7 +169,7 @@ export default function MyContractsPage() {
               borderRadius: 4,
               letterSpacing: "-0.01em",
             }}>
-              계약서 작성하기 →
+              {t("myContracts.writeContractBtn")}
             </Link>
           )}
         </div>
@@ -182,7 +177,6 @@ export default function MyContractsPage() {
         <div>
           {contracts.map((c, idx) => {
             const st = STATUS_INFO[c.status] || STATUS_INFO.draft;
-            const statusLabel = translatedOrFallback(t, `contract.status.${c.status}`, st.label);
             return (
               <Link key={c.id} href={`/contract/${c.id}`} style={{ textDecoration: "none" }}>
                 <div
@@ -233,11 +227,11 @@ export default function MyContractsPage() {
                         color: st.color,
                         letterSpacing: "0.02em",
                       }}>
-                        {st.icon} {statusLabel}
+                        {st.icon} {t(`contract.status.${c.status}`)}
                       </span>
                     </div>
                     <div style={{ fontSize: 13, color: T.ink2, marginBottom: 8 }}>
-                      {isEmployer ? c.company_name : `사장님: ${c.employer_name || "—"}`}
+                      {isEmployer ? c.company_name : `${t("myContracts.employerName")}: ${c.employer_name || "—"}`}
                     </div>
                     <div style={{
                       display: "flex",
@@ -259,10 +253,10 @@ export default function MyContractsPage() {
                     </div>
                     <div style={{ display: "flex", gap: 12, marginTop: 6, fontSize: 11 }}>
                       <span style={{ color: c.worker_signed ? T.green : T.ink3 }}>
-                        {c.worker_signed ? "✓" : "⏳"} 근로자 서명
+                        {c.worker_signed ? "✓" : "⏳"} {t("myContracts.workerSignature")}
                       </span>
                       <span style={{ color: c.employer_signed ? T.green : T.ink3 }}>
-                        {c.employer_signed ? "✓" : "⏳"} 사장님 서명
+                        {c.employer_signed ? "✓" : "⏳"} {t("myContracts.employerSignature")}
                       </span>
                     </div>
                   </div>

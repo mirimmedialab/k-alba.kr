@@ -5,6 +5,7 @@ import Link from "next/link";
 import { T } from "@/lib/theme";
 import { Btn, Card } from "@/components/UI";
 import { getCurrentUser, getMyJobs } from "@/lib/supabase";
+import { useT } from "@/lib/i18n";
 import { KakaoChatModal } from "@/components/KakaoChatModal";
 import { ListPageSkel } from "@/components/Wireframe";
 
@@ -16,6 +17,7 @@ const DEMO_JOBS = [
 
 export default function MyJobsPage() {
   const router = useRouter();
+  const t = useT();
   const [jobs, setJobs] = useState(DEMO_JOBS);
   const [loading, setLoading] = useState(true);
   const [notifChatOpen, setNotifChatOpen] = useState(false);
@@ -88,7 +90,7 @@ export default function MyJobsPage() {
           marginBottom: 8,
         }}
       >
-        Dashboard · 내 공고
+        {t("myJobs.header")}
       </div>
 
       {/* 새 지원자 알림 (강조: 네이비 + 골드) */}
@@ -118,11 +120,11 @@ export default function MyJobsPage() {
               marginBottom: 2,
             }}
           >
-            새로운 지원자 알림{" "}
-            <span style={{ color: T.gold }}>(3건)</span>
+            {t("myJobs.newApplicantNotif")}{" "}
+            <span style={{ color: T.gold }}>{t("myJobs.newApplicantCount").replace("{count}", 3)}</span>
           </div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)" }}>
-            탭하여 카카오톡 챗봇으로 확인
+            {t("myJobs.tapToViewChat")}
           </div>
         </div>
         <div style={{ fontSize: 18, color: T.gold }}>→</div>
@@ -158,10 +160,10 @@ export default function MyJobsPage() {
                 marginBottom: 2,
               }}
             >
-              사장님 계약서 챗봇 체험
+              {t("myJobs.contractChatBanner")}
             </div>
             <div style={{ fontSize: 12, color: T.ink2 }}>
-              합격자와 카카오톡으로 계약서 작성 → PDF 다운로드
+              {t("myJobs.contractChatDesc")}
             </div>
           </div>
           <div style={{ fontSize: 18, color: T.accent }}>→</div>
@@ -190,17 +192,17 @@ export default function MyJobsPage() {
               lineHeight: 1.25,
             }}
           >
-            내 채용공고
+            {t("myJobs.title")}
           </h1>
           <p
             style={{ color: T.ink3, fontSize: 13, letterSpacing: "-0.01em" }}
           >
-            등록한 공고 {jobs.length}건
+            {t("myJobs.jobCount").replace("{count}", jobs.length)}
           </p>
         </div>
         <Link href="/post-job">
           <Btn primary small>
-            + 새 공고
+            {t("myJobs.newJobBtn")}
           </Btn>
         </Link>
       </div>
@@ -225,15 +227,15 @@ export default function MyJobsPage() {
               letterSpacing: "-0.02em",
             }}
           >
-            등록한 공고가 없습니다
+            {t("myJobs.noJobs")}
           </div>
           <p
             style={{ fontSize: 13, color: T.ink2, marginBottom: 16 }}
           >
-            카카오톡 챗봇으로 3분만에 등록하세요
+            {t("myJobs.noJobsDesc")}
           </p>
           <Link href="/post-job">
-            <Btn primary>공고 등록하기 →</Btn>
+            <Btn primary>{t("myJobs.postJobBtn")}</Btn>
           </Link>
         </div>
       ) : (
@@ -312,7 +314,7 @@ export default function MyJobsPage() {
                           letterSpacing: "0.02em",
                         }}
                       >
-                        {j.status === "active" ? "모집 중" : "마감"}
+                        {t(`myJobs.status.${j.status}`)}
                       </span>
                     </div>
                     <div
@@ -349,7 +351,7 @@ export default function MyJobsPage() {
                           fontWeight: 600,
                         }}
                       >
-                        지원자 <strong style={{ color: T.ink }}>{j.applicant_count || 0}명</strong>
+                        {t("myJobs.applicantCount")} <strong style={{ color: T.ink }}>{j.applicant_count || 0}{t("myJobs.applicantCountSuffix")}</strong>
                       </div>
                     </div>
                   </div>

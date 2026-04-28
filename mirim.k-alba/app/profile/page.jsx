@@ -8,21 +8,24 @@ import { getCurrentUser, getProfile, updateProfile, getWorkHistory } from "@/lib
 import { VISA_OPTIONS, COUNTRIES, KOREAN_LEVELS, WORK_TYPES, JOB_TYPES, REGIONS, BENEFITS } from "@/data/marketData";
 import { FormPageSkel } from "@/components/Wireframe";
 import LocationPicker from "@/components/LocationPicker";
-
-const TRANSPORT_MODES = [
-  { v: "transit", l: "🚇 대중교통" },
-  { v: "walk", l: "🚶 도보" },
-  { v: "bike", l: "🚴 자전거" },
-  { v: "car", l: "🚗 자동차" },
-];
+import { useT } from "@/lib/i18n";
 
 export default function ProfilePage() {
   const router = useRouter();
+  const t = useT();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [workHistory, setWorkHistory] = useState([]);
+
+  const TRANSPORT_MODES = [
+    { v: "transit", l: t("profile.transportTransit") },
+    { v: "walk", l: t("profile.transportWalk") },
+    { v: "bike", l: t("profile.transportBike") },
+    { v: "car", l: t("profile.transportCar") },
+  ];
+
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -116,24 +119,24 @@ export default function ProfilePage() {
     return (
       <div style={{ padding: 20, maxWidth: 600, margin: "0 auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <h2 style={{ fontSize: 22, fontWeight: 800, color: T.navy }}>💼 업체 프로필</h2>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: T.navy }}>💼 {t("profile.employerProfile")}</h2>
           {!editing ? (
-            <Btn small onClick={() => setEditing(true)}>수정</Btn>
+            <Btn small onClick={() => setEditing(true)}>{t("common.edit")}</Btn>
           ) : (
-            <Btn primary small onClick={handleSave} disabled={saving}>{saving ? "저장 중..." : "저장"}</Btn>
+            <Btn primary small onClick={handleSave} disabled={saving}>{saving ? t("profile.saving") : t("common.save")}</Btn>
           )}
         </div>
 
         <Card style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: T.coral, marginBottom: 12, letterSpacing: 1 }}>업체 정보</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.coral, marginBottom: 12, letterSpacing: 1 }}>{t("profile.companyInfo")}</div>
           {editing ? (
             <>
-              <Inp label="업체명" value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} />
-              <Inp label="대표자명" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-              <Inp label="사업자등록번호" placeholder="000-00-00000" value={form.business_number} onChange={(e) => setForm({ ...form, business_number: e.target.value })} />
-              <Inp label="연락처" placeholder="010-0000-0000" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <Inp label={t("profile.companyName")} value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} />
+              <Inp label={t("profile.ceoName")} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <Inp label={t("profile.businessNumber")} placeholder={t("profile.businessNumberPlaceholder")} value={form.business_number} onChange={(e) => setForm({ ...form, business_number: e.target.value })} />
+              <Inp label={t("profile.phone")} placeholder={t("profile.phonePlaceholder")} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
               <LocationPicker
-                label="사업장 주소"
+                label={t("profile.businessAddress")}
                 value={{
                   latitude: form.home_latitude,
                   longitude: form.home_longitude,
@@ -151,27 +154,27 @@ export default function ProfilePage() {
                   home_sigungu: v.sigungu,
                   home_dong: v.dong,
                 })}
-                helperText="주소 검색 후 지도에서 핀을 드래그해 정확한 매장 위치로 조정해 주세요."
+                helperText={t("profile.locationHelperTextBusiness")}
               />
             </>
           ) : (
             <div style={{ lineHeight: 2 }}>
-              <div><strong>업체명:</strong> {form.company_name || "-"}</div>
-              <div><strong>대표자:</strong> {form.name || "-"}</div>
-              <div><strong>사업자번호:</strong> {form.business_number || "-"}</div>
-              <div><strong>연락처:</strong> {form.phone || "-"}</div>
-              <div><strong>주소:</strong> {form.business_address || "-"}</div>
+              <div><strong>{t("profile.companyNameLabel")}</strong> {form.company_name || "-"}</div>
+              <div><strong>{t("profile.ceoNameLabel")}</strong> {form.name || "-"}</div>
+              <div><strong>{t("profile.businessNumberLabel")}</strong> {form.business_number || "-"}</div>
+              <div><strong>{t("profile.phoneDisplayLabel")}</strong> {form.phone || "-"}</div>
+              <div><strong>{t("profile.addressDisplayLabel")}</strong> {form.business_address || "-"}</div>
             </div>
           )}
         </Card>
 
         <Card>
-          <div style={{ fontSize: 12, fontWeight: 700, color: T.coral, marginBottom: 12, letterSpacing: 1 }}>인증 상태</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.coral, marginBottom: 12, letterSpacing: 1 }}>{t("profile.verificationStatus")}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 14, background: T.mintL, borderRadius: 10 }}>
             <span style={{ fontSize: 24 }}>✅</span>
             <div>
-              <div style={{ fontWeight: 700, color: "#059669" }}>사업자 인증 완료</div>
-              <div style={{ fontSize: 12, color: T.g500 }}>K-ALBA 인증 업체로 표시됩니다</div>
+              <div style={{ fontWeight: 700, color: "#059669" }}>{t("profile.verified")}</div>
+              <div style={{ fontSize: 12, color: T.g500 }}>{t("profile.verifiedDesc")}</div>
             </div>
           </div>
         </Card>
@@ -183,54 +186,54 @@ export default function ProfilePage() {
   return (
     <div style={{ padding: 20, maxWidth: 600, margin: "0 auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: T.navy }}>🌏 내 프로필</h2>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: T.navy }}>🌏 {t("profile.myProfile")}</h2>
         {!editing ? (
-          <Btn small onClick={() => setEditing(true)}>수정</Btn>
+          <Btn small onClick={() => setEditing(true)}>{t("common.edit")}</Btn>
         ) : (
-          <Btn primary small onClick={handleSave} disabled={saving}>{saving ? "저장 중..." : "저장"}</Btn>
+          <Btn primary small onClick={handleSave} disabled={saving}>{saving ? t("profile.saving") : t("common.save")}</Btn>
         )}
       </div>
 
       {/* 체류 정보 */}
       <Card style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: T.mint, marginBottom: 12, letterSpacing: 1 }}>체류 정보</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: T.mint, marginBottom: 12, letterSpacing: 1 }}>{t("profile.residenceInfo")}</div>
         {editing ? (
           <>
-            <Inp label="이름" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            <Inp label="연락처" placeholder="010-0000-0000" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-            <Inp label="비자 유형" options={VISA_OPTIONS} value={form.visa} onChange={(e) => setForm({ ...form, visa: e.target.value })} />
-            <Inp label="국적" options={COUNTRIES} value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
-            <Inp label="소속 (학교/회사명)" placeholder="예: 서울대학교" value={form.organization} onChange={(e) => setForm({ ...form, organization: e.target.value })} />
-            <AddressSearchField label="현재 거주지" value={form.address} onChange={(v) => setForm({ ...form, address: v })} />
+            <Inp label={t("profile.name")} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <Inp label={t("profile.phone")} placeholder={t("profile.phonePlaceholder")} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+            <Inp label={t("profile.visa")} options={VISA_OPTIONS} value={form.visa} onChange={(e) => setForm({ ...form, visa: e.target.value })} />
+            <Inp label={t("profile.country")} options={COUNTRIES} value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
+            <Inp label={t("profile.organization")} placeholder={t("profile.organizationPlaceholder")} value={form.organization} onChange={(e) => setForm({ ...form, organization: e.target.value })} />
+            <AddressSearchField label={t("profile.address")} value={form.address} onChange={(v) => setForm({ ...form, address: v })} />
           </>
         ) : (
           <div style={{ lineHeight: 2 }}>
-            <div><strong>이름:</strong> {form.name || "-"}</div>
-            <div><strong>연락처:</strong> {form.phone || "-"}</div>
-            <div><strong>비자:</strong> {VISA_OPTIONS.find(v => v.v === form.visa)?.l || "-"}</div>
-            <div><strong>국적:</strong> {form.country || "-"}</div>
-            <div><strong>소속:</strong> {form.organization || "-"}</div>
-            <div><strong>거주지:</strong> {form.address || "-"}</div>
+            <div><strong>{t("profile.nameLabel")}</strong> {form.name || "-"}</div>
+            <div><strong>{t("profile.phoneLabel")}</strong> {form.phone || "-"}</div>
+            <div><strong>{t("profile.visaLabel")}</strong> {VISA_OPTIONS.find(v => v.v === form.visa)?.l || "-"}</div>
+            <div><strong>{t("profile.countryLabel")}</strong> {form.country || "-"}</div>
+            <div><strong>{t("profile.organizationLabel")}</strong> {form.organization || "-"}</div>
+            <div><strong>{t("profile.addressLabel")}</strong> {form.address || "-"}</div>
           </div>
         )}
       </Card>
 
       {/* 구직 정보 */}
       <Card style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: T.mint, marginBottom: 12, letterSpacing: 1 }}>구직 정보</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: T.mint, marginBottom: 12, letterSpacing: 1 }}>{t("profile.jobInfo")}</div>
         {editing ? (
           <>
-            <Inp label="한국어 수준" options={KOREAN_LEVELS} value={form.korean_level} onChange={(e) => setForm({ ...form, korean_level: e.target.value })} />
-            <ChipSelect label="원하는 근무 형태" options={WORK_TYPES} selected={form.work_types} setSelected={(v) => setForm({ ...form, work_types: v })} />
-            <ChipSelect label="선호 지역" options={REGIONS} selected={form.regions} setSelected={(v) => setForm({ ...form, regions: v })} />
-            <ChipSelect label="선호 업종" options={JOB_TYPES} selected={form.job_types} setSelected={(v) => setForm({ ...form, job_types: v })} />
+            <Inp label={t("profile.koreanLevel")} options={KOREAN_LEVELS} value={form.korean_level} onChange={(e) => setForm({ ...form, korean_level: e.target.value })} />
+            <ChipSelect label={t("profile.workTypes")} options={WORK_TYPES} selected={form.work_types} setSelected={(v) => setForm({ ...form, work_types: v })} />
+            <ChipSelect label={t("profile.regions")} options={REGIONS} selected={form.regions} setSelected={(v) => setForm({ ...form, regions: v })} />
+            <ChipSelect label={t("profile.jobTypes")} options={JOB_TYPES} selected={form.job_types} setSelected={(v) => setForm({ ...form, job_types: v })} />
           </>
         ) : (
           <div style={{ lineHeight: 2 }}>
-            <div><strong>한국어:</strong> {KOREAN_LEVELS.find(k => k.v === form.korean_level)?.l || "-"}</div>
-            <div><strong>근무 형태:</strong> {(form.work_types || []).join(", ") || "-"}</div>
-            <div><strong>선호 지역:</strong> {(form.regions || []).join(", ") || "-"}</div>
-            <div><strong>선호 업종:</strong> {(form.job_types || []).join(", ") || "-"}</div>
+            <div><strong>{t("profile.koreanLabel")}</strong> {KOREAN_LEVELS.find(k => k.v === form.korean_level)?.l || "-"}</div>
+            <div><strong>{t("profile.workTypesLabel")}</strong> {(form.work_types || []).join(", ") || "-"}</div>
+            <div><strong>{t("profile.regionsLabel")}</strong> {(form.regions || []).join(", ") || "-"}</div>
+            <div><strong>{t("profile.jobTypesLabel")}</strong> {(form.job_types || []).join(", ") || "-"}</div>
           </div>
         )}
       </Card>
@@ -245,17 +248,17 @@ export default function ProfilePage() {
           letterSpacing: "0.08em",
           textTransform: "uppercase",
         }}>
-          Location · 위치 기반 매칭
+          {t("profile.locationTitle")}
         </div>
         <div style={{ fontSize: 11, color: T.ink3, marginBottom: 14, lineHeight: 1.6 }}>
-          거주지 주소를 등록하면 가까운 알바를 먼저 볼 수 있어요. 대중교통 소요시간도 자동 계산됩니다.
+          {t("profile.locationDesc")}
         </div>
 
         {editing ? (
           <>
             {/* 거주지 주소 + 지도 */}
             <LocationPicker
-              label="현재 거주지"
+              label={t("profile.address")}
               value={{
                 latitude: form.home_latitude,
                 longitude: form.home_longitude,
@@ -274,7 +277,7 @@ export default function ProfilePage() {
                 home_dong: v.dong,
                 location_opted_in: true,
               })}
-              helperText="정확한 위치가 아니어도 괜찮아요 — 대략적인 위치로 등록하셔도 됩니다."
+              helperText={t("profile.locationHelperText")}
             />
 
             {/* 선호 반경 */}
@@ -287,7 +290,7 @@ export default function ProfilePage() {
                 marginBottom: 6,
                 letterSpacing: "-0.01em",
               }}>
-                선호 알바 반경: <span style={{ color: T.accent, fontWeight: 800 }}>{form.search_radius_km}km</span>
+                {t("profile.preferredRadius")}: <span style={{ color: T.accent, fontWeight: 800 }}>{form.search_radius_km}{t("profile.km")}</span>
               </label>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {[3, 5, 10, 20, 50].map((r) => (
@@ -307,7 +310,7 @@ export default function ProfilePage() {
                       fontFamily: "inherit",
                     }}
                   >
-                    {r}km
+                    {r}{t("profile.km")}
                   </button>
                 ))}
               </div>
@@ -315,7 +318,7 @@ export default function ProfilePage() {
 
             {/* 이동 가능 수단 */}
             <ChipSelect
-              label="이동 가능 수단"
+              label={t("profile.transportModes")}
               options={TRANSPORT_MODES.map(m => m.l)}
               selected={(form.transport_modes || []).map(v => TRANSPORT_MODES.find(m => m.v === v)?.l).filter(Boolean)}
               setSelected={(labels) => {
@@ -334,7 +337,7 @@ export default function ProfilePage() {
                 marginBottom: 6,
                 letterSpacing: "-0.01em",
               }}>
-                최대 허용 통근 시간: <span style={{ color: T.accent, fontWeight: 800 }}>{form.max_commute_min}분</span>
+                {t("profile.maxCommuteTime")}: <span style={{ color: T.accent, fontWeight: 800 }}>{form.max_commute_min}{t("profile.min")}</span>
               </label>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {[30, 45, 60, 90, 120].map((m) => (
@@ -354,7 +357,7 @@ export default function ProfilePage() {
                       fontFamily: "inherit",
                     }}
                   >
-                    {m}분
+                    {m}{t("profile.min")}
                   </button>
                 ))}
               </div>
@@ -364,14 +367,14 @@ export default function ProfilePage() {
           <div style={{ lineHeight: 2 }}>
             {form.home_latitude ? (
               <>
-                <div><strong>거주지:</strong> {form.home_sido} {form.home_sigungu} {form.home_dong || ""}</div>
-                <div><strong>선호 반경:</strong> {form.search_radius_km}km</div>
-                <div><strong>이동 수단:</strong> {(form.transport_modes || []).map(v => TRANSPORT_MODES.find(m => m.v === v)?.l).filter(Boolean).join(", ") || "-"}</div>
-                <div><strong>최대 통근:</strong> {form.max_commute_min}분</div>
+                <div><strong>{t("profile.residenceLabel")}</strong> {form.home_sido} {form.home_sigungu} {form.home_dong || ""}</div>
+                <div><strong>{t("profile.preferredRadiusLabel")}</strong> {form.search_radius_km}{t("profile.km")}</div>
+                <div><strong>{t("profile.transportModesLabel")}</strong> {(form.transport_modes || []).map(v => TRANSPORT_MODES.find(m => m.v === v)?.l).filter(Boolean).join(", ") || "-"}</div>
+                <div><strong>{t("profile.maxCommuteLabel")}</strong> {form.max_commute_min}{t("profile.min")}</div>
               </>
             ) : (
               <div style={{ padding: 12, background: T.cream, borderRadius: 4, fontSize: 12, color: T.ink2 }}>
-                💡 거주지를 등록하면 우리 집 근처 알바를 먼저 볼 수 있어요. [수정] 버튼을 눌러 등록해 주세요.
+                {t("profile.locationNotRegistered")}
               </div>
             )}
           </div>
@@ -380,46 +383,46 @@ export default function ProfilePage() {
 
       {/* 자국 경력 */}
       <Card style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: T.mint, marginBottom: 12, letterSpacing: 1 }}>자국 경력 / 기술</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: T.mint, marginBottom: 12, letterSpacing: 1 }}>{t("profile.homeExperience")}</div>
         {editing ? (
-          <textarea value={form.home_experience} onChange={(e) => setForm({ ...form, home_experience: e.target.value })} placeholder="자국에서의 경력 및 보유 기술을 자유롭게 작성해 주세요" style={{ width: "100%", padding: 12, borderRadius: 10, border: `2px solid ${T.g200}`, fontSize: 13, minHeight: 80, resize: "vertical", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }} />
+          <textarea value={form.home_experience} onChange={(e) => setForm({ ...form, home_experience: e.target.value })} placeholder={t("profile.homeExperiencePlaceholder")} style={{ width: "100%", padding: 12, borderRadius: 10, border: `2px solid ${T.g200}`, fontSize: 13, minHeight: 80, resize: "vertical", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }} />
         ) : (
-          <p style={{ fontSize: 13, color: T.g700, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{form.home_experience || "작성된 내용이 없습니다"}</p>
+          <p style={{ fontSize: 13, color: T.g700, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{form.home_experience || t("profile.noContent")}</p>
         )}
       </Card>
 
       {/* 한국 경력 (직접 입력) */}
       <Card style={{ marginBottom: 16 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: T.mint, marginBottom: 12, letterSpacing: 1 }}>한국 경력 (직접 입력)</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: T.mint, marginBottom: 12, letterSpacing: 1 }}>{t("profile.koreaExperience")}</div>
         {editing ? (
-          <textarea value={form.korea_experience} onChange={(e) => setForm({ ...form, korea_experience: e.target.value })} placeholder="K-ALBA 외부에서의 한국 경력" style={{ width: "100%", padding: 12, borderRadius: 10, border: `2px solid ${T.g200}`, fontSize: 13, minHeight: 80, resize: "vertical", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }} />
+          <textarea value={form.korea_experience} onChange={(e) => setForm({ ...form, korea_experience: e.target.value })} placeholder={t("profile.koreaExperiencePlaceholder")} style={{ width: "100%", padding: 12, borderRadius: 10, border: `2px solid ${T.g200}`, fontSize: 13, minHeight: 80, resize: "vertical", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }} />
         ) : (
-          <p style={{ fontSize: 13, color: T.g700, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{form.korea_experience || "작성된 내용이 없습니다"}</p>
+          <p style={{ fontSize: 13, color: T.g700, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{form.korea_experience || t("profile.noContent")}</p>
         )}
       </Card>
 
       {/* K-ALBA 인증 한국 경력 */}
       <Card>
-        <div style={{ fontSize: 12, fontWeight: 700, color: T.mint, marginBottom: 4, letterSpacing: 1 }}>K-ALBA 인증 한국 경력</div>
-        <p style={{ fontSize: 11, color: T.g500, marginBottom: 12 }}>K-ALBA 통해 근무한 경력은 사장님 평가와 함께 자동 기록됩니다</p>
+        <div style={{ fontSize: 12, fontWeight: 700, color: T.mint, marginBottom: 4, letterSpacing: 1 }}>{t("profile.certifiedExperience")}</div>
+        <p style={{ fontSize: 11, color: T.g500, marginBottom: 12 }}>{t("profile.certifiedExperienceDesc")}</p>
         {workHistory.length === 0 ? (
           <div style={{ padding: 16, background: T.g100, borderRadius: 10, textAlign: "center" }}>
             <div style={{ fontSize: 24, marginBottom: 6 }}>📝</div>
-            <div style={{ fontSize: 13, color: T.g700, fontWeight: 600, marginBottom: 3 }}>아직 인증된 경력이 없습니다</div>
-            <div style={{ fontSize: 11, color: T.g500 }}>K-ALBA 알바를 시작하시면 자동으로 기록됩니다</div>
+            <div style={{ fontSize: 13, color: T.g700, fontWeight: 600, marginBottom: 3 }}>{t("profile.noCertified")}</div>
+            <div style={{ fontSize: 11, color: T.g500 }}>{t("profile.noCertifiedDesc")}</div>
           </div>
         ) : (
           workHistory.map((w) => (
             <div key={w.id} style={{ padding: 14, border: `1.5px solid ${T.mint}30`, borderRadius: 10, marginBottom: 8, background: "#FAFFFC" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                <span style={{ padding: "2px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: T.mintL, color: "#059669" }}>✓ K-ALBA 인증</span>
+                <span style={{ padding: "2px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: T.mintL, color: "#059669" }}>{t("profile.kalbaVerified")}</span>
                 <span style={{ fontWeight: 700, color: T.navy, fontSize: 13 }}>{w.job?.title || w.title}</span>
               </div>
               <div style={{ fontSize: 11, color: T.g500, marginBottom: 6 }}>{w.employer?.company_name} · {w.start_date}~{w.end_date}</div>
               {w.rating && (
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: "#F59E0B" }}>⭐ {w.rating}</span>
-                  <span style={{ fontSize: 11, color: T.g500 }}>사장님 평가</span>
+                  <span style={{ fontSize: 11, color: T.g500 }}>{t("profile.employerRating")}</span>
                 </div>
               )}
               {w.tags && w.tags.length > 0 && (

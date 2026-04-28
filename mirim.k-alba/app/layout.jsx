@@ -1,4 +1,5 @@
 import "./globals.css";
+import AppFrame from "@/components/AppFrame";
 
 export const metadata = {
   title: "K-ALBA · 외국인 알바 매칭 + 시간제취업 신청",
@@ -61,7 +62,7 @@ export default function RootLayout({ children }) {
         {/* Pretendard 폰트는 globals.css에서 import */}
       </head>
       <body className="font-sans antialiased bg-p text-ink">
-        {children}
+        <AppFrame>{children}</AppFrame>
       </body>
     </html>
   );

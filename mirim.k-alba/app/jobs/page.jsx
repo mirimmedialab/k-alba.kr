@@ -115,7 +115,7 @@ export default function JobsPage() {
       {/* Editorial 헤더 */}
       <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 18 }} />
       <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
-        Jobs · 알바 찾기
+        {t("jobs.pageLabel")}
       </div>
       <h1 style={{ fontSize: 28, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.25 }}>
         {t("jobs.title")}
@@ -144,10 +144,10 @@ export default function JobsPage() {
           <div style={{ fontSize: 22 }}>💬</div>
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, fontSize: 14, letterSpacing: "-0.01em", marginBottom: 2 }}>
-              알바생 계약 챗봇 체험하기
+              {t("jobs.chatbotBannerTitle")}
             </div>
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)" }}>
-              합격 후 카톡 챗봇 → 서명 → PDF 다운로드
+              {t("jobs.chatbotBannerDesc")}
             </div>
           </div>
           <div style={{ fontSize: 18, color: T.gold }}>→</div>
@@ -157,10 +157,10 @@ export default function JobsPage() {
       {/* 정렬 탭 */}
       <div style={{ display: "flex", gap: 4, marginBottom: 12, borderBottom: `1px solid ${T.border}`, overflowX: "auto" }}>
         {[
-          ["recommended", "✨ 추천순"],
-          ["nearest", "📍 가까운 순"],
-          ["latest", "🕒 최신순"],
-          ["pay", "💰 급여 높은 순"],
+          ["recommended", t("jobs.sortRecommended")],
+          ["nearest", t("jobs.sortNearest")],
+          ["latest", t("jobs.sortLatest")],
+          ["pay", t("jobs.sortPay")],
         ].map(([v, l]) => {
           const active = sortMode === v;
           return (
@@ -190,7 +190,7 @@ export default function JobsPage() {
       {/* 반경 조절 (가까운 순일 때만) */}
       {sortMode === "nearest" && (
         <div style={{ marginBottom: 12, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-          <span style={{ fontSize: 12, color: T.ink3, marginRight: 4 }}>반경:</span>
+          <span style={{ fontSize: 12, color: T.ink3, marginRight: 4 }}>{t("jobs.radiusLabel")}</span>
           {[3, 5, 10, 20, 50].map((r) => (
             <button
               key={r}
@@ -256,11 +256,11 @@ export default function JobsPage() {
         marginBottom: 14, paddingTop: 12, borderTop: `2px solid ${T.n9}`,
       }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>
-          총 {displayJobs.length}개 공고
+          {t("jobs.totalJobs").replace("{count}", displayJobs.length)}
         </div>
         {sortMode === "nearest" && locationSource === "gps" && (
           <div style={{ fontSize: 11, color: T.green, fontWeight: 600 }}>
-            📍 현재 위치 기준
+            {t("jobs.currentLocationLabel")}
           </div>
         )}
       </div>
@@ -269,12 +269,12 @@ export default function JobsPage() {
       <div>
         {loading ? (
           <div style={{ padding: "48px 20px", textAlign: "center", color: T.ink3, fontSize: 14 }}>
-            공고를 찾고 있어요...
+            {t("jobs.loading")}
           </div>
         ) : displayJobs.length === 0 ? (
           <div style={{ padding: "48px 20px", textAlign: "center", color: T.ink3, fontSize: 14 }}>
             {sortMode === "nearest"
-              ? `반경 ${radius}km 안에 공고가 없어요. 반경을 늘려보세요.`
+              ? t("jobs.noResultsRadius").replace("{radius}", radius)
               : t("jobs.noResults")}
           </div>
         ) : (
@@ -297,13 +297,15 @@ export default function JobsPage() {
  * 위치 상태 배너
  */
 function LocationBanner({ source, location, onRequestLocation, loading }) {
+  const t = useT();
+
   if (loading) {
     return (
       <div style={{
         padding: "10px 14px", background: T.cream, border: `1px solid ${T.border}`,
         borderRadius: 4, marginBottom: 16, fontSize: 12, color: T.ink2, textAlign: "center",
       }}>
-        📡 위치 확인 중...
+        {t("jobs.locationCheckingGps")}
       </div>
     );
   }
@@ -316,13 +318,13 @@ function LocationBanner({ source, location, onRequestLocation, loading }) {
         borderRadius: 4, marginBottom: 16, fontSize: 12, color: T.ink2,
         display: "flex", justifyContent: "space-between", alignItems: "center",
       }}>
-        <span>📍 <strong style={{ color: T.green }}>현재 위치</strong>에서 가까운 순으로 보여줍니다</span>
+        <span>{t("jobs.locationGpsActive")}</span>
         <button onClick={onRequestLocation} style={{
           background: "none", border: "none", color: T.ink3,
           fontSize: 11, cursor: "pointer", textDecoration: "underline", padding: 0,
           fontFamily: "inherit",
         }}>
-          다시 찾기
+          {t("jobs.locationRetry")}
         </button>
       </div>
     );
@@ -336,13 +338,13 @@ function LocationBanner({ source, location, onRequestLocation, loading }) {
         borderRadius: 4, marginBottom: 16, fontSize: 12, color: T.ink2,
         display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8,
       }}>
-        <span>🏠 <strong style={{ color: T.accent }}>등록된 거주지</strong> 기준으로 보여줍니다</span>
+        <span>{t("jobs.locationProfileActive")}</span>
         <button onClick={onRequestLocation} style={{
           background: T.accent, color: T.paper, border: "none",
           padding: "4px 10px", borderRadius: 4, fontSize: 11, fontWeight: 600,
           cursor: "pointer", fontFamily: "inherit",
         }}>
-          📍 현재 위치로 찾기
+          {t("jobs.locationUseGps")}
         </button>
       </div>
     );
@@ -356,13 +358,13 @@ function LocationBanner({ source, location, onRequestLocation, loading }) {
       borderRadius: 4, marginBottom: 16, fontSize: 12, color: T.ink2,
       display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8,
     }}>
-      <span>💡 위치를 허용하면 우리 집 근처 공고를 먼저 볼 수 있어요</span>
+      <span>{t("jobs.locationDefault")}</span>
       <button onClick={onRequestLocation} style={{
         background: T.n9, color: T.paper, border: "none",
         padding: "4px 10px", borderRadius: 4, fontSize: 11, fontWeight: 600,
         cursor: "pointer", fontFamily: "inherit",
       }}>
-        📍 위치 허용
+        {t("jobs.locationAllow")}
       </button>
     </div>
   );
@@ -372,6 +374,7 @@ function LocationBanner({ source, location, onRequestLocation, loading }) {
  * 공고 리스트 아이템 (에디토리얼 스타일 + 거리 표시)
  */
 function JobListItem({ job, index, showDistance, showReason }) {
+  const t = useT();
   return (
     <Link href={`/jobs/${job.id}`} style={{ textDecoration: "none" }}>
       <div
@@ -427,10 +430,10 @@ function JobListItem({ job, index, showDistance, showReason }) {
                 <span>🚇 {job.nearest_station}{job.walk_to_station_min ? ` ${job.walk_to_station_min}분` : ""}</span>
               )}
               {job.provides_housing && (
-                <span style={{ color: T.green, fontWeight: 600 }}>🏠 숙식 제공</span>
+                <span style={{ color: T.green, fontWeight: 600 }}>{t("jobs.providesHousing")}</span>
               )}
               {job.provides_shuttle && (
-                <span style={{ color: T.green, fontWeight: 600 }}>🚐 통근버스</span>
+                <span style={{ color: T.green, fontWeight: 600 }}>{t("jobs.providesShuttle")}</span>
               )}
             </div>
           )}
@@ -451,7 +454,7 @@ function JobListItem({ job, index, showDistance, showReason }) {
                   fontWeight: 500,
                   marginLeft: 6,
                 }}>
-                  (적합도 {Math.round(job.score_total)}점)
+                  {t("jobs.matchScore").replace("{score}", Math.round(job.score_total))}
                 </span>
               )}
             </div>

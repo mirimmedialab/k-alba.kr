@@ -5,16 +5,18 @@ import Link from "next/link";
 import { T } from "@/lib/theme";
 import { Card } from "@/components/UI";
 import { getCurrentUser, getMyApplications } from "@/lib/supabase";
+import { useT } from "@/lib/i18n";
 import { ListPageSkel } from "@/components/Wireframe";
 
 const STATUS_INFO = {
-  pending: { label: "검토 중", color: "#A17810", bg: "#F7F5F0" },
-  accepted: { label: "합격", color: "#2A7A4A", bg: "#E8F5EC" },
-  rejected: { label: "불합격", color: "#A31919", bg: "#FEE" },
+  pending: { color: "#A17810", bg: "#F7F5F0" },
+  accepted: { color: "#2A7A4A", bg: "#E8F5EC" },
+  rejected: { color: "#A31919", bg: "#FEE" },
 };
 
 export default function MyApplicationsPage() {
   const router = useRouter();
+  const t = useT();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -43,19 +45,19 @@ export default function MyApplicationsPage() {
         fontSize: 11, fontWeight: 700, color: T.ink3,
         letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8,
       }}>
-        Applications · 내 지원 내역
+        {t("myApplications.header")}
       </div>
       <h1 style={{
         fontSize: 28, fontWeight: 800, color: T.ink,
         letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.25,
       }}>
-        총 {applications.length}건 지원
+        {t("myApplications.title").replace("{count}", applications.length)}
       </h1>
       <p style={{ color: T.ink2, fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>
-        {pendingCount > 0 && `${pendingCount}건 검토 중`}
+        {pendingCount > 0 && t("myApplications.reviewingCount").replace("{count}", pendingCount)}
         {pendingCount > 0 && acceptedCount > 0 && " · "}
-        {acceptedCount > 0 && `${acceptedCount}건 합격`}
-        {pendingCount === 0 && acceptedCount === 0 && "지원 상태를 한눈에 확인하세요"}
+        {acceptedCount > 0 && t("myApplications.acceptedCount").replace("{count}", acceptedCount)}
+        {pendingCount === 0 && acceptedCount === 0 && t("myApplications.statusOverview")}
       </p>
 
       {applications.length === 0 ? (
@@ -74,10 +76,10 @@ export default function MyApplicationsPage() {
             marginBottom: 8,
             letterSpacing: "-0.02em",
           }}>
-            아직 지원한 알바가 없습니다
+            {t("myApplications.noApplications")}
           </div>
           <p style={{ fontSize: 13, color: T.ink2, marginBottom: 20, lineHeight: 1.6 }}>
-            내 비자에 맞는 공고를 확인해 보세요
+            {t("myApplications.noApplicationsDesc")}
           </p>
           <Link href="/jobs" style={{
             display: "inline-block",
@@ -90,7 +92,7 @@ export default function MyApplicationsPage() {
             borderRadius: 4,
             letterSpacing: "-0.01em",
           }}>
-            알바 찾기 →
+            {t("myApplications.findJobsBtn")}
           </Link>
         </div>
       ) : (
@@ -138,7 +140,7 @@ export default function MyApplicationsPage() {
                         color: T.ink,
                         letterSpacing: "-0.02em",
                       }}>
-                        {app.job?.title || "알바"}
+                        {app.job?.title || t("jobs.title")}
                       </span>
                       <span style={{
                         padding: "2px 8px",
@@ -149,14 +151,14 @@ export default function MyApplicationsPage() {
                         color: st.color,
                         letterSpacing: "0.02em",
                       }}>
-                        {st.label}
+                        {t(`myApplications.status.${app.status}`)}
                       </span>
                     </div>
                     <div style={{ fontSize: 13, color: T.ink2, marginBottom: 4 }}>
-                      {app.job?.company_name || "회사명 미입력"}
+                      {app.job?.company_name || t("myApplications.companyUnknown")}
                     </div>
                     <div style={{ fontSize: 11, color: T.ink3 }}>
-                      지원일: {new Date(app.created_at).toLocaleDateString("ko-KR")}
+                      {t("myApplications.appliedDate")}: {new Date(app.created_at).toLocaleDateString()}
                     </div>
                   </div>
 

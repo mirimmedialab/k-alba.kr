@@ -120,7 +120,7 @@ export default function SignupPage() {
     const bn = bizForm.businessNumber.replace(/-/g, "");
     const od = bizForm.openingDate.replace(/-/g, "");
     if (bn.length !== 10 || !bizForm.representativeName.trim() || od.length !== 8) {
-      setBizError("사업자번호, 대표자명, 개업일자를 모두 입력해주세요.");
+      setBizError(t("auth.bizVerifyAllFields"));
       return;
     }
     setBizVerifyLoading(true);
@@ -136,7 +136,7 @@ export default function SignupPage() {
       });
       const data = await res.json();
       if (!data.ok) {
-        setBizError(data.error || "인증 실패");
+        setBizError(data.error || t("auth.bizVerifyFailed"));
         setBizVerified(false);
       } else if (data.verified) {
         setBizVerified(true);
@@ -144,10 +144,10 @@ export default function SignupPage() {
         setBizError("");
       } else {
         setBizVerified(false);
-        setBizError(data.reason || "인증 정보가 일치하지 않습니다.");
+        setBizError(data.reason || t("auth.bizVerifyMismatch"));
       }
     } catch (e) {
-      setBizError("인증 서버 연결 실패. 잠시 후 다시 시도해주세요.");
+      setBizError(t("auth.bizVerifyServerError"));
       setBizVerified(false);
     } finally {
       setBizVerifyLoading(false);
@@ -163,7 +163,7 @@ export default function SignupPage() {
     if (!form.agree) return setError(t("auth.errAgree"));
 
     if (role === "employer" && !bizVerified) {
-      return setError("사업자 인증을 먼저 완료해주세요.");
+      return setError(t("auth.bizVerifyRequired"));
     }
 
     setLoading(true);
@@ -220,7 +220,7 @@ export default function SignupPage() {
               marginBottom: 10,
             }}
           >
-            Sign up · 회원가입
+            {t("auth.signupTitle")}
           </div>
           <h1
             style={{
@@ -337,8 +337,8 @@ export default function SignupPage() {
             marginBottom: 10,
           }}
         >
-          {role === "student" ? "For Workers" : "For Employers"} ·{" "}
-          {role === "student" ? "외국인 구직자" : "사장님"}
+          {role === "student" ? t("auth.forWorkers") : t("auth.forEmployers")} ·{" "}
+          {role === "student" ? t("auth.seekerLabel") : t("auth.employerLabel")}
         </div>
         <h2
           style={{
@@ -463,13 +463,13 @@ export default function SignupPage() {
                 }}
               >
                 {bizVerified
-                  ? `✓ 사업자 인증 완료 (${bizStatus})`
-                  : "사업자 정보 입력 (필수)"}
+                  ? `✓ ${t("auth.bizVerified")} (${bizStatus})`
+                  : t("auth.bizInfoRequired")}
               </div>
             </div>
             {!bizVerified && (
               <p style={{ fontSize: 12, color: T.ink2, marginBottom: 12, lineHeight: 1.5 }}>
-                국세청 데이터로 실시간 인증됩니다. 사업자등록증 그대로 입력해주세요.
+                {t("auth.bizVerifyDesc")}
               </p>
             )}
             {!bizVerified ? (
@@ -481,7 +481,7 @@ export default function SignupPage() {
                   autoComplete="off"
                   value={bizForm.businessNumber}
                   onChange={onBusinessNumberChange}
-                  placeholder="사업자등록번호 (예: 119-75-73333)"
+                  placeholder={t("auth.bizNumberPlaceholder")}
                   maxLength={12}
                   style={{
                     width: "100%",
@@ -502,7 +502,7 @@ export default function SignupPage() {
                   onChange={(e) =>
                     setBizForm({ ...bizForm, representativeName: e.target.value })
                   }
-                  placeholder="대표자 성명 (예: 홍길동)"
+                  placeholder={t("auth.bizRepNamePlaceholder")}
                   style={{
                     width: "100%",
                     padding: "10px 12px",
@@ -523,7 +523,7 @@ export default function SignupPage() {
                   autoComplete="off"
                   value={bizForm.openingDate}
                   onChange={onOpeningDateChange}
-                  placeholder="개업일자 (예: 2012-09-19)"
+                  placeholder={t("auth.bizOpeningDatePlaceholder")}
                   maxLength={10}
                   style={{
                     width: "100%",
@@ -570,19 +570,19 @@ export default function SignupPage() {
                     letterSpacing: "-0.01em",
                   }}
                 >
-                  {bizVerifyLoading ? "국세청 인증 중..." : "사업자번호 인증하기 →"}
+                  {bizVerifyLoading ? t("auth.bizVerifying") : t("auth.bizVerifyBtn")}
                 </button>
               </>
             ) : (
               <div style={{ fontSize: 12, color: T.ink, lineHeight: 1.7 }}>
                 <div>
-                  사업자번호 · <strong>{bizForm.businessNumber}</strong>
+                  {t("auth.bizNumber")} · <strong>{bizForm.businessNumber}</strong>
                 </div>
                 <div>
-                  대표자 · <strong>{bizForm.representativeName}</strong>
+                  {t("auth.bizRepName")} · <strong>{bizForm.representativeName}</strong>
                 </div>
                 <div>
-                  개업일 · <strong>{bizForm.openingDate}</strong>
+                  {t("auth.bizOpeningDate")} · <strong>{bizForm.openingDate}</strong>
                 </div>
                 <button
                   type="button"
@@ -602,7 +602,7 @@ export default function SignupPage() {
                     fontFamily: "inherit",
                   }}
                 >
-                  다시 입력하기
+                  {t("auth.bizReenter")}
                 </button>
               </div>
             )}
@@ -630,7 +630,7 @@ export default function SignupPage() {
             style={{ marginTop: 3, accentColor: T.n9, width: 15, height: 15, flexShrink: 0 }}
           />
           <div style={{ fontSize: 12, color: T.ink2, lineHeight: 1.6 }}>
-            (필수){" "}
+            {t("auth.termsRequired")}{" "}
             <Link
               href="/terms"
               target="_blank"
@@ -641,7 +641,7 @@ export default function SignupPage() {
                 borderBottom: `1px solid ${T.ink}`,
               }}
             >
-              이용약관
+              {t("auth.termsOfService")}
             </Link>
             {" 및 "}
             <Link
@@ -654,9 +654,9 @@ export default function SignupPage() {
                 borderBottom: `1px solid ${T.ink}`,
               }}
             >
-              개인정보처리방침
+              {t("auth.privacyPolicy")}
             </Link>
-            에 동의합니다.
+            {t("auth.termsAgreeSuffix")}
           </div>
         </label>
 
