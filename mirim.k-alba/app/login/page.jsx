@@ -31,7 +31,7 @@ export default function LoginPage() {
       setError(error.message);
     } else {
       const userType = data?.user?.user_metadata?.user_type || "student";
-      router.push(userType === "employer" ? "/my-jobs" : "/jobs");
+      router.push(userType === "employer" ? "/my/jobs" : "/jobs");
     }
   };
 

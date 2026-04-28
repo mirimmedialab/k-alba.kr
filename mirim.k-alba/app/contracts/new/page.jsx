@@ -40,7 +40,7 @@ function NewContractContent() {
       const p = await getProfile(u.id);
       setProfile(p);
       if (u.user_metadata?.user_type !== "employer") {
-        router.push("/my-contracts");
+        router.push("/my/contracts");
         return;
       }
       const jobs = await getMyJobs(u.id);
@@ -76,7 +76,7 @@ function NewContractContent() {
 
   return (
     <div style={{ padding: 20, maxWidth: 600, margin: "0 auto" }}>
-      <Link href="/my-jobs" style={{ color: T.g500, fontSize: 14, marginBottom: 16, display: "inline-block" }}>← 내 공고</Link>
+      <Link href="/my/jobs" style={{ color: T.g500, fontSize: 14, marginBottom: 16, display: "inline-block" }}>← 내 공고</Link>
       <h2 style={{ fontSize: 22, fontWeight: 800, color: T.navy, marginBottom: 4 }}>📝 근로계약서 작성</h2>
       <p style={{ color: T.g500, fontSize: 13, marginBottom: 20 }}>공고 정보가 자동으로 채워져 3분만에 완성!</p>
 

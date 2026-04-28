@@ -89,7 +89,7 @@ export async function registerPushNotifications() {
       await Push.register();
 
       // 토큰 이벤트 대기 (Promise 래핑)
-      return new Promise<PushToken | null>((resolve) => {
+      return new Promise((resolve) => {
         const timeout = setTimeout(() => resolve(null), 10000);
 
         Push.addListener("registration", (token) => {
@@ -122,11 +122,10 @@ export async function registerPushNotifications() {
 /**
  * 푸시 수신 리스너 등록
  * (앱이 실행 중일 때 도착한 알림 처리)
+ *
+ * @param {{ onReceived?: Function, onActionPerformed?: Function }} handlers
  */
-export async function setupPushListeners(handlers = {
-  onReceived?: (notification) => void;
-  onActionPerformed?: (action) => void;
-}) {
+export async function setupPushListeners(handlers = {}) {
   if (!isNative()) return;
   const Push = await loadCapacitorPush();
   if (!Push) return;
@@ -144,7 +143,7 @@ export async function setupPushListeners(handlers = {
  *
  * 테이블 스키마는 migration-push-notifications.sql 참조
  */
-export async function savePushToken(supabase, userId, token: PushToken) {
+export async function savePushToken(supabase, userId, token) {
   if (!supabase || !userId || !token) return;
 
   try {
@@ -167,7 +166,7 @@ export async function savePushToken(supabase, userId, token: PushToken) {
  * 권한 요청 + 토큰 저장 원스텝 헬퍼
  * (앱 진입 시 한 번 호출)
  */
-export async function initPushNotifications(supabase, userId | null) {
+export async function initPushNotifications(supabase, userId) {
   if (!userId) return;
 
   // 이미 등록돼 있는지 확인

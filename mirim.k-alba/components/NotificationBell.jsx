@@ -253,7 +253,7 @@ function NotificationItem({ notification, onClose }) {
       }}>
         {notification.title}
       </div>
-      <div style={{ fontSize: 11, color: var(--ink2), lineHeight: 1.4 }}>
+      <div style={{ fontSize: 11, color: "var(--ink2)", lineHeight: 1.4 }}>
         {notification.body}
       </div>
       <div style={{

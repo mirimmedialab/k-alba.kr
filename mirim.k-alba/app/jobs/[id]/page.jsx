@@ -361,7 +361,7 @@ export default function JobDetailPage() {
             <div style={{ fontWeight: 800, color: "#059669", marginBottom: 4, fontSize: 16 }}>{t("jobs.applied")}</div>
             <div style={{ fontSize: 12, color: T.g500, marginBottom: 14 }}>{t("jobs.appliedDesc")}</div>
             <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-              <Link href="/my-applications" style={{ textDecoration: "none" }}>
+              <Link href="/my/applications" style={{ textDecoration: "none" }}>
                 <Btn>지원 내역 보기</Btn>
               </Link>
               <Link href="/chat" style={{ textDecoration: "none" }}>

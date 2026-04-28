@@ -288,7 +288,7 @@ export default function PostJobPage() {
         <h2 style={{ fontSize: 20, fontWeight: 800, color: T.navy, marginBottom: 8 }}>공고가 등록되었습니다!</h2>
         <p style={{ color: T.g500, fontSize: 14, marginBottom: 24 }}>외국인 구직자들에게 자동으로 매칭됩니다</p>
         <div style={{ display: "flex", gap: 10 }}>
-          <Btn primary full onClick={() => router.push("/my-jobs")}>내 공고 확인</Btn>
+          <Btn primary full onClick={() => router.push("/my/jobs")}>내 공고 확인</Btn>
           <Btn full onClick={() => { setPosted(false); resetChat(); }}>추가 등록</Btn>
         </div>
       </div>

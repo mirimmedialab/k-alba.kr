@@ -1023,7 +1023,7 @@ function Screen0({ contract, loading, error, availableContracts, onSelectContrac
       <div style={{ padding: "40px 16px", textAlign: "center" }}>
         <div style={{ fontSize: 32, marginBottom: 12 }}>⚠️</div>
         <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 8 }}>{error}</div>
-        <Link href="/my-contracts" style={{
+        <Link href="/my/contracts" style={{
           display: "inline-block",
           marginTop: 16,
           padding: "10px 20px",

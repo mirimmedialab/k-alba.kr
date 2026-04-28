@@ -178,7 +178,7 @@ export default function SignupPage() {
     if (error) {
       setError(error.message);
     } else {
-      router.push(role === "student" ? "/jobs" : "/my-jobs");
+      router.push(role === "student" ? "/jobs" : "/my/jobs");
     }
   };
 

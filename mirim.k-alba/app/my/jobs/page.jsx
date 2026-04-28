@@ -200,7 +200,7 @@ export default function MyJobsPage() {
             {t("myJobs.jobCount").replace("{count}", jobs.length)}
           </p>
         </div>
-        <Link href="/post-job">
+        <Link href="/jobs/post">
           <Btn primary small>
             {t("myJobs.newJobBtn")}
           </Btn>
@@ -234,7 +234,7 @@ export default function MyJobsPage() {
           >
             {t("myJobs.noJobsDesc")}
           </p>
-          <Link href="/post-job">
+          <Link href="/jobs/post">
             <Btn primary>{t("myJobs.postJobBtn")}</Btn>
           </Link>
         </div>

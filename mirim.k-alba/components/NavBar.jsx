@@ -61,17 +61,17 @@ export default function NavBar() {
   const seekerLinks = [
     { href: "/jobs", label: t("nav.findJob") },
     { href: "/jobs/map", label: "🗺️ 지도" },
-    { href: "/my-applications", label: t("nav.myApplications") },
-    { href: "/my-contracts", label: t("nav.contracts") },
+    { href: "/my/applications", label: t("nav.myApplications") },
+    { href: "/my/contracts", label: t("nav.contracts") },
     { href: "/partwork", label: "🎓 시간제취업" },
     { href: "/chat", label: t("nav.chat") },
     { href: "/profile", label: t("nav.profile") },
   ];
 
   const employerLinks = [
-    { href: "/post-job", label: t("nav.postJob") },
-    { href: "/my-jobs", label: t("nav.myJobs") },
-    { href: "/my-contracts", label: t("nav.contracts") },
+    { href: "/jobs/post", label: t("nav.postJob") },
+    { href: "/my/jobs", label: t("nav.myJobs") },
+    { href: "/my/contracts", label: t("nav.contracts") },
     { href: "/chat", label: t("nav.chat") },
     { href: "/profile", label: t("nav.employerProfile") },
   ];
@@ -142,7 +142,7 @@ export default function NavBar() {
             )}
             {authChecked && user && (
               <Link
-                href={userType === "employer" ? "/my-jobs" : "/jobs"}
+                href={userType === "employer" ? "/my/jobs" : "/jobs"}
                 style={{
                   fontSize: 14,
                   fontWeight: 600,

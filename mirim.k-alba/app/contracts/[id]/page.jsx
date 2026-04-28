@@ -261,7 +261,7 @@ export default function ContractDetailPage() {
       <div style={{ padding: 40, textAlign: "center" }}>
         <div style={{ fontSize: 40, marginBottom: 12 }}>❌</div>
         <div style={{ fontWeight: 700, color: T.navy, marginBottom: 6 }}>계약서를 찾을 수 없습니다</div>
-        <Link href="/my-contracts" style={{ display: "inline-block", marginTop: 16, padding: "10px 20px", background: T.coral, color: "#fff", borderRadius: 10, fontWeight: 700, fontSize: 13 }}>
+        <Link href="/my/contracts" style={{ display: "inline-block", marginTop: 16, padding: "10px 20px", background: T.coral, color: "#fff", borderRadius: 10, fontWeight: 700, fontSize: 13 }}>
           계약서 목록으로
         </Link>
       </div>
@@ -302,7 +302,7 @@ export default function ContractDetailPage() {
     <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", minHeight: "calc(100vh - 60px)" }}>
       {/* 헤더 */}
       <div style={{ padding: "16px 20px", background: "#fff", borderBottom: `1px solid ${T.g200}` }}>
-        <Link href="/my-contracts" style={{ color: T.g500, fontSize: 13 }}>← {t("contract.myContracts")}</Link>
+        <Link href="/my/contracts" style={{ color: T.g500, fontSize: 13 }}>← {t("contract.myContracts")}</Link>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10, gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h2 style={{ fontSize: 18, fontWeight: 800, color: T.navy }}>📝 {t("contract.title")}</h2>

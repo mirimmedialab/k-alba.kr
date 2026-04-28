@@ -15,12 +15,12 @@ export default function robots() {
         disallow: [
           "/api/",
           "/profile",          // 로그인 필요 페이지
-          "/my-jobs",
-          "/my-applications",
-          "/my-contracts",
+          "/my/jobs",
+          "/my/applications",
+          "/my/contracts",
           "/chat",
           "/applicants",
-          "/post-job",
+          "/jobs/post",
           "/contract/",
           "/admin",            // 추후 관리자 페이지
         ],

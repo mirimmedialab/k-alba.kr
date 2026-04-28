@@ -146,7 +146,7 @@ function ApplicantsContent() {
 
   return (
     <div style={{ padding: "32px 20px", maxWidth: 820, margin: "0 auto" }}>
-      <Link href="/my-jobs" style={{
+      <Link href="/my/jobs" style={{
         color: T.ink3,
         fontSize: 12,
         marginBottom: 18,
