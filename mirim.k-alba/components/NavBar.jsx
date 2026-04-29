@@ -82,6 +82,9 @@ export default function NavBar() {
   const links = userType === "employer" ? employerLinks : seekerLinks;
   const finalLinks = isAdmin ? [...links, { href: "/admin", label: "⚙️ 관리자" }] : links;
 
+  // 로고 클릭 시 이동할 경로 (로그인 상태에 따라 분기)
+  const logoHref = !user ? "/" : userType === "employer" ? "/my/jobs" : "/jobs";
+
   return (
     <nav
       style={{
@@ -107,7 +110,7 @@ export default function NavBar() {
       >
         {/* 브랜드 로고 — 타이포 기반 (이모지 X) */}
         <Link
-          href="/"
+          href={logoHref}
           style={{
             textDecoration: "none",
             fontWeight: 800,

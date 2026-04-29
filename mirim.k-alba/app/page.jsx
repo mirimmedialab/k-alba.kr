@@ -1,7 +1,10 @@
 "use client";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { T } from "@/lib/theme";
 import { useT } from "@/lib/i18n";
+import { getSession, supabase } from "@/lib/supabase";
+import { UserChip } from "@/components/UserChip";
 
 /**
  * K-ALBA 랜딩 (모바일 앱 내 진입 페이지)
@@ -13,130 +16,346 @@ import { useT } from "@/lib/i18n";
  */
 export default function LandingPage() {
   const t = useT();
+  const [authChecked, setAuthChecked] = useState(false);
+  const [user, setUser] = useState(null);
+  const [userType, setUserType] = useState(null);
+
+  // 세션 체크
+  useEffect(() => {
+    if (!supabase) {
+      setAuthChecked(true);
+      return;
+    }
+    getSession().then((session) => {
+      if (session?.user) {
+        setUser(session.user);
+        setUserType(session.user.user_metadata?.user_type || "worker");
+      }
+      setAuthChecked(true);
+    });
+
+    // 로그아웃 시 실시간 업데이트
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        setUserType(session.user.user_metadata?.user_type || "worker");
+      } else {
+        setUser(null);
+        setUserType(null);
+      }
+      setAuthChecked(true);
+    });
+    return () => listener?.subscription.unsubscribe();
+  }, []);
+
+  // 로딩 중
+  if (!authChecked) {
+    return (
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", background: T.paper }}>
+        <div style={{ fontSize: 14, color: T.g500 }}>로딩 중...</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: T.paper, color: T.ink }}>
 
       {/* ═══════════════════ HERO ═══════════════════ */}
-      <section
-        style={{
-          padding: "48px 20px 56px",
-          background: T.n9,
-          color: T.paper,
-          position: "relative",
-          overflow: "hidden",
-          // 골드 상단 라인 (에디토리얼 시그니처)
-          borderTop: `3px solid ${T.gold}`,
-        }}
-      >
-        <div style={{ maxWidth: 560, margin: "0 auto" }}>
-          <h1
-            style={{
-              fontWeight: 800,
-              fontSize: "clamp(26px, 6vw, 36px)",
-              lineHeight: 1.25,
-              letterSpacing: "-0.03em",
-              marginBottom: 18,
-            }}
-          >
-            한국 거주 외국인{" "}
-            <em style={{ fontStyle: "normal", color: T.gold }}>260만 명</em>
-            을 위한<br />
-            합법적 알바 플랫폼
-          </h1>
-          <p
-            style={{
-              fontSize: 15,
-              lineHeight: 1.65,
-              color: "rgba(255,255,255,0.78)",
-              marginBottom: 24,
-            }}
-          >
-            비자별 맞춤 공고, 7개 언어 지원, 카카오톡 챗봇으로 3분 만에
-            근로계약서까지.
-          </p>
-
-          {/* CTA 버튼 */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
-            <Link
-              href="/signup"
+      {!user ? (
+        // 비로그인 상태 - 기존 HERO 유지
+        <section
+          style={{
+            padding: "48px 20px 56px",
+            background: T.n9,
+            color: T.paper,
+            position: "relative",
+            overflow: "hidden",
+            borderTop: `3px solid ${T.gold}`,
+          }}
+        >
+          <div style={{ maxWidth: 560, margin: "0 auto" }}>
+            <h1
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-                fontWeight: 600,
-                fontSize: 15,
-                padding: "14px 20px",
-                background: T.gold,
-                color: T.n9,
-                borderRadius: 4,
-                textDecoration: "none",
-                letterSpacing: "-0.01em",
+                fontWeight: 800,
+                fontSize: "clamp(26px, 6vw, 36px)",
+                lineHeight: 1.25,
+                letterSpacing: "-0.03em",
+                marginBottom: 18,
               }}
             >
-              서비스 시작하기 →
-            </Link>
-            <Link
-              href="/login"
+              한국 거주 외국인{" "}
+              <em style={{ fontStyle: "normal", color: T.gold }}>260만 명</em>
+              을 위한<br />
+              합법적 알바 플랫폼
+            </h1>
+            <p
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-                fontWeight: 600,
                 fontSize: 15,
-                padding: "12px 20px",
-                background: "transparent",
-                color: T.paper,
-                border: "1px solid rgba(255,255,255,0.3)",
-                borderRadius: 4,
-                textDecoration: "none",
+                lineHeight: 1.65,
+                color: "rgba(255,255,255,0.78)",
+                marginBottom: 24,
               }}
             >
-              이미 계정이 있어요
-            </Link>
-          </div>
+              비자별 맞춤 공고, 7개 언어 지원, 카카오톡 챗봇으로 3분 만에
+              근로계약서까지.
+            </p>
 
-          {/* 통계 박스 */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
-              gap: 16,
-              padding: 20,
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(232,217,181,0.2)",
-              borderRadius: 6,
-            }}
-          >
-            {[
-              ["260만", "한국 거주 외국인"],
-              ["12+", "대응 비자 유형"],
-              ["7", "지원 언어"],
-              ["3min", "근로계약 체결"],
-            ].map(([num, label]) => (
-              <div key={label}>
-                <div
-                  style={{
-                    fontSize: 26,
-                    fontWeight: 800,
-                    color: T.gold,
-                    letterSpacing: "-0.025em",
-                    lineHeight: 1,
-                    marginBottom: 4,
-                  }}
-                >
-                  {num}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
+              <Link
+                href="/signup"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  fontWeight: 600,
+                  fontSize: 15,
+                  padding: "14px 20px",
+                  background: T.gold,
+                  color: T.n9,
+                  borderRadius: 4,
+                  textDecoration: "none",
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                서비스 시작하기 →
+              </Link>
+              <Link
+                href="/login"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  fontWeight: 600,
+                  fontSize: 15,
+                  padding: "12px 20px",
+                  background: "transparent",
+                  color: T.paper,
+                  border: "1px solid rgba(255,255,255,0.3)",
+                  borderRadius: 4,
+                  textDecoration: "none",
+                }}
+              >
+                이미 계정이 있어요
+              </Link>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: 16,
+                padding: 20,
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(232,217,181,0.2)",
+                borderRadius: 6,
+              }}
+            >
+              {[
+                ["260만", "한국 거주 외국인"],
+                ["12+", "대응 비자 유형"],
+                ["7", "지원 언어"],
+                ["3min", "근로계약 체결"],
+              ].map(([num, label]) => (
+                <div key={label}>
+                  <div
+                    style={{
+                      fontSize: 26,
+                      fontWeight: 800,
+                      color: T.gold,
+                      letterSpacing: "-0.025em",
+                      lineHeight: 1,
+                      marginBottom: 4,
+                    }}
+                  >
+                    {num}
+                  </div>
+                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", lineHeight: 1.4 }}>
+                    {label}
+                  </div>
                 </div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", lineHeight: 1.4 }}>
-                  {label}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : userType === "employer" ? (
+        // 로그인 상태 - 사장님
+        <section
+          style={{
+            padding: "48px 20px 56px",
+            background: T.n9,
+            color: T.paper,
+            position: "relative",
+            overflow: "hidden",
+            borderTop: `3px solid ${T.gold}`,
+          }}
+        >
+          <div style={{ maxWidth: 560, margin: "0 auto", position: "relative" }}>
+            {/* 우측 상단 UserChip */}
+            <div style={{ position: "absolute", top: -10, right: 0 }}>
+              <UserChip user={user} />
+            </div>
+
+            <div style={{ fontSize: 32, marginBottom: 16 }}>👋</div>
+            <h1
+              style={{
+                fontWeight: 800,
+                fontSize: "clamp(26px, 6vw, 36px)",
+                lineHeight: 1.25,
+                letterSpacing: "-0.03em",
+                marginBottom: 18,
+              }}
+            >
+              안녕하세요,{" "}
+              <em style={{ fontStyle: "normal", color: T.gold }}>
+                {user.user_metadata?.name || user.email?.split("@")[0]}
+              </em>{" "}
+              사장님!
+            </h1>
+            <p
+              style={{
+                fontSize: 15,
+                lineHeight: 1.65,
+                color: "rgba(255,255,255,0.78)",
+                marginBottom: 24,
+              }}
+            >
+              외국인 채용이 필요하신가요?<br />
+              카카오톡 챗봇으로 3분만에 공고를 완성하세요.
+            </p>
+
+            <div style={{ display: "flex", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
+              <Link
+                href="/my/jobs"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  fontWeight: 600,
+                  fontSize: 15,
+                  padding: "14px 20px",
+                  background: T.gold,
+                  color: T.n9,
+                  borderRadius: 4,
+                  textDecoration: "none",
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                💼 내 공고 관리 →
+              </Link>
+              <Link
+                href="/jobs/post"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  fontWeight: 600,
+                  fontSize: 15,
+                  padding: "12px 20px",
+                  background: "transparent",
+                  color: T.paper,
+                  border: "1px solid rgba(255,255,255,0.3)",
+                  borderRadius: 4,
+                  textDecoration: "none",
+                }}
+              >
+                📢 새 공고 등록
+              </Link>
+            </div>
+          </div>
+        </section>
+      ) : (
+        // 로그인 상태 - 구직자
+        <section
+          style={{
+            padding: "48px 20px 56px",
+            background: T.n9,
+            color: T.paper,
+            position: "relative",
+            overflow: "hidden",
+            borderTop: `3px solid ${T.gold}`,
+          }}
+        >
+          <div style={{ maxWidth: 560, margin: "0 auto", position: "relative" }}>
+            {/* 우측 상단 UserChip */}
+            <div style={{ position: "absolute", top: -10, right: 0 }}>
+              <UserChip user={user} />
+            </div>
+
+            <div style={{ fontSize: 32, marginBottom: 16 }}>👋</div>
+            <h1
+              style={{
+                fontWeight: 800,
+                fontSize: "clamp(26px, 6vw, 36px)",
+                lineHeight: 1.25,
+                letterSpacing: "-0.03em",
+                marginBottom: 18,
+              }}
+            >
+              안녕하세요,{" "}
+              <em style={{ fontStyle: "normal", color: T.gold }}>
+                {user.user_metadata?.name || user.email?.split("@")[0]}
+              </em>
+              님!
+            </h1>
+            <p
+              style={{
+                fontSize: 15,
+                lineHeight: 1.65,
+                color: "rgba(255,255,255,0.78)",
+                marginBottom: 24,
+              }}
+            >
+              당신에게 맞는 새로운 알바를 찾아보세요.<br />
+              비자 유형에 맞는 합법적인 일자리만 추천합니다.
+            </p>
+
+            <div style={{ display: "flex", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
+              <Link
+                href="/jobs"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  fontWeight: 600,
+                  fontSize: 15,
+                  padding: "14px 20px",
+                  background: T.gold,
+                  color: T.n9,
+                  borderRadius: 4,
+                  textDecoration: "none",
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                🔍 알바 찾기 →
+              </Link>
+              <Link
+                href="/my/applications"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  fontWeight: 600,
+                  fontSize: 15,
+                  padding: "12px 20px",
+                  background: "transparent",
+                  color: T.paper,
+                  border: "1px solid rgba(255,255,255,0.3)",
+                  borderRadius: 4,
+                  textDecoration: "none",
+                }}
+              >
+                📋 내 지원 내역
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ═══════════════════ PROBLEM (크림 배경) ═══════════════════ */}
       <section

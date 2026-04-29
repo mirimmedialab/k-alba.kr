@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { getSession, supabase } from "@/lib/supabase";
+import { UserChip } from "@/components/UserChip";
 
 /**
  * 모바일 랜딩 페이지
@@ -54,12 +56,52 @@ export default function MobileLandingPage() {
     desc: { fontSize: 14, color: M.g500, lineHeight: 1.8, marginBottom: 36 },
   };
 
+  const [authChecked, setAuthChecked] = useState(false);
+  const [user, setUser] = useState(null);
+  const [userType, setUserType] = useState(null);
   const [heroIdx, setHeroIdx] = useState(0);
+
+  // 세션 체크
+  useEffect(() => {
+    if (!supabase) {
+      setAuthChecked(true);
+      return;
+    }
+    getSession().then((session) => {
+      if (session?.user) {
+        setUser(session.user);
+        setUserType(session.user.user_metadata?.user_type || "worker");
+      }
+      setAuthChecked(true);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        setUserType(session.user.user_metadata?.user_type || "worker");
+      } else {
+        setUser(null);
+        setUserType(null);
+      }
+      setAuthChecked(true);
+    });
+    return () => listener?.subscription.unsubscribe();
+  }, []);
+
   useEffect(() => {
     const id = setInterval(() => setHeroIdx((p) => 1 - p), 8000);
     return () => clearInterval(id);
   }, []);
   const isSeeker = heroIdx === 0;
+
+  // 로딩 중
+  if (!authChecked) {
+    return (
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", background: M.cream }}>
+        <div style={{ fontSize: 14, color: M.g500 }}>로딩 중...</div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -73,68 +115,131 @@ export default function MobileLandingPage() {
 
       {/* ── HERO ── */}
       <div style={{ ...S.section, paddingTop: 32, paddingBottom: 32 }}>
-        <div key={heroIdx} style={{ textAlign: "center", marginBottom: 28, animation: "heroFade 1.4s ease-out" }}>
-          {isSeeker ? (
-            <>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: M.mintL, color: "#059669", padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
-                🌏 외국인 구직자를 위한
-              </div>
-              <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: M.navy, marginBottom: 16, letterSpacing: -1 }}>
-                한국에서 일하는 외국인을 위한<br />
-                <span style={{ background: "linear-gradient(135deg,#0BD8A2,#06B889)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                  맞춤형 알바
-                </span>
-              </h1>
-              <p style={{ fontSize: 14, lineHeight: 1.8, color: M.g700, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
-                유학생, 결혼이민자, 취업비자, 워킹홀리데이까지. 비자 유형에 맞는 합법적인 일자리를 다국어로 찾아보세요.
-              </p>
-              <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-                <Link href="/login"><MBtn primary>알바 찾기 — 무료 가입</MBtn></Link>
-                <Link href="/login"><MBtn>이미 계정이 있어요</MBtn></Link>
-              </div>
-            </>
-          ) : (
-            <>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#FEE500", color: "#3C1E1E", padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
-                💼 사장님을 위한
-              </div>
-              <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: M.navy, marginBottom: 16, letterSpacing: -1 }}>
-                카카오톡 챗봇으로<br />
-                <span style={{ background: `linear-gradient(135deg,${M.coral},#FF8A7A)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                  3분만에 공고 완성
-                </span>
-              </h1>
-              <p style={{ fontSize: 14, lineHeight: 1.8, color: M.g700, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
-                지역·업종별 현재 시세를 분석해 적정 급여까지 추천! 비자 자동 확인으로 안전하게 외국인 채용하세요.
-              </p>
-              <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-                <Link href="/login">
-                  <button style={{ background: M.coral, color: "#fff", padding: "12px 24px", borderRadius: 12, fontSize: 14, fontWeight: 800, border: "none", cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 16px ${M.coral}40` }}>
-                    공고 등록 — 무료 가입
-                  </button>
-                </Link>
-                <Link href="/login"><MBtn>이미 계정이 있어요</MBtn></Link>
-              </div>
-            </>
-          )}
+        {!user ? (
+          // 비로그인 상태 - 기존 교차 애니메이션 유지
+          <div key={heroIdx} style={{ textAlign: "center", marginBottom: 28, animation: "heroFade 1.4s ease-out" }}>
+            {isSeeker ? (
+              <>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: M.mintL, color: "#059669", padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
+                  🌏 외국인 구직자를 위한
+                </div>
+                <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: M.navy, marginBottom: 16, letterSpacing: -1 }}>
+                  한국에서 일하는 외국인을 위한<br />
+                  <span style={{ background: "linear-gradient(135deg,#0BD8A2,#06B889)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    맞춤형 알바
+                  </span>
+                </h1>
+                <p style={{ fontSize: 14, lineHeight: 1.8, color: M.g700, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
+                  유학생, 결혼이민자, 취업비자, 워킹홀리데이까지. 비자 유형에 맞는 합법적인 일자리를 다국어로 찾아보세요.
+                </p>
+                <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                  <Link href="/login"><MBtn primary>알바 찾기 — 무료 가입</MBtn></Link>
+                  <Link href="/login"><MBtn>이미 계정이 있어요</MBtn></Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#FEE500", color: "#3C1E1E", padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
+                  💼 사장님을 위한
+                </div>
+                <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: M.navy, marginBottom: 16, letterSpacing: -1 }}>
+                  카카오톡 챗봇으로<br />
+                  <span style={{ background: `linear-gradient(135deg,${M.coral},#FF8A7A)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    3분만에 공고 완성
+                  </span>
+                </h1>
+                <p style={{ fontSize: 14, lineHeight: 1.8, color: M.g700, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
+                  지역·업종별 현재 시세를 분석해 적정 급여까지 추천! 비자 자동 확인으로 안전하게 외국인 채용하세요.
+                </p>
+                <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                  <Link href="/login">
+                    <button style={{ background: M.coral, color: "#fff", padding: "12px 24px", borderRadius: 12, fontSize: 14, fontWeight: 800, border: "none", cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 16px ${M.coral}40` }}>
+                      공고 등록 — 무료 가입
+                    </button>
+                  </Link>
+                  <Link href="/login"><MBtn>이미 계정이 있어요</MBtn></Link>
+                </div>
+              </>
+            )}
 
-          <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 18 }}>
-            {[0, 1].map((i) => (
-              <button
-                key={i}
-                onClick={() => setHeroIdx(i)}
-                style={{
-                  width: i === heroIdx ? 24 : 8, height: 8, borderRadius: 4,
-                  background: i === heroIdx ? (i === 0 ? M.mint : M.coral) : M.g300,
-                  border: "none", cursor: "pointer", transition: "all 0.3s",
-                }}
-              />
-            ))}
+            <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 18 }}>
+              {[0, 1].map((i) => (
+                <button
+                  key={i}
+                  onClick={() => setHeroIdx(i)}
+                  style={{
+                    width: i === heroIdx ? 24 : 8, height: 8, borderRadius: 4,
+                    background: i === heroIdx ? (i === 0 ? M.mint : M.coral) : M.g300,
+                    border: "none", cursor: "pointer", transition: "all 0.3s",
+                  }}
+                />
+              ))}
+            </div>
+            <div style={{ marginTop: 10, fontSize: 11, color: M.g500 }}>
+              🌏 외국인 구직자 · 💼 사장님 <span style={{ color: M.mint, fontWeight: 700 }}>모두 무료</span>
+            </div>
           </div>
-          <div style={{ marginTop: 10, fontSize: 11, color: M.g500 }}>
-            🌏 외국인 구직자 · 💼 사장님 <span style={{ color: M.mint, fontWeight: 700 }}>모두 무료</span>
+        ) : userType === "employer" ? (
+          // 로그인 상태 - 사장님
+          <div style={{ textAlign: "center", marginBottom: 28, position: "relative" }}>
+            {/* 우측 상단 UserChip */}
+            <div style={{ position: "absolute", top: -10, right: 0 }}>
+              <UserChip user={user} style={{ justifyContent: "flex-end" }} />
+            </div>
+
+            <div style={{ fontSize: 48, marginBottom: 12 }}>👋</div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#FEE500", color: "#3C1E1E", padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
+              💼 사장님
+            </div>
+            <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: M.navy, marginBottom: 16, letterSpacing: -1 }}>
+              안녕하세요,<br />
+              <span style={{ background: `linear-gradient(135deg,${M.coral},#FF8A7A)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                {user.user_metadata?.name || user.email?.split("@")[0]}
+              </span>{" "}
+              사장님!
+            </h1>
+            <p style={{ fontSize: 14, lineHeight: 1.8, color: M.g700, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
+              외국인 채용이 필요하신가요?<br />
+              카카오톡 챗봇으로 3분만에 공고를 완성하세요.
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+              <Link href="/my/jobs">
+                <button style={{ background: M.coral, color: "#fff", padding: "12px 24px", borderRadius: 12, fontSize: 14, fontWeight: 800, border: "none", cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 16px ${M.coral}40` }}>
+                  💼 내 공고 관리 →
+                </button>
+              </Link>
+              <Link href="/jobs/post"><MBtn>📢 새 공고 등록</MBtn></Link>
+            </div>
           </div>
-        </div>
+        ) : (
+          // 로그인 상태 - 구직자
+          <div style={{ textAlign: "center", marginBottom: 28, position: "relative" }}>
+            {/* 우측 상단 UserChip */}
+            <div style={{ position: "absolute", top: -10, right: 0 }}>
+              <UserChip user={user} style={{ justifyContent: "flex-end" }} />
+            </div>
+
+            <div style={{ fontSize: 48, marginBottom: 12 }}>👋</div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: M.mintL, color: "#059669", padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
+              🌏 외국인 구직자
+            </div>
+            <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: M.navy, marginBottom: 16, letterSpacing: -1 }}>
+              안녕하세요,<br />
+              <span style={{ background: "linear-gradient(135deg,#0BD8A2,#06B889)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                {user.user_metadata?.name || user.email?.split("@")[0]}
+              </span>
+              님!
+            </h1>
+            <p style={{ fontSize: 14, lineHeight: 1.8, color: M.g700, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
+              당신에게 맞는 새로운 알바를 찾아보세요.<br />
+              비자 유형에 맞는 합법적인 일자리만 추천합니다.
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+              <Link href="/jobs"><MBtn primary>🔍 알바 찾기 →</MBtn></Link>
+              <Link href="/my/applications"><MBtn>📋 내 지원 내역</MBtn></Link>
+            </div>
+          </div>
+        )}
 
         {/* Phone Mockup - 구직자 ↔ 사장님 교차 */}
         <div key={"phone-" + heroIdx} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20, animation: "heroFade 1.4s ease-out" }}>
