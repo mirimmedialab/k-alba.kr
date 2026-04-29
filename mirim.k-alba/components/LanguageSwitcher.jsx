@@ -3,18 +3,53 @@ import { useState, useRef, useEffect } from "react";
 import { T } from "@/lib/theme";
 import { LOCALES, useLocale, useT } from "@/lib/i18n";
 
+/**
+ * LanguageSwitcher
+ *
+ * 7개 언어 드롭다운. 화면 우측 NavBar 또는 페이지 안에 배치.
+ *
+ * 화면 위치 자동 보정:
+ *   드롭다운이 화면 밖으로 나갈 위험이 있으면 좌/우 정렬 자동 전환.
+ *   특히 모바일에서 좁은 화면 폭 + 작은 버튼 조합일 때 필수.
+ */
 export function LanguageSwitcher({ compact = false }) {
   const { locale, setLocale } = useLocale();
   const t = useT();
   const [open, setOpen] = useState(false);
+  const [alignRight, setAlignRight] = useState(true); // true=right:0, false=left:0
   const ref = useRef(null);
 
+  // 외부 클릭 닫기
   useEffect(() => {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     };
     if (open) document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  // 드롭다운 열릴 때 뷰포트 경계 검사
+  useEffect(() => {
+    if (!open || !ref.current) return;
+    const btnRect = ref.current.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const dropdownWidth = 200; // 대략적인 드롭다운 폭
+
+    // right:0 으로 정렬했을 때 드롭다운의 왼쪽 가장자리
+    const rightAlignedLeft = btnRect.right - dropdownWidth;
+    // left:0 으로 정렬했을 때 드롭다운의 오른쪽 가장자리
+    const leftAlignedRight = btnRect.left + dropdownWidth;
+
+    if (rightAlignedLeft < 8) {
+      // right:0이면 화면 왼쪽 밖으로 나감 → left:0으로 전환
+      setAlignRight(false);
+    } else if (leftAlignedRight > viewportWidth - 8) {
+      // left:0이면 화면 오른쪽 밖으로 나감 → right:0 유지
+      setAlignRight(true);
+    } else {
+      // 양쪽 다 OK이면 right:0 (기본 우측 정렬)
+      setAlignRight(true);
+    }
   }, [open]);
 
   const current = LOCALES[locale];
@@ -49,7 +84,8 @@ export function LanguageSwitcher({ compact = false }) {
           style={{
             position: "absolute",
             top: "calc(100% + 6px)",
-            right: 0,
+            // 뷰포트 경계 검사 결과에 따라 좌/우 정렬
+            ...(alignRight ? { right: 0 } : { left: 0 }),
             background: "#fff",
             borderRadius: 12,
             boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
