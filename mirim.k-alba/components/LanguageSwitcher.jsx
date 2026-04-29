@@ -18,6 +18,7 @@ export function LanguageSwitcher({ compact = false }) {
   const [open, setOpen] = useState(false);
   const [alignRight, setAlignRight] = useState(true); // true=right:0, false=left:0
   const ref = useRef(null);
+  const dropdownRef = useRef(null);
 
   // 외부 클릭 닫기
   useEffect(() => {
@@ -30,10 +31,11 @@ export function LanguageSwitcher({ compact = false }) {
 
   // 드롭다운 열릴 때 뷰포트 경계 검사
   useEffect(() => {
-    if (!open || !ref.current) return;
+    if (!open || !ref.current || !dropdownRef.current) return;
     const btnRect = ref.current.getBoundingClientRect();
+    const dropdownRect = dropdownRef.current.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
-    const dropdownWidth = 200; // 대략적인 드롭다운 폭
+    const dropdownWidth = dropdownRect.width; // 실제 드롭다운 너비 측정
 
     // right:0 으로 정렬했을 때 드롭다운의 왼쪽 가장자리
     const rightAlignedLeft = btnRect.right - dropdownWidth;
@@ -81,6 +83,7 @@ export function LanguageSwitcher({ compact = false }) {
 
       {open && (
         <div
+          ref={dropdownRef}
           style={{
             position: "absolute",
             top: "calc(100% + 6px)",
