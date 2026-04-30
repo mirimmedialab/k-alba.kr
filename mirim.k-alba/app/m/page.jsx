@@ -546,33 +546,24 @@ export default function MobileLandingPage() {
       </div>
 
       {/* ── FOOTER ── */}
-      <div style={{ maxWidth: 600, margin: "0 auto", padding: "24px 20px 40px" }}>
-        <div style={{ borderTop: `1px solid ${M.g200}`, paddingTop: 24 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 24, marginBottom: 20 }}>
-            <div style={{ maxWidth: 200 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: `linear-gradient(135deg,${M.coral},#FF8A7A)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 900, fontSize: 12 }}>K</div>
-                <div style={{ fontSize: 14, fontWeight: 900, color: M.navy }}>K-<span style={{ color: M.coral }}>ALBA</span></div>
-              </div>
-              <div style={{ fontSize: 11, color: M.g500, lineHeight: 1.6 }}>한국의 모든 외국인과 사장님을 연결하는 합법적인 알바 플랫폼</div>
-            </div>
-            <div style={{ display: "flex", gap: 32 }}>
-              {[
-                ["서비스", ["알바 찾기", "구인 등록", "근로계약서"]],
-                ["고객지원", ["문의하기", "FAQ", "블로그"]],
-                ["법적 정보", ["이용약관", "개인정보", "직업소개약관"]],
-              ].map(([title, links]) => (
-                <div key={title}>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: M.navy, marginBottom: 8, letterSpacing: 0.5 }}>{title}</div>
-                  {links.map((l) => (<div key={l} style={{ fontSize: 11, color: M.g500, marginBottom: 6, cursor: "pointer" }}>{l}</div>))}
-                </div>
-              ))}
-            </div>
+      <div style={{ maxWidth: 600, margin: "0 auto", padding: "32px 20px 40px" }}>
+        <div style={{ borderTop: `1px solid ${M.g200}`, paddingTop: 24, textAlign: "center" }}>
+          {/* 이용약관 및 개인정보처리방침 */}
+          <div style={{ marginBottom: 16 }}>
+            <Link href="/terms" style={{ fontSize: 13, fontWeight: 700, color: M.navy, textDecoration: "none", marginRight: 20 }}>
+              이용약관
+            </Link>
+            <Link href="/privacy" style={{ fontSize: 13, fontWeight: 700, color: M.navy, textDecoration: "none" }}>
+              개인정보처리방침
+            </Link>
           </div>
-          <div style={{ borderTop: `1px solid ${M.g200}`, paddingTop: 16 }}>
-            <div style={{ fontSize: 10, color: M.g500, lineHeight: 1.8 }}>K-ALBA | 대표: 남기환 | 사업자등록번호: 119-86-61402<br />직업정보제공사업 신고번호: J1204020260002 | 미림미디어랩 주식회사</div>
-            <div style={{ fontSize: 10, color: M.g300, marginTop: 6 }}>© 2026 K-ALBA. All rights reserved.</div>
+
+          {/* 법적 정보 */}
+          <div style={{ fontSize: 11, color: M.g500, lineHeight: 1.8, marginBottom: 10 }}>
+            K-ALBA | 대표: 남기환 | 사업자등록번호: 119-86-61402<br />
+            직업정보제공사업 신고번호: J1204020260002 | 미림미디어랩 주식회사
           </div>
+          <div style={{ fontSize: 10, color: M.g300 }}>© 2026 K-ALBA. All rights reserved.</div>
         </div>
       </div>
     </div>
