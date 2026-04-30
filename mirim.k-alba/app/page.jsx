@@ -773,6 +773,118 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ═══════════════════ FOOTER ═══════════════════ */}
+      <section
+        style={{
+          padding: "48px 20px 40px",
+          background: T.paper,
+          borderTop: `1px solid ${T.border}`,
+        }}
+      >
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          {/* 상단 푸터 정보 */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr auto",
+              gap: 48,
+              marginBottom: 32,
+              paddingBottom: 32,
+              borderBottom: `1px solid ${T.border}`,
+            }}
+          >
+            {/* 브랜드 정보 */}
+            <div>
+              <div
+                style={{
+                  fontSize: 18,
+                  fontWeight: 800,
+                  color: T.n9,
+                  marginBottom: 12,
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                K‑ALBA
+              </div>
+              <p
+                style={{
+                  fontSize: 14,
+                  color: T.ink2,
+                  lineHeight: 1.6,
+                  maxWidth: 400,
+                }}
+              >
+                한국의 모든 외국인과 사장님을 연결하는 합법적인 알바 플랫폼
+              </p>
+            </div>
+
+            {/* 링크 그룹 */}
+            <div style={{ display: "flex", gap: 48 }}>
+              {[
+                ["서비스", ["알바 찾기", "구인 등록", "근로계약서"]],
+                ["고객지원", ["문의하기", "FAQ", "블로그"]],
+                ["법적 정보", ["이용약관", "개인정보", "직업소개약관"]],
+              ].map(([title, links]) => (
+                <div key={title}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: T.ink,
+                      marginBottom: 12,
+                      letterSpacing: "0.03em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {title}
+                  </div>
+                  {links.map((link) => (
+                    <div
+                      key={link}
+                      style={{
+                        fontSize: 13,
+                        color: T.ink3,
+                        marginBottom: 8,
+                        cursor: "pointer",
+                        letterSpacing: "-0.01em",
+                      }}
+                    >
+                      {link}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 하단 법적 정보 */}
+          <div>
+            <div
+              style={{
+                fontSize: 12,
+                color: T.ink3,
+                lineHeight: 1.8,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              K-ALBA | 대표: 남기환 | 사업자등록번호: 119-86-61402
+              <br />
+              직업정보제공사업 신고번호: J1204020260002 | 미림미디어랩 주식회사
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                color: T.g500,
+                marginTop: 12,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              © 2026 K-ALBA. All rights reserved.
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

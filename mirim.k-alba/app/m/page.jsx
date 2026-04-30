@@ -570,7 +570,7 @@ export default function MobileLandingPage() {
             </div>
           </div>
           <div style={{ borderTop: `1px solid ${M.g200}`, paddingTop: 16 }}>
-            <div style={{ fontSize: 10, color: M.g500, lineHeight: 1.8 }}>K-ALBA | 대표: 남기환 | 사업자등록번호: 000-00-00000<br />유료직업소개사업 등록번호: 제0000-0000000-00-0-00000호 | 직업정보제공사업 신고번호: 제0000-000000000호 | 미림미디어랩 주식회사</div>
+            <div style={{ fontSize: 10, color: M.g500, lineHeight: 1.8 }}>K-ALBA | 대표: 남기환 | 사업자등록번호: 119-86-61402<br />직업정보제공사업 신고번호: J1204020260002 | 미림미디어랩 주식회사</div>
             <div style={{ fontSize: 10, color: M.g300, marginTop: 6 }}>© 2026 K-ALBA. All rights reserved.</div>
           </div>
         </div>
