@@ -783,35 +783,6 @@ export default function LandingPage() {
         }}
       >
         <div style={{ maxWidth: 1200, margin: "0 auto", textAlign: "center" }}>
-          {/* 이용약관 및 개인정보처리방침 */}
-          <div style={{ marginBottom: 20 }}>
-            <Link
-              href="/terms"
-              style={{
-                fontSize: 14,
-                fontWeight: 600,
-                color: T.ink2,
-                textDecoration: "none",
-                marginRight: 24,
-                letterSpacing: "-0.01em",
-              }}
-            >
-              이용약관
-            </Link>
-            <Link
-              href="/privacy"
-              style={{
-                fontSize: 14,
-                fontWeight: 600,
-                color: T.ink2,
-                textDecoration: "none",
-                letterSpacing: "-0.01em",
-              }}
-            >
-              개인정보처리방침
-            </Link>
-          </div>
-
           {/* 법적 정보 */}
           <div
             style={{
