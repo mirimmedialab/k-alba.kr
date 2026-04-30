@@ -30,10 +30,13 @@ import { I18nProvider } from "@/lib/i18n";
 
 // NavBar를 숨길 경로 (정확히 일치)
 const HIDE_NAVBAR_ON = ["/", "/m", "/login", "/signup"];
+// Footer를 숨길 경로 (자체 푸터가 있는 페이지)
+const HIDE_FOOTER_ON = ["/", "/m"];
 
 export default function AppFrame({ children }) {
   const pathname = usePathname();
   const showNavBar = !HIDE_NAVBAR_ON.includes(pathname);
+  const showFooter = !HIDE_FOOTER_ON.includes(pathname);
 
   // 루트 `/`는 데스크톱 풀 랜딩 또는 모바일 미들웨어 rewrite 결과인 /m
   // 어느 쪽이든 NavBar 없이 풀스크린 렌더 (랜딩에는 자체 푸터가 있음)
@@ -45,13 +48,13 @@ export default function AppFrame({ children }) {
     );
   }
 
-  // 그 외 경로: DesktopMobileFrame 적용 + 필요한 경우 NavBar 추가 + Footer
+  // 그 외 경로: DesktopMobileFrame 적용 + 필요한 경우 NavBar/Footer 추가
   return (
     <I18nProvider>
       <DesktopMobileFrame>
         {showNavBar && <NavBar />}
         {children}
-        <Footer />
+        {showFooter && <Footer />}
       </DesktopMobileFrame>
     </I18nProvider>
   );
