@@ -548,6 +548,16 @@ export default function MobileLandingPage() {
       {/* ── FOOTER ── */}
       <div style={{ maxWidth: 600, margin: "0 auto", padding: "32px 20px 40px" }}>
         <div style={{ borderTop: `1px solid ${M.g200}`, paddingTop: 24, textAlign: "center" }}>
+          {/* 이용약관 및 개인정보처리방침 */}
+          <div style={{ marginBottom: 16 }}>
+            <Link href="/terms" style={{ fontSize: 13, fontWeight: 700, color: M.navy, textDecoration: "none", marginRight: 20 }}>
+              이용약관
+            </Link>
+            <Link href="/privacy" style={{ fontSize: 13, fontWeight: 700, color: M.navy, textDecoration: "none" }}>
+              개인정보처리방침
+            </Link>
+          </div>
+
           {/* 법적 정보 */}
           <div style={{ fontSize: 11, color: M.g500, lineHeight: 1.8, marginBottom: 10 }}>
             K-ALBA | 대표: 남기환 | 사업자등록번호: 119-86-61402<br />

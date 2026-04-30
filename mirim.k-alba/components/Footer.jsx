@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { T } from "@/lib/theme";
 
 /**
@@ -23,6 +24,35 @@ export default function Footer() {
           textAlign: "center",
         }}
       >
+        {/* 이용약관 및 개인정보처리방침 */}
+        <div style={{ marginBottom: 20 }}>
+          <Link
+            href="/terms"
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: T.ink2,
+              textDecoration: "none",
+              marginRight: 24,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            이용약관
+          </Link>
+          <Link
+            href="/privacy"
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: T.ink2,
+              textDecoration: "none",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            개인정보처리방침
+          </Link>
+        </div>
+
         {/* 법적 정보 */}
         <div
           style={{

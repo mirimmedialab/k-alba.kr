@@ -783,6 +783,35 @@ export default function LandingPage() {
         }}
       >
         <div style={{ maxWidth: 1200, margin: "0 auto", textAlign: "center" }}>
+          {/* 이용약관 및 개인정보처리방침 */}
+          <div style={{ marginBottom: 20 }}>
+            <Link
+              href="/terms"
+              style={{
+                fontSize: 14,
+                fontWeight: 600,
+                color: T.ink2,
+                textDecoration: "none",
+                marginRight: 24,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              이용약관
+            </Link>
+            <Link
+              href="/privacy"
+              style={{
+                fontSize: 14,
+                fontWeight: 600,
+                color: T.ink2,
+                textDecoration: "none",
+                letterSpacing: "-0.01em",
+              }}
+            >
+              개인정보처리방침
+            </Link>
+          </div>
+
           {/* 법적 정보 */}
           <div
             style={{
@@ -793,7 +822,9 @@ export default function LandingPage() {
               marginBottom: 12,
             }}
           >
-            K-ALBA | 대표: 남기환 | 사업자등록번호: 119-86-61402 | 직업정보제공사업 신고번호: J1204020260002 | 미림미디어랩 주식회사
+            K-ALBA | 대표: 남기환 | 사업자등록번호: 119-86-61402
+            <br />
+            직업정보제공사업 신고번호: J1204020260002 | 미림미디어랩 주식회사
           </div>
           <div
             style={{
