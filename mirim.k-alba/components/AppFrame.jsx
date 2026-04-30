@@ -2,6 +2,7 @@
 import { usePathname } from "next/navigation";
 import DesktopMobileFrame from "./DesktopMobileFrame";
 import NavBar from "./NavBar";
+import Footer from "./Footer";
 import { I18nProvider } from "@/lib/i18n";
 
 /**
@@ -35,7 +36,7 @@ export default function AppFrame({ children }) {
   const showNavBar = !HIDE_NAVBAR_ON.includes(pathname);
 
   // 루트 `/`는 데스크톱 풀 랜딩 또는 모바일 미들웨어 rewrite 결과인 /m
-  // 어느 쪽이든 NavBar 없이 풀스크린 렌더
+  // 어느 쪽이든 NavBar 없이 풀스크린 렌더 (랜딩에는 자체 푸터가 있음)
   if (pathname === "/") {
     return (
       <I18nProvider>
@@ -44,12 +45,13 @@ export default function AppFrame({ children }) {
     );
   }
 
-  // 그 외 경로: DesktopMobileFrame 적용 + 필요한 경우 NavBar 추가
+  // 그 외 경로: DesktopMobileFrame 적용 + 필요한 경우 NavBar 추가 + Footer
   return (
     <I18nProvider>
       <DesktopMobileFrame>
         {showNavBar && <NavBar />}
         {children}
+        <Footer />
       </DesktopMobileFrame>
     </I18nProvider>
   );

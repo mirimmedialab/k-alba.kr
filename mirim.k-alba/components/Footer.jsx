@@ -1,82 +1,48 @@
 "use client";
-import Link from "next/link";
 import { T } from "@/lib/theme";
 
 /**
- * Footer — 웹 랜딩 페이지와 동일한 네이비 배경 스타일
+ * Footer — 전역 푸터
+ *
+ * 모든 페이지 하단에 표시되는 사업자 정보 및 저작권 표시
+ * 데스크톱/모바일 반응형 디자인
  */
 export default function Footer() {
   return (
     <footer
       style={{
-        padding: "28px 20px",
-        background: T.n9,
-        borderTop: "1px solid rgba(232,217,181,0.15)",
+        padding: "40px 20px",
+        background: T.paper,
+        borderTop: `1px solid ${T.border}`,
       }}
     >
       <div
         style={{
           maxWidth: 1200,
           margin: "0 auto",
-          display: "flex",
-          flexDirection: "column",
-          gap: 18,
-          alignItems: "center",
           textAlign: "center",
         }}
       >
-        {/* 브랜드 */}
+        {/* 법적 정보 */}
         <div
           style={{
-            fontSize: 16,
-            fontWeight: 800,
-            letterSpacing: "-0.02em",
-            color: T.paper,
-          }}
-        >
-          K‑ALBA
-        </div>
-
-        {/* 링크 */}
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            gap: 18,
             fontSize: 13,
+            color: T.ink3,
+            lineHeight: 1.8,
+            letterSpacing: "-0.01em",
+            marginBottom: 12,
           }}
         >
-          <Link
-            href="/privacy"
-            style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none" }}
-          >
-            개인정보처리방침
-          </Link>
-          <Link
-            href="/terms"
-            style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none" }}
-          >
-            이용약관
-          </Link>
-          <a
-            href="mailto:mirimmedialab@gmail.com"
-            style={{ color: "rgba(255,255,255,0.7)", textDecoration: "none" }}
-          >
-            contact@k-alba.kr
-          </a>
+          K-ALBA | 대표: 남기환 | 사업자등록번호: 119-86-61402 | 직업정보제공사업 신고번호: J1204020260002 | 미림미디어랩 주식회사
         </div>
-
-        {/* 회사 정보 */}
         <div
           style={{
             fontSize: 12,
-            color: "rgba(255,255,255,0.5)",
-            lineHeight: 1.7,
+            color: T.g500,
+            letterSpacing: "-0.01em",
           }}
         >
-          <div>© 2026 미림미디어랩 주식회사 · 대표 남기환</div>
-          <div style={{ marginTop: 2 }}>사업자등록번호 · k-alba.kr</div>
+          © 2026 K-ALBA. All rights reserved.
         </div>
       </div>
     </footer>
