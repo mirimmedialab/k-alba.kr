@@ -40,9 +40,6 @@ export default function TermsPage() {
         <h1 style={{ fontSize: 28, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: "-0.02em" }}>
           이용약관
         </h1>
-        <div style={{ fontSize: 13, color: T.ink3 }}>
-          시행일: 2026년 4월 30일 · 최종 개정일: 2026년 4월 30일
-        </div>
       </div>
 
       {/* 서문 */}
@@ -256,36 +253,6 @@ export default function TermsPage() {
           </ol>
         </Article>
       </Section>
-
-      {/* 회사 정보 */}
-      <div
-        style={{
-          marginTop: 48,
-          padding: 20,
-          background: T.cream,
-          border: `1px solid ${T.g200}`,
-          borderRadius: 12,
-          fontSize: 13,
-          color: T.ink2,
-          lineHeight: 1.9,
-        }}
-      >
-        <div style={{ fontWeight: 700, color: T.navy, marginBottom: 8, fontSize: 14 }}>
-          미림미디어랩 주식회사
-        </div>
-        <div>대표자: 남기환</div>
-        <div>사업자등록번호: 119-86-61402</div>
-        <div>직업정보제공사업 신고번호: J1204020260002</div>
-        <div>주소: 서울특별시 강서구 양천로 583 우림블루나인비즈니스센터 A동 406호</div>
-        <div>고객문의: <a href="mailto:contact@k-alba.kr" style={linkStyle}>contact@k-alba.kr</a></div>
-      </div>
-
-      {/* 하단 링크 */}
-      <div style={{ marginTop: 32, display: "flex", gap: 16, justifyContent: "center", fontSize: 13 }}>
-        <Link href="/privacy" style={{ ...linkStyle, textDecoration: "underline" }}>개인정보처리방침 보기</Link>
-        <span style={{ color: T.g300 }}>|</span>
-        <Link href="/" style={{ ...linkStyle, textDecoration: "underline" }}>홈으로</Link>
-      </div>
     </div>
   );
 }
