@@ -277,42 +277,4 @@ export const ja = {
     applicantCount: "応募者",
     applicantCountSuffix: "",
   },
-  partwork: {
-    title: "PartWork · 資格外活動許可",
-    newApplication: "+ 新規申請",
-    newApplicationLong: "申請する →",
-    myApplicationsHeading: "申請履歴 {count}件",
-    myApplicationsSub: "D-2/D-4ビザ留学生のための国際課時間制就業申請",
-    importantTitle: "📘 重要 · 必ずご確認ください",
-    importantBullet1: "労働契約完了後にのみ申請可能です",
-    importantBullet2_html: "D-4ビザは入国後<strong>6ヶ月経過</strong>後に申請可能",
-    importantBullet3_html: "教育部<strong>認証大学在学生</strong>のみ対象",
-    importantBullet4_html: "申請後、国際課担当者が<strong>24時間以内</strong>に確認",
-    emptyTitle: "まだ申請履歴がありません",
-    emptyDescription: "労働契約完了後、時間制就業を申請してください",
-    loading: "しばらくお待ちください",
-    topikNone: "なし",
-    topikSuffix: "級",
-    weeklyHours: "週{hours}時間",
-    allowedHours: "上限 {hours}h",
-    allowedUnlimited: "無制限",
-    status: {
-      draft: "下書き",
-      submitted: "提出済み",
-      reviewing: "審査中",
-      documents_needed: "書類要請",
-      approved: "承認済み",
-      rejected: "却下",
-      cancelled: "キャンセル"
-    }
-  },
-  chat: {
-    title: "チャット",
-    conversationsCount: "{count}件の会話",
-    online: "オンライン",
-    inputPlaceholder: "メッセージを入力...",
-    yesterday: "昨日",
-    daysAgo: "{n}日前",
-    empty: "まだ会話がありません"
-  },
 };

@@ -2,11 +2,37 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
-import { Btn } from "@/components/UI";
 import { AddressSearchModal } from "@/components/AddressSearch";
 import { JOB_PRESETS, getMarketPay } from "@/data/marketData";
 import { createJob, getCurrentUser } from "@/lib/supabase";
+import { Button, KIcon } from "@/components/ui";
 
+/**
+ * /jobs/post 공고 등록 (BI v2)
+ *
+ * 디자인 패턴: 카카오톡 챗봇 14단계 인터랙션 (BI v2 핵심 가치 "3분 공고 등록")
+ *
+ * 페르소나 (BI v2 Section 6 — 사장님):
+ *   - 무드: 신뢰·전문성 + 친근한 카톡 인터페이스
+ *   - 색상: 카카오 노랑(K 아바타) + 차분 코랄(사장님 액션)
+ *
+ * 변경점 (BI v2):
+ *   - Btn (UI.jsx) → Button variant="primaryDark" (사장님 페이지 일관성)
+ *   - 인라인 K 박스 → KIcon variant="kakao" (Step 3-A 워드마크)
+ *   - 입력 send 버튼/등록 버튼: T.coral → T.coralDark (사장님 차분 톤)
+ *   - T.g500/g700/g100/g200/g300 → T.ink3/ink2/border/borderStrong (새 표준)
+ *
+ * 보존 (100%):
+ *   - 카카오톡 스타일 챗봇 14단계 흐름 (업종/제목/근무형태/주소/.../비자/...)
+ *   - 카톡 채팅창 디자인 (#B2C7D9 배경, 노란 K 박스, 말풍선)
+ *   - 시세 가이드 (getMarketPay) — 지역·업종별 시급 안내
+ *   - JOB_PRESETS 업종별 추천 (intro/title/addrEx/payType 등)
+ *   - chips/multi/chipsInput/addressSearch/textarea 5가지 입력 타입
+ *   - typing 인디케이터 + scrollIntoView
+ *   - 등록 완료 카드 (코랄 그라데이션 — 기쁨 강조)
+ *   - resetChat (다시 작성) + handlePost (지오코딩 + 알림)
+ *   - 푸시 알림 발송 (반경 내 구독자)
+ */
 export default function PostJobPage() {
   const router = useRouter();
   const [messages, setMessages] = useState([]);
@@ -182,7 +208,7 @@ export default function PostJobPage() {
       return;
     }
 
-    // 🆕 주소를 좌표로 변환 (Kakao 지오코딩)
+    // 주소를 좌표로 변환 (Kakao 지오코딩)
     let geoData = {};
     if (a.address) {
       try {
@@ -205,7 +231,6 @@ export default function PostJobPage() {
         }
       } catch (e) {
         console.error("[post-job] geocoding failed:", e);
-        // 지오코딩 실패해도 공고는 등록 진행 (나중에 백필)
       }
     }
 
@@ -227,9 +252,7 @@ export default function PostJobPage() {
       headcount: a.headcount,
       benefits: a.benefits,
       description: a.description,
-      // 🆕 위치 데이터 병합
       ...geoData,
-      // 🆕 숙식/통근버스는 benefits에서 추출 (기존 체크박스 재활용)
       provides_housing: Array.isArray(a.benefits)
         ? a.benefits.some(b => b.includes("숙식") || b.includes("기숙사"))
         : false,
@@ -239,9 +262,8 @@ export default function PostJobPage() {
     };
     const { data: newJob } = await createJob(jobData);
 
-    // 🆕 푸시 알림: 반경 내 구독자에게 새 공고 알림 발송
+    // 푸시 알림 (fire-and-forget)
     if (newJob?.id) {
-      // fire-and-forget (응답 대기하지 않음 — UX 지연 방지)
       fetch("/api/notifications/notify-nearby-job", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -281,15 +303,24 @@ export default function PostJobPage() {
   const currentOptions = getStepOptions(step);
   const currentPlaceholder = getPlaceholder(step, answers);
 
+  // 등록 완료 화면 — Step 3-A Button (primaryDark = 사장님 페이지 일관성)
   if (posted) {
     return (
       <div style={{ padding: "50px 20px", maxWidth: 440, margin: "0 auto", textAlign: "center" }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
-        <h2 style={{ fontSize: 20, fontWeight: 800, color: T.navy, marginBottom: 8 }}>공고가 등록되었습니다!</h2>
-        <p style={{ color: T.g500, fontSize: 14, marginBottom: 24 }}>외국인 구직자들에게 자동으로 매칭됩니다</p>
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: T.navy, marginBottom: 8 }}>
+          공고가 등록되었습니다!
+        </h2>
+        <p style={{ color: T.ink3, fontSize: 14, marginBottom: 24 }}>
+          외국인 구직자들에게 자동으로 매칭됩니다
+        </p>
         <div style={{ display: "flex", gap: 10 }}>
-          <Btn primary full onClick={() => router.push("/my/jobs")}>내 공고 확인</Btn>
-          <Btn full onClick={() => { setPosted(false); resetChat(); }}>추가 등록</Btn>
+          <Button variant="primaryDark" fullWidth onClick={() => router.push("/my/jobs")}>
+            내 공고 확인
+          </Button>
+          <Button variant="secondary" fullWidth onClick={() => { setPosted(false); resetChat(); }}>
+            추가 등록
+          </Button>
         </div>
       </div>
     );
@@ -297,16 +328,16 @@ export default function PostJobPage() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 60px)", maxWidth: 540, margin: "0 auto", position: "relative" }}>
-      {/* 헤더 */}
-      <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.g200}`, background: "#fff", display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 12, background: "#FEE500", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>💬</div>
+      {/* 헤더 — KIcon variant="kakao" */}
+      <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`, background: "#fff", display: "flex", alignItems: "center", gap: 12 }}>
+        <KIcon variant="kakao" size="md" style={{ width: 40, height: 40, fontSize: 20, borderRadius: 12 }} />
         <div>
           <div style={{ fontWeight: 800, fontSize: 15, color: T.navy }}>K-ALBA 채용 도우미</div>
-          <div style={{ fontSize: 11, color: T.g500 }}>카카오톡 챗봇 · {step > 0 ? `진행 ${step}/${TOTAL_STEPS}` : "시작"}</div>
+          <div style={{ fontSize: 11, color: T.ink3 }}>카카오톡 챗봇 · {step > 0 ? `진행 ${step}/${TOTAL_STEPS}` : "시작"}</div>
         </div>
       </div>
 
-      {/* 메시지 영역 */}
+      {/* 메시지 영역 (카톡 채팅 배경 #B2C7D9 보존) */}
       <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", background: "#B2C7D9" }}>
         <div style={{ textAlign: "center", marginBottom: 16 }}>
           <span style={{ background: "rgba(0,0,0,0.15)", color: "#fff", padding: "4px 14px", borderRadius: 20, fontSize: 11 }}>오늘</span>
@@ -331,28 +362,30 @@ export default function PostJobPage() {
             return (
               <div key={i}>
                 <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 10, background: "#FEE500", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>K</div>
+                  <KIcon variant="kakao" size="sm" style={{ width: 32, height: 32, fontSize: 14, borderRadius: 10 }} />
                   <div style={{ fontSize: 13, color: T.navy, lineHeight: 1.6, background: "#fff", padding: "10px 14px", borderRadius: "4px 14px 14px 14px", maxWidth: "85%" }}>{m.text}</div>
                 </div>
-                <div style={{ marginLeft: 40, background: "#fff", borderRadius: 16, overflow: "hidden", marginBottom: 10, border: `1px solid ${T.g200}` }}>
+                <div style={{ marginLeft: 40, background: "#fff", borderRadius: 16, overflow: "hidden", marginBottom: 10, border: `1px solid ${T.border}` }}>
+                  {/* 카드 헤더: 코랄 그라데이션 (기쁨 강조 — 그대로 유지) */}
                   <div style={{ background: `linear-gradient(135deg,${T.coral},#FF8A7A)`, padding: "16px 18px", color: "#fff" }}>
                     <div style={{ fontSize: 11, opacity: 0.8, marginBottom: 4 }}>K-ALBA 채용공고</div>
                     <div style={{ fontSize: 17, fontWeight: 800 }}>{a.title || "채용공고"}</div>
                   </div>
                   <div style={{ padding: "16px 18px" }}>
                     {summaryRows.map((row) => (
-                      <div key={row[0]} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: `1px solid ${T.g100}`, fontSize: 12 }}>
-                        <span style={{ color: T.g500, flexShrink: 0 }}>{row[0]}</span>
+                      <div key={row[0]} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: `1px solid ${T.cream}`, fontSize: 12 }}>
+                        <span style={{ color: T.ink3, flexShrink: 0 }}>{row[0]}</span>
                         <span style={{ fontWeight: 600, color: T.navy, textAlign: "right", maxWidth: "60%" }}>{row[1]}</span>
                       </div>
                     ))}
                     {a.description && a.description !== "없음" && (
-                      <div style={{ marginTop: 10, fontSize: 12, color: T.g700, lineHeight: 1.6, background: T.g100, padding: "10px 12px", borderRadius: 8, whiteSpace: "pre-wrap" }}>{a.description}</div>
+                      <div style={{ marginTop: 10, fontSize: 12, color: T.ink2, lineHeight: 1.6, background: T.cream, padding: "10px 12px", borderRadius: 8, whiteSpace: "pre-wrap" }}>{a.description}</div>
                     )}
                   </div>
+                  {/* 등록 버튼 — coralDark (사장님 페이지) */}
                   <div style={{ padding: "0 18px 16px", display: "flex", gap: 8 }}>
-                    <button onClick={handlePost} style={{ flex: 1, padding: "12px", borderRadius: 10, background: T.coral, color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>공고 등록하기</button>
-                    <button onClick={resetChat} style={{ flex: 1, padding: "12px", borderRadius: 10, background: T.g100, color: T.g700, border: "none", fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>다시 작성</button>
+                    <button onClick={handlePost} style={{ flex: 1, padding: "12px", borderRadius: 10, background: T.coralDark, color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>공고 등록하기</button>
+                    <button onClick={resetChat} style={{ flex: 1, padding: "12px", borderRadius: 10, background: T.cream, color: T.ink2, border: "none", fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>다시 작성</button>
                   </div>
                 </div>
               </div>
@@ -362,7 +395,7 @@ export default function PostJobPage() {
           const isUser = m.from === "user";
           return (
             <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start", gap: 8, marginBottom: 10 }}>
-              {!isUser && <div style={{ width: 32, height: 32, borderRadius: 10, background: "#FEE500", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>K</div>}
+              {!isUser && <KIcon variant="kakao" size="sm" style={{ width: 32, height: 32, fontSize: 14, borderRadius: 10 }} />}
               <div style={{ maxWidth: "78%", padding: "10px 14px", borderRadius: isUser ? "14px 4px 14px 14px" : "4px 14px 14px 14px", background: isUser ? "#FFEB33" : "#fff", color: T.navy, fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{m.text}</div>
             </div>
           );
@@ -370,10 +403,10 @@ export default function PostJobPage() {
 
         {typing && (
           <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 10, background: "#FEE500", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>K</div>
+            <KIcon variant="kakao" size="sm" style={{ width: 32, height: 32, fontSize: 14, borderRadius: 10 }} />
             <div style={{ background: "#fff", padding: "12px 18px", borderRadius: "4px 14px 14px 14px", display: "flex", gap: 4 }}>
               {[0, 1, 2].map((d) => (
-                <div key={d} style={{ width: 6, height: 6, borderRadius: 3, background: T.g300, animation: `dotPulse 1s ease-in-out ${d * 0.2}s infinite` }} />
+                <div key={d} style={{ width: 6, height: 6, borderRadius: 3, background: T.borderStrong, animation: `dotPulse 1s ease-in-out ${d * 0.2}s infinite` }} />
               ))}
             </div>
           </div>
@@ -381,66 +414,71 @@ export default function PostJobPage() {
         <div ref={scrollRef} />
       </div>
 
-      {/* 입력 영역 */}
+      {/* 입력 영역 - chips */}
       {!typing && currentType === "chips" && (
-        <div style={{ padding: "10px 16px", background: "#fff", borderTop: `1px solid ${T.g200}`, display: "flex", gap: 6, flexWrap: "wrap", maxHeight: 140, overflowY: "auto" }}>
+        <div style={{ padding: "10px 16px", background: "#fff", borderTop: `1px solid ${T.border}`, display: "flex", gap: 6, flexWrap: "wrap", maxHeight: 140, overflowY: "auto" }}>
           {currentOptions.map((c) => (
-            <button key={c} onClick={() => submitAnswer(c)} style={{ padding: "8px 16px", borderRadius: 20, border: `1.5px solid ${T.g200}`, background: "#fff", fontSize: 13, fontWeight: 600, color: T.navy, cursor: "pointer", fontFamily: "inherit" }}>{c}</button>
+            <button key={c} onClick={() => submitAnswer(c)} style={{ padding: "8px 16px", borderRadius: 20, border: `1.5px solid ${T.border}`, background: "#fff", fontSize: 13, fontWeight: 600, color: T.navy, cursor: "pointer", fontFamily: "inherit" }}>{c}</button>
           ))}
         </div>
       )}
 
+      {/* 입력 영역 - chipsInput */}
       {!typing && currentType === "chipsInput" && (
-        <div style={{ background: "#fff", borderTop: `1px solid ${T.g200}` }}>
+        <div style={{ background: "#fff", borderTop: `1px solid ${T.border}` }}>
           <div style={{ padding: "10px 16px 6px", display: "flex", gap: 6, flexWrap: "wrap" }}>
             {currentOptions.map((c) => (
-              <button key={c} onClick={() => submitAnswer(c)} style={{ padding: "8px 16px", borderRadius: 20, border: `1.5px solid ${T.g200}`, background: "#fff", fontSize: 13, fontWeight: 600, color: T.navy, cursor: "pointer", fontFamily: "inherit" }}>{c}</button>
+              <button key={c} onClick={() => submitAnswer(c)} style={{ padding: "8px 16px", borderRadius: 20, border: `1.5px solid ${T.border}`, background: "#fff", fontSize: 13, fontWeight: 600, color: T.navy, cursor: "pointer", fontFamily: "inherit" }}>{c}</button>
             ))}
           </div>
           <div style={{ padding: "4px 16px 10px", display: "flex", gap: 8 }}>
-            <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleInputSend()} placeholder={currentPlaceholder} style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `2px solid ${T.g200}`, fontSize: 14, fontFamily: "inherit", outline: "none" }} />
-            <button onClick={handleInputSend} disabled={!input.trim()} style={{ padding: "10px 16px", borderRadius: 12, background: input.trim() ? T.coral : T.g200, color: input.trim() ? "#fff" : T.g500, border: "none", fontWeight: 700, fontSize: 15, cursor: input.trim() ? "pointer" : "default" }}>↑</button>
+            <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleInputSend()} placeholder={currentPlaceholder} style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `2px solid ${T.border}`, fontSize: 14, fontFamily: "inherit", outline: "none" }} />
+            {/* send 버튼 — coralDark (사장님 페이지) */}
+            <button onClick={handleInputSend} disabled={!input.trim()} style={{ padding: "10px 16px", borderRadius: 12, background: input.trim() ? T.coralDark : T.border, color: input.trim() ? "#fff" : T.ink3, border: "none", fontWeight: 700, fontSize: 15, cursor: input.trim() ? "pointer" : "default" }}>↑</button>
           </div>
         </div>
       )}
 
+      {/* 입력 영역 - multi (다중 선택) */}
       {!typing && currentType === "multi" && (
-        <div style={{ padding: "10px 16px", background: "#fff", borderTop: `1px solid ${T.g200}` }}>
+        <div style={{ padding: "10px 16px", background: "#fff", borderTop: `1px solid ${T.border}` }}>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8, maxHeight: 100, overflowY: "auto" }}>
             {currentOptions.map((c) => {
               const sel = multiSel.indexOf(c) >= 0;
               return (
-                <button key={c} onClick={() => toggleMulti(c)} style={{ padding: "8px 16px", borderRadius: 20, border: `1.5px solid ${sel ? T.mint : T.g200}`, background: sel ? T.mintL : "#fff", fontSize: 13, fontWeight: 600, color: sel ? "#059669" : T.navy, cursor: "pointer", fontFamily: "inherit" }}>{sel ? "✓ " : ""}{c}</button>
+                <button key={c} onClick={() => toggleMulti(c)} style={{ padding: "8px 16px", borderRadius: 20, border: `1.5px solid ${sel ? T.mint : T.border}`, background: sel ? T.mintL : "#fff", fontSize: 13, fontWeight: 600, color: sel ? "#059669" : T.navy, cursor: "pointer", fontFamily: "inherit" }}>{sel ? "✓ " : ""}{c}</button>
               );
             })}
           </div>
-          <button onClick={confirmMulti} disabled={multiSel.length === 0} style={{ width: "100%", padding: "10px", borderRadius: 10, background: multiSel.length > 0 ? T.mint : T.g200, color: multiSel.length > 0 ? "#fff" : T.g500, border: "none", fontWeight: 700, fontSize: 13, cursor: multiSel.length > 0 ? "pointer" : "default", fontFamily: "inherit" }}>
+          <button onClick={confirmMulti} disabled={multiSel.length === 0} style={{ width: "100%", padding: "10px", borderRadius: 10, background: multiSel.length > 0 ? T.mint : T.border, color: multiSel.length > 0 ? "#fff" : T.ink3, border: "none", fontWeight: 700, fontSize: 13, cursor: multiSel.length > 0 ? "pointer" : "default", fontFamily: "inherit" }}>
             {multiSel.length > 0 ? `${multiSel.length}개 선택 완료` : "선택해 주세요"}
           </button>
         </div>
       )}
 
+      {/* 입력 영역 - addressSearch */}
       {!typing && currentType === "addressSearch" && (
-        <div style={{ background: "#fff", borderTop: `1px solid ${T.g200}` }}>
+        <div style={{ background: "#fff", borderTop: `1px solid ${T.border}` }}>
           <div style={{ padding: "10px 16px 6px" }}>
             <button onClick={() => setAddrModal(true)} style={{ width: "100%", padding: 12, borderRadius: 12, background: "#FEE500", color: "#3C1E1E", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
               🔍 카카오 주소 검색
             </button>
           </div>
           <div style={{ padding: "4px 16px 10px", display: "flex", gap: 8 }}>
-            <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleInputSend()} placeholder="직접 입력도 가능" style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `2px solid ${T.g200}`, fontSize: 14, fontFamily: "inherit", outline: "none" }} />
-            <button onClick={handleInputSend} disabled={!input.trim()} style={{ padding: "10px 16px", borderRadius: 12, background: input.trim() ? T.coral : T.g200, color: input.trim() ? "#fff" : T.g500, border: "none", fontWeight: 700, fontSize: 15, cursor: input.trim() ? "pointer" : "default" }}>↑</button>
+            <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleInputSend()} placeholder="직접 입력도 가능" style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `2px solid ${T.border}`, fontSize: 14, fontFamily: "inherit", outline: "none" }} />
+            <button onClick={handleInputSend} disabled={!input.trim()} style={{ padding: "10px 16px", borderRadius: 12, background: input.trim() ? T.coralDark : T.border, color: input.trim() ? "#fff" : T.ink3, border: "none", fontWeight: 700, fontSize: 15, cursor: input.trim() ? "pointer" : "default" }}>↑</button>
           </div>
         </div>
       )}
 
+      {/* 입력 영역 - input / textarea */}
       {!typing && (currentType === "input" || currentType === "textarea") && (
-        <div style={{ padding: "10px 16px", background: "#fff", borderTop: `1px solid ${T.g200}`, display: "flex", gap: 8 }}>
+        <div style={{ padding: "10px 16px", background: "#fff", borderTop: `1px solid ${T.border}`, display: "flex", gap: 8 }}>
           {currentType === "textarea"
-            ? <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder={currentPlaceholder} style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `2px solid ${T.g200}`, fontSize: 14, fontFamily: "inherit", outline: "none", minHeight: 60, resize: "none" }} />
-            : <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleInputSend()} placeholder={currentPlaceholder} style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `2px solid ${T.g200}`, fontSize: 14, fontFamily: "inherit", outline: "none" }} />
+            ? <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder={currentPlaceholder} style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `2px solid ${T.border}`, fontSize: 14, fontFamily: "inherit", outline: "none", minHeight: 60, resize: "none" }} />
+            : <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleInputSend()} placeholder={currentPlaceholder} style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `2px solid ${T.border}`, fontSize: 14, fontFamily: "inherit", outline: "none" }} />
           }
-          <button onClick={handleInputSend} disabled={!input.trim()} style={{ padding: "10px 16px", borderRadius: 12, background: input.trim() ? T.coral : T.g200, color: input.trim() ? "#fff" : T.g500, border: "none", fontWeight: 700, fontSize: 15, cursor: input.trim() ? "pointer" : "default" }}>↑</button>
+          <button onClick={handleInputSend} disabled={!input.trim()} style={{ padding: "10px 16px", borderRadius: 12, background: input.trim() ? T.coralDark : T.border, color: input.trim() ? "#fff" : T.ink3, border: "none", fontWeight: 700, fontSize: 15, cursor: input.trim() ? "pointer" : "default" }}>↑</button>
         </div>
       )}
 

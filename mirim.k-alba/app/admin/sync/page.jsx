@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { T } from "@/lib/theme";
 import { supabase, getCurrentUser } from "@/lib/supabase";
+import { Badge, Empty, PageLoading } from "@/components/ui";
 
 /**
  * /admin/sync — 공고 데이터 동기화 모니터링
@@ -65,7 +66,7 @@ export default function AdminSyncPage() {
     setSourceCounts(counts);
   };
 
-  if (loading) return <div style={{ padding: 40, textAlign: "center", color: T.ink3 }}>로딩 중...</div>;
+  if (loading) return <PageLoading message="로딩 중..." minHeight={400} />;
   if (!authorized) return null;
 
   // 소스별 최신 로그 계산
@@ -149,17 +150,10 @@ export default function AdminSyncPage() {
         </h2>
 
         {logs.length === 0 ? (
-          <div style={{
-            padding: "48px 20px",
-            background: T.cream,
-            border: `1px solid ${T.border}`,
-            borderRadius: 4,
-            textAlign: "center",
-            color: T.ink3,
-            fontSize: 14,
-          }}>
-            아직 동기화 로그가 없습니다
-          </div>
+          <Empty
+            variant="no-data"
+            description="아직 동기화 로그가 없습니다"
+          />
         ) : (
           <div style={{ border: `1px solid ${T.border}`, borderRadius: 4, overflow: "hidden" }}>
             {logs.map((log, i) => (
@@ -173,27 +167,20 @@ export default function AdminSyncPage() {
                 flexWrap: "wrap",
               }}>
                 <div style={{ flex: 1, minWidth: 200 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em", marginBottom: 2 }}>
-                    {log.source}
-                    <span style={{
-                      marginLeft: 8,
-                      padding: "1px 7px",
-                      borderRadius: 2,
-                      fontSize: 10,
-                      fontWeight: 700,
-                      background:
-                        log.status === "success" ? "#E8F5EC" :
-                        log.status === "failed" ? "#FEE" :
-                        T.cream,
-                      color:
-                        log.status === "success" ? T.green :
-                        log.status === "failed" ? "#A31919" :
-                        T.ink2,
-                    }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em", marginBottom: 2, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <span>{log.source}</span>
+                    <Badge
+                      variant={
+                        log.status === "success" ? "success" :
+                        log.status === "failed" ? "error" :
+                        "neutral"
+                      }
+                      size="sm"
+                    >
                       {log.status === "success" ? "✓ 성공" :
                        log.status === "failed" ? "✗ 실패" :
                        log.status}
-                    </span>
+                    </Badge>
                   </div>
                   <div style={{ fontSize: 11, color: T.ink3 }}>
                     {new Date(log.started_at).toLocaleString("ko-KR")}

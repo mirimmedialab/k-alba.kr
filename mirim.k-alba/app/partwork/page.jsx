@@ -4,25 +4,45 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
 import { supabase, getCurrentUser } from "@/lib/supabase";
+import { useT } from "@/lib/i18n";
+import { Badge, Empty, Button, PageLoading } from "@/components/ui";
 
 /**
- * /partwork — 내 시간제취업 신청 내역
+ * /partwork — 내 시간제취업 신청 내역 (BI v2 + i18n)
  *
- * 유학생(D-2/D-4)만 접근. 신청 이력과 상태 표시.
+ * 페르소나: D-2/D-4 비자 유학생 — 외국인 = 7개 언어 지원 필수
+ *
+ * i18n 변경점:
+ *   - STATUS_INFO의 label은 t("partwork.status.{key}")로 동적 조회
+ *   - 모든 정적 텍스트 → t()
+ *   - 변수 보간: t("partwork.weeklyHours", { hours: app.weekly_hours })
+ *
+ * 보존:
+ *   - Badge 시맨틱 (variant, icon)
+ *   - Editorial 골드 헤더
+ *   - 7단계 상태 시각화
  */
 
-const STATUS_INFO = {
-  draft:             { label: "작성 중",      color: "#888",   bg: "#F7F5F0", icon: "📝" },
-  submitted:         { label: "제출됨",        color: "#1A56F0", bg: "#DBEAFE", icon: "📤" },
-  reviewing:         { label: "검토 중",       color: "#A17810", bg: "#FEF3C7", icon: "🔍" },
-  documents_needed:  { label: "서류 요청",     color: "#F07820", bg: "#FFEDD5", icon: "📋" },
-  approved:          { label: "승인 완료",     color: "#00B37E", bg: "#D1FAE5", icon: "✅" },
-  rejected:          { label: "반려",          color: "#E03030", bg: "#FEE2E2", icon: "❌" },
-  cancelled:         { label: "취소됨",       color: "#888",    bg: "#F7F5F0", icon: "⊘" },
+// 변수 치환 헬퍼 (간단한 {key} 보간)
+function fmt(template, vars) {
+  if (!vars) return template;
+  return template.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? `{${k}}`);
+}
+
+// Badge variant + icon (label은 i18n으로 분리)
+const STATUS_META = {
+  draft:             { variant: "neutral", icon: "📝" },
+  submitted:         { variant: "info",    icon: "📤" },
+  reviewing:         { variant: "warning", icon: "🔍" },
+  documents_needed:  { variant: "warning", icon: "📋" },
+  approved:          { variant: "success", icon: "✅" },
+  rejected:          { variant: "error",   icon: "❌" },
+  cancelled:         { variant: "neutral", icon: "⊘" },
 };
 
 export default function PartWorkIndexPage() {
   const router = useRouter();
+  const t = useT();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,7 +65,7 @@ export default function PartWorkIndexPage() {
   }, [router]);
 
   if (loading) {
-    return <div style={{ padding: 40, textAlign: "center", color: T.ink3 }}>로딩 중...</div>;
+    return <PageLoading message={t("partwork.loading")} minHeight={400} />;
   }
 
   return (
@@ -55,7 +75,7 @@ export default function PartWorkIndexPage() {
         fontSize: 11, fontWeight: 700, color: T.ink3,
         letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8,
       }}>
-        PartWork · 시간제취업 신청
+        {t("partwork.title")}
       </div>
 
       <div style={{
@@ -71,28 +91,15 @@ export default function PartWorkIndexPage() {
             fontSize: 28, fontWeight: 800, color: T.ink,
             letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.25,
           }}>
-            내 신청 내역 {applications.length}건
+            {fmt(t("partwork.myApplicationsHeading"), { count: applications.length })}
           </h1>
           <p style={{ color: T.ink2, fontSize: 14, lineHeight: 1.6 }}>
-            D-2/D-4 비자 유학생을 위한 국제처 시간제취업 신청 관리
+            {t("partwork.myApplicationsSub")}
           </p>
         </div>
-        <Link href="/partwork/apply" style={{ textDecoration: "none" }}>
-          <button style={{
-            padding: "12px 20px",
-            background: T.n9,
-            color: T.gold,
-            border: "none",
-            borderRadius: 4,
-            fontSize: 13,
-            fontWeight: 700,
-            cursor: "pointer",
-            fontFamily: "inherit",
-            letterSpacing: "-0.01em",
-          }}>
-            + 새 신청
-          </button>
-        </Link>
+        <Button variant="primary" href="/partwork/apply" size="md">
+          {t("partwork.newApplication")}
+        </Button>
       </div>
 
       {/* 안내 배너 */}
@@ -111,55 +118,33 @@ export default function PartWorkIndexPage() {
           textTransform: "uppercase",
           marginBottom: 6,
         }}>
-          📘 Important · 꼭 확인하세요
+          {t("partwork.importantTitle")}
         </div>
         <div style={{ fontSize: 12, color: "#1E40AF", lineHeight: 1.7 }}>
-          • 알바계약서 완료 후에만 신청 가능합니다<br />
-          • D-4 비자는 입국 후 <strong>6개월 경과</strong>해야 신청할 수 있습니다<br />
-          • 교육부 <strong>인증대학 재학생</strong>만 대상입니다<br />
-          • 신청 후 국제처 담당자가 <strong>24시간 내</strong> 확인합니다
+          • {t("partwork.importantBullet1")}<br />
+          • <span dangerouslySetInnerHTML={{ __html: t("partwork.importantBullet2_html") }} /><br />
+          • <span dangerouslySetInnerHTML={{ __html: t("partwork.importantBullet3_html") }} /><br />
+          • <span dangerouslySetInnerHTML={{ __html: t("partwork.importantBullet4_html") }} />
         </div>
       </div>
 
       {applications.length === 0 ? (
-        <div style={{
-          padding: "48px 20px",
-          textAlign: "center",
-          background: T.cream,
-          border: `1px solid ${T.border}`,
-          borderRadius: 4,
-        }}>
-          <div style={{ fontSize: 40, marginBottom: 16, opacity: 0.6 }}>📝</div>
-          <div style={{
-            fontSize: 15,
-            fontWeight: 700,
-            color: T.ink,
-            marginBottom: 8,
-            letterSpacing: "-0.02em",
-          }}>
-            아직 신청 내역이 없습니다
-          </div>
-          <p style={{ fontSize: 13, color: T.ink2, marginBottom: 20, lineHeight: 1.6 }}>
-            알바계약 완료 후 시간제취업을 신청해 보세요
-          </p>
-          <Link href="/partwork/apply" style={{
-            display: "inline-block",
-            padding: "12px 24px",
-            background: T.n9,
-            color: T.gold,
-            textDecoration: "none",
-            fontSize: 13,
-            fontWeight: 700,
-            borderRadius: 4,
-            letterSpacing: "-0.01em",
-          }}>
-            신청하기 →
-          </Link>
-        </div>
+        <Empty
+          variant="no-data"
+          icon="📝"
+          title={t("partwork.emptyTitle")}
+          description={t("partwork.emptyDescription")}
+          action={
+            <Button variant="primary" href="/partwork/apply">
+              {t("partwork.newApplicationLong")}
+            </Button>
+          }
+        />
       ) : (
         <div>
           {applications.map((app, idx) => {
-            const st = STATUS_INFO[app.status] || STATUS_INFO.submitted;
+            const meta = STATUS_META[app.status] || STATUS_META.submitted;
+            const statusLabel = t(`partwork.status.${app.status}`) || t("partwork.status.submitted");
             return (
               <Link
                 key={app.id}
@@ -205,28 +190,27 @@ export default function PartWorkIndexPage() {
                       }}>
                         {app.employer_name}
                       </span>
-                      <span style={{
-                        padding: "2px 8px",
-                        borderRadius: 2,
-                        fontSize: 11,
-                        fontWeight: 700,
-                        background: st.bg,
-                        color: st.color,
-                        letterSpacing: "0.02em",
-                      }}>
-                        {st.icon} {st.label}
-                      </span>
+                      <Badge variant={meta.variant} size="sm" icon={meta.icon}>
+                        {statusLabel}
+                      </Badge>
                     </div>
                     <div style={{ fontSize: 13, color: T.ink2, marginBottom: 6 }}>
-                      {app.university_name} · {app.visa} · TOPIK {app.topik_level === 0 ? "없음" : `${app.topik_level}급`}
+                      {app.university_name} · {app.visa} · TOPIK{" "}
+                      {app.topik_level === 0
+                        ? t("partwork.topikNone")
+                        : `${app.topik_level}${t("partwork.topikSuffix")}`}
                     </div>
                     <div style={{ display: "flex", gap: 12, flexWrap: "wrap", fontSize: 11, color: T.ink3 }}>
-                      <span>주 {app.weekly_hours}시간</span>
-                      <span>·</span>
-                      <span>허용 {app.validation_max_hours == null ? "무제한" : `${app.validation_max_hours}h`}</span>
+                      <span>{fmt(t("partwork.weeklyHours"), { hours: app.weekly_hours })}</span>
                       <span>·</span>
                       <span>
-                        {new Date(app.submitted_at || app.created_at).toLocaleDateString("ko-KR")}
+                        {app.validation_max_hours == null
+                          ? t("partwork.allowedUnlimited")
+                          : fmt(t("partwork.allowedHours"), { hours: app.validation_max_hours })}
+                      </span>
+                      <span>·</span>
+                      <span>
+                        {new Date(app.submitted_at || app.created_at).toLocaleDateString()}
                       </span>
                     </div>
                   </div>

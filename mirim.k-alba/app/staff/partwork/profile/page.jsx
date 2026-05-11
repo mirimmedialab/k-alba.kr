@@ -2,14 +2,30 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { T } from "@/lib/theme";
 import { getCurrentUser, supabase } from "@/lib/supabase";
 import SignaturePad from "@/components/SignaturePad";
+import { Button, Badge, Empty, PageLoading, ButtonLoading } from "@/components/ui";
 
 /**
- * /staff/partwork/profile — 담당자 본인 정보 + 서명 관리
+ * /staff/partwork/profile 담당자 본인 정보 + 서명 (BI v2)
  *
- * 담당자가 자기 정보를 수정하고 기본 서명을 등록/변경할 수 있는 페이지.
- * 기본 서명은 신청서 검토 시 자동으로 불러와 즉시 서명 가능.
+ * 페르소나: 학교 담당자 — Editorial 골드 톤
+ *
+ * 변경점 (BI v2):
+ *   - 인라인 hex → T 토큰
+ *   - 권한 없음 → Empty variant="error"
+ *   - 로딩 → PageLoading
+ *   - 인증 배지 → Badge variant="success" (IEQAS 인증대학)
+ *   - 저장 버튼 → Button + ButtonLoading
+ *   - 서명 등록/다시 그리기 → Button (시맨틱)
+ *   - Editorial 골드 헤더
+ *
+ * 보존:
+ *   - 다중 대학 전환
+ *   - SignaturePad 모달
+ *   - 기본 서명 자동 적용 흐름
+ *   - 담당자 초대 링크 (manager/admin만)
  */
 export default function StaffProfilePage() {
   const router = useRouter();
@@ -81,19 +97,19 @@ export default function StaffProfilePage() {
       })
       .eq('id', activeStaff.id);
 
+    setSaving(false);
     if (error) {
       alert('저장 실패: ' + error.message);
     } else {
-      alert('✅ 저장되었습니다');
       const updated = { ...activeStaff, ...form };
       setActiveStaff(updated);
       setStaffRecords(staffRecords.map(s => s.id === activeStaff.id ? updated : s));
+      alert('✅ 저장되었습니다');
     }
-    setSaving(false);
   };
 
   const handleSaveSignature = async (signatureDataUrl) => {
-    if (!activeStaff || !signatureDataUrl) return;
+    if (!activeStaff) return;
     setSaving(true);
     const { error } = await supabase
       .from('university_staff')
@@ -115,50 +131,63 @@ export default function StaffProfilePage() {
     setSaving(false);
   };
 
-  if (loading) {
-    return <div style={{ padding: 60, textAlign: 'center' }}>⏳ 로딩...</div>;
-  }
+  if (loading) return <PageLoading message="로딩 중..." minHeight={400} />;
+
   if (!activeStaff) {
     return (
-      <div style={{ padding: 40, maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
-        <div style={{ background: '#FEF2F2', padding: 24, borderRadius: 12 }}>
-          <div style={{ fontSize: 32 }}>🔒</div>
-          <div style={{ fontWeight: 800, color: '#991B1B', marginTop: 12 }}>담당자 권한이 없습니다</div>
-          <Link href="/staff/partwork" style={{ display: 'inline-block', marginTop: 16,
-            padding: '10px 20px', background: '#111', color: '#FFF', borderRadius: 8,
-            textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>← 포털로</Link>
-        </div>
+      <div style={{ padding: 40, maxWidth: 600, margin: '0 auto' }}>
+        <Empty
+          variant="error"
+          icon="🔒"
+          title="담당자 권한이 없습니다"
+          action={
+            <Button variant="primary" href="/staff/partwork">← 포털로</Button>
+          }
+        />
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F5F0', paddingBottom: 40 }}>
-      {/* 헤더 */}
-      <div style={{ background: '#FFF', borderBottom: '1px solid #E4E2DE', padding: '12px 16px' }}>
-        <div style={{ maxWidth: 700, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Link href="/staff/partwork" style={{ color: '#111', fontSize: 18, textDecoration: 'none' }}>←</Link>
-          <div style={{ flex: 1, fontSize: 14, fontWeight: 800, color: '#111' }}>
-            ⚙️ 담당자 설정
+    <div style={{ minHeight: '100vh', background: T.cream, paddingBottom: 40 }}>
+      {/* Editorial 헤더 + 골드 라인 */}
+      <div style={{ background: T.paper, borderBottom: `1px solid ${T.border}`, padding: '12px 16px' }}>
+        <div style={{ maxWidth: 700, margin: '0 auto' }}>
+          <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 10 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Link href="/staff/partwork" style={{ color: T.ink, fontSize: 18, textDecoration: 'none' }}>←</Link>
+            <div style={{ flex: 1 }}>
+              <div style={{
+                fontSize: 11, color: T.ink3, fontWeight: 700,
+                letterSpacing: '0.08em', textTransform: 'uppercase',
+              }}>
+                STAFF · 담당자 설정
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: T.ink, marginTop: 2 }}>
+                ⚙️ 담당자 설정
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <div style={{ maxWidth: 700, margin: '0 auto', padding: 16 }}>
-        {/* 대학 전환 (여러 대학 담당하는 경우) */}
+        {/* 다중 대학 전환 */}
         {staffRecords.length > 1 && (
-          <div style={{ background: '#FFF', borderRadius: 12, padding: 14, marginBottom: 12,
-                        border: '1px solid #E4E2DE' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#888', marginBottom: 8 }}>
+          <div style={{
+            background: T.paper, borderRadius: 12, padding: 14, marginBottom: 12,
+            border: `1px solid ${T.border}`,
+          }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, marginBottom: 8 }}>
               담당 대학 ({staffRecords.length}개)
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {staffRecords.map(s => (
                 <button key={s.id} onClick={() => switchStaff(s)} style={{
                   padding: '6px 12px', borderRadius: 999,
-                  background: activeStaff.id === s.id ? '#111' : '#FFF',
-                  color: activeStaff.id === s.id ? '#FFF' : '#111',
-                  border: '1.5px solid #111',
+                  background: activeStaff.id === s.id ? T.ink : T.paper,
+                  color: activeStaff.id === s.id ? T.paper : T.ink,
+                  border: `1.5px solid ${T.ink}`,
                   fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
                 }}>
                   {s.university?.name}
@@ -171,17 +200,13 @@ export default function StaffProfilePage() {
         {/* 대학 정보 */}
         <Section title="소속 대학">
           <div style={{ padding: '8px 0' }}>
-            <div style={{ fontSize: 14, fontWeight: 800, color: '#111' }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: T.ink, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               {activeStaff.university?.name}
               {activeStaff.university?.certified && (
-                <span style={{ marginLeft: 8, fontSize: 9, padding: '2px 6px',
-                                background: '#ECFDF5', color: '#059669',
-                                borderRadius: 999, fontWeight: 700 }}>
-                  IEQAS 인증대학
-                </span>
+                <Badge variant="success" size="sm">IEQAS 인증대학</Badge>
               )}
             </div>
-            <div style={{ fontSize: 11, color: '#666', marginTop: 4 }}>
+            <div style={{ fontSize: 11, color: T.ink2, marginTop: 4 }}>
               역할: <strong>{roleLabel(activeStaff.role)}</strong>
               {activeStaff.role === 'reviewer' && ' · 검토·서명만 가능'}
               {activeStaff.role === 'manager' && ' · 다른 담당자 초대 가능'}
@@ -217,47 +242,52 @@ export default function StaffProfilePage() {
               onChange={(e) => setForm({ ...form, staff_email: e.target.value })}
               placeholder="oia@university.ac.kr" style={inputStyle} />
           </FormField>
-          <button onClick={handleSave} disabled={saving} style={{
-            width: '100%', padding: 12, marginTop: 14,
-            background: saving ? '#999' : '#111', color: '#FFF',
-            border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800,
-            cursor: saving ? 'not-allowed' : 'pointer',
-          }}>
-            {saving ? '저장 중...' : '저장'}
-          </button>
+          <Button
+            variant="primary"
+            size="md"
+            fullWidth
+            onClick={handleSave}
+            disabled={saving}
+            style={{ marginTop: 14 }}
+          >
+            {saving ? <ButtonLoading text="저장 중..." /> : "저장"}
+          </Button>
         </Section>
 
         {/* 기본 서명 */}
         <Section title="기본 서명">
-          <div style={{ fontSize: 11, color: '#666', lineHeight: 1.7, marginBottom: 12 }}>
+          <div style={{ fontSize: 11, color: T.ink2, lineHeight: 1.7, marginBottom: 12 }}>
             기본 서명을 등록해 두면 신청서 검토 시 자동으로 불러와 즉시 사용할 수 있습니다.
             서명은 시간제취업확인서의 <strong>유학생담당자 확인란</strong>에 자동 삽입됩니다.
           </div>
           {activeStaff.default_signature ? (
-            <div style={{ padding: 14, background: '#F0FDF4', border: '1px solid #A7F3D0',
-                          borderRadius: 8, textAlign: 'center' }}>
+            <div style={{
+              padding: 14, background: '#F0FDF4', border: '1px solid #A7F3D0',
+              borderRadius: 8, textAlign: 'center',
+            }}>
               <img src={activeStaff.default_signature} alt="현재 서명"
-                style={{ maxHeight: 80, maxWidth: '100%', background: '#FFF',
+                style={{ maxHeight: 80, maxWidth: '100%', background: T.paper,
                          padding: 8, borderRadius: 4 }} />
               <div style={{ fontSize: 10, color: '#059669', marginTop: 8, fontWeight: 700 }}>
                 ✓ 기본 서명 등록됨 · {activeStaff.signature_updated_at
                   ? new Date(activeStaff.signature_updated_at).toLocaleDateString('ko-KR')
                   : ''}
               </div>
-              <button onClick={() => setShowSignPad(true)} style={{
-                marginTop: 10, padding: '8px 14px', background: '#FFF', color: '#059669',
-                border: '1.5px solid #059669', borderRadius: 6,
-                fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSignPad(true)}
+                style={{ marginTop: 10, color: '#059669', border: '1.5px solid #059669' }}
+              >
                 ✏️ 다시 그리기
-              </button>
+              </Button>
             </div>
           ) : (
             <button onClick={() => setShowSignPad(true)} style={{
               width: '100%', padding: 16,
-              background: '#FFF', color: '#111',
-              border: '2px dashed #999', borderRadius: 8,
-              fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              background: T.paper, color: T.ink,
+              border: `2px dashed ${T.borderStrong}`, borderRadius: 8,
+              fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
             }}>
               ✍️ 기본 서명 등록하기
             </button>
@@ -271,7 +301,7 @@ export default function StaffProfilePage() {
               onSave={handleSaveSignature}
               initialDataUrl={activeStaff.default_signature || null}
             />
-            <div style={{ fontSize: 10, color: '#666', marginTop: 8, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 10, color: T.ink2, marginTop: 8, lineHeight: 1.6 }}>
               이 서명은 향후 모든 신청서에 자동으로 사용됩니다. 매번 그릴 필요가 없습니다.
             </div>
           </Modal>
@@ -296,10 +326,14 @@ export default function StaffProfilePage() {
 
 function Section({ title, children }) {
   return (
-    <div style={{ background: '#FFF', borderRadius: 12, padding: 16, marginBottom: 12,
-                  border: '1px solid #E4E2DE' }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: '#888', textTransform: 'uppercase',
-                    letterSpacing: '0.05em', marginBottom: 10 }}>
+    <div style={{
+      background: T.paper, borderRadius: 12, padding: 16, marginBottom: 12,
+      border: `1px solid ${T.border}`,
+    }}>
+      <div style={{
+        fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: 'uppercase',
+        letterSpacing: '0.05em', marginBottom: 10,
+      }}>
         {title}
       </div>
       {children}
@@ -310,7 +344,7 @@ function Section({ title, children }) {
 function FormField({ label, required, children }) {
   return (
     <label style={{ display: 'block', marginBottom: 10 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: '#444', marginBottom: 4 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: T.ink, marginBottom: 4 }}>
         {label} {required && <span style={{ color: '#DC2626' }}>*</span>}
       </div>
       {children}
@@ -320,7 +354,7 @@ function FormField({ label, required, children }) {
 
 const inputStyle = {
   width: '100%', padding: '9px 12px', boxSizing: 'border-box',
-  border: '1px solid #E4E2DE', borderRadius: 6,
+  border: `1px solid #E4E2DE`, borderRadius: 6,
   fontSize: 13, fontFamily: 'inherit', background: '#FFF',
 };
 
@@ -336,7 +370,7 @@ function Modal({ children, onClose, title }) {
         maxWidth: 500, width: '100%',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-          <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{title}</div>
+          <div style={{ flex: 1, fontSize: 15, fontWeight: 800, color: '#111' }}>{title}</div>
           <button onClick={onClose} style={{
             background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#888'
           }}>✕</button>

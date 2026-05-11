@@ -4,10 +4,35 @@ export const dynamic = "force-dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { T } from "@/lib/theme";
-import { Btn, Card } from "@/components/UI";
 import { getJobApplicants, updateApplicationStatus, getCurrentUser } from "@/lib/supabase";
 import { KakaoChatModal } from "@/components/KakaoChatModal";
 import { ListPageSkel } from "@/components/Wireframe";
+import { Button, Badge, Empty } from "@/components/ui";
+
+/**
+ * /applicants 사장님 지원자 보기 (BI v2)
+ *
+ * 페르소나 (BI v2 Section 6 — 사장님):
+ *   - 무드: 신중·결정 — coralDark + 골드 액센트
+ *
+ * 변경점 (BI v2):
+ *   - Btn, Card (UI.jsx) → Button (Step 3-A)
+ *   - 인라인 status 배지 → <Badge> 시맨틱
+ *     · pending → warning, accepted → success, rejected → error
+ *   - 빈 상태 → <Empty variant="no-results">
+ *   - 합격 챗봇 버튼 → Button variant="primaryDark" (사장님 차분 코랄)
+ *   - 거절 버튼 → Button variant="secondary"
+ *   - 채팅 버튼 → Button variant="ghost"
+ *
+ * 보존:
+ *   - Editorial 헤더 (골드 라인)
+ *   - 카카오톡 챗봇 (합격/거절 흐름)
+ *   - 국기 이모지 (베트남/중국/캄보디아/우즈벡/몽골)
+ *   - 골드 별점 배지
+ *   - 인덱스 번호
+ *   - 합격 후 시뮬레이터 자동 진입
+ *   - botAvatar 🎉/💌 (BI v2 결정과 호환 — 🤖만 금지)
+ */
 
 const DEMO_APPLICANTS = [
   { id: 1, applicant_id: "u1", status: "pending", message: "성실하게 일하겠습니다!", created_at: "2026-04-12", applicant: { name: "Linh T.", country: "베트남", visa: "D-2", korean_level: "intermediate", rating: 4.8, organization: "서울대학교" } },
@@ -25,7 +50,7 @@ function ApplicantsContent() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [chatOpen, setChatOpen] = useState(false);
-  const [chatMode, setChatMode] = useState(null); // "accept" | "reject"
+  const [chatMode, setChatMode] = useState(null);
   const [activeApplicant, setActiveApplicant] = useState(null);
 
   useEffect(() => {
@@ -42,78 +67,21 @@ function ApplicantsContent() {
     });
   }, [jobId, router]);
 
-  // 합격/불합격 챗봇 단계 정의
   const acceptSteps = activeApplicant ? [
-    {
-      type: "bot",
-      text: `🎉 ${activeApplicant.applicant.name}님을 합격시키시는군요!\n\n빠르게 몇 가지만 확인하면 자동으로 합격 알림이 전송됩니다.`,
-    },
-    {
-      type: "bot",
-      text: "📅 첫 출근일을 정해주세요.\n(나중에 채팅에서 변경 가능)",
-      input: { type: "date" },
-      key: "start_date",
-    },
-    {
-      type: "bot",
-      text: "🤝 출근 전 면접/오리엔테이션이 필요한가요?",
-      quickReplies: ["면접 필요", "오리엔테이션", "바로 출근"],
-      key: "interview_type",
-    },
-    {
-      type: "bot",
-      text: "📍 만남 장소는 어디로 할까요?",
-      quickReplies: ["사업장에서", "근처 카페", "줌(화상)"],
-      key: "meeting_place",
-    },
-    {
-      type: "bot",
-      text: (a) => `⏰ ${a.interview_type === "바로 출근" ? "출근 시간" : "면접 시간"}을 알려주세요.`,
-      input: { type: "text", placeholder: "예: 오전 10시, 오후 2시" },
-      key: "meeting_time",
-    },
-    {
-      type: "bot",
-      text: "💬 합격자에게 보낼 메시지 (선택)",
-      input: { type: "text", placeholder: "축하 메시지나 준비물 안내", optional: true },
-      key: "message",
-    },
-    {
-      type: "bot",
-      text: (a) =>
-        `✅ 모든 정보가 입력되었어요!\n\n📤 ${activeApplicant.applicant.name}님께 자동 발송:\n` +
-        `• 합격 알림\n` +
-        `• ${a.interview_type === "바로 출근" ? "출근 안내" : a.interview_type + " 일정"}\n` +
-        `• 채팅방 자동 생성\n\n💡 다음 단계: 근로계약서 작성!`,
-      delay: 900,
-    },
+    { type: "bot", text: `🎉 ${activeApplicant.applicant.name}님을 합격시키시는군요!\n\n빠르게 몇 가지만 확인하면 자동으로 합격 알림이 전송됩니다.` },
+    { type: "bot", text: "📅 첫 출근일을 정해주세요.\n(나중에 채팅에서 변경 가능)", input: { type: "date" }, key: "start_date" },
+    { type: "bot", text: "🤝 출근 전 면접/오리엔테이션이 필요한가요?", quickReplies: ["면접 필요", "오리엔테이션", "바로 출근"], key: "interview_type" },
+    { type: "bot", text: "📍 만남 장소는 어디로 할까요?", quickReplies: ["사업장에서", "근처 카페", "줌(화상)"], key: "meeting_place" },
+    { type: "bot", text: (a) => `⏰ ${a.interview_type === "바로 출근" ? "출근 시간" : "면접 시간"}을 알려주세요.`, input: { type: "text", placeholder: "예: 오전 10시, 오후 2시" }, key: "meeting_time" },
+    { type: "bot", text: "💬 합격자에게 보낼 메시지 (선택)", input: { type: "text", placeholder: "축하 메시지나 준비물 안내", optional: true }, key: "message" },
+    { type: "bot", text: (a) => `✅ 모든 정보가 입력되었어요!\n\n📤 ${activeApplicant.applicant.name}님께 자동 발송:\n• 합격 알림\n• ${a.interview_type === "바로 출근" ? "출근 안내" : a.interview_type + " 일정"}\n• 채팅방 자동 생성\n\n💡 다음 단계: 근로계약서 작성!`, delay: 900 },
   ] : [];
 
   const rejectSteps = activeApplicant ? [
-    {
-      type: "bot",
-      text: `😔 ${activeApplicant.applicant.name}님을 불합격시키시는군요.`,
-    },
-    {
-      type: "bot",
-      text: "💌 정중한 거절 메시지를 보내드릴게요.\n사유를 선택해주세요.",
-      quickReplies: ["조건 불일치", "다른 후보 선정", "비자 문제", "직접 작성"],
-      key: "reason",
-    },
-    {
-      type: "bot",
-      text: (a) =>
-        a.reason === "직접 작성"
-          ? "직접 메시지를 작성해주세요."
-          : "추가로 전하실 메시지가 있나요? (선택)",
-      input: { type: "text", placeholder: "메시지", optional: true },
-      key: "custom_message",
-    },
-    {
-      type: "bot",
-      text: `📤 ${activeApplicant.applicant.name}님께 정중한 거절 알림을 보냈습니다.\n좋은 인연이 다음에 있길 바랍니다.`,
-      delay: 800,
-    },
+    { type: "bot", text: `😔 ${activeApplicant.applicant.name}님을 불합격시키시는군요.` },
+    { type: "bot", text: "💌 정중한 거절 메시지를 보내드릴게요.\n사유를 선택해주세요.", quickReplies: ["조건 불일치", "다른 후보 선정", "비자 문제", "직접 작성"], key: "reason" },
+    { type: "bot", text: (a) => a.reason === "직접 작성" ? "직접 메시지를 작성해주세요." : "추가로 전하실 메시지가 있나요? (선택)", input: { type: "text", placeholder: "메시지", optional: true }, key: "custom_message" },
+    { type: "bot", text: `📤 ${activeApplicant.applicant.name}님께 정중한 거절 알림을 보냈습니다.\n좋은 인연이 다음에 있길 바랍니다.`, delay: 800 },
   ] : [];
 
   const handleAction = async (applicant, status) => {
@@ -126,12 +94,9 @@ function ApplicantsContent() {
     if (!activeApplicant) return;
     await updateApplicationStatus(activeApplicant.id, chatMode === "accept" ? "accepted" : "rejected");
     setApplicants((prev) =>
-      prev.map((a) =>
-        a.id === activeApplicant.id ? { ...a, status: chatMode === "accept" ? "accepted" : "rejected" } : a
-      )
+      prev.map((a) => a.id === activeApplicant.id ? { ...a, status: chatMode === "accept" ? "accepted" : "rejected" } : a)
     );
 
-    // 합격 시 → 사장님 계약 시뮬레이터로 자동 이동 (1.5초 후)
     if (chatMode === "accept") {
       setTimeout(() => {
         const simJobId = jobId === "2" ? "k2" : jobId === "3" ? "k3" : "k1";
@@ -142,17 +107,35 @@ function ApplicantsContent() {
 
   const filtered = filter === "all" ? applicants : applicants.filter((a) => a.status === filter);
 
+  // status → Badge variant 매핑
+  const statusVariant = {
+    pending: "warning",
+    accepted: "success",
+    rejected: "error",
+  };
+  const statusLabel = {
+    pending: "검토 중",
+    accepted: "합격",
+    rejected: "불합격",
+  };
+
+  // 국기 이모지
+  const getFlag = (country) => {
+    if (country === "베트남") return "🇻🇳";
+    if (country === "중국") return "🇨🇳";
+    if (country === "캄보디아") return "🇰🇭";
+    if (country === "우즈베키스탄") return "🇺🇿";
+    if (country === "몽골") return "🇲🇳";
+    return "🌏";
+  };
+
   if (loading) return <ListPageSkel maxWidth={700} rows={3} />;
 
   return (
     <div style={{ padding: "32px 20px", maxWidth: 820, margin: "0 auto" }}>
       <Link href="/my/jobs" style={{
-        color: T.ink3,
-        fontSize: 12,
-        marginBottom: 18,
-        display: "inline-block",
-        textDecoration: "none",
-        letterSpacing: "-0.01em",
+        color: T.ink3, fontSize: 12, marginBottom: 18,
+        display: "inline-block", textDecoration: "none", letterSpacing: "-0.01em",
       }}>
         ← 내 공고로
       </Link>
@@ -211,21 +194,17 @@ function ApplicantsContent() {
 
       <div>
         {filtered.length === 0 ? (
-          <div style={{
-            padding: "48px 20px",
-            textAlign: "center",
-            color: T.ink3,
-            fontSize: 14,
-          }}>
-            해당하는 지원자가 없습니다
-          </div>
+          // Step 3-C Empty
+          <Empty
+            variant="no-results"
+            description="해당하는 지원자가 없습니다"
+          />
         ) : (
           filtered.map((a, idx) => (
             <div key={a.id} style={{
               padding: "20px 0",
               borderBottom: `1px solid ${T.border}`,
             }}>
-              {/* 인덱스 + 지원자 정보 */}
               <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 12 }}>
                 <div style={{
                   minWidth: 24,
@@ -240,13 +219,7 @@ function ApplicantsContent() {
 
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 20 }}>
-                      {a.applicant.country === "베트남" ? "🇻🇳" :
-                       a.applicant.country === "중국" ? "🇨🇳" :
-                       a.applicant.country === "캄보디아" ? "🇰🇭" :
-                       a.applicant.country === "우즈베키스탄" ? "🇺🇿" :
-                       a.applicant.country === "몽골" ? "🇲🇳" : "🌏"}
-                    </span>
+                    <span style={{ fontSize: 20 }}>{getFlag(a.applicant.country)}</span>
                     <span style={{
                       fontSize: 16,
                       fontWeight: 800,
@@ -268,23 +241,13 @@ function ApplicantsContent() {
                         ⭐ {a.applicant.rating}
                       </span>
                     )}
-                    <span style={{
-                      padding: "2px 8px",
-                      borderRadius: 2,
-                      fontSize: 11,
-                      fontWeight: 700,
-                      background:
-                        a.status === "accepted" ? "#E8F5EC" :
-                        a.status === "rejected" ? "#FEE" :
-                        T.cream,
-                      color:
-                        a.status === "accepted" ? T.green :
-                        a.status === "rejected" ? "#A31919" :
-                        T.ink2,
-                      letterSpacing: "0.02em",
-                    }}>
-                      {a.status === "pending" ? "검토 중" : a.status === "accepted" ? "합격" : "불합격"}
-                    </span>
+                    {/* 상태 배지 — Step 3-A Badge 시맨틱 */}
+                    <Badge
+                      variant={statusVariant[a.status] || "neutral"}
+                      size="sm"
+                    >
+                      {statusLabel[a.status] || a.status}
+                    </Badge>
                   </div>
 
                   <div style={{ fontSize: 13, color: T.ink2, marginBottom: 4, lineHeight: 1.5 }}>
@@ -323,59 +286,30 @@ function ApplicantsContent() {
                 지원일: {new Date(a.created_at).toLocaleDateString("ko-KR")}
               </div>
 
-              {/* 액션 버튼 */}
+              {/* 액션 버튼 — Step 3-A Button (사장님 페이지 = primaryDark) */}
               {a.status === "pending" && (
                 <div style={{ display: "flex", gap: 6, marginLeft: 40, flexWrap: "wrap" }}>
-                  <button
+                  <Button
+                    variant="primaryDark"
+                    size="sm"
                     onClick={() => handleAction(a, "accept")}
-                    style={{
-                      padding: "9px 18px",
-                      background: T.n9,
-                      color: T.gold,
-                      border: "none",
-                      borderRadius: 4,
-                      fontSize: 13,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                      letterSpacing: "-0.01em",
-                    }}
                   >
                     💬 합격 챗봇
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={() => handleAction(a, "reject")}
-                    style={{
-                      padding: "9px 18px",
-                      background: T.paper,
-                      color: T.ink2,
-                      border: `1px solid ${T.border}`,
-                      borderRadius: 4,
-                      fontSize: 13,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                      letterSpacing: "-0.01em",
-                    }}
                   >
                     거절
-                  </button>
-                  <Link href="/chat" style={{ textDecoration: "none" }}>
-                    <button style={{
-                      padding: "9px 18px",
-                      background: T.paper,
-                      color: T.accent,
-                      border: `1px solid ${T.accent}`,
-                      borderRadius: 4,
-                      fontSize: 13,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                      letterSpacing: "-0.01em",
-                    }}>
-                      💬 채팅
-                    </button>
-                  </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    href="/chat"
+                  >
+                    💬 채팅
+                  </Button>
                 </div>
               )}
             </div>
@@ -383,7 +317,7 @@ function ApplicantsContent() {
         )}
       </div>
 
-      {/* 사장님 카톡 챗봇 - 합격/불합격 */}
+      {/* 사장님 카톡 챗봇 - 합격/불합격 (🎉/💌은 BI v2와 호환, 🤖만 금지) */}
       <KakaoChatModal
         open={chatOpen}
         onClose={() => {

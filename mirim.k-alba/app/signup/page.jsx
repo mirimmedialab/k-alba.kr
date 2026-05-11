@@ -2,10 +2,34 @@
 import { useState, useRef, useLayoutEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { T } from "@/lib/theme";
-import { Btn, Inp } from "@/components/UI";
+import { T, COMPANY } from "@/lib/theme";
 import { signUp, signInWithOAuth } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
+import { Button, Input, KWordmark, ButtonLoading } from "@/components/ui";
+
+/**
+ * /signup 회원가입 (BI v2)
+ *
+ * 페르소나 분기 (BI v2 Section 2):
+ *   - worker (구직자): T.gold 액센트
+ *   - employer (사장님): T.accent 액센트 + 사업자번호 검증
+ *
+ * 변경점 (BI v2):
+ *   - Btn → Button (Step 3-A) — variant="landingPrimary"
+ *   - Inp → Input (Step 3-B) — forwardRef로 caret 보존 호환
+ *   - 인라인 사업자 인증 input 3개 → Input + size="md"
+ *   - 상단 KWordmark 추가
+ *   - 로딩 → ButtonLoading (Step 3-B)
+ *
+ * 보존:
+ *   - 사업자번호 자동 포맷팅 (3-2-5) + caret 위치 보존
+ *   - 개업일자 자동 포맷팅 (YYYY-MM-DD)
+ *   - 국세청 API 연동 (verify-business)
+ *   - OAuth 흐름 (sessionStorage role 저장)
+ *   - Step 0 (역할 선택) + Step 1 (폼 입력) 2단계 분기
+ *   - 카카오/구글 소셜 로그인 버튼 (특수 디자인 유지)
+ *   - 다국어 (useT)
+ */
 
 /** 사업자등록번호 3-2-5 포맷 */
 function formatBusinessNumber(raw) {
@@ -215,12 +239,16 @@ export default function SignupPage() {
         }}
       >
         <div style={{ maxWidth: 460, margin: "0 auto" }}>
-          <Link
-            href="/"
-            style={{ color: T.ink3, fontSize: 13, marginBottom: 28, display: "inline-block" }}
-          >
-            ← {t("common.back")}
-          </Link>
+          {/* 상단: 워드마크 + 뒤로 */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
+            <Link
+              href="/"
+              style={{ color: T.ink3, fontSize: 13, textDecoration: "none" }}
+            >
+              ← {t("common.back")}
+            </Link>
+            <KWordmark size={18} />
+          </div>
 
           <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 20 }} />
           <div
@@ -300,6 +328,13 @@ export default function SignupPage() {
               </div>
             </button>
           ))}
+
+          {/* BI v2 신뢰 액센트: 사업자번호/신고번호 */}
+          <div style={{ marginTop: 24, fontSize: 11, color: T.ink3, lineHeight: 1.7, textAlign: "center" }}>
+            {COMPANY.name} · 사업자등록번호 {COMPANY.businessNumber}
+            <br />
+            직업정보제공사업 신고번호 {COMPANY.jobInfoLicense}
+          </div>
         </div>
       </div>
     );
@@ -315,22 +350,24 @@ export default function SignupPage() {
       }}
     >
       <form onSubmit={handleSubmit} style={{ maxWidth: 460, margin: "0 auto" }}>
-        <button
-          type="button"
-          onClick={() => setStep(0)}
-          style={{
-            background: "none",
-            border: "none",
-            color: T.ink3,
-            fontSize: 13,
-            cursor: "pointer",
-            marginBottom: 24,
-            padding: 0,
-            fontFamily: "inherit",
-          }}
-        >
-          ← {t("common.back")}
-        </button>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+          <button
+            type="button"
+            onClick={() => setStep(0)}
+            style={{
+              background: "none",
+              border: "none",
+              color: T.ink3,
+              fontSize: 13,
+              cursor: "pointer",
+              padding: 0,
+              fontFamily: "inherit",
+            }}
+          >
+            ← {t("common.back")}
+          </button>
+          <KWordmark size={16} />
+        </div>
 
         <div
           style={{
@@ -365,7 +402,7 @@ export default function SignupPage() {
           {role === "worker" ? t("auth.asSeeker") : t("auth.asEmployer")}
         </h2>
 
-        {/* 소셜 로그인 */}
+        {/* 소셜 로그인 — 카카오/구글 특수 디자인 보존 */}
         <button
           type="button"
           onClick={() => handleSocial("kakao")}
@@ -426,35 +463,42 @@ export default function SignupPage() {
           <div style={{ flex: 1, height: 1, background: T.border }} />
         </div>
 
-        <Inp
-          label={t("auth.name")}
-          placeholder={t("auth.namePlaceholder")}
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-        />
-        <Inp
-          label={t("auth.email")}
-          type="email"
-          placeholder="email@example.com"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-        />
-        <Inp
-          label={t("auth.password")}
-          type="password"
-          placeholder={t("auth.passwordHint")}
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-        />
-        <Inp
-          label={t("auth.passwordConfirm")}
-          type="password"
-          placeholder={t("auth.passwordConfirmPlaceholder")}
-          value={form.password2}
-          onChange={(e) => setForm({ ...form, password2: e.target.value })}
-        />
+        {/* Step 3-B Input 컴포넌트 적용 */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 16 }}>
+          <Input
+            label={t("auth.name")}
+            placeholder={t("auth.namePlaceholder")}
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            required
+          />
+          <Input
+            label={t("auth.email")}
+            type="email"
+            placeholder="email@example.com"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            required
+          />
+          <Input
+            label={t("auth.password")}
+            type="password"
+            placeholder={t("auth.passwordHint")}
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            required
+          />
+          <Input
+            label={t("auth.passwordConfirm")}
+            type="password"
+            placeholder={t("auth.passwordConfirmPlaceholder")}
+            value={form.password2}
+            onChange={(e) => setForm({ ...form, password2: e.target.value })}
+            required
+          />
+        </div>
 
-        {/* 사업자 인증 */}
+        {/* 사업자 인증 — 사장님만 */}
         {role === "employer" && (
           <div
             style={{
@@ -486,8 +530,8 @@ export default function SignupPage() {
               </p>
             )}
             {!bizVerified ? (
-              <>
-                <input
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <Input
                   ref={bizNoInputRef}
                   type="text"
                   inputMode="numeric"
@@ -496,40 +540,20 @@ export default function SignupPage() {
                   onChange={onBusinessNumberChange}
                   placeholder={t("auth.bizNumberPlaceholder")}
                   maxLength={12}
-                  style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    borderRadius: 4,
-                    border: `1px solid ${T.border}`,
-                    fontSize: 14,
-                    fontFamily: "inherit",
-                    outline: "none",
-                    marginBottom: 8,
-                    boxSizing: "border-box",
-                    background: T.paper,
-                  }}
+                  variant="compact"
+                  size="sm"
                 />
-                <input
+                <Input
                   type="text"
                   value={bizForm.representativeName}
                   onChange={(e) =>
                     setBizForm({ ...bizForm, representativeName: e.target.value })
                   }
                   placeholder={t("auth.bizRepNamePlaceholder")}
-                  style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    borderRadius: 4,
-                    border: `1px solid ${T.border}`,
-                    fontSize: 14,
-                    fontFamily: "inherit",
-                    outline: "none",
-                    marginBottom: 8,
-                    boxSizing: "border-box",
-                    background: T.paper,
-                  }}
+                  variant="compact"
+                  size="sm"
                 />
-                <input
+                <Input
                   ref={openingInputRef}
                   type="text"
                   inputMode="numeric"
@@ -538,18 +562,8 @@ export default function SignupPage() {
                   onChange={onOpeningDateChange}
                   placeholder={t("auth.bizOpeningDatePlaceholder")}
                   maxLength={10}
-                  style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    borderRadius: 4,
-                    border: `1px solid ${T.border}`,
-                    fontSize: 14,
-                    fontFamily: "inherit",
-                    outline: "none",
-                    marginBottom: 10,
-                    boxSizing: "border-box",
-                    background: T.paper,
-                  }}
+                  variant="compact"
+                  size="sm"
                 />
                 {bizError && (
                   <div
@@ -559,7 +573,6 @@ export default function SignupPage() {
                       color: T.accent,
                       borderRadius: 4,
                       fontSize: 12,
-                      marginBottom: 8,
                     }}
                   >
                     {bizError}
@@ -583,9 +596,13 @@ export default function SignupPage() {
                     letterSpacing: "-0.01em",
                   }}
                 >
-                  {bizVerifyLoading ? t("auth.bizVerifying") : t("auth.bizVerifyBtn")}
+                  {bizVerifyLoading ? (
+                    <ButtonLoading text={t("auth.bizVerifying")} />
+                  ) : (
+                    t("auth.bizVerifyBtn")
+                  )}
                 </button>
-              </>
+              </div>
             ) : (
               <div style={{ fontSize: 12, color: T.ink, lineHeight: 1.7 }}>
                 <div>
@@ -689,9 +706,16 @@ export default function SignupPage() {
           </div>
         )}
 
-        <Btn primary full type="submit" disabled={loading}>
-          {loading ? t("auth.signingUp") : t("auth.signupBtn") + " →"}
-        </Btn>
+        {/* 가입 버튼 — Step 3-A Button (landingPrimary 골드) */}
+        <Button
+          variant="landingPrimary"
+          size="lg"
+          fullWidth
+          type="submit"
+          disabled={loading}
+        >
+          {loading ? <ButtonLoading text={t("auth.signingUp")} /> : t("auth.signupBtn") + " →"}
+        </Button>
 
         <p
           style={{

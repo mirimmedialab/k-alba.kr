@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
-import { Btn, Card } from "@/components/UI";
 import { getJob, applyJob, getCurrentUser, getProfile } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 import { KakaoChatModal } from "@/components/KakaoChatModal";
@@ -11,6 +10,39 @@ import KakaoMap from "@/components/KakaoMap";
 import RouteCard from "@/components/RouteCard";
 import LastTransitCard from "@/components/LastTransitCard";
 import { formatDistance, calculateDistanceMeters } from "@/lib/geolocation";
+import {
+  Button,
+  Card,
+  CardTitle,
+  CardSubtitle,
+  VisaBadge,
+  PageLoading,
+} from "@/components/ui";
+
+/**
+ * /jobs/[id] 알바 상세 페이지 (BI v2)
+ *
+ * 페르소나 (BI v2 Section 6):
+ *   - 외국인 알바생 + 유학생 — 결정 직전
+ *   - 무드: 결정 직전 — 챗봇 진입 강조
+ *
+ * 변경점 (BI v2):
+ *   - Btn, Card (UI.jsx 구버전) → Button, Card (Step 3-A)
+ *   - 인라인 비자 span → <VisaBadge variant="solid"> ⭐
+ *     (이전: 모든 비자가 민트색 동일 → 비자별 자동 색상 7종)
+ *   - 로딩 → <PageLoading> (Step 3-B)
+ *   - T.g500/g700/g100 (구버전) → T.ink3/ink2/border (새 표준)
+ *   - botAvatar fallback: 🤖 → 💬 (BI v2: 챗봇 아바타에 🤖 미사용)
+ *
+ * 보존:
+ *   - 카카오톡 챗봇 7단계 지원 흐름 (한국어/비자/만료일/시작일/경험/메시지)
+ *   - 카카오 노란 배경 챗봇 진입 카드 (#FEE500)
+ *   - 위치 카드 + 경로 카드 + 막차 경고
+ *   - 합격 후 시뮬레이터 진입
+ *   - 직업별 이모지 (☕ 🌾 등)
+ *   - DEMO_JOBS fallback
+ *   - 다국어 (useT)
+ */
 
 const DEMO_JOBS = {
   "1": { id: 1, icon: "☕", title: "카페 바리스타", company: "블루보틀 강남점", area: "강남구", hours: "주 20시간", pay: 12000, visa: ["D-2", "F-4", "H-2"], korean: "beginner", type: "카페", desc: "강남역 근처 카페에서 바리스타를 모집합니다. 외국인 환영, 기본적인 한국어 가능하면 OK. 커피 제조 및 매장 관리 업무.", days: ["월", "수", "금"], time: "14:00~20:00" },
@@ -127,30 +159,41 @@ export default function JobDetailPage() {
     }
   };
 
-  if (!job) return <div style={{ padding: 40, textAlign: "center" }}>로딩 중...</div>;
+  // Step 3-B PageLoading 컴포넌트
+  if (!job) return <PageLoading message="잠시만 기다려주세요" minHeight={400} />;
 
   return (
     <div style={{ padding: 20, maxWidth: 600, margin: "0 auto" }}>
-      <Link href="/jobs" style={{ color: T.g500, fontSize: 14, marginBottom: 16, display: "inline-block" }}>← {t("jobs.jobList")}</Link>
+      <Link href="/jobs" style={{ color: T.ink3, fontSize: 14, marginBottom: 16, display: "inline-block" }}>
+        ← {t("jobs.jobList")}
+      </Link>
 
+      {/* 공고 헤더 카드 */}
       <Card style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
           <div style={{ fontSize: 40 }}>{job.icon || "💼"}</div>
           <div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: T.navy }}>{job.title}</h2>
-            <p style={{ fontSize: 13, color: T.g500, marginTop: 2 }}>{job.company}</p>
+            <CardTitle style={{ fontSize: 20, marginBottom: 2 }}>{job.title}</CardTitle>
+            <CardSubtitle>{job.company}</CardSubtitle>
           </div>
         </div>
-        <div style={{ fontSize: 24, fontWeight: 900, color: T.mint, marginBottom: 16 }}>₩{job.pay?.toLocaleString()} / {job.type === "농업" ? "일" : "시간"}</div>
+        <div style={{ fontSize: 24, fontWeight: 900, color: T.mint, marginBottom: 16 }}>
+          ₩{job.pay?.toLocaleString()} / {job.type === "농업" ? "일" : "시간"}
+        </div>
+        {/* 비자 배지 — Step 3-A VisaBadge ⭐ BI v2 핵심 변경
+            (이전: 모든 비자가 민트색 동일 → 비자별 자동 색상 7종) */}
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {(job.visa || []).map((v) => (
-            <span key={v} style={{ padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700, background: T.mintL, color: "#059669" }}>{v} ✓</span>
+            <VisaBadge key={v} code={v} variant="solid" size="md" />
           ))}
         </div>
       </Card>
 
+      {/* 근무 조건 카드 */}
       <Card style={{ marginBottom: 16 }}>
-        <div style={{ fontWeight: 700, fontSize: 14, color: T.navy, marginBottom: 10 }}>{t("jobs.workConditions")}</div>
+        <div style={{ fontWeight: 700, fontSize: 14, color: T.navy, marginBottom: 10 }}>
+          {t("jobs.workConditions")}
+        </div>
         {[
           ["지역", job.area],
           ["근무시간", `${job.time || ""} · ${job.hours || ""}`],
@@ -158,14 +201,14 @@ export default function JobDetailPage() {
           ["업종", job.type],
           ["한국어", { none: "불필요", beginner: "초급", intermediate: "중급", advanced: "고급" }[job.korean] || "-"],
         ].map(([k, v]) => (
-          <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: `1px solid ${T.g100}` }}>
-            <span style={{ fontSize: 13, color: T.g500 }}>{k}</span>
+          <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: `1px solid ${T.border}` }}>
+            <span style={{ fontSize: 13, color: T.ink3 }}>{k}</span>
             <span style={{ fontSize: 13, fontWeight: 600, color: T.navy }}>{v}</span>
           </div>
         ))}
       </Card>
 
-      {/* 🆕 위치 + 경로 카드 (공고에 좌표 있을 때만) */}
+      {/* 위치 + 경로 카드 (공고에 좌표 있을 때만) */}
       {job.latitude && job.longitude && (
         <div style={{ marginBottom: 16 }}>
           <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 14 }} />
@@ -312,18 +355,31 @@ export default function JobDetailPage() {
         </div>
       )}
 
+      {/* 공고 설명 카드 */}
       <Card style={{ marginBottom: 16 }}>
-        <div style={{ fontWeight: 700, fontSize: 14, color: T.navy, marginBottom: 10 }}>{t("jobs.description")}</div>
-        <p style={{ fontSize: 13, color: T.g700, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{job.desc}</p>
+        <div style={{ fontWeight: 700, fontSize: 14, color: T.navy, marginBottom: 10 }}>
+          {t("jobs.description")}
+        </div>
+        <p style={{ fontSize: 13, color: T.ink2, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
+          {job.desc}
+        </p>
       </Card>
 
       {!applied ? (
-        <Card style={{ background: `linear-gradient(135deg, #FFF9E6, #FEE500)`, border: "none" }}>
+        // 카카오톡 챗봇 진입 — 카카오 노란 배경 (특수 디자인 보존)
+        <Card style={{
+          background: `linear-gradient(135deg, #FFF9E6, #FEE500)`,
+          border: "none",
+        }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
             <div style={{ fontSize: 28 }}>💬</div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 15, color: "#1A1A2E" }}>카카오톡 챗봇으로 지원하기</div>
-              <div style={{ fontSize: 11, color: "#1A1A2E", opacity: 0.7 }}>5가지 질문에 답하면 1분 안에 완료!</div>
+              <div style={{ fontWeight: 800, fontSize: 15, color: "#1A1A2E" }}>
+                카카오톡 챗봇으로 지원하기
+              </div>
+              <div style={{ fontSize: 11, color: "#1A1A2E", opacity: 0.7 }}>
+                5가지 질문에 답하면 1분 안에 완료!
+              </div>
             </div>
           </div>
           <button
@@ -355,64 +411,65 @@ export default function JobDetailPage() {
           </div>
         </Card>
       ) : (
+        // 지원 완료 후
         <>
           <div style={{ textAlign: "center", padding: 24, background: T.mintL, borderRadius: 14, border: `2px solid ${T.mint}40`, marginBottom: 14 }}>
             <div style={{ fontSize: 40, marginBottom: 8 }}>🎉</div>
-            <div style={{ fontWeight: 800, color: "#059669", marginBottom: 4, fontSize: 16 }}>{t("jobs.applied")}</div>
-            <div style={{ fontSize: 12, color: T.g500, marginBottom: 14 }}>{t("jobs.appliedDesc")}</div>
+            <div style={{ fontWeight: 800, color: "#059669", marginBottom: 4, fontSize: 16 }}>
+              {t("jobs.applied")}
+            </div>
+            <div style={{ fontSize: 12, color: T.ink3, marginBottom: 14 }}>
+              {t("jobs.appliedDesc")}
+            </div>
+            {/* Step 3-A Button 컴포넌트 */}
             <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-              <Link href="/my/applications" style={{ textDecoration: "none" }}>
-                <Btn>지원 내역 보기</Btn>
-              </Link>
-              <Link href="/chat" style={{ textDecoration: "none" }}>
-                <Btn primary>💬 채팅 열기</Btn>
-              </Link>
+              <Button variant="secondary" href="/my/applications" size="sm">
+                지원 내역 보기
+              </Button>
+              <Button variant="primary" href="/chat" size="sm">
+                💬 채팅 열기
+              </Button>
             </div>
           </div>
 
           {/* 시뮬레이터 - 합격 후 계약서 챗봇 체험 */}
-          <Card style={{ background: `linear-gradient(135deg, #FFF0EE, #FFE4E0)`, border: `2px solid ${T.coral}40` }}>
+          <Card
+            style={{
+              background: `linear-gradient(135deg, #FFF0EE, #FFE4E0)`,
+              border: `2px solid ${T.coral}40`,
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
               <div style={{ fontSize: 28 }}>📝</div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 800, fontSize: 14, color: T.navy }}>합격 후 계약서 챗봇 체험하기</div>
-                <div style={{ fontSize: 11, color: T.g500 }}>사장님이 합격시키면 카톡 챗봇으로 계약서 작성까지 진행</div>
+                <div style={{ fontWeight: 800, fontSize: 14, color: T.navy }}>
+                  합격 후 계약서 챗봇 체험하기
+                </div>
+                <div style={{ fontSize: 11, color: T.ink3 }}>
+                  사장님이 합격시키면 카톡 챗봇으로 계약서 작성까지 진행
+                </div>
               </div>
             </div>
-            <Link
+            <Button
+              variant="primary"
               href={`/simulator?mode=worker&job=${getSimulatorJobId(job)}&autostart=1`}
-              style={{ textDecoration: "none" }}
+              fullWidth
             >
-              <button
-                style={{
-                  width: "100%",
-                  padding: 12,
-                  borderRadius: 10,
-                  background: T.coral,
-                  color: "#fff",
-                  border: "none",
-                  fontWeight: 800,
-                  fontSize: 14,
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                }}
-              >
-                💬 알바생 계약 챗봇 시작 →
-              </button>
-            </Link>
-            <div style={{ fontSize: 10, color: T.g500, textAlign: "center", marginTop: 8 }}>
+              💬 알바생 계약 챗봇 시작 →
+            </Button>
+            <div style={{ fontSize: 10, color: T.ink3, textAlign: "center", marginTop: 8 }}>
               근무조건 확인 → 이름 입력 → 서명 → 사장님 서명 → 계약 완료
             </div>
           </Card>
         </>
       )}
 
-      {/* 카톡 챗봇 모달 */}
+      {/* 카톡 챗봇 모달 — botAvatar fallback: 🤖 → 💬 (BI v2) */}
       <KakaoChatModal
         open={chatOpen}
         onClose={() => setChatOpen(false)}
         title={`K-ALBA × ${job.company}`}
-        botAvatar={job.icon || "🤖"}
+        botAvatar={job.icon || "💬"}
         steps={applySteps}
         onComplete={handleChatComplete}
       />

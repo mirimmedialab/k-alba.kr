@@ -3,14 +3,46 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { T } from "@/lib/theme";
-import { Btn, Card } from "@/components/UI";
 import { getContract, updateContract, signContract, getCurrentUser, supabase } from "@/lib/supabase";
 import { formatKoreanDate, MIN_WAGE } from "@/lib/contractUtils";
 import { generateContractPDF, buildContractFilename } from "@/lib/pdfGenerator";
 import { useT } from "@/lib/i18n";
 import { ContractDetailSkel } from "@/components/Wireframe";
 import SignaturePad from "@/components/SignaturePad";
+import { Button, Badge, Empty, KIcon, ButtonLoading } from "@/components/ui";
 
+/**
+ * /contracts/[id] 근로계약서 상세 (BI v2)
+ *
+ * 페르소나 (BI v2 Section 6 — 양측 페르소나):
+ *   - 사장님(employer) + 알바생(worker) 양측이 동일 페이지에서 서명
+ *   - 무드: 법적 신뢰 — 변호사 검토 + 사업자번호 노출
+ *
+ * 변경점 (BI v2):
+ *   - Btn, Card (UI.jsx) → Button, Empty (Step 3-A/C)
+ *   - 챗봇 K 박스 (🤖) → <KIcon variant="kakao"> ⭐ BI v2 결정 (🤖 미사용)
+ *   - statusInfo 인라인 → <Badge> 시맨틱
+ *     · draft → neutral
+ *     · worker_signing/employer_signing → warning
+ *     · completed → success
+ *   - 서명 버튼 페르소나 분기:
+ *     · worker 서명 시 → variant="primary" (활기 코랄)
+ *     · employer 서명 시 → variant="primaryDark" (차분 코랄)
+ *   - 계약서 없음 → <Empty variant="error">
+ *   - T.g500/g700/g100/g200/g300 → T.ink3/ink2/border/borderStrong
+ *
+ * 보존 (100%):
+ *   - 3개 탭 (챗봇/폼/미리보기)
+ *   - 양측 서명 흐름 (worker → employer)
+ *   - PDF 미리보기 (인쇄 양식 표준 — 컬러 변경 금지)
+ *     · #1A1A2E 다크 헤더, #F5F3F0 셀, 검정 텍스트
+ *   - 카카오톡 챗봇 디자인 (B2C7D9 배경, FEE500 K 박스, 말풍선)
+ *   - 법무법인 수성 김익환 변호사 검토 정보
+ *   - 사업자번호 노출 (BI v2 신뢰감)
+ *   - SignaturePad 모달 + GPS 위치 기록
+ *   - 데모 모드 (localStorage) + 실제 API 모드
+ *   - 다국어 (useT)
+ */
 export default function ContractDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -37,10 +69,9 @@ export default function ContractDetailPage() {
       }
       setUser(u);
 
-      // DB에서 시도
       let c = await getContract(params.id);
 
-      // 데모 모드 - localStorage에서 로드
+      // 데모 모드
       if (!c && typeof window !== "undefined" && String(params.id).startsWith("demo-")) {
         const stored = localStorage.getItem(`contract-${params.id}`);
         if (stored) c = JSON.parse(stored);
@@ -119,14 +150,13 @@ export default function ContractDetailPage() {
     }, 400);
   };
 
-  // ─── 서명 처리 (SignaturePad 모달 열기) ───
+  // ─── 서명 처리 ───
   const handleSign = (role) => {
     if (signing) return;
     setPendingRole(role);
     setSignatureModalOpen(true);
   };
 
-  // ─── SignaturePad에서 서명 완료 시 호출 ───
   const handleSignatureComplete = async (signatureDataUrl, meta) => {
     setSignatureModalOpen(false);
     setSigning(true);
@@ -161,7 +191,7 @@ export default function ContractDetailPage() {
       }
     }
 
-    // 데모 모드 (data-id가 'demo-'로 시작)
+    // 데모 모드
     if (String(params.id).startsWith("demo-") && typeof window !== "undefined") {
       const now = new Date().toISOString();
       const updated = { ...contract };
@@ -227,7 +257,6 @@ export default function ContractDetailPage() {
         return;
       }
 
-      // 계약서 다시 로드
       const fresh = await getContract(contract.id);
       if (fresh) setContract(fresh);
 
@@ -256,14 +285,22 @@ export default function ContractDetailPage() {
   };
 
   if (loading) return <ContractDetailSkel />;
+
+  // 계약서를 찾을 수 없을 때 — Step 3-C Empty
   if (!contract) {
     return (
-      <div style={{ padding: 40, textAlign: "center" }}>
-        <div style={{ fontSize: 40, marginBottom: 12 }}>❌</div>
-        <div style={{ fontWeight: 700, color: T.navy, marginBottom: 6 }}>계약서를 찾을 수 없습니다</div>
-        <Link href="/my/contracts" style={{ display: "inline-block", marginTop: 16, padding: "10px 20px", background: T.coral, color: "#fff", borderRadius: 10, fontWeight: 700, fontSize: 13 }}>
-          계약서 목록으로
-        </Link>
+      <div style={{ padding: "40px 20px", maxWidth: 480, margin: "0 auto" }}>
+        <Empty
+          variant="error"
+          icon="❌"
+          title="계약서를 찾을 수 없습니다"
+          description="계약서가 삭제되었거나 접근 권한이 없을 수 있습니다."
+          action={
+            <Button variant="primary" href="/my/contracts">
+              계약서 목록으로
+            </Button>
+          }
+        />
       </div>
     );
   }
@@ -277,13 +314,19 @@ export default function ContractDetailPage() {
   const canWorkerSign = isWorker && !contract.worker_signed;
   const canEmployerSign = isEmployer && contract.worker_signed && !contract.employer_signed;
 
-  const statusInfo = {
-    draft: { label: "초안", color: T.g500, bg: T.g100 },
-    worker_signing: { label: "근로자 서명 대기", color: "#F59E0B", bg: "#FEF3C7" },
-    employer_signing: { label: "사장님 서명 대기", color: "#F59E0B", bg: "#FEF3C7" },
-    completed: { label: "계약 완료", color: "#059669", bg: T.mintL },
+  // 상태 → Badge variant 매핑 (Step 3-A)
+  const statusVariant = {
+    draft: "neutral",                // 초안
+    worker_signing: "warning",       // 근로자 서명 대기
+    employer_signing: "warning",     // 사장님 서명 대기
+    completed: "success",            // 계약 완료
   };
-  const st = statusInfo[contract.status] || statusInfo.draft;
+  const statusLabel = {
+    draft: "초안",
+    worker_signing: "근로자 서명 대기",
+    employer_signing: "사장님 서명 대기",
+    completed: "계약 완료",
+  };
 
   const handleDownloadPdf = async () => {
     if (downloadingPdf) return;
@@ -301,44 +344,41 @@ export default function ContractDetailPage() {
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", minHeight: "calc(100vh - 60px)" }}>
       {/* 헤더 */}
-      <div style={{ padding: "16px 20px", background: "#fff", borderBottom: `1px solid ${T.g200}` }}>
-        <Link href="/my/contracts" style={{ color: T.g500, fontSize: 13 }}>← {t("contract.myContracts")}</Link>
+      <div style={{ padding: "16px 20px", background: "#fff", borderBottom: `1px solid ${T.border}` }}>
+        <Link href="/my/contracts" style={{ color: T.ink3, fontSize: 13 }}>← {t("contract.myContracts")}</Link>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10, gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h2 style={{ fontSize: 18, fontWeight: 800, color: T.navy }}>📝 {t("contract.title")}</h2>
-            <div style={{ fontSize: 12, color: T.g500, marginTop: 2 }}>{contract.company_name} · {contract.worker_name}</div>
+            <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>{contract.company_name} · {contract.worker_name}</div>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
-            <span style={{ padding: "5px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700, color: st.color, background: st.bg }}>{t(`contract.status.${contract.status}`) || st.label}</span>
+            {/* 상태 배지 — Step 3-A Badge 시맨틱 */}
+            <Badge
+              variant={statusVariant[contract.status] || "neutral"}
+              size="sm"
+            >
+              {t(`contract.status.${contract.status}`) || statusLabel[contract.status]}
+            </Badge>
             {contract.worker_signed && contract.employer_signed && (
-              <button
+              <Button
+                variant="primary"
+                size="sm"
                 onClick={handleDownloadPdf}
                 disabled={downloadingPdf}
-                style={{
-                  padding: "6px 12px",
-                  borderRadius: 8,
-                  background: downloadingPdf ? T.g200 : T.mint,
-                  color: "#fff",
-                  border: "none",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: downloadingPdf ? "default" : "pointer",
-                  fontFamily: "inherit",
-                }}
               >
-                {downloadingPdf ? "⏳ 생성 중..." : t("contract.downloadPdf")}
-              </button>
+                {downloadingPdf ? <ButtonLoading text="생성 중..." /> : t("contract.downloadPdf")}
+              </Button>
             )}
           </div>
         </div>
       </div>
 
       {/* 탭 */}
-      <div style={{ display: "flex", background: "#fff", borderBottom: `2px solid ${T.g200}` }}>
-        {TABS.map((t) => (
+      <div style={{ display: "flex", background: "#fff", borderBottom: `2px solid ${T.border}` }}>
+        {TABS.map((tabItem) => (
           <button
-            key={t.k}
-            onClick={() => setTab(t.k)}
+            key={tabItem.k}
+            onClick={() => setTab(tabItem.k)}
             style={{
               flex: 1,
               padding: "14px 8px",
@@ -348,8 +388,8 @@ export default function ContractDetailPage() {
               fontFamily: "inherit",
               fontSize: 13,
               fontWeight: 700,
-              color: tab === t.k ? T.coral : T.g500,
-              borderBottom: `3px solid ${tab === t.k ? T.coral : "transparent"}`,
+              color: tab === tabItem.k ? T.coral : T.ink3,
+              borderBottom: `3px solid ${tab === tabItem.k ? T.coral : "transparent"}`,
               marginBottom: -2,
               display: "flex",
               alignItems: "center",
@@ -357,7 +397,7 @@ export default function ContractDetailPage() {
               gap: 6,
             }}
           >
-            <span style={{ fontSize: 15 }}>{t.ic}</span> {t.label}
+            <span style={{ fontSize: 15 }}>{tabItem.ic}</span> {tabItem.label}
           </button>
         ))}
       </div>
@@ -369,8 +409,9 @@ export default function ContractDetailPage() {
             <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
               {messages.map((m, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: m.from === "user" ? "flex-end" : "flex-start", gap: 8, marginBottom: 10 }}>
+                  {/* KIcon variant="kakao" — BI v2: 챗봇 아바타에 🤖 미사용 */}
                   {m.from === "bot" && (
-                    <div style={{ width: 32, height: 32, borderRadius: 10, background: "#FEE500", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>🤖</div>
+                    <KIcon variant="kakao" size="sm" style={{ width: 32, height: 32, fontSize: 14, borderRadius: 10 }} />
                   )}
                   <div style={{
                     maxWidth: "78%",
@@ -388,10 +429,10 @@ export default function ContractDetailPage() {
               ))}
               {typing && (
                 <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 10, background: "#FEE500", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🤖</div>
+                  <KIcon variant="kakao" size="sm" style={{ width: 32, height: 32, fontSize: 14, borderRadius: 10 }} />
                   <div style={{ background: "#fff", padding: "12px 18px", borderRadius: "4px 14px 14px 14px", display: "flex", gap: 4 }}>
                     {[0, 1, 2].map((d) => (
-                      <div key={d} style={{ width: 6, height: 6, borderRadius: 3, background: T.g300, animation: `dotPulse 1s ease-in-out ${d * 0.2}s infinite` }} />
+                      <div key={d} style={{ width: 6, height: 6, borderRadius: 3, background: T.borderStrong, animation: `dotPulse 1s ease-in-out ${d * 0.2}s infinite` }} />
                     ))}
                   </div>
                 </div>
@@ -399,29 +440,23 @@ export default function ContractDetailPage() {
               <div ref={scrollRef} />
             </div>
 
-            {/* 서명 버튼 영역 */}
+            {/* 서명 버튼 영역 — 페르소나 분기 */}
             {(canWorkerSign || canEmployerSign) && !typing && (
-              <div style={{ padding: 14, background: "#fff", borderTop: `1px solid ${T.g200}` }}>
-                <button
+              <div style={{ padding: 14, background: "#fff", borderTop: `1px solid ${T.border}` }}>
+                <Button
+                  variant={canEmployerSign ? "primaryDark" : "primary"}
+                  size="lg"
+                  fullWidth
                   onClick={() => handleSign(canWorkerSign ? "worker" : "employer")}
                   disabled={signing}
-                  style={{
-                    width: "100%",
-                    padding: "14px",
-                    borderRadius: 12,
-                    background: signing ? T.g200 : T.coral,
-                    color: "#fff",
-                    border: "none",
-                    fontWeight: 800,
-                    fontSize: 15,
-                    cursor: signing ? "default" : "pointer",
-                    fontFamily: "inherit",
-                    boxShadow: signing ? "none" : `0 4px 16px ${T.coral}50`,
-                  }}
                 >
-                  {signing ? t("contract.signing") : canWorkerSign ? t("contract.signWorker") : t("contract.signEmployer")}
-                </button>
-                <p style={{ textAlign: "center", fontSize: 10, color: T.g500, marginTop: 8 }}>
+                  {signing ? (
+                    <ButtonLoading text={t("contract.signing")} />
+                  ) : (
+                    canWorkerSign ? t("contract.signWorker") : t("contract.signEmployer")
+                  )}
+                </Button>
+                <p style={{ textAlign: "center", fontSize: 10, color: T.ink3, marginTop: 8 }}>
                   {t("contract.signHint")}
                 </p>
               </div>
@@ -431,28 +466,17 @@ export default function ContractDetailPage() {
               <div style={{ padding: 14, background: T.mintL, borderTop: `1px solid ${T.mint}40`, textAlign: "center" }}>
                 <div style={{ fontSize: 28, marginBottom: 4 }}>🎉</div>
                 <div style={{ fontWeight: 800, color: "#059669", fontSize: 14 }}>{t("contract.complete")}</div>
-                <div style={{ fontSize: 11, color: T.g500, marginTop: 4 }}>{t("contract.completeDesc")}</div>
+                <div style={{ fontSize: 11, color: T.ink3, marginTop: 4 }}>{t("contract.completeDesc")}</div>
 
                 {contract.pdf_url && (
-                  <a
+                  <Button
+                    variant="landingDark"
+                    size="md"
                     href={contract.pdf_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: "inline-block",
-                      marginTop: 14,
-                      padding: "10px 20px",
-                      background: T.n9,
-                      color: T.gold,
-                      textDecoration: "none",
-                      borderRadius: 4,
-                      fontWeight: 700,
-                      fontSize: 12,
-                      letterSpacing: "-0.01em",
-                    }}
+                    style={{ marginTop: 14 }}
                   >
                     📄 서명 완료 PDF 다운로드
-                  </a>
+                  </Button>
                 )}
               </div>
             )}
@@ -555,12 +579,12 @@ export default function ContractDetailPage() {
   );
 }
 
-// ─── 웹앱 폼 탭 ───
+// ─── 웹앱 폼 탭 (BI v2 토큰 적용) ───
 function ContractForm({ contract }) {
-  const section = { background: "#fff", borderRadius: 14, padding: 16, border: `1px solid ${T.g200}`, marginBottom: 12 };
+  const section = { background: "#fff", borderRadius: 14, padding: 16, border: `1px solid ${T.border}`, marginBottom: 12 };
   const sectionTitle = { fontSize: 12, fontWeight: 800, color: T.coral, marginBottom: 10, letterSpacing: 1 };
-  const row = { display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${T.g100}`, fontSize: 13 };
-  const label = { color: T.g500 };
+  const row = { display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${T.cream}`, fontSize: 13 };
+  const label = { color: T.ink3 };
   const val = { fontWeight: 600, color: T.navy };
 
   return (
@@ -602,7 +626,7 @@ function ContractForm({ contract }) {
             </div>
           </>
         )}
-        <div style={{ marginTop: 10, fontSize: 11, color: T.g500, lineHeight: 1.7 }}>
+        <div style={{ marginTop: 10, fontSize: 11, color: T.ink3, lineHeight: 1.7 }}>
           {contract.insurance_required
             ? "✓ 4대보험 가입 대상 (주 15시간 이상)"
             : "ⓘ 주 15시간 미만 — 산재보험만 적용"}
@@ -624,8 +648,7 @@ function ContractForm({ contract }) {
   );
 }
 
-// ─── 계약서 미리보기 탭 ───
-// ─── 계약서 미리보기 탭 (첨부 양식 기준) ───
+// ─── 계약서 미리보기 탭 (인쇄 양식 — 컬러 변경 금지) ───
 function ContractPreview({ contract }) {
   const contractNo = contract.id
     ? `ALBA-${new Date(contract.created_at || Date.now()).getFullYear()}-${String(contract.id).padStart(6, "0").slice(-6)}`
@@ -636,7 +659,6 @@ function ContractPreview({ contract }) {
   const weeklyDays = (contract.work_days || []).length;
   const dailyHours = weeklyDays > 0 ? (weeklyHours / weeklyDays).toFixed(1).replace(/\.0$/, "") : 0;
 
-  // 퇴직금 - 계약 기간이 1년 이상이면 발생
   const contractMonths = (() => {
     if (!contract.contract_start || !contract.contract_end) return 6;
     const start = new Date(contract.contract_start);
@@ -670,7 +692,7 @@ function ContractPreview({ contract }) {
           </div>
         </div>
 
-        {/* 제1조 당사자 */}
+        {/* 제1조 ~ 제7조 */}
         <ArticleTable title="제1조 당사자">
           <tr>
             <td style={cellLabel}>사 업 주</td>
@@ -692,7 +714,6 @@ function ContractPreview({ contract }) {
           </tr>
         </ArticleTable>
 
-        {/* 제2조 계약 형태 */}
         <ArticleTable title="제2조 계약 형태">
           <tr>
             <td style={cellLabel}>계약 유형</td>
@@ -714,7 +735,6 @@ function ContractPreview({ contract }) {
           </tr>
         </ArticleTable>
 
-        {/* 제3조 근무 조건 */}
         <ArticleTable title="제3조 근무 조건">
           <tr>
             <td style={cellLabel}>근무 요일</td>
@@ -740,7 +760,6 @@ function ContractPreview({ contract }) {
           </tr>
         </ArticleTable>
 
-        {/* 제4조 임금 */}
         <ArticleTable title="제4조 임금">
           <tr>
             <td style={cellLabel}>{contract.pay_type || "시급"}</td>
@@ -762,7 +781,7 @@ function ContractPreview({ contract }) {
           </tr>
         </ArticleTable>
 
-        {/* 급여 계산 내역 테이블 */}
+        {/* 급여 계산 내역 */}
         {contract.pay_type === "시급" && (
           <div style={{ marginBottom: 18 }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
@@ -809,7 +828,6 @@ function ContractPreview({ contract }) {
           </div>
         )}
 
-        {/* 제5조 휴일·휴가 및 사회보험 */}
         <ArticleTable title="제5조 휴일·휴가 및 사회보험">
           <tr>
             <td style={cellLabel}>주 휴 일</td>
@@ -841,7 +859,6 @@ function ContractPreview({ contract }) {
           </tr>
         </ArticleTable>
 
-        {/* 제6조 퇴직금 */}
         <ArticleTable title="제6조 퇴직금">
           <tr>
             <td style={cellLabel}>퇴 직 금</td>
@@ -859,7 +876,6 @@ function ContractPreview({ contract }) {
           </tr>
         </ArticleTable>
 
-        {/* 제7조 계약 해지 및 기타 */}
         <ArticleTable title="제7조 계약 해지 및 기타">
           <tr>
             <td style={cellLabel}>계약 만료</td>
@@ -949,7 +965,7 @@ function ContractPreview({ contract }) {
   );
 }
 
-// ─── 계약서 양식 서브 컴포넌트 ───
+// ─── 계약서 양식 서브 컴포넌트 (PDF 인쇄용 — 컬러 변경 금지) ───
 const articleTitleStyle = {
   background: "#1A1A2E",
   color: "#fff",
@@ -1045,68 +1061,6 @@ function SignatureBlock({ icon, role, name, signed, date }) {
       <div style={{ textAlign: "center", fontSize: 11, color: "#555", paddingTop: 8, borderTop: "1px dashed #DDD" }}>
         {signDate}
       </div>
-    </div>
-  );
-}
-
-// ─── (레거시 - 다른 페이지에서 호출 시 대비) ───
-function Section({ num, title, children }) {
-  return (
-    <div style={{ marginBottom: 20 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-        <div style={{ width: 26, height: 26, borderRadius: 8, background: T.coral, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800 }}>{num}</div>
-        <div style={{ fontSize: 14, fontWeight: 800, color: T.navy }}>제{num}조. {title}</div>
-      </div>
-      <div style={{ paddingLeft: 36 }}>{children}</div>
-    </div>
-  );
-}
-
-function Table({ rows }) {
-  return (
-    <div style={{ border: `1px solid ${T.g200}`, borderRadius: 8, overflow: "hidden" }}>
-      {rows.map(([k, v, highlight], i) => (
-        <div
-          key={i}
-          style={{
-            display: "grid",
-            gridTemplateColumns: "120px 1fr",
-            borderBottom: i < rows.length - 1 ? `1px solid ${T.g200}` : "none",
-            fontSize: 12,
-          }}
-        >
-          <div style={{ padding: "9px 12px", background: T.g100, color: T.g500, fontWeight: 600, borderRight: `1px solid ${T.g200}` }}>{k}</div>
-          <div style={{ padding: "9px 12px", color: highlight ? T.coral : T.navy, fontWeight: highlight ? 700 : 500 }}>{v}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function SignBlock({ role, name, signed, date }) {
-  return (
-    <div style={{
-      border: `2px ${signed ? "solid " + T.mint : "dashed " + T.g300}`,
-      borderRadius: 12,
-      padding: "16px 12px",
-      background: signed ? T.mintL : "#fff",
-      textAlign: "center",
-    }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: T.g500, marginBottom: 6 }}>{role}</div>
-      <div style={{ fontSize: 15, fontWeight: 800, color: T.navy, marginBottom: 8, letterSpacing: 3 }}>
-        {name || "—"}
-      </div>
-      <div style={{ fontSize: 24, marginBottom: 6 }}>
-        {signed ? "✍️" : "⏳"}
-      </div>
-      <div style={{ fontSize: 10, fontWeight: 700, color: signed ? "#059669" : T.g500 }}>
-        {signed ? "서명 완료" : "서명 대기"}
-      </div>
-      {signed && date && (
-        <div style={{ fontSize: 9, color: T.g500, marginTop: 4 }}>
-          {new Date(date).toLocaleDateString("ko-KR")}
-        </div>
-      )}
     </div>
   );
 }
