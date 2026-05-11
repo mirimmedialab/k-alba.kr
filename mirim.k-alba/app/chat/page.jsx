@@ -2,11 +2,29 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
-import { Card } from "@/components/UI";
 import { getCurrentUser, getMessages, sendMessage, subscribeMessages } from "@/lib/supabase";
 import { ChatListSkel } from "@/components/Wireframe";
+import { Card } from "@/components/ui";
 
-// 데모 채팅 데이터
+/**
+ * /chat 채팅 (BI v2)
+ *
+ * 페르소나: 양측 (사장님+알바생) — 채팅창은 양측 동일 UI 사용
+ * 디자인 패턴: 카카오톡 채팅 (B2C7D9 배경, 노란 말풍선)
+ *
+ * 변경점 (BI v2):
+ *   - Card (UI.jsx) → Card (Step 3-A) — 채팅 목록 카드
+ *   - T.g500/g700/g200 → T.ink3/ink2/border (새 표준)
+ *   - send 버튼: T.coral 유지 (양측 공용 채팅창)
+ *
+ * 보존 (100%):
+ *   - 카카오톡 채팅 디자인 (#B2C7D9 배경, #FFEB33 말풍선)
+ *   - 채팅 목록 + 채팅 상세 분기
+ *   - subscribeMessages (실시간 메시지)
+ *   - DEMO_CHATS / DEMO_MESSAGES fallback
+ *   - 안 읽음 카운트 배지
+ */
+
 const DEMO_CHATS = [
   { id: 1, name: "블루보틀 강남점", avatar: "☕", lastMsg: "내일 면접 오시면 됩니다", time: "14:23", unread: 0 },
   { id: 2, name: "논산 딸기농장", avatar: "🌾", lastMsg: "숙소 안내드렸어요!", time: "어제", unread: 2 },
@@ -42,7 +60,6 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (selected && user) {
-      // 실제 구현시 Supabase에서 가져옴
       getMessages(user.id, selected.id).then((msgs) => {
         if (msgs.length > 0) {
           setMessages(msgs.map(m => ({
@@ -96,12 +113,12 @@ export default function ChatPage() {
   if (selected) {
     return (
       <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 60px)", maxWidth: 600, margin: "0 auto" }}>
-        <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.g200}`, background: "#fff", display: "flex", alignItems: "center", gap: 12 }}>
-          <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: T.g700 }}>←</button>
+        <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`, background: "#fff", display: "flex", alignItems: "center", gap: 12 }}>
+          <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: T.ink2 }}>←</button>
           <div style={{ width: 40, height: 40, borderRadius: 12, background: T.mintL, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>{selected.avatar}</div>
           <div>
             <div style={{ fontWeight: 700, color: T.navy }}>{selected.name}</div>
-            <div style={{ fontSize: 11, color: T.g500 }}>● 온라인</div>
+            <div style={{ fontSize: 11, color: T.ink3 }}>● 온라인</div>
           </div>
         </div>
 
@@ -118,22 +135,28 @@ export default function ChatPage() {
                 lineHeight: 1.6,
               }}>
                 {m.text}
-                <div style={{ fontSize: 9, color: T.g500, marginTop: 4, textAlign: m.from === "me" ? "right" : "left" }}>{m.time}</div>
+                <div style={{ fontSize: 9, color: T.ink3, marginTop: 4, textAlign: m.from === "me" ? "right" : "left" }}>{m.time}</div>
               </div>
             </div>
           ))}
           <div ref={scrollRef} />
         </div>
 
-        <div style={{ padding: 12, background: "#fff", borderTop: `1px solid ${T.g200}`, display: "flex", gap: 8 }}>
+        <div style={{ padding: 12, background: "#fff", borderTop: `1px solid ${T.border}`, display: "flex", gap: 8 }}>
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="메시지 입력..."
-            style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `2px solid ${T.g200}`, fontSize: 14, fontFamily: "inherit", outline: "none" }}
+            style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `2px solid ${T.border}`, fontSize: 14, fontFamily: "inherit", outline: "none" }}
           />
-          <button onClick={handleSend} disabled={!input.trim()} style={{ padding: "10px 16px", borderRadius: 12, background: input.trim() ? T.coral : T.g200, color: input.trim() ? "#fff" : T.g500, border: "none", fontWeight: 700, fontSize: 15, cursor: input.trim() ? "pointer" : "default" }}>↑</button>
+          <button
+            onClick={handleSend}
+            disabled={!input.trim()}
+            style={{ padding: "10px 16px", borderRadius: 12, background: input.trim() ? T.coral : T.border, color: input.trim() ? "#fff" : T.ink3, border: "none", fontWeight: 700, fontSize: 15, cursor: input.trim() ? "pointer" : "default" }}
+          >
+            ↑
+          </button>
         </div>
       </div>
     );
@@ -143,7 +166,7 @@ export default function ChatPage() {
   return (
     <div style={{ padding: 20, maxWidth: 600, margin: "0 auto" }}>
       <h2 style={{ fontSize: 22, fontWeight: 800, color: T.navy, marginBottom: 4 }}>채팅</h2>
-      <p style={{ color: T.g500, fontSize: 13, marginBottom: 20 }}>{chats.length}개의 대화</p>
+      <p style={{ color: T.ink3, fontSize: 13, marginBottom: 20 }}>{chats.length}개의 대화</p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {chats.map((c) => (
@@ -153,9 +176,9 @@ export default function ChatPage() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ fontWeight: 700, color: T.navy, fontSize: 14 }}>{c.name}</div>
-                  <div style={{ fontSize: 11, color: T.g500 }}>{c.time}</div>
+                  <div style={{ fontSize: 11, color: T.ink3 }}>{c.time}</div>
                 </div>
-                <div style={{ fontSize: 12, color: T.g500, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.lastMsg}</div>
+                <div style={{ fontSize: 12, color: T.ink3, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.lastMsg}</div>
               </div>
               {c.unread > 0 && (
                 <div style={{ background: T.coral, color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 10, padding: "2px 7px", flexShrink: 0 }}>{c.unread}</div>

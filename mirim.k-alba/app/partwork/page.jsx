@@ -4,21 +4,45 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
 import { supabase, getCurrentUser } from "@/lib/supabase";
+import { Badge, Empty, Button, PageLoading } from "@/components/ui";
 
 /**
- * /partwork — 내 시간제취업 신청 내역
+ * /partwork — 내 시간제취업 신청 내역 (BI v2)
  *
- * 유학생(D-2/D-4)만 접근. 신청 이력과 상태 표시.
+ * 페르소나 (BI v2 Section 6 — 외국인 유학생):
+ *   - D-2/D-4 비자 유학생 (가입자 20%)
+ *   - 무드: 진행 추적 — 7단계 상태 시각화
+ *
+ * 변경점 (BI v2):
+ *   - STATUS_INFO 인라인 객체 → <Badge> 시맨틱 ⭐
+ *     · draft → neutral (작성 중)
+ *     · submitted → info (제출됨)
+ *     · reviewing → warning (검토 중)
+ *     · documents_needed → warning (서류 요청)
+ *     · approved → success (승인 완료)
+ *     · rejected → error (반려)
+ *     · cancelled → neutral (취소됨)
+ *   - 로딩 → <PageLoading> (Step 3-B)
+ *   - 빈 상태 → <Empty variant="no-data"> + <Button variant="primary">
+ *   - 새 신청 버튼 → <Button variant="primary"> (외국인 페이지 = 활기 코랄)
+ *
+ * 보존:
+ *   - Editorial 헤더 (골드 라인 + UPPERCASE)
+ *   - 7단계 상태 아이콘 (📝 📤 🔍 📋 ✅ ❌ ⊘) — Badge에 함께 표시
+ *   - 파란 안내 배너 (#DBEAFE) — Important 안내
+ *   - 에디토리얼 인덱스 (01, 02, 03...) + 호버 효과
+ *   - 신청 정보 표시 (대학/비자/TOPIK/시간/허용시간/날짜)
  */
 
+// 상태별 메타데이터 — Badge variant + icon + label
 const STATUS_INFO = {
-  draft:             { label: "작성 중",      color: "#888",   bg: "#F7F5F0", icon: "📝" },
-  submitted:         { label: "제출됨",        color: "#1A56F0", bg: "#DBEAFE", icon: "📤" },
-  reviewing:         { label: "검토 중",       color: "#A17810", bg: "#FEF3C7", icon: "🔍" },
-  documents_needed:  { label: "서류 요청",     color: "#F07820", bg: "#FFEDD5", icon: "📋" },
-  approved:          { label: "승인 완료",     color: "#00B37E", bg: "#D1FAE5", icon: "✅" },
-  rejected:          { label: "반려",          color: "#E03030", bg: "#FEE2E2", icon: "❌" },
-  cancelled:         { label: "취소됨",       color: "#888",    bg: "#F7F5F0", icon: "⊘" },
+  draft:             { variant: "neutral", icon: "📝", label: "작성 중" },
+  submitted:         { variant: "info",    icon: "📤", label: "제출됨" },
+  reviewing:         { variant: "warning", icon: "🔍", label: "검토 중" },
+  documents_needed:  { variant: "warning", icon: "📋", label: "서류 요청" },
+  approved:          { variant: "success", icon: "✅", label: "승인 완료" },
+  rejected:          { variant: "error",   icon: "❌", label: "반려" },
+  cancelled:         { variant: "neutral", icon: "⊘",  label: "취소됨" },
 };
 
 export default function PartWorkIndexPage() {
@@ -44,8 +68,9 @@ export default function PartWorkIndexPage() {
     });
   }, [router]);
 
+  // Step 3-B PageLoading
   if (loading) {
-    return <div style={{ padding: 40, textAlign: "center", color: T.ink3 }}>로딩 중...</div>;
+    return <PageLoading message="잠시만 기다려주세요" minHeight={400} />;
   }
 
   return (
@@ -77,25 +102,13 @@ export default function PartWorkIndexPage() {
             D-2/D-4 비자 유학생을 위한 국제처 시간제취업 신청 관리
           </p>
         </div>
-        <Link href="/partwork/apply" style={{ textDecoration: "none" }}>
-          <button style={{
-            padding: "12px 20px",
-            background: T.n9,
-            color: T.gold,
-            border: "none",
-            borderRadius: 4,
-            fontSize: 13,
-            fontWeight: 700,
-            cursor: "pointer",
-            fontFamily: "inherit",
-            letterSpacing: "-0.01em",
-          }}>
-            + 새 신청
-          </button>
-        </Link>
+        {/* 새 신청 — Step 3-A Button (외국인 페이지 = 활기 코랄) */}
+        <Button variant="primary" href="/partwork/apply" size="md">
+          + 새 신청
+        </Button>
       </div>
 
-      {/* 안내 배너 */}
+      {/* 안내 배너 (info 색상 — 그대로 유지) */}
       <div style={{
         padding: 16,
         background: "#DBEAFE",
@@ -122,40 +135,18 @@ export default function PartWorkIndexPage() {
       </div>
 
       {applications.length === 0 ? (
-        <div style={{
-          padding: "48px 20px",
-          textAlign: "center",
-          background: T.cream,
-          border: `1px solid ${T.border}`,
-          borderRadius: 4,
-        }}>
-          <div style={{ fontSize: 40, marginBottom: 16, opacity: 0.6 }}>📝</div>
-          <div style={{
-            fontSize: 15,
-            fontWeight: 700,
-            color: T.ink,
-            marginBottom: 8,
-            letterSpacing: "-0.02em",
-          }}>
-            아직 신청 내역이 없습니다
-          </div>
-          <p style={{ fontSize: 13, color: T.ink2, marginBottom: 20, lineHeight: 1.6 }}>
-            알바계약 완료 후 시간제취업을 신청해 보세요
-          </p>
-          <Link href="/partwork/apply" style={{
-            display: "inline-block",
-            padding: "12px 24px",
-            background: T.n9,
-            color: T.gold,
-            textDecoration: "none",
-            fontSize: 13,
-            fontWeight: 700,
-            borderRadius: 4,
-            letterSpacing: "-0.01em",
-          }}>
-            신청하기 →
-          </Link>
-        </div>
+        // Step 3-C Empty + 활기 코랄 액션
+        <Empty
+          variant="no-data"
+          icon="📝"
+          title="아직 신청 내역이 없습니다"
+          description="알바계약 완료 후 시간제취업을 신청해 보세요"
+          action={
+            <Button variant="primary" href="/partwork/apply">
+              신청하기 →
+            </Button>
+          }
+        />
       ) : (
         <div>
           {applications.map((app, idx) => {
@@ -179,6 +170,7 @@ export default function PartWorkIndexPage() {
                   onMouseEnter={(e) => (e.currentTarget.style.background = T.cream)}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                 >
+                  {/* 인덱스 */}
                   <div style={{
                     minWidth: 24,
                     fontSize: 12,
@@ -189,6 +181,7 @@ export default function PartWorkIndexPage() {
                     {String(idx + 1).padStart(2, "0")}
                   </div>
 
+                  {/* 본문 */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
                       display: "flex",
@@ -205,17 +198,10 @@ export default function PartWorkIndexPage() {
                       }}>
                         {app.employer_name}
                       </span>
-                      <span style={{
-                        padding: "2px 8px",
-                        borderRadius: 2,
-                        fontSize: 11,
-                        fontWeight: 700,
-                        background: st.bg,
-                        color: st.color,
-                        letterSpacing: "0.02em",
-                      }}>
-                        {st.icon} {st.label}
-                      </span>
+                      {/* 상태 배지 — Step 3-A Badge 시맨틱 + 아이콘 */}
+                      <Badge variant={st.variant} size="sm" icon={st.icon}>
+                        {st.label}
+                      </Badge>
                     </div>
                     <div style={{ fontSize: 13, color: T.ink2, marginBottom: 6 }}>
                       {app.university_name} · {app.visa} · TOPIK {app.topik_level === 0 ? "없음" : `${app.topik_level}급`}
@@ -231,6 +217,7 @@ export default function PartWorkIndexPage() {
                     </div>
                   </div>
 
+                  {/* 화살표 */}
                   <div style={{ fontSize: 16, color: T.ink3, flexShrink: 0, paddingTop: 4 }}>
                     →
                   </div>
