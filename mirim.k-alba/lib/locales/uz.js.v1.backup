@@ -278,42 +278,4 @@ export const uz = {
     applicantCount: "Nomzodlar",
     applicantCountSuffix: "",
   },
-  partwork: {
-    title: "PartWork · Yarim kunlik ish ruxsati",
-    newApplication: "+ Yangi ariza",
-    newApplicationLong: "Ariza yuborish →",
-    myApplicationsHeading: "Mening arizalarim: {count}",
-    myApplicationsSub: "D-2/D-4 vizali talabalar uchun yarim kunlik ish ruxsati",
-    importantTitle: "📘 Muhim · O'qib chiqing",
-    importantBullet1: "Mehnat shartnomasi tuzilgandan keyingina ariza topshirish mumkin",
-    importantBullet2_html: "D-4 viza egalari <strong>6 oydan keyin</strong> ariza topshirishi mumkin",
-    importantBullet3_html: "Faqat <strong>tasdiqlangan universitet</strong> talabalari uchun",
-    importantBullet4_html: "Xalqaro ofis xodimi <strong>24 soat ichida</strong> ko'rib chiqadi",
-    emptyTitle: "Hozircha arizalar yo'q",
-    emptyDescription: "Shartnoma tuzilgandan keyin ariza yuboring",
-    loading: "Iltimos kuting",
-    topikNone: "Yo'q",
-    topikSuffix: "-daraja",
-    weeklyHours: "Haftasiga {hours} soat",
-    allowedHours: "Cheklov {hours}h",
-    allowedUnlimited: "Cheksiz",
-    status: {
-      draft: "Qoralama",
-      submitted: "Yuborilgan",
-      reviewing: "Ko'rib chiqilmoqda",
-      documents_needed: "Hujjat kerak",
-      approved: "Tasdiqlangan",
-      rejected: "Rad etilgan",
-      cancelled: "Bekor qilingan"
-    }
-  },
-  chat: {
-    title: "Chat",
-    conversationsCount: "{count} ta suhbat",
-    online: "Onlayn",
-    inputPlaceholder: "Xabar yozing...",
-    yesterday: "Kecha",
-    daysAgo: "{n} kun oldin",
-    empty: "Hozircha suhbatlar yo'q"
-  },
 };

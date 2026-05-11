@@ -1,6 +1,8 @@
 {
   "framework": "nextjs",
-  "regions": ["icn1"],
+  "regions": [
+    "icn1"
+  ],
   "buildCommand": "next build",
   "devCommand": "next dev",
   "installCommand": "npm install",
@@ -9,15 +11,27 @@
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
       ]
     },
     {
       "source": "/api/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "no-store, max-age=0" }
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        }
       ]
     }
   ],
@@ -28,18 +42,5 @@
       "permanent": false
     }
   ],
-  "crons": [
-    {
-      "path": "/api/cron/sync-jobs",
-      "schedule": "0 20 * * *"
-    },
-    {
-      "path": "/api/cron/cleanup-files",
-      "schedule": "0 15 * * *"
-    },
-    {
-      "path": "/api/cron/notify-verification-due",
-      "schedule": "0 0 * * *"
-    }
-  ]
+  "crons": []
 }
