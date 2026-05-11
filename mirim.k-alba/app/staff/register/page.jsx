@@ -2,28 +2,36 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { T } from "@/lib/theme";
 import { supabase } from "@/lib/supabase";
+import { Button, Badge, Empty, ButtonLoading } from "@/components/ui";
 
 /**
- * /staff/register — 대학 첫 admin 등록 신청
+ * /staff/register 학교 담당자 신규 가입 (BI v2)
  *
- * 흐름:
- * 1. 학교가 K-ALBA에 처음 가입할 때 (대학별 1회) 사용
- * 2. 신청자(국제처 직원)가 본인 정보 + 공문 + 직원증 업로드
- * 3. 운영팀이 영업일 1~2일 내 검증 (도메인/공문/통화 4가지)
- * 4. 승인되면 environment-신청자 이메일로 첫 admin 계정 활성화
+ * 페르소나: 학교 담당자 (대학별 첫 admin) — Editorial 골드 톤
  *
- * 검증 항목 (자동):
- *   - 학교 검색 (universities 테이블)
- *   - 이메일 도메인 = 학교 공식 도메인
- *   - 첨부 파일 형식 (PDF, JPG, PNG)
+ * 변경점 (BI v2):
+ *   - 인라인 hex → T 토큰
+ *   - 도메인 검증 상태 → Badge 시맨틱 (ok=success, mismatch=error, no_whitelist=warning)
+ *   - 권한 경고 (이미 등록됨) → Badge warning
+ *   - 제출 버튼 → Button + ButtonLoading
+ *   - 완료 화면 → Empty + 회사 정보
+ *   - Editorial 골드 헤더 추가
+ *
+ * 보존:
+ *   - 4단계 섹션 (대학 선택 → 본인 정보 → 검증 자료 → 추가 메모)
+ *   - 안내 배너 (#EFF6FF — 파란 의미 있는 디자인)
+ *   - 파일 업로드 (Supabase Storage)
+ *   - 자동 도메인 검증
+ *   - 운영팀 알림 (POST /api/staff/registrations/notify)
  */
 export default function StaffRegisterPage() {
   const router = useRouter();
   const [universities, setUniversities] = useState([]);
   const [universityQuery, setUniversityQuery] = useState('');
   const [selectedUni, setSelectedUni] = useState(null);
-  const [domainStatus, setDomainStatus] = useState(null); // null | 'ok' | 'mismatch' | 'no_whitelist'
+  const [domainStatus, setDomainStatus] = useState(null);
 
   const [form, setForm] = useState({
     applicant_name: '',
@@ -36,16 +44,15 @@ export default function StaffRegisterPage() {
   });
 
   const [files, setFiles] = useState({
-    official_letter: null,  // 공문 PDF
-    id_card: null,          // 직원증
-    business_card: null,    // 명함 (선택)
+    official_letter: null,
+    id_card: null,
+    business_card: null,
   });
 
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // 대학 검색
   useEffect(() => {
     if (!universityQuery || universityQuery.length < 2) {
       setUniversities([]);
@@ -63,7 +70,6 @@ export default function StaffRegisterPage() {
     return () => { cancelled = true; };
   }, [universityQuery]);
 
-  // 이메일 도메인 자동 검증
   useEffect(() => {
     if (!form.applicant_email || !selectedUni) {
       setDomainStatus(null);
@@ -90,12 +96,9 @@ export default function StaffRegisterPage() {
     if (!form.applicant_email.trim()) e.email = '이메일을 입력해 주세요';
     if (!form.applicant_office_phone.trim()) e.office_phone = '학교 사무실 전화번호를 입력해 주세요';
 
-    // 도메인 검증
     if (selectedUni && form.applicant_email) {
       if (domainStatus === 'mismatch') {
         e.email = '학교 공식 이메일 도메인이 아닙니다';
-      } else if (domainStatus === 'no_whitelist') {
-        // 화이트리스트 미설정 시는 운영팀 검증으로 대체
       }
     }
 
@@ -108,7 +111,6 @@ export default function StaffRegisterPage() {
 
   const handleSubmit = async () => {
     if (!validate()) {
-      // 첫 에러 위치로 스크롤
       const firstKey = Object.keys(errors)[0];
       if (firstKey) {
         document.getElementById('field-' + firstKey)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -118,7 +120,6 @@ export default function StaffRegisterPage() {
 
     setSubmitting(true);
     try {
-      // 1. 파일 업로드 (Supabase Storage)
       const uploadFile = async (file, prefix) => {
         const ext = file.name.split('.').pop().toLowerCase();
         const path = `registrations/${selectedUni.id}/${prefix}-${Date.now()}.${ext}`;
@@ -136,7 +137,6 @@ export default function StaffRegisterPage() {
         ? await uploadFile(files.business_card, 'business-card')
         : null;
 
-      // 2. 신청서 저장
       const { data, error } = await supabase
         .from('staff_registrations')
         .insert({
@@ -152,7 +152,6 @@ export default function StaffRegisterPage() {
           id_card_url: id_card_url,
           business_card_url: business_url,
           notes: form.notes.trim() || null,
-          // 자동 검증 1단계: 도메인 매칭
           verified_domain_match: domainStatus === 'ok',
           status: 'submitted',
           user_agent: navigator.userAgent.substring(0, 200),
@@ -162,12 +161,11 @@ export default function StaffRegisterPage() {
 
       if (error) throw error;
 
-      // 3. 운영팀에 알림 (비동기)
       fetch('/api/staff/registrations/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ registration_id: data.id }),
-      }).catch(() => {/* 실패해도 신청 자체는 완료 */});
+      }).catch(() => {});
 
       setSubmitted(true);
     } catch (e) {
@@ -180,27 +178,34 @@ export default function StaffRegisterPage() {
   // 완료 화면
   if (submitted) {
     return (
-      <div style={{ minHeight: '100vh', background: '#F5F5F0',
-                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                     padding: 16 }}>
-        <div style={{ background: '#FFF', borderRadius: 16, padding: 32,
-                      maxWidth: 500, width: '100%', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+      <div style={{
+        minHeight: '100vh', background: T.cream,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+      }}>
+        <div style={{
+          background: T.paper, borderRadius: 16, padding: 32,
+          maxWidth: 500, width: '100%', boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+        }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 48 }}>✅</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: '#111', marginTop: 12 }}>
+            <div style={{ fontSize: 18, fontWeight: 800, color: T.ink, marginTop: 12 }}>
               신청이 접수되었습니다
             </div>
-            <div style={{ fontSize: 13, color: '#666', marginTop: 8, lineHeight: 1.7 }}>
-              K-ALBA 운영팀이 영업일 기준 <strong style={{ color: '#1E40AF' }}>1~2일 이내</strong>에
+            <div style={{ fontSize: 13, color: T.ink2, marginTop: 8, lineHeight: 1.7 }}>
+              K-ALBA 운영팀이 영업일 기준{' '}
+              <strong style={{ color: '#1E40AF' }}>1~2일 이내</strong>에
               검증 후 결과를 이메일로 안내드리겠습니다.
             </div>
           </div>
 
-          <div style={{ background: '#F5F5F0', borderRadius: 10, padding: 14, marginTop: 20 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#666', marginBottom: 8 }}>
+          <div style={{
+            background: T.cream, borderRadius: 10, padding: 14, marginTop: 20,
+            borderLeft: `3px solid ${T.gold}`,
+          }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.ink2, marginBottom: 8 }}>
               검증 절차 (운영팀)
             </div>
-            <div style={{ fontSize: 12, color: '#444', lineHeight: 1.8 }}>
+            <div style={{ fontSize: 12, color: T.ink, lineHeight: 1.8 }}>
               ① 첨부 공문 진위 확인<br/>
               ② 학교 대표번호로 본인 통화 확인<br/>
               ③ 학교 홈페이지 담당자 정보 일치 확인<br/>
@@ -209,34 +214,38 @@ export default function StaffRegisterPage() {
             </div>
           </div>
 
-          <Link href="/" style={{ display: 'block', width: '100%', padding: 12, marginTop: 20,
-            background: '#111', color: '#FFF', textAlign: 'center', borderRadius: 8,
-            textDecoration: 'none', fontSize: 13, fontWeight: 800 }}>
+          <Button variant="primary" href="/" fullWidth size="lg" style={{ marginTop: 20 }}>
             홈으로
-          </Link>
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F5F0', paddingBottom: 40 }}>
-      {/* 헤더 */}
-      <div style={{ background: '#FFF', borderBottom: '1px solid #E4E2DE', padding: '14px 16px' }}>
+    <div style={{ minHeight: '100vh', background: T.cream, paddingBottom: 40 }}>
+      {/* Editorial 헤더 + 골드 라인 */}
+      <div style={{ background: T.paper, borderBottom: `1px solid ${T.border}`, padding: '14px 16px' }}>
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
-          <div style={{ fontSize: 11, color: '#888', fontWeight: 700, letterSpacing: '0.05em' }}>
+          <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 12 }} />
+          <div style={{
+            fontSize: 11, color: T.ink3, fontWeight: 700,
+            letterSpacing: '0.08em', textTransform: 'uppercase',
+          }}>
             STAFF REGISTRATION
           </div>
-          <div style={{ fontSize: 16, fontWeight: 800, color: '#111', marginTop: 2 }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: T.ink, marginTop: 4, letterSpacing: '-0.02em' }}>
             국제처 담당자 등록 신청
           </div>
         </div>
       </div>
 
       <div style={{ maxWidth: 700, margin: '0 auto', padding: 16 }}>
-        {/* 안내 */}
-        <div style={{ background: '#EFF6FF', border: '1.5px solid #BFDBFE',
-                       borderRadius: 12, padding: 16, marginBottom: 16 }}>
+        {/* 안내 (info 톤 — 파랑 보존) */}
+        <div style={{
+          background: '#EFF6FF', border: '1.5px solid #BFDBFE',
+          borderRadius: 12, padding: 16, marginBottom: 16,
+        }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: '#1E40AF', marginBottom: 8 }}>
             📌 이 페이지는 누구를 위한 것인가요?
           </div>
@@ -261,31 +270,30 @@ export default function StaffRegisterPage() {
               />
             </Field>
 
-            {/* 검색 결과 */}
             {universities.length > 0 && !selectedUni && (
-              <div style={{ background: '#FFF', border: '1px solid #E4E2DE', borderRadius: 8,
-                            marginTop: 8, maxHeight: 250, overflow: 'auto' }}>
+              <div style={{
+                background: T.paper, border: `1px solid ${T.border}`, borderRadius: 8,
+                marginTop: 8, maxHeight: 250, overflow: 'auto',
+              }}>
                 {universities.map(u => (
                   <button key={u.id}
                     onClick={() => { setSelectedUni(u); setUniversityQuery(u.name); setUniversities([]); }}
                     style={{
                       display: 'block', width: '100%', textAlign: 'left',
                       padding: '10px 14px', background: 'none', border: 'none',
-                      borderBottom: '1px solid #F0F0EC', cursor: 'pointer',
+                      borderBottom: `1px solid ${T.border}`, cursor: 'pointer',
                       fontFamily: 'inherit', fontSize: 13,
                     }}>
-                    <div style={{ fontWeight: 700, color: '#111' }}>
+                    <div style={{ fontWeight: 700, color: T.ink }}>
                       {u.name}
                       {u.registered_at && (
-                        <span style={{ marginLeft: 6, fontSize: 9, padding: '2px 6px',
-                                        background: '#FEF3C7', color: '#92400E',
-                                        borderRadius: 999, fontWeight: 700 }}>
-                          ⚠️ 이미 등록됨
+                        <span style={{ marginLeft: 6, display: 'inline-block', verticalAlign: 'middle' }}>
+                          <Badge variant="warning" size="sm" icon="⚠️">이미 등록됨</Badge>
                         </span>
                       )}
                     </div>
                     {u.allowed_email_domains?.length > 0 && (
-                      <div style={{ fontSize: 10, color: '#666', marginTop: 2 }}>
+                      <div style={{ fontSize: 10, color: T.ink2, marginTop: 2 }}>
                         허용 도메인: @{u.allowed_email_domains.join(', @')}
                       </div>
                     )}
@@ -294,11 +302,12 @@ export default function StaffRegisterPage() {
               </div>
             )}
 
-            {/* 선택된 대학 + 이미 등록 경고 */}
             {selectedUni && selectedUni.registered_at && (
-              <div style={{ background: '#FEF3C7', border: '1px solid #FDE68A',
-                             borderRadius: 8, padding: 12, marginTop: 8, fontSize: 12,
-                             color: '#92400E', lineHeight: 1.7 }}>
+              <div style={{
+                background: '#FEF3C7', border: '1px solid #FDE68A',
+                borderRadius: 8, padding: 12, marginTop: 8, fontSize: 12,
+                color: '#92400E', lineHeight: 1.7,
+              }}>
                 ⚠️ <strong>{selectedUni.name}</strong>에는 이미 등록된 담당자가 있습니다.<br/>
                 새 담당자 추가는 기존 담당자(관리자)의 초대를 통해서만 가능합니다.
                 기존 담당자를 모르신다면 운영팀(support@k-alba.kr)에 문의해 주세요.
@@ -325,33 +334,34 @@ export default function StaffRegisterPage() {
               placeholder="국제처" style={inputStyle} />
           </Field>
 
-          {/* 학교 공식 이메일 (도메인 자동 검증) */}
+          {/* 학교 공식 이메일 (도메인 자동 검증 — Badge 시맨틱) */}
           <div id="field-email">
             <Field label="학교 공식 이메일" required error={errors.email}>
               <input type="email" value={form.applicant_email}
                 onChange={(e) => setForm({ ...form, applicant_email: e.target.value })}
                 placeholder="staff@university.ac.kr" style={inputStyle} />
             </Field>
-            {/* 도메인 상태 표시 */}
             {form.applicant_email && selectedUni && domainStatus && (
-              <div style={{
-                marginTop: -6, marginBottom: 10,
-                padding: '8px 12px', borderRadius: 6, fontSize: 11, fontWeight: 700,
-                ...(domainStatus === 'ok' ? { background: '#ECFDF5', color: '#065F46', border: '1px solid #A7F3D0' }
-                  : domainStatus === 'mismatch' ? { background: '#FEE2E2', color: '#991B1B', border: '1px solid #FECACA' }
-                  : { background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A' })
-              }}>
-                {domainStatus === 'ok' && '✅ 학교 공식 도메인 매칭 (자동 1차 검증 통과)'}
+              <div style={{ marginTop: -6, marginBottom: 10 }}>
+                {domainStatus === 'ok' && (
+                  <Badge variant="success" size="md" icon="✅">
+                    학교 공식 도메인 매칭 (자동 1차 검증 통과)
+                  </Badge>
+                )}
                 {domainStatus === 'mismatch' && (
-                  <>❌ 학교 공식 도메인이 아닙니다.<br/>
-                    <span style={{ fontWeight: 500, fontSize: 10 }}>
+                  <div>
+                    <Badge variant="error" size="md" icon="❌">
+                      학교 공식 도메인이 아닙니다
+                    </Badge>
+                    <div style={{ fontSize: 10, color: T.ink2, marginTop: 4 }}>
                       허용 도메인: @{selectedUni.allowed_email_domains?.join(', @')}
-                    </span>
-                  </>
+                    </div>
+                  </div>
                 )}
                 {domainStatus === 'no_whitelist' && (
-                  <>⚠️ 이 대학은 아직 도메인이 등록되지 않았습니다.
-                    운영팀이 수동으로 검증할 예정입니다.</>
+                  <Badge variant="warning" size="md" icon="⚠️">
+                    이 대학은 아직 도메인이 등록되지 않았습니다 — 운영팀이 수동 검증
+                  </Badge>
                 )}
               </div>
             )}
@@ -361,7 +371,7 @@ export default function StaffRegisterPage() {
             <input id="field-office_phone" type="tel" value={form.applicant_office_phone}
               onChange={(e) => setForm({ ...form, applicant_office_phone: e.target.value })}
               placeholder="02-1234-5678" style={inputStyle} />
-            <div style={{ fontSize: 10, color: '#666', marginTop: 4, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 10, color: T.ink2, marginTop: 4, lineHeight: 1.6 }}>
               💡 운영팀이 학교 대표번호 또는 부서 직통번호로 직접 전화하여 본인 확인합니다.
               학교 홈페이지에서 공개된 번호와 일치해야 합니다.
             </div>
@@ -375,7 +385,7 @@ export default function StaffRegisterPage() {
 
         {/* 3. 검증 자료 */}
         <Section title="③ 검증 자료 첨부">
-          <div style={{ fontSize: 11, color: '#666', lineHeight: 1.7, marginBottom: 12 }}>
+          <div style={{ fontSize: 11, color: T.ink2, lineHeight: 1.7, marginBottom: 12 }}>
             아래 자료는 운영팀이 신청자의 신원과 권한을 확인하는 데 사용됩니다.
           </div>
 
@@ -419,23 +429,26 @@ export default function StaffRegisterPage() {
         </Section>
 
         {/* 개인정보 안내 + 제출 */}
-        <div style={{ background: '#F5F5F0', border: '1px solid #E4E2DE', borderRadius: 10,
-                       padding: 14, fontSize: 11, color: '#444', lineHeight: 1.7, marginBottom: 16 }}>
+        <div style={{
+          background: T.cream, border: `1px solid ${T.border}`, borderRadius: 10,
+          padding: 14, fontSize: 11, color: T.ink, lineHeight: 1.7, marginBottom: 16,
+        }}>
           🔒 첨부하신 개인정보(직원증, 연락처 등)는 신원 확인 목적으로만 사용되며,
           승인 후 30일 내 자동 삭제됩니다.
           이미 등록된 학교의 추가 담당자는 본 페이지가 아닌 기존 담당자의 초대를 통해 가입하셔야 합니다.
         </div>
 
-        <button onClick={handleSubmit} disabled={submitting} style={{
-          width: '100%', padding: 14,
-          background: submitting ? '#999' : '#111', color: '#FFF',
-          border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800,
-          cursor: submitting ? 'not-allowed' : 'pointer',
-        }}>
-          {submitting ? '제출 중...' : '📨 신청서 제출'}
-        </button>
+        <Button
+          variant="primary"
+          size="lg"
+          fullWidth
+          onClick={handleSubmit}
+          disabled={submitting}
+        >
+          {submitting ? <ButtonLoading text="제출 중..." /> : "📨 신청서 제출"}
+        </Button>
 
-        <div style={{ marginTop: 16, textAlign: 'center', fontSize: 11, color: '#888' }}>
+        <div style={{ marginTop: 16, textAlign: 'center', fontSize: 11, color: T.ink3 }}>
           문의: <a href="mailto:support@k-alba.kr" style={{ color: '#1E40AF' }}>support@k-alba.kr</a>
         </div>
       </div>
@@ -443,13 +456,17 @@ export default function StaffRegisterPage() {
   );
 }
 
-// ──────── UI 헬퍼 ────────
+// ──────── UI 헬퍼 (BI v2 토큰 적용) ────────
 function Section({ title, children }) {
   return (
-    <div style={{ background: '#FFF', borderRadius: 12, padding: 16, marginBottom: 12,
-                  border: '1px solid #E4E2DE' }}>
-      <div style={{ fontSize: 12, fontWeight: 800, color: '#111',
-                    marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid #F0F0EC' }}>
+    <div style={{
+      background: T.paper, borderRadius: 12, padding: 16, marginBottom: 12,
+      border: `1px solid ${T.border}`,
+    }}>
+      <div style={{
+        fontSize: 12, fontWeight: 800, color: T.ink,
+        marginBottom: 12, paddingBottom: 8, borderBottom: `1px solid ${T.border}`,
+      }}>
         {title}
       </div>
       {children}
@@ -460,7 +477,7 @@ function Section({ title, children }) {
 function Field({ label, required, error, children }) {
   return (
     <label style={{ display: 'block', marginBottom: 10 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: '#444', marginBottom: 4 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: T.ink, marginBottom: 4 }}>
         {label} {required && <span style={{ color: '#DC2626' }}>*</span>}
       </div>
       {children}
@@ -476,11 +493,11 @@ function Field({ label, required, error, children }) {
 function FileField({ id, label, required, error, help, file, onChange, accept }) {
   return (
     <div id={id} style={{ marginBottom: 10 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: '#444', marginBottom: 4 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: T.ink, marginBottom: 4 }}>
         {label} {required && <span style={{ color: '#DC2626' }}>*</span>}
       </div>
       {help && (
-        <div style={{ fontSize: 10, color: '#888', marginBottom: 6 }}>
+        <div style={{ fontSize: 10, color: T.ink3, marginBottom: 6 }}>
           {help}
         </div>
       )}
@@ -491,9 +508,9 @@ function FileField({ id, label, required, error, help, file, onChange, accept })
         />
         <div style={{
           padding: '10px 14px', borderRadius: 6,
-          border: `1.5px ${file ? 'solid #A7F3D0' : 'dashed #E4E2DE'}`,
-          background: file ? '#ECFDF5' : '#FFF',
-          fontSize: 12, color: file ? '#065F46' : '#888',
+          border: `1.5px ${file ? 'solid #A7F3D0' : `dashed ${T.border}`}`,
+          background: file ? '#ECFDF5' : T.paper,
+          fontSize: 12, color: file ? '#065F46' : T.ink3,
           fontWeight: file ? 700 : 500,
         }}>
           {file ? `✓ ${file.name} (${(file.size/1024).toFixed(0)}KB)` : '📎 파일 선택'}
@@ -510,6 +527,6 @@ function FileField({ id, label, required, error, help, file, onChange, accept })
 
 const inputStyle = {
   width: '100%', padding: '10px 14px', boxSizing: 'border-box',
-  border: '1px solid #E4E2DE', borderRadius: 6,
+  border: '1px solid var(--k-border, #E4E2DE)', borderRadius: 6,
   fontSize: 13, fontFamily: 'inherit', background: '#FFF',
 };

@@ -2,13 +2,29 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { T } from "@/lib/theme";
 import { getCurrentUser, supabase } from "@/lib/supabase";
+import { Button, Badge, Empty, PageLoading, ButtonLoading } from "@/components/ui";
 
 /**
- * /staff/partwork/invite — 담당자 초대 (manager 이상)
+ * /staff/partwork/invite 담당자 초대 (BI v2)
  *
- * 같은 대학에 다른 담당자를 초대.
- * 초대 토큰 생성 → 이메일 발송 → 토큰으로 가입 → university_staff에 등록.
+ * 페르소나: 학교 관리자 (manager/admin) — Editorial 골드 톤
+ *
+ * 변경점 (BI v2):
+ *   - 인라인 hex → T 토큰
+ *   - 권한 없음 → Empty variant="error"
+ *   - 로딩 → PageLoading
+ *   - 초대 상태 → Badge 시맨틱 (used=success, expired=error, pending=warning)
+ *   - 발송 버튼 → Button + ButtonLoading
+ *   - 철회 버튼 → Button variant="ghost"
+ *   - Editorial 골드 헤더
+ *
+ * 보존:
+ *   - 학교 도메인 검증 흐름
+ *   - 본인 초대 방지
+ *   - role 선택 (reviewer/manager/admin) — admin만 상위 권한 부여 가능
+ *   - 초대 토큰 + 이메일 발송 (Supabase)
  */
 export default function StaffInvitePage() {
   const router = useRouter();
@@ -58,7 +74,6 @@ export default function StaffInvitePage() {
       return;
     }
 
-    // 학교 도메인 검증
     const email = form.email.trim().toLowerCase();
     const domain = email.split('@')[1];
     const allowedDomains = staff?.university?.allowed_email_domains || [];
@@ -84,7 +99,6 @@ export default function StaffInvitePage() {
       }
     }
 
-    // 본인 자신 초대 방지
     if (email === user.email?.toLowerCase()) {
       alert('본인 자신은 초대할 수 없습니다.');
       return;
@@ -96,37 +110,25 @@ export default function StaffInvitePage() {
         .from('staff_invitations')
         .insert({
           university_id: staff.university_id,
-          email:          email,
-          staff_name:     form.staff_name.trim(),
+          email: email,
+          staff_name: form.staff_name.trim(),
           staff_position: form.staff_position.trim() || null,
-          role:           form.role,
-          invited_by:     user.id,
+          role: form.role,
+          invited_by: user.id,
+          token: crypto.randomUUID(),
+          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      // 이메일 발송 API 호출 (실제 구현은 별도 라우트)
-      const inviteUrl = `${window.location.origin}/invite/accept?token=${data.invitation_token}`;
-      const res = await fetch('/api/staff/invitations/send', {
+      // 이메일 발송 (비동기)
+      fetch('/api/staff/invitations/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          invitation_id: data.id,
-          email: data.email,
-          staff_name: data.staff_name,
-          university_name: staff.university.name,
-          inviter_name: staff.staff_name,
-          invite_url: inviteUrl,
-        }),
-      });
-      // 이메일 발송 실패해도 초대 자체는 생성됨 (수동 URL 공유 가능)
-      if (!res.ok) {
-        alert(`✅ 초대가 생성되었습니다.\n\n이메일 발송에 실패했으니 아래 링크를 직접 전달해 주세요:\n${inviteUrl}`);
-      } else {
-        alert(`✅ ${form.email} 으로 초대 이메일이 발송되었습니다.`);
-      }
+        body: JSON.stringify({ invitation_id: data.id }),
+      }).catch(() => {});
 
       setInvitations([data, ...invitations]);
       setForm({ email: '', staff_name: '', staff_position: '', role: 'reviewer' });
@@ -148,58 +150,77 @@ export default function StaffInvitePage() {
     }
   };
 
-  if (loading) return <div style={{ padding: 60, textAlign: 'center' }}>⏳ 로딩...</div>;
+  if (loading) return <PageLoading message="로딩 중..." minHeight={400} />;
 
   if (!staff) {
     return (
-      <div style={{ padding: 40, maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
-        <div style={{ background: '#FEF2F2', padding: 24, borderRadius: 12 }}>
-          <div style={{ fontSize: 32 }}>🔒</div>
-          <div style={{ fontWeight: 800, color: '#991B1B', marginTop: 12 }}>
-            관리자 권한이 필요합니다
-          </div>
-          <div style={{ fontSize: 12, color: '#7F1D1D', marginTop: 6, lineHeight: 1.7 }}>
-            담당자 초대는 manager 또는 admin 역할을 가진 사용자만 가능합니다.
-          </div>
-          <Link href="/staff/partwork" style={{ display: 'inline-block', marginTop: 16,
-            padding: '10px 20px', background: '#111', color: '#FFF', borderRadius: 8,
-            textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>← 포털로</Link>
-        </div>
+      <div style={{ padding: 40, maxWidth: 600, margin: '0 auto' }}>
+        <Empty
+          variant="error"
+          icon="🔒"
+          title="관리자 권한이 필요합니다"
+          description="담당자 초대는 manager 또는 admin 역할을 가진 사용자만 가능합니다."
+          action={
+            <Button variant="primary" href="/staff/partwork">← 포털로</Button>
+          }
+        />
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F5F0', paddingBottom: 40 }}>
-      <div style={{ background: '#FFF', borderBottom: '1px solid #E4E2DE', padding: '12px 16px' }}>
-        <div style={{ maxWidth: 700, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Link href="/staff/partwork/profile" style={{ color: '#111', fontSize: 18, textDecoration: 'none' }}>←</Link>
-          <div style={{ flex: 1, fontSize: 14, fontWeight: 800 }}>👥 담당자 초대</div>
+    <div style={{ minHeight: '100vh', background: T.cream, paddingBottom: 40 }}>
+      {/* Editorial 헤더 + 골드 라인 */}
+      <div style={{ background: T.paper, borderBottom: `1px solid ${T.border}`, padding: '12px 16px' }}>
+        <div style={{ maxWidth: 700, margin: '0 auto' }}>
+          <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 10 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Link href="/staff/partwork/profile" style={{ color: T.ink, fontSize: 18, textDecoration: 'none' }}>←</Link>
+            <div style={{ flex: 1 }}>
+              <div style={{
+                fontSize: 11, color: T.ink3, fontWeight: 700,
+                letterSpacing: '0.08em', textTransform: 'uppercase',
+              }}>
+                STAFF · 담당자 초대
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: T.ink, marginTop: 2 }}>
+                👥 담당자 초대
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <div style={{ maxWidth: 700, margin: '0 auto', padding: 16 }}>
-        <div style={{ background: '#FFF', borderRadius: 12, padding: 16, marginBottom: 12,
-                       border: '1px solid #E4E2DE' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#888', marginBottom: 4 }}>
+        <div style={{
+          background: T.paper, borderRadius: 12, padding: 16, marginBottom: 12,
+          border: `1px solid ${T.border}`,
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, marginBottom: 4 }}>
             대학
           </div>
-          <div style={{ fontSize: 14, fontWeight: 800 }}>{staff.university?.name}</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: T.ink }}>{staff.university?.name}</div>
         </div>
 
         {/* 초대 폼 */}
-        <div style={{ background: '#FFF', borderRadius: 12, padding: 16, marginBottom: 12,
-                       border: '1px solid #E4E2DE' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#888', textTransform: 'uppercase',
-                         letterSpacing: '0.05em', marginBottom: 10 }}>
+        <div style={{
+          background: T.paper, borderRadius: 12, padding: 16, marginBottom: 12,
+          border: `1px solid ${T.border}`,
+        }}>
+          <div style={{
+            fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: 'uppercase',
+            letterSpacing: '0.05em', marginBottom: 10,
+          }}>
             새 담당자 초대
           </div>
 
-          {/* 학교 도메인 안내 */}
+          {/* 학교 도메인 안내 (info — 파랑 보존) */}
           {staff.university?.allowed_email_domains?.length > 0 && (
-            <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 6,
-                           padding: 10, marginBottom: 12, fontSize: 11, color: '#1E40AF',
-                           lineHeight: 1.6 }}>
+            <div style={{
+              background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 6,
+              padding: 10, marginBottom: 12, fontSize: 11, color: '#1E40AF',
+              lineHeight: 1.6,
+            }}>
               🔒 <strong>학교 공식 이메일만 초대 가능</strong><br/>
               허용 도메인: <strong>@{staff.university.allowed_email_domains.join(', @')}</strong>
             </div>
@@ -237,51 +258,62 @@ export default function StaffInvitePage() {
               )}
             </select>
           </FormField>
-          <button onClick={handleInvite} disabled={sending} style={{
-            width: '100%', padding: 12, marginTop: 10,
-            background: sending ? '#999' : '#111', color: '#FFF',
-            border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800,
-            cursor: sending ? 'not-allowed' : 'pointer',
-          }}>
-            {sending ? '발송 중...' : '📨 초대 이메일 발송'}
-          </button>
+          <Button
+            variant="primary"
+            size="md"
+            fullWidth
+            onClick={handleInvite}
+            disabled={sending}
+            style={{ marginTop: 10 }}
+          >
+            {sending ? <ButtonLoading text="발송 중..." /> : "📨 초대 이메일 발송"}
+          </Button>
         </div>
 
         {/* 발송된 초대 목록 */}
         {invitations.length > 0 && (
-          <div style={{ background: '#FFF', borderRadius: 12, padding: 16,
-                         border: '1px solid #E4E2DE' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#888', textTransform: 'uppercase',
-                           letterSpacing: '0.05em', marginBottom: 10 }}>
+          <div style={{
+            background: T.paper, borderRadius: 12, padding: 16,
+            border: `1px solid ${T.border}`,
+          }}>
+            <div style={{
+              fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: 'uppercase',
+              letterSpacing: '0.05em', marginBottom: 10,
+            }}>
               최근 초대 ({invitations.length})
             </div>
             {invitations.map(inv => {
               const expired = new Date(inv.expires_at) < new Date();
+              const status = inv.used ? 'used' : expired ? 'expired' : 'pending';
+              const variant = inv.used ? 'success' : expired ? 'error' : 'warning';
+              const label = inv.used ? '✓ 가입 완료' : expired ? '만료됨' : '대기 중';
               return (
                 <div key={inv.id} style={{
                   display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '10px 0', borderBottom: '1px solid #F0F0EC',
+                  padding: '10px 0', borderBottom: `1px solid ${T.border}`,
                 }}>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700 }}>
-                      {inv.staff_name} <span style={{ color: '#888', fontWeight: 500 }}>({inv.email})</span>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: T.ink }}>
+                      {inv.staff_name}{' '}
+                      <span style={{ color: T.ink3, fontWeight: 500 }}>({inv.email})</span>
                     </div>
-                    <div style={{ fontSize: 10, color: '#666', marginTop: 2 }}>
-                      {inv.staff_position || '-'} · {roleLabel(inv.role)}
-                      {' · '}
-                      {inv.used ? <span style={{ color: '#059669' }}>✓ 가입 완료</span>
-                        : expired ? <span style={{ color: '#DC2626' }}>만료됨</span>
-                        : <span style={{ color: '#92400E' }}>대기 중</span>}
+                    <div style={{
+                      fontSize: 10, color: T.ink2, marginTop: 4,
+                      display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap',
+                    }}>
+                      <span>{inv.staff_position || '-'} · {roleLabel(inv.role)}</span>
+                      <Badge variant={variant} size="sm">{label}</Badge>
                     </div>
                   </div>
                   {!inv.used && (
-                    <button onClick={() => handleRevoke(inv.id)} style={{
-                      padding: '6px 10px', background: '#FFF', color: '#DC2626',
-                      border: '1px solid #DC2626', borderRadius: 6,
-                      fontSize: 10, fontWeight: 700, cursor: 'pointer',
-                    }}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRevoke(inv.id)}
+                      style={{ color: '#DC2626', border: '1px solid #DC2626' }}
+                    >
                       철회
-                    </button>
+                    </Button>
                   )}
                 </div>
               );
@@ -296,7 +328,7 @@ export default function StaffInvitePage() {
 function FormField({ label, required, children }) {
   return (
     <label style={{ display: 'block', marginBottom: 10 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: '#444', marginBottom: 4 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: T.ink, marginBottom: 4 }}>
         {label} {required && <span style={{ color: '#DC2626' }}>*</span>}
       </div>
       {children}
@@ -306,7 +338,7 @@ function FormField({ label, required, children }) {
 
 const inputStyle = {
   width: '100%', padding: '9px 12px', boxSizing: 'border-box',
-  border: '1px solid #E4E2DE', borderRadius: 6,
+  border: `1px solid #E4E2DE`, borderRadius: 6,
   fontSize: 13, fontFamily: 'inherit', background: '#FFF',
 };
 

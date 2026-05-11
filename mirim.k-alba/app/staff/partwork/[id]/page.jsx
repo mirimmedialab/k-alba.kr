@@ -4,6 +4,8 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser, supabase } from "@/lib/supabase";
 import SignaturePad from "@/components/SignaturePad";
+import { T } from "@/lib/theme";
+import { Button, Badge, Empty, PageLoading, ButtonLoading } from "@/components/ui";
 
 /**
  * /staff/partwork/[id] — 신청서 상세 검토 + 서명
@@ -267,18 +269,17 @@ export default function StaffPartworkDetailPage() {
   };
 
   if (loading) {
-    return <div style={{ padding: 60, textAlign: 'center' }}>⏳ 로딩...</div>;
+    return <PageLoading message="로딩 중..." minHeight={400} />;
   }
   if (error) {
     return (
       <div style={{ padding: 40, maxWidth: 600, margin: '0 auto' }}>
-        <div style={{ background: '#FEF2F2', padding: 24, borderRadius: 12, textAlign: 'center' }}>
-          <div style={{ fontSize: 32 }}>🔒</div>
-          <div style={{ fontWeight: 800, color: '#991B1B', marginTop: 12 }}>{error}</div>
-          <Link href="/staff/partwork" style={{ display: 'inline-block', marginTop: 16,
-            padding: '10px 20px', background: '#111', color: '#FFF', borderRadius: 8,
-            textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>← 목록으로</Link>
-        </div>
+        <Empty
+          variant="error"
+          icon="🔒"
+          title={error}
+          action={<Button variant="primary" href="/staff/partwork">← 포털로</Button>}
+        />
       </div>
     );
   }
@@ -287,23 +288,35 @@ export default function StaffPartworkDetailPage() {
   const status = STATUS_LABELS[a.status] || STATUS_LABELS.submitted;
   const isFinalized = ['signed', 'approved', 'rejected'].includes(a.status);
 
+  // BI v2: STATUS_LABELS → Badge 시맨틱 매핑
+  const statusVariant = {
+    submitted: 'info',
+    reviewing: 'warning',
+    documents_needed: 'warning',
+    signed: 'success',
+    approved: 'success',
+    rejected: 'error',
+  };
+
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F5F0', paddingBottom: 100 }}>
-      {/* 헤더 */}
-      <div style={{ background: '#FFF', borderBottom: '1px solid #E4E2DE', padding: '12px 16px',
+    <div style={{ minHeight: '100vh', background: T.cream, paddingBottom: 100 }}>
+      {/* Editorial 헤더 + 골드 라인 */}
+      <div style={{ background: T.paper, borderBottom: `1px solid ${T.border}`, padding: '12px 16px',
                     position: 'sticky', top: 0, zIndex: 10 }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Link href="/staff/partwork" style={{ color: '#111', fontSize: 18, textDecoration: 'none' }}>←</Link>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 11, color: '#888' }}>신청서 #{a.id}</div>
-            <div style={{ fontSize: 14, fontWeight: 800, color: '#111' }}>
-              {a.worker_name} · {a.employer_name}
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 10 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Link href="/staff/partwork" style={{ color: T.ink, fontSize: 18, textDecoration: 'none' }}>←</Link>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, color: T.ink3 }}>신청서 #{a.id}</div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: T.ink }}>
+                {a.worker_name} · {a.employer_name}
+              </div>
             </div>
+            <Badge variant={statusVariant[a.status] || 'neutral'} size="sm">
+              {status.label}
+            </Badge>
           </div>
-          <span style={{ padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700,
-                          background: status.bg, color: status.color }}>
-            {status.label}
-          </span>
         </div>
       </div>
 
@@ -334,10 +347,10 @@ export default function StaffPartworkDetailPage() {
             return (
               <div key={key} style={{
                 display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0',
-                borderBottom: '1px solid #F0F0EC',
+                borderBottom: `1px solid ${T.border}`,
               }}>
                 <span style={{ fontSize: 18 }}>{info.icon}</span>
-                <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: '#111' }}>
+                <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: T.ink }}>
                   {info.name}
                   <span style={{ marginLeft: 6, fontSize: 9, color: info.required ? '#DC2626' : '#888' }}>
                     {info.required ? '필수' : '선택'}
@@ -373,7 +386,7 @@ export default function StaffPartworkDetailPage() {
                 <span style={{ fontSize: 13 }}>✗ 비인증대학</span>
               </label>
             </div>
-            <div style={{ fontSize: 10, color: '#888', marginTop: 4 }}>
+            <div style={{ fontSize: 10, color: T.ink3, marginTop: 4 }}>
               IEQAS 인증대학 여부 — 시간제취업확인서에 표시됩니다
             </div>
           </Section>
@@ -396,9 +409,9 @@ export default function StaffPartworkDetailPage() {
         {reviewLog.length > 0 && (
           <Section title="처리 이력">
             {reviewLog.map(log => (
-              <div key={log.id} style={{ padding: '6px 0', borderBottom: '1px solid #F0F0EC',
-                                          fontSize: 11, color: '#666' }}>
-                <span style={{ fontWeight: 700, color: '#111' }}>{actionLabel(log.action)}</span>
+              <div key={log.id} style={{ padding: '6px 0', borderBottom: `1px solid ${T.border}`,
+                                          fontSize: 11, color: T.ink2 }}>
+                <span style={{ fontWeight: 700, color: T.ink }}>{actionLabel(log.action)}</span>
                 {log.note && <span> · {log.note}</span>}
                 <span style={{ marginLeft: 4, color: '#999' }}>
                   · {new Date(log.created_at).toLocaleString('ko-KR')}
@@ -412,7 +425,7 @@ export default function StaffPartworkDetailPage() {
       {/* 액션 버튼 (하단 고정) */}
       {!isFinalized && (
         <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0,
-                       background: '#FFF', borderTop: '1px solid #E4E2DE',
+                       background: T.paper, borderTop: `1px solid ${T.border}`,
                        padding: 12, zIndex: 20 }}>
           <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', gap: 8 }}>
             <button onClick={() => setShowRejectModal(true)} disabled={busy} style={btnStyle('outline-red')}>
@@ -431,7 +444,7 @@ export default function StaffPartworkDetailPage() {
       {/* 서명 완료 후: 최종 승인 가능 */}
       {a.status === 'signed' && (
         <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0,
-                       background: '#FFF', borderTop: '1px solid #E4E2DE',
+                       background: T.paper, borderTop: `1px solid ${T.border}`,
                        padding: 12, zIndex: 20 }}>
           <div style={{ maxWidth: 900, margin: '0 auto' }}>
             <button onClick={handleApprove} disabled={busy} style={{
@@ -447,7 +460,7 @@ export default function StaffPartworkDetailPage() {
       {/* 서명 모달 */}
       {showSignPad && (
         <Modal onClose={() => setShowSignPad(false)} title="✍️ 담당자 서명">
-          <div style={{ fontSize: 12, color: '#666', marginBottom: 10, lineHeight: 1.6 }}>
+          <div style={{ fontSize: 12, color: T.ink2, marginBottom: 10, lineHeight: 1.6 }}>
             아래 박스에 서명해 주세요. 서명은 시간제취업확인서의 <strong>유학생담당자 확인란</strong>에 자동 삽입됩니다.
           </div>
           <SignaturePad
@@ -465,7 +478,7 @@ export default function StaffPartworkDetailPage() {
       {/* 추가 서류 요청 모달 */}
       {showRequestDocs && (
         <Modal onClose={() => setShowRequestDocs(false)} title="📄 추가 서류 요청">
-          <div style={{ fontSize: 12, color: '#666', marginBottom: 12 }}>
+          <div style={{ fontSize: 12, color: T.ink2, marginBottom: 12 }}>
             학생에게 요청할 서류를 선택해 주세요.
           </div>
           {[
@@ -491,7 +504,7 @@ export default function StaffPartworkDetailPage() {
             onChange={(e) => setRequestNote(e.target.value)}
             placeholder="추가 안내 (선택)"
             style={{ width: '100%', padding: 10, marginTop: 10, boxSizing: 'border-box',
-                     border: '1px solid #E4E2DE', borderRadius: 6, fontSize: 12, fontFamily: 'inherit',
+                     border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 12, fontFamily: 'inherit',
                      resize: 'vertical', minHeight: 60 }}
           />
           <button onClick={handleRequestDocs} disabled={busy || requestedDocs.length === 0} style={{
@@ -507,7 +520,7 @@ export default function StaffPartworkDetailPage() {
       {/* 반려 모달 */}
       {showRejectModal && (
         <Modal onClose={() => setShowRejectModal(false)} title="❌ 신청 반려">
-          <div style={{ fontSize: 12, color: '#666', marginBottom: 10 }}>
+          <div style={{ fontSize: 12, color: T.ink2, marginBottom: 10 }}>
             반려 사유를 학생에게 명확히 안내해 주세요.
           </div>
           <textarea
@@ -515,7 +528,7 @@ export default function StaffPartworkDetailPage() {
             onChange={(e) => setRejectReason(e.target.value)}
             placeholder="반려 사유 (예: TOPIK 급수 부족으로 허용 시간 초과)"
             style={{ width: '100%', padding: 10, boxSizing: 'border-box',
-                     border: '1px solid #E4E2DE', borderRadius: 6, fontSize: 12, fontFamily: 'inherit',
+                     border: `1px solid ${T.border}`, borderRadius: 6, fontSize: 12, fontFamily: 'inherit',
                      resize: 'vertical', minHeight: 80 }}
           />
           <button onClick={handleReject} disabled={busy || !rejectReason.trim()} style={{
@@ -648,9 +661,9 @@ ${staff?.staff_name || ''} ${sig ? `<img src="${sig}" class="signature-img" alt=
 // ───── UI 헬퍼 ─────
 function Section({ title, children }) {
   return (
-    <div style={{ background: '#FFF', borderRadius: 12, padding: 16, marginBottom: 12,
-                  border: '1px solid #E4E2DE' }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: '#888', textTransform: 'uppercase',
+    <div style={{ background: T.paper, borderRadius: 12, padding: 16, marginBottom: 12,
+                  border: `1px solid ${T.border}` }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, textTransform: 'uppercase',
                     letterSpacing: '0.05em', marginBottom: 8 }}>
         {title}
       </div>
@@ -661,9 +674,9 @@ function Section({ title, children }) {
 
 function Row({ label, value }) {
   return (
-    <div style={{ display: 'flex', padding: '6px 0', borderBottom: '1px solid #F0F0EC' }}>
-      <div style={{ width: 100, fontSize: 11, color: '#888' }}>{label}</div>
-      <div style={{ flex: 1, fontSize: 12, color: '#111', fontWeight: 600 }}>{value}</div>
+    <div style={{ display: 'flex', padding: '6px 0', borderBottom: `1px solid ${T.border}` }}>
+      <div style={{ width: 100, fontSize: 11, color: T.ink3 }}>{label}</div>
+      <div style={{ flex: 1, fontSize: 12, color: T.ink, fontWeight: 600 }}>{value}</div>
     </div>
   );
 }
@@ -676,13 +689,13 @@ function Modal({ children, onClose, title }) {
       padding: 16, zIndex: 100,
     }}>
       <div onClick={(e) => e.stopPropagation()} style={{
-        background: '#FFF', borderRadius: 12, padding: 20,
+        background: T.paper, borderRadius: 12, padding: 20,
         maxWidth: 500, width: '100%', maxHeight: '90vh', overflow: 'auto',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 14 }}>
           <div style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{title}</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none',
-            fontSize: 20, cursor: 'pointer', color: '#888' }}>✕</button>
+            fontSize: 20, cursor: 'pointer', color: T.ink3 }}>✕</button>
         </div>
         {children}
       </div>
@@ -696,11 +709,11 @@ function btnStyle(variant) {
     border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer',
   };
   if (variant === 'outline-red') return {
-    flex: 1, padding: 12, background: '#FFF', color: '#DC2626',
+    flex: 1, padding: 12, background: T.paper, color: '#DC2626',
     border: '1.5px solid #DC2626', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
   };
   if (variant === 'outline-purple') return {
-    flex: 1, padding: 12, background: '#FFF', color: '#9333EA',
+    flex: 1, padding: 12, background: T.paper, color: '#9333EA',
     border: '1.5px solid #9333EA', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
   };
 }
