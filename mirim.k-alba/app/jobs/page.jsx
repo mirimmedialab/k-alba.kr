@@ -8,6 +8,35 @@ import { useNearbyJobs } from "@/lib/useNearbyJobs";
 import { useRecommendedJobs } from "@/lib/useRecommendedJobs";
 import { formatDistance } from "@/lib/geolocation";
 import { getCurrentUser, getProfile } from "@/lib/supabase";
+import { Input, VisaBadge, PageLoading, Empty } from "@/components/ui";
+
+/**
+ * /jobs 알바 목록 (BI v2)
+ *
+ * 페르소나 (BI v2 Section 6):
+ *   - 외국인 알바생 30% + 유학생 20% — 가장 자주 보는 페이지
+ *   - 무드: 탐색·비교 — 카드 정보 밀도 + 필터
+ *
+ * 변경점 (BI v2):
+ *   - 인라인 비자 <span> → <VisaBadge> ⭐ Step 3-A
+ *     (비자별 자동 색상: E-9 코랄, D-2 민트, F-2 골드 등)
+ *     ※ BI v2 결정 문서 Section 0.4 — 외국인이 한국어 모르고도
+ *       "내 비자로 일할 수 있는 자리"를 5초 안에 시각적으로 인식.
+ *   - 인라인 검색 input → <Input variant="search"> (Step 3-B)
+ *     (좌측 🔍 아이콘 + clearable)
+ *   - 빈 상태 → <Empty variant="no-results"> (Step 3-C)
+ *   - 로딩 → <PageLoading> (Step 3-B)
+ *
+ * 보존:
+ *   - 4가지 정렬 (recommended/nearest/latest/pay)
+ *   - 위치 기능 (GPS/profile/default)
+ *   - 추천 시스템 (점수 + 이유)
+ *   - 에디토리얼 인덱스 번호 (01, 02, 03...)
+ *   - 챗봇 체험 배너
+ *   - JobListItem hover 효과
+ *   - 한국어 수준 필터, 반경 조절
+ *   - 다국어 (useT)
+ */
 
 const DEMO_JOBS = [
   { id: 1, title: "카페 바리스타", company_name: "블루보틀 강남점", sigungu: "강남구", address: "서울 강남구 테헤란로 152", pay_type: "시급", pay_amount: 12000, visa_types: ["D-2", "F-4", "H-2"], created_at: "2026-04-22", latitude: 37.5012, longitude: 127.0396 },
@@ -18,7 +47,7 @@ const DEMO_JOBS = [
 
 export default function JobsPage() {
   const t = useT();
-  const [sortMode, setSortMode] = useState("recommended"); // "recommended" | "nearest" | "latest" | "pay"
+  const [sortMode, setSortMode] = useState("recommended");
   const [radius, setRadius] = useState(10);
   const [visaFilter, setVisaFilter] = useState(null);
   const [koreanFilter, setKoreanFilter] = useState("");
@@ -71,7 +100,6 @@ export default function JobsPage() {
     if (sortMode === "latest" || sortMode === "pay") {
       getJobs().then((data) => {
         if (data && data.length > 0) {
-          // employer.company_name을 job.company_name으로 평탄화
           const normalized = data.map((j) => ({
             ...j,
             company_name: j.company_name || j.employer?.company_name || "",
@@ -209,18 +237,16 @@ export default function JobsPage() {
         </div>
       )}
 
-      {/* 검색 */}
+      {/* 검색 — Step 3-B Input variant="search" */}
       <div style={{ marginBottom: 12 }}>
-        <input
+        <Input
+          variant="search"
+          placeholder={t("jobs.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder={t("jobs.searchPlaceholder")}
-          style={{
-            width: "100%", padding: "11px 14px", borderRadius: 4,
-            border: `1px solid ${T.border}`, fontSize: 14,
-            fontFamily: "inherit", outline: "none", boxSizing: "border-box",
-            background: T.paper, letterSpacing: "-0.01em",
-          }}
+          iconLeft={<span style={{ fontSize: 14 }}>🔍</span>}
+          clearable
+          onClear={() => setSearch("")}
         />
       </div>
 
@@ -268,15 +294,18 @@ export default function JobsPage() {
       {/* 공고 카드 목록 */}
       <div>
         {loading ? (
-          <div style={{ padding: "48px 20px", textAlign: "center", color: T.ink3, fontSize: 14 }}>
-            {t("jobs.loading")}
-          </div>
+          // Step 3-B PageLoading 인라인
+          <PageLoading message={t("jobs.loading")} minHeight={240} />
         ) : displayJobs.length === 0 ? (
-          <div style={{ padding: "48px 20px", textAlign: "center", color: T.ink3, fontSize: 14 }}>
-            {sortMode === "nearest"
-              ? t("jobs.noResultsRadius").replace("{radius}", radius)
-              : t("jobs.noResults")}
-          </div>
+          // Step 3-C Empty
+          <Empty
+            variant="no-results"
+            description={
+              sortMode === "nearest"
+                ? t("jobs.noResultsRadius").replace("{radius}", radius)
+                : t("jobs.noResults")
+            }
+          />
         ) : (
           displayJobs.map((j, idx) => (
             <JobListItem
@@ -372,6 +401,8 @@ function LocationBanner({ source, location, onRequestLocation, loading }) {
 
 /**
  * 공고 리스트 아이템 (에디토리얼 스타일 + 거리 표시)
+ *
+ * 변경: 비자 배지 (인라인 span 균일 색상) → VisaBadge (자동 색상)
  */
 function JobListItem({ job, index, showDistance, showReason }) {
   const t = useT();
@@ -460,14 +491,11 @@ function JobListItem({ job, index, showDistance, showReason }) {
             </div>
           )}
 
+          {/* 비자 배지 — Step 3-A VisaBadge ⭐ BI v2 핵심 변경
+              (E-9 코랄, D-2 민트, F-2 골드, F-4 보라, F-5 네이비, H-2 주황, D-4 청록) */}
           <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
             {(job.visa_types || []).slice(0, 3).map((v) => (
-              <span key={v} style={{
-                padding: "2px 7px", borderRadius: 2, fontSize: 11, fontWeight: 700,
-                background: T.n9, color: T.gold, letterSpacing: "0.02em",
-              }}>
-                {v}
-              </span>
+              <VisaBadge key={v} code={v} variant="solid" size="sm" />
             ))}
           </div>
         </div>
