@@ -5,6 +5,7 @@ import { getSession, supabase } from "@/lib/supabase";
 import { UserChip } from "@/components/UserChip";
 import { T, COMPANY } from "@/lib/theme";
 import { Button, KIcon, KWordmark, PageLoading } from "@/components/ui";
+import { useT, useLocale } from "@/lib/i18n";
 
 /**
  * 모바일 랜딩 페이지 (BI v2 적용)
@@ -30,6 +31,8 @@ import { Button, KIcon, KWordmark, PageLoading } from "@/components/ui";
  */
 
 export default function MobileLandingPage() {
+  const t = useT();
+  const { locale } = useLocale();
   const S = {
     section: { maxWidth: 600, margin: "0 auto", padding: "0 20px" },
     label: { fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: 2.5, marginBottom: 10, color: T.mint },
@@ -77,7 +80,7 @@ export default function MobileLandingPage() {
 
   // 로딩 중
   if (!authChecked) {
-    return <PageLoading message="잠시만 기다려주세요" minHeight={400} />;
+    return <PageLoading message={t("partwork.loading")} minHeight={400} />;
   }
 
   return (
@@ -110,8 +113,8 @@ export default function MobileLandingPage() {
                   유학생, 결혼이민자, 취업비자, 워킹홀리데이까지. 비자 유형에 맞는 합법적인 일자리를 다국어로 찾아보세요.
                 </p>
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-                  <Button variant="primary" href="/login">알바 찾기 — 무료 가입</Button>
-                  <Button variant="secondary" href="/login">이미 계정이 있어요</Button>
+                  <Button variant="primary" href="/login">{t("landing.seekerCta")}</Button>
+                  <Button variant="secondary" href="/login">{t("landing.haveAccount")}</Button>
                 </div>
               </>
             ) : (
@@ -132,7 +135,7 @@ export default function MobileLandingPage() {
                   <Button variant="primary" href="/login" style={{ boxShadow: `0 4px 16px ${T.coral}40` }}>
                     공고 등록 — 무료 가입
                   </Button>
-                  <Button variant="secondary" href="/login">이미 계정이 있어요</Button>
+                  <Button variant="secondary" href="/login">{t("landing.haveAccount")}</Button>
                 </div>
               </>
             )}
