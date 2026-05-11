@@ -114,7 +114,7 @@ export default function MyContractsPage() {
           </p>
         </div>
         {isEmployer && (
-          <Link href="/contract/new" style={{ textDecoration: "none" }}>
+          <Link href="/contracts/new" style={{ textDecoration: "none" }}>
             <button style={{
               padding: "12px 20px",
               background: T.n9,
@@ -158,7 +158,7 @@ export default function MyContractsPage() {
             }
           </p>
           {isEmployer && (
-            <Link href="/contract/new" style={{
+            <Link href="/contracts/new" style={{
               display: "inline-block",
               padding: "12px 24px",
               background: T.n9,
@@ -178,7 +178,7 @@ export default function MyContractsPage() {
           {contracts.map((c, idx) => {
             const st = STATUS_INFO[c.status] || STATUS_INFO.draft;
             return (
-              <Link key={c.id} href={`/contract/${c.id}`} style={{ textDecoration: "none" }}>
+              <Link key={c.id} href={`/contracts/${c.id}`} style={{ textDecoration: "none" }}>
                 <div
                   style={{
                     padding: "18px 0",
