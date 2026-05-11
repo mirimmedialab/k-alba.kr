@@ -393,42 +393,4 @@ export const en = {
     applicantCount: "Applicants",
     applicantCountSuffix: "",
   },
-  partwork: {
-    title: "PartWork · Part-time Work Permit",
-    newApplication: "+ New Application",
-    newApplicationLong: "Apply →",
-    myApplicationsHeading: "{count} Application(s)",
-    myApplicationsSub: "International office part-time work permit for D-2/D-4 student visa holders",
-    importantTitle: "📘 Important · Please Read",
-    importantBullet1: "Application is only available after completing your work contract",
-    importantBullet2_html: "D-4 visa holders must wait <strong>6 months</strong> after entry to apply",
-    importantBullet3_html: "Only students at <strong>certified universities</strong> are eligible",
-    importantBullet4_html: "International office staff will review within <strong>24 hours</strong>",
-    emptyTitle: "No applications yet",
-    emptyDescription: "Apply for part-time work permit after completing your contract",
-    loading: "Please wait",
-    topikNone: "None",
-    topikSuffix: "",
-    weeklyHours: "{hours} hrs/week",
-    allowedHours: "Limit {hours}h",
-    allowedUnlimited: "Unlimited",
-    status: {
-      draft: "Draft",
-      submitted: "Submitted",
-      reviewing: "Reviewing",
-      documents_needed: "Docs Needed",
-      approved: "Approved",
-      rejected: "Rejected",
-      cancelled: "Cancelled"
-    }
-  },
-  chat: {
-    title: "Chat",
-    conversationsCount: "{count} conversation(s)",
-    online: "Online",
-    inputPlaceholder: "Type a message...",
-    yesterday: "Yesterday",
-    daysAgo: "{n} days ago",
-    empty: "No conversations yet"
-  },
 };

@@ -276,42 +276,4 @@ export const mn = {
     applicantCount: "Өргөдөгч",
     applicantCountSuffix: "",
   },
-  partwork: {
-    title: "PartWork · Хагас цагийн ажлын зөвшөөрөл",
-    newApplication: "+ Шинэ хүсэлт",
-    newApplicationLong: "Хүсэлт илгээх →",
-    myApplicationsHeading: "Миний хүсэлт {count} ширхэг",
-    myApplicationsSub: "D-2/D-4 визтэй оюутнуудад зориулсан хагас цагийн ажлын зөвшөөрөл",
-    importantTitle: "📘 Чухал · Заавал уншина уу",
-    importantBullet1: "Хөдөлмөрийн гэрээ байгуулсны дараа л хүсэлт гаргах боломжтой",
-    importantBullet2_html: "D-4 виз эзэмшигч <strong>6 сар</strong> өнгөрсөн байх ёстой",
-    importantBullet3_html: "Зөвхөн <strong>баталгаажсан их сургуулийн</strong> оюутнууд",
-    importantBullet4_html: "Олон улсын алба <strong>24 цагийн дотор</strong> хянана",
-    emptyTitle: "Одоохондоо хүсэлт байхгүй",
-    emptyDescription: "Хөдөлмөрийн гэрээ дууссаны дараа хүсэлт гаргана уу",
-    loading: "Түр хүлээнэ үү",
-    topikNone: "Байхгүй",
-    topikSuffix: "-р түвшин",
-    weeklyHours: "7 хоногт {hours} цаг",
-    allowedHours: "Хязгаар {hours}ц",
-    allowedUnlimited: "Хязгааргүй",
-    status: {
-      draft: "Ноорог",
-      submitted: "Илгээсэн",
-      reviewing: "Хянагдаж байна",
-      documents_needed: "Бичиг шаардлагатай",
-      approved: "Зөвшөөрөгдсөн",
-      rejected: "Татгалзсан",
-      cancelled: "Цуцалсан"
-    }
-  },
-  chat: {
-    title: "Чат",
-    conversationsCount: "{count} харилцаа",
-    online: "Онлайн",
-    inputPlaceholder: "Зурвас бичих...",
-    yesterday: "Өчигдөр",
-    daysAgo: "{n} хоногийн өмнө",
-    empty: "Одоохондоо харилцан яриа алга"
-  },
 };

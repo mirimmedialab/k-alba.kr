@@ -278,42 +278,4 @@ export const vi = {
     applicantCount: "Ứng viên",
     applicantCountSuffix: "",
   },
-  partwork: {
-    title: "PartWork · Giấy phép làm thêm",
-    newApplication: "+ Đơn mới",
-    newApplicationLong: "Nộp đơn →",
-    myApplicationsHeading: "Đơn của tôi: {count}",
-    myApplicationsSub: "Đăng ký giấy phép làm thêm cho du học sinh visa D-2/D-4",
-    importantTitle: "📘 Quan trọng · Vui lòng đọc",
-    importantBullet1: "Chỉ có thể nộp đơn sau khi hoàn thành hợp đồng lao động",
-    importantBullet2_html: "Visa D-4 phải nhập cảnh được <strong>6 tháng</strong> mới được nộp",
-    importantBullet3_html: "Chỉ áp dụng cho <strong>sinh viên trường được công nhận</strong>",
-    importantBullet4_html: "Cán bộ phòng quốc tế sẽ duyệt trong <strong>24 giờ</strong>",
-    emptyTitle: "Chưa có đơn nào",
-    emptyDescription: "Hãy nộp đơn xin giấy phép làm thêm sau khi hoàn thành hợp đồng",
-    loading: "Vui lòng đợi",
-    topikNone: "Không",
-    topikSuffix: " cấp",
-    weeklyHours: "{hours} giờ/tuần",
-    allowedHours: "Giới hạn {hours}h",
-    allowedUnlimited: "Không giới hạn",
-    status: {
-      draft: "Nháp",
-      submitted: "Đã gửi",
-      reviewing: "Đang duyệt",
-      documents_needed: "Cần bổ sung",
-      approved: "Đã duyệt",
-      rejected: "Từ chối",
-      cancelled: "Đã hủy"
-    }
-  },
-  chat: {
-    title: "Trò chuyện",
-    conversationsCount: "{count} cuộc trò chuyện",
-    online: "Trực tuyến",
-    inputPlaceholder: "Nhập tin nhắn...",
-    yesterday: "Hôm qua",
-    daysAgo: "{n} ngày trước",
-    empty: "Chưa có cuộc trò chuyện"
-  },
 };

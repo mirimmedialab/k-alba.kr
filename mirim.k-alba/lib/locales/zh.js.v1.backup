@@ -275,42 +275,4 @@ export const zh = {
     applicantCount: "申请人",
     applicantCountSuffix: "",
   },
-  partwork: {
-    title: "PartWork · 兼职工作许可",
-    newApplication: "+ 新申请",
-    newApplicationLong: "立即申请 →",
-    myApplicationsHeading: "我的申请 {count}件",
-    myApplicationsSub: "面向D-2/D-4签证留学生的兼职工作许可申请",
-    importantTitle: "📘 重要事项 · 请仔细阅读",
-    importantBullet1: "完成劳动合同后才能申请",
-    importantBullet2_html: "D-4签证需入境<strong>6个月以上</strong>才可申请",
-    importantBullet3_html: "仅限<strong>认证大学</strong>在校生",
-    importantBullet4_html: "国际处负责人将在<strong>24小时内</strong>审核",
-    emptyTitle: "暂无申请记录",
-    emptyDescription: "完成劳动合同后申请兼职工作许可",
-    loading: "请稍候",
-    topikNone: "无",
-    topikSuffix: "级",
-    weeklyHours: "每周{hours}小时",
-    allowedHours: "限{hours}小时",
-    allowedUnlimited: "不限",
-    status: {
-      draft: "草稿",
-      submitted: "已提交",
-      reviewing: "审核中",
-      documents_needed: "需补充材料",
-      approved: "已批准",
-      rejected: "已驳回",
-      cancelled: "已取消"
-    }
-  },
-  chat: {
-    title: "聊天",
-    conversationsCount: "{count}个对话",
-    online: "在线",
-    inputPlaceholder: "输入消息...",
-    yesterday: "昨天",
-    daysAgo: "{n}天前",
-    empty: "暂无对话"
-  },
 };
