@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { T } from "@/lib/theme";
 import { supabase, getCurrentUser } from "@/lib/supabase";
+import { Button, Badge, Empty, PageLoading } from "@/components/ui";
 
 /**
  * /admin — 관리자 대시보드
@@ -89,11 +90,7 @@ export default function AdminDashboard() {
   };
 
   if (loading) {
-    return (
-      <div style={{ padding: 40, textAlign: "center", color: T.ink3 }}>
-        로딩 중...
-      </div>
-    );
+    return <PageLoading message="로딩 중..." minHeight={400} />;
   }
 
   if (!authorized) return null;
@@ -178,17 +175,10 @@ export default function AdminDashboard() {
         </h2>
 
         {syncLogs.length === 0 ? (
-          <div style={{
-            padding: "24px 20px",
-            background: T.cream,
-            border: `1px solid ${T.border}`,
-            borderRadius: 4,
-            fontSize: 13,
-            color: T.ink3,
-            textAlign: "center",
-          }}>
-            아직 동기화 로그가 없습니다. 스케줄러를 확인해 주세요.
-          </div>
+          <Empty
+            variant="no-data"
+            description="아직 동기화 로그가 없습니다. 스케줄러를 확인해 주세요."
+          />
         ) : (
           <div style={{ border: `1px solid ${T.border}`, borderRadius: 4, overflow: "hidden" }}>
             {syncLogs.map((log, i) => (
@@ -242,36 +232,16 @@ export default function AdminDashboard() {
           <h2 style={{ fontSize: 20, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>
             최근 캠페인
           </h2>
-          <Link href="/admin/campaigns/new" style={{ textDecoration: "none" }}>
-            <button style={{
-              padding: "8px 16px",
-              background: T.n9,
-              color: T.gold,
-              border: "none",
-              borderRadius: 4,
-              fontSize: 12,
-              fontWeight: 700,
-              cursor: "pointer",
-              fontFamily: "inherit",
-              letterSpacing: "-0.01em",
-            }}>
-              + 새 캠페인
-            </button>
-          </Link>
+          <Button variant="primary" size="sm" href="/admin/campaigns/new">
+            + 새 캠페인
+          </Button>
         </div>
 
         {campaigns.length === 0 ? (
-          <div style={{
-            padding: "24px 20px",
-            background: T.cream,
-            border: `1px solid ${T.border}`,
-            borderRadius: 4,
-            fontSize: 13,
-            color: T.ink3,
-            textAlign: "center",
-          }}>
-            아직 캠페인이 없습니다
-          </div>
+          <Empty
+            variant="no-data"
+            description="아직 캠페인이 없습니다"
+          />
         ) : (
           <div style={{ border: `1px solid ${T.border}`, borderRadius: 4, overflow: "hidden" }}>
             {campaigns.map((c, i) => (

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { T } from "@/lib/theme";
 import { supabase, getCurrentUser } from "@/lib/supabase";
+import { Button, Badge, Empty, PageLoading } from "@/components/ui";
 
 /**
  * /admin/campaigns — 이메일 캠페인 관리 목록
@@ -53,7 +54,7 @@ export default function AdminCampaignsPage() {
     ? campaigns
     : campaigns.filter(c => c.status === filter);
 
-  if (loading) return <div style={{ padding: 40, textAlign: "center", color: T.ink3 }}>로딩 중...</div>;
+  if (loading) return <PageLoading message="로딩 중..." minHeight={400} />;
   if (!authorized) return null;
 
   return (
@@ -89,22 +90,9 @@ export default function AdminCampaignsPage() {
             B2B 이메일 아웃리치 캠페인을 관리합니다
           </p>
         </div>
-        <Link href="/admin/campaigns/new" style={{ textDecoration: "none" }}>
-          <button style={{
-            padding: "12px 20px",
-            background: T.n9,
-            color: T.gold,
-            border: "none",
-            borderRadius: 4,
-            fontSize: 13,
-            fontWeight: 700,
-            cursor: "pointer",
-            fontFamily: "inherit",
-            letterSpacing: "-0.01em",
-          }}>
-            + 새 캠페인
-          </button>
-        </Link>
+        <Button variant="primary" size="md" href="/admin/campaigns/new">
+          + 새 캠페인
+        </Button>
       </div>
 
       {/* 상태 필터 */}
@@ -144,17 +132,10 @@ export default function AdminCampaignsPage() {
 
       {/* 테이블 */}
       {filtered.length === 0 ? (
-        <div style={{
-          padding: "48px 20px",
-          background: T.cream,
-          border: `1px solid ${T.border}`,
-          borderRadius: 4,
-          textAlign: "center",
-          color: T.ink3,
-          fontSize: 14,
-        }}>
-          캠페인이 없습니다
-        </div>
+        <Empty
+          variant="no-data"
+          description="캠페인이 없습니다"
+        />
       ) : (
         <div style={{ border: `1px solid ${T.border}`, borderRadius: 4, overflow: "hidden" }}>
           {/* 헤더 */}
@@ -209,27 +190,21 @@ export default function AdminCampaignsPage() {
                     </div>
                   </div>
                   <div>
-                    <span style={{
-                      padding: "2px 8px",
-                      borderRadius: 2,
-                      fontSize: 11,
-                      fontWeight: 700,
-                      background:
-                        c.status === "sent" ? "#E8F5EC" :
-                        c.status === "sending" ? T.accentBg :
-                        T.cream,
-                      color:
-                        c.status === "sent" ? T.green :
-                        c.status === "sending" ? T.accent :
-                        T.ink2,
-                      letterSpacing: "0.02em",
-                    }}>
+                    <Badge
+                      variant={
+                        c.status === "sent" ? "success" :
+                        c.status === "sending" ? "warning" :
+                        c.status === "scheduled" ? "info" :
+                        "neutral"
+                      }
+                      size="sm"
+                    >
                       {c.status === "draft" ? "초안" :
                        c.status === "scheduled" ? "예약" :
                        c.status === "sending" ? "발송중" :
                        c.status === "sent" ? "완료" :
                        c.status}
-                    </span>
+                    </Badge>
                   </div>
                   <div style={{ textAlign: "right", color: T.ink, fontWeight: 600 }}>
                     {c.sent_count || 0}/{c.total_targets || 0}
