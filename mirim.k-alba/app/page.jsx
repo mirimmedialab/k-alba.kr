@@ -1,18 +1,32 @@
 "use client";
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { T } from "@/lib/theme";
+import { T, COMPANY } from "@/lib/theme";
 import { useT } from "@/lib/i18n";
 import { getSession, supabase } from "@/lib/supabase";
 import { UserChip } from "@/components/UserChip";
+import { Button, KWordmark, PageLoading } from "@/components/ui";
 
 /**
- * K-ALBA 랜딩 (모바일 앱 내 진입 페이지)
- * 웹 랜딩 페이지(k-alba.kr/mckinsey)와 동일한 디자인 언어:
- *   - 네이비 #0A1628 + 골드 #B8944A 팔레트
- *   - Pretendard 타이포 / tight letter-spacing
+ * K-ALBA 데스크톱 랜딩 (BI v2 Section 3.2)
+ *
+ * 톤: 네이비(T.navy) + 골드(T.gold) + 흰색 — McKinsey 풍, 진지·신뢰
+ * 페르소나: 사장님(30%) + 학교 담당자(20%) — 50% 첫인상
+ *
+ * 변경점 (BI v2):
+ *   - 로딩: 인라인 → <PageLoading> 컴포넌트
+ *   - 6개 인라인 Link 버튼 → <Button variant="landingPrimary"|"landingDark">
+ *   - T.g500 (구버전) → T.ink3 (새 표준)
+ *   - 이메일: mirimmedialab@gmail.com → COMPANY.email (contact@k-alba.kr)
+ *   - 푸터 회사 정보 추가 (사장님 신뢰감 강화)
+ *   - 상단 KWordmark 헤더 추가
+ *
+ * 보존:
+ *   - 네이비/골드 팔레트
+ *   - 7개 섹션 (HERO/PROBLEM/WORKER/EMPLOYER/PROCESS/CTA/푸터)
+ *   - 에디토리얼 톤 (큰 숫자 강조, 미니멀 이모지)
  *   - 샤프한 border-radius 4~6px
- *   - 에디토리얼 톤 (숫자 강조, 미니멀한 이모지)
+ *   - tight letter-spacing
+ *   - 비로그인/로그인-사장님/로그인-구직자 3가지 분기
  */
 export default function LandingPage() {
   const t = useT();
@@ -50,11 +64,7 @@ export default function LandingPage() {
 
   // 로딩 중
   if (!authChecked) {
-    return (
-      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", background: T.paper }}>
-        <div style={{ fontSize: 14, color: T.g500 }}>로딩 중...</div>
-      </div>
-    );
+    return <PageLoading message="잠시만 기다려주세요" minHeight={400} />;
   }
 
   return (
@@ -62,7 +72,7 @@ export default function LandingPage() {
 
       {/* ═══════════════════ HERO ═══════════════════ */}
       {!user ? (
-        // 비로그인 상태 - 기존 HERO 유지
+        // 비로그인 상태
         <section
           style={{
             padding: "48px 20px 56px",
@@ -74,6 +84,11 @@ export default function LandingPage() {
           }}
         >
           <div style={{ maxWidth: 560, margin: "0 auto" }}>
+            {/* 상단 워드마크 */}
+            <div style={{ marginBottom: 32 }}>
+              <KWordmark variant="dark" size={22} />
+            </div>
+
             <h1
               style={{
                 fontWeight: 800,
@@ -101,44 +116,22 @@ export default function LandingPage() {
             </p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
-              <Link
-                href="/signup"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  fontWeight: 600,
-                  fontSize: 15,
-                  padding: "14px 20px",
-                  background: T.gold,
-                  color: T.n9,
-                  borderRadius: 4,
-                  textDecoration: "none",
-                  letterSpacing: "-0.01em",
-                }}
-              >
+              <Button variant="landingPrimary" href="/signup" size="lg" fullWidth>
                 서비스 시작하기 →
-              </Link>
-              <Link
+              </Button>
+              <Button
+                variant="landingDark"
                 href="/login"
+                size="lg"
+                fullWidth
                 style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  fontWeight: 600,
-                  fontSize: 15,
-                  padding: "12px 20px",
                   background: "transparent",
                   color: T.paper,
                   border: "1px solid rgba(255,255,255,0.3)",
-                  borderRadius: 4,
-                  textDecoration: "none",
                 }}
               >
                 이미 계정이 있어요
-              </Link>
+              </Button>
             </div>
 
             <div
@@ -197,6 +190,11 @@ export default function LandingPage() {
               <UserChip user={user} />
             </div>
 
+            {/* 상단 워드마크 */}
+            <div style={{ marginBottom: 32 }}>
+              <KWordmark variant="dark" size={22} />
+            </div>
+
             <div style={{ fontSize: 32, marginBottom: 16 }}>👋</div>
             <h1
               style={{
@@ -226,44 +224,21 @@ export default function LandingPage() {
             </p>
 
             <div style={{ display: "flex", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
-              <Link
-                href="/my/jobs"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  fontWeight: 600,
-                  fontSize: 15,
-                  padding: "14px 20px",
-                  background: T.gold,
-                  color: T.n9,
-                  borderRadius: 4,
-                  textDecoration: "none",
-                  letterSpacing: "-0.01em",
-                }}
-              >
+              <Button variant="landingPrimary" href="/my/jobs" size="lg">
                 💼 내 공고 관리 →
-              </Link>
-              <Link
+              </Button>
+              <Button
+                variant="landingDark"
                 href="/jobs/post"
+                size="lg"
                 style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  fontWeight: 600,
-                  fontSize: 15,
-                  padding: "12px 20px",
                   background: "transparent",
                   color: T.paper,
                   border: "1px solid rgba(255,255,255,0.3)",
-                  borderRadius: 4,
-                  textDecoration: "none",
                 }}
               >
                 📢 새 공고 등록
-              </Link>
+              </Button>
             </div>
           </div>
         </section>
@@ -283,6 +258,11 @@ export default function LandingPage() {
             {/* 우측 상단 UserChip */}
             <div style={{ position: "absolute", top: -10, right: 0 }}>
               <UserChip user={user} />
+            </div>
+
+            {/* 상단 워드마크 */}
+            <div style={{ marginBottom: 32 }}>
+              <KWordmark variant="dark" size={22} />
             </div>
 
             <div style={{ fontSize: 32, marginBottom: 16 }}>👋</div>
@@ -314,44 +294,21 @@ export default function LandingPage() {
             </p>
 
             <div style={{ display: "flex", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
-              <Link
-                href="/jobs"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  fontWeight: 600,
-                  fontSize: 15,
-                  padding: "14px 20px",
-                  background: T.gold,
-                  color: T.n9,
-                  borderRadius: 4,
-                  textDecoration: "none",
-                  letterSpacing: "-0.01em",
-                }}
-              >
+              <Button variant="landingPrimary" href="/jobs" size="lg">
                 🔍 알바 찾기 →
-              </Link>
-              <Link
+              </Button>
+              <Button
+                variant="landingDark"
                 href="/my/applications"
+                size="lg"
                 style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  fontWeight: 600,
-                  fontSize: 15,
-                  padding: "12px 20px",
                   background: "transparent",
                   color: T.paper,
                   border: "1px solid rgba(255,255,255,0.3)",
-                  borderRadius: 4,
-                  textDecoration: "none",
                 }}
               >
                 📋 내 지원 내역
-              </Link>
+              </Button>
             </div>
           </div>
         </section>
@@ -733,110 +690,85 @@ export default function LandingPage() {
             지금 바로 무료로 시작하세요.
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <Link
-              href="/signup"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-                fontWeight: 600,
-                fontSize: 15,
-                padding: "14px 20px",
-                background: T.gold,
-                color: T.n9,
-                borderRadius: 4,
-                textDecoration: "none",
-              }}
-            >
+            <Button variant="landingPrimary" href="/signup" size="lg" fullWidth>
               무료로 시작하기 →
-            </Link>
-            <a
-              href="mailto:mirimmedialab@gmail.com"
+            </Button>
+            <Button
+              variant="landingDark"
+              href={`mailto:${COMPANY.email}`}
+              size="lg"
+              fullWidth
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-                fontWeight: 600,
-                fontSize: 15,
-                padding: "12px 20px",
                 background: "transparent",
                 color: T.paper,
                 border: "1px solid rgba(255,255,255,0.3)",
-                borderRadius: 4,
-                textDecoration: "none",
               }}
             >
               문의하기
-            </a>
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════ FOOTER ═══════════════════ */}
-      <section
+      {/* ═══════════════════ FOOTER (BI v2 신규: 회사 정보 노출) ═══════════════════ */}
+      <footer
         style={{
-          padding: "40px 20px",
+          padding: "32px 20px",
           background: T.paper,
           borderTop: `1px solid ${T.border}`,
         }}
       >
-        <div style={{ maxWidth: 1200, margin: "0 auto", textAlign: "center" }}>
-          {/* 이용약관 및 개인정보처리방침 */}
-          <div style={{ marginBottom: 20 }}>
-            <Link
-              href="/terms"
-              style={{
-                fontSize: 14,
-                fontWeight: 600,
-                color: T.ink2,
-                textDecoration: "none",
-                marginRight: 24,
-                letterSpacing: "-0.01em",
-              }}
-            >
-              이용약관
-            </Link>
-            <Link
-              href="/privacy"
-              style={{
-                fontSize: 14,
-                fontWeight: 600,
-                color: T.ink2,
-                textDecoration: "none",
-                letterSpacing: "-0.01em",
-              }}
-            >
-              개인정보처리방침
-            </Link>
+        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+            <KWordmark size={18} />
+            <span style={{ fontSize: 12, color: T.ink3 }}>
+              외국인과 사장님을 잇는 카톡 알바 플랫폼
+            </span>
           </div>
 
-          {/* 법적 정보 */}
           <div
             style={{
-              fontSize: 13,
-              color: T.ink3,
-              lineHeight: 1.8,
-              letterSpacing: "-0.01em",
-              marginBottom: 12,
-            }}
-          >
-            K-ALBA | 대표: 남기환 | 사업자등록번호: 119-86-61402
-            <br />
-            직업정보제공사업 신고번호: J1204020260002 | 미림미디어랩 주식회사
-          </div>
-          <div
-            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 16,
               fontSize: 12,
-              color: T.g500,
-              letterSpacing: "-0.01em",
+              color: T.ink3,
+              marginBottom: 16,
             }}
           >
-            © 2026 K-ALBA. All rights reserved.
+            <a href="/about" style={{ color: T.ink3, textDecoration: "none" }}>회사 소개</a>
+            <a href="/terms" style={{ color: T.ink3, textDecoration: "none" }}>이용약관</a>
+            <a href="/privacy" style={{ color: T.ink3, textDecoration: "none" }}>개인정보처리방침</a>
+            <a href={`mailto:${COMPANY.email}`} style={{ color: T.ink3, textDecoration: "none" }}>
+              문의: {COMPANY.email}
+            </a>
+          </div>
+
+          {/* BI v2 핵심: 사업자번호 + 신고번호 노출 (사장님 신뢰감) */}
+          <div
+            style={{
+              fontSize: 11,
+              color: T.ink3,
+              lineHeight: 1.7,
+              paddingTop: 16,
+              borderTop: `1px solid ${T.border}`,
+            }}
+          >
+            <div>
+              <strong style={{ color: T.ink2, fontWeight: 700 }}>{COMPANY.name}</strong>
+              {" · "}대표: {COMPANY.ceo}
+              {" · "}사업자등록번호: {COMPANY.businessNumber}
+            </div>
+            <div style={{ marginTop: 2 }}>
+              직업정보제공사업 신고번호: {COMPANY.jobInfoLicense}
+              {" · "}{COMPANY.address}
+            </div>
+            <div style={{ marginTop: 8, fontSize: 10, color: T.borderStrong }}>
+              © 2026 {COMPANY.brandName}. All rights reserved.
+            </div>
           </div>
         </div>
-      </section>
+      </footer>
     </div>
   );
 }

@@ -3,11 +3,33 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { T } from "@/lib/theme";
-import { Btn, Card } from "@/components/UI";
 import { getCurrentUser, getMyJobs } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 import { KakaoChatModal } from "@/components/KakaoChatModal";
 import { ListPageSkel } from "@/components/Wireframe";
+import { Button, Badge, Empty } from "@/components/ui";
+
+/**
+ * /my/jobs 사장님 메인 페이지 (BI v2)
+ *
+ * 페르소나 (BI v2 Section 6 — 사장님 페이지):
+ *   - 무드: 신뢰·전문성 — 차분한 코랄 + 골드 액센트
+ *   - CTA: 진지한 톤 ("새 공고 등록" — 코랄 다크)
+ *
+ * 변경점 (BI v2):
+ *   - Btn, Card (UI.jsx 구버전) → Button, Empty (Step 3-A/C)
+ *   - 신규 공고 등록 버튼 → Button variant="primaryDark" (사장님 차분 코랄)
+ *   - 빈 상태 → <Empty variant="no-data"> + Button (Step 3-C)
+ *   - 상태 배지(active/closed) → <Badge variant="success/neutral">
+ *
+ * 보존:
+ *   - 새 지원자 알림 (네이비 + 골드 보더) — KakaoChatModal 진입
+ *   - 계약서 챗봇 배너 (cream + accent 보더)
+ *   - 에디토리얼 인덱스 (01, 02, 03...) + 호버 효과
+ *   - ListPageSkel 로딩 (스켈레톤)
+ *   - DEMO_JOBS fallback
+ *   - 다국어 (useT)
+ */
 
 const DEMO_JOBS = [
   { id: 1, title: "카페 바리스타", job_type: "카페", pay_type: "시급", pay_amount: 12000, address: "서울 강남구 테헤란로 152", applicant_count: 12, status: "active", created_at: "2026-04-10" },
@@ -78,7 +100,7 @@ export default function MyJobsPage() {
 
   return (
     <div style={{ padding: "32px 20px", maxWidth: 820, margin: "0 auto" }}>
-      {/* Editorial 헤더 */}
+      {/* Editorial 헤더 (사장님 페이지 = 골드 라인) */}
       <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 18 }} />
       <div
         style={{
@@ -93,7 +115,7 @@ export default function MyJobsPage() {
         {t("myJobs.header")}
       </div>
 
-      {/* 새 지원자 알림 (강조: 네이비 + 골드) */}
+      {/* 새 지원자 알림 (네이비 + 골드 — 사장님 페이지 신뢰감 강조) */}
       <div
         onClick={() => setNotifChatOpen(true)}
         style={{
@@ -170,7 +192,7 @@ export default function MyJobsPage() {
         </div>
       </Link>
 
-      {/* 타이틀 + 신규 버튼 */}
+      {/* 타이틀 + 신규 버튼 — Button variant="primaryDark" (사장님 차분 코랄) */}
       <div
         style={{
           display: "flex",
@@ -200,44 +222,24 @@ export default function MyJobsPage() {
             {t("myJobs.jobCount").replace("{count}", jobs.length)}
           </p>
         </div>
-        <Link href="/jobs/post">
-          <Btn primary small>
-            {t("myJobs.newJobBtn")}
-          </Btn>
-        </Link>
+        <Button variant="primaryDark" href="/jobs/post" size="sm">
+          {t("myJobs.newJobBtn")}
+        </Button>
       </div>
 
       {jobs.length === 0 ? (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "60px 20px",
-            border: `1px solid ${T.border}`,
-            borderRadius: 6,
-            background: T.cream,
-          }}
-        >
-          <div style={{ fontSize: 36, marginBottom: 12 }}>📢</div>
-          <div
-            style={{
-              fontWeight: 800,
-              color: T.ink,
-              marginBottom: 6,
-              fontSize: 16,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            {t("myJobs.noJobs")}
-          </div>
-          <p
-            style={{ fontSize: 13, color: T.ink2, marginBottom: 16 }}
-          >
-            {t("myJobs.noJobsDesc")}
-          </p>
-          <Link href="/jobs/post">
-            <Btn primary>{t("myJobs.postJobBtn")}</Btn>
-          </Link>
-        </div>
+        // Step 3-C Empty 컴포넌트 + 골드 액센트 버튼
+        <Empty
+          variant="no-data"
+          icon="📢"
+          title={t("myJobs.noJobs")}
+          description={t("myJobs.noJobsDesc")}
+          action={
+            <Button variant="primaryDark" href="/jobs/post">
+              {t("myJobs.postJobBtn")}
+            </Button>
+          }
+        />
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
           {jobs.map((j, idx) => (
@@ -301,21 +303,14 @@ export default function MyJobsPage() {
                       >
                         {j.title}
                       </span>
-                      <span
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          padding: "2px 7px",
-                          borderRadius: 2,
-                          background:
-                            j.status === "active" ? T.n9 : T.border,
-                          color:
-                            j.status === "active" ? T.gold : T.ink3,
-                          letterSpacing: "0.02em",
-                        }}
+                      {/* 상태 배지 — Step 3-A Badge (active=success, closed=neutral) */}
+                      <Badge
+                        variant={j.status === "active" ? "success" : "neutral"}
+                        style_={j.status === "active" ? "soft" : "soft"}
+                        size="sm"
                       >
                         {t(`myJobs.status.${j.status}`)}
-                      </span>
+                      </Badge>
                     </div>
                     <div
                       style={{
@@ -362,7 +357,7 @@ export default function MyJobsPage() {
         </div>
       )}
 
-      {/* 새 지원자 알림 챗봇 */}
+      {/* 새 지원자 알림 챗봇 — botAvatar 알림 아이콘 (🤖 아님, BI v2 결정과 호환) */}
       <KakaoChatModal
         open={notifChatOpen}
         onClose={() => setNotifChatOpen(false)}
