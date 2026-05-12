@@ -192,7 +192,7 @@ export default function DesktopMobileFrame({ children }) {
             3분만에 공고 등록 가능
           </div>
           <a
-            href="http://pf.kakao.com/_kalba"
+            href="https://pf.kakao.com/_qTxouX"
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -206,7 +206,7 @@ export default function DesktopMobileFrame({ children }) {
               textDecoration: "none",
             }}
           >
-            @kalba 채널 열기 →
+            채널 열기 →
           </a>
         </div>
       </aside>

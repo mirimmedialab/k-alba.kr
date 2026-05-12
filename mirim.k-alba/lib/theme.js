@@ -643,5 +643,6 @@ export const COMPANY = {
   domain: "k-alba.kr",
   brandName: "K-ALBA",
   chatbotName: "알비",
-  kakaoChannel: "@kalba",
+  kakaoChannel: "_qTxouX",
+  kakaoChannelUrl: "https://pf.kakao.com/_qTxouX",
 };
