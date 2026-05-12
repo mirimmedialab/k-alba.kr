@@ -523,34 +523,44 @@ export default function MobileLandingPage() {
 
       {/* ── FOOTER ── */}
       <div style={{ maxWidth: 600, margin: "0 auto", padding: "24px 20px 40px" }}>
-        <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 24 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 24, marginBottom: 20 }}>
-            <div style={{ maxWidth: 200 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <KIcon size="xs" />
-                <KWordmark size={14} />
-              </div>
-              <div style={{ fontSize: 11, color: T.ink3, lineHeight: 1.6 }}>한국의 모든 외국인과 사장님을 연결하는 합법적인 알바 플랫폼</div>
-            </div>
-            <div style={{ display: "flex", gap: 32 }}>
-              {[
-                ["서비스", ["알바 찾기", "구인 등록", "근로계약서"]],
-                ["고객지원", ["문의하기", "FAQ", "블로그"]],
-                ["법적 정보", ["이용약관", "개인정보", "직업소개약관"]],
-              ].map(([title, links]) => (
-                <div key={title}>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: T.navy, marginBottom: 8, letterSpacing: 0.5 }}>{title}</div>
-                  {links.map((l) => (<div key={l} style={{ fontSize: 11, color: T.ink3, marginBottom: 6, cursor: "pointer" }}>{l}</div>))}
-                </div>
-              ))}
-            </div>
+        <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 24, textAlign: "center" }}>
+          {/* 이용약관 및 개인정보처리방침 */}
+          <div style={{ marginBottom: 16 }}>
+            <Link
+              href="/terms"
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: T.ink2,
+                textDecoration: "none",
+                letterSpacing: "-0.01em",
+              }}
+            >
+              이용약관
+            </Link>
+            <span style={{ margin: "0 12px", color: T.ink3 }}>|</span>
+            <Link
+              href="/privacy"
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: T.ink2,
+                textDecoration: "none",
+                letterSpacing: "-0.01em",
+              }}
+            >
+              개인정보처리방침
+            </Link>
           </div>
-          <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 16 }}>
-            <div style={{ fontSize: 10, color: T.ink3, lineHeight: 1.8 }}>
-              {COMPANY.brandName} | 대표: {COMPANY.ceo} | 사업자등록번호: {COMPANY.businessNumber}<br />
-              직업정보제공사업 신고번호: {COMPANY.jobInfoLicense} | {COMPANY.name}
-            </div>
-            <div style={{ fontSize: 10, color: T.borderStrong, marginTop: 6 }}>© 2026 {COMPANY.brandName}. All rights reserved.</div>
+
+          {/* 법적 정보 */}
+          <div style={{ fontSize: 11, color: T.ink3, lineHeight: 1.8, marginBottom: 8 }}>
+            {COMPANY.brandName} | 대표: {COMPANY.ceo} | 사업자등록번호: {COMPANY.businessNumber}
+            <br />
+            직업정보제공사업 신고번호: {COMPANY.jobInfoLicense} | {COMPANY.name}
+          </div>
+          <div style={{ fontSize: 10, color: T.g500 }}>
+            © 2026 {COMPANY.brandName}. All rights reserved.
           </div>
         </div>
       </div>
