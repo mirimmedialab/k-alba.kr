@@ -159,16 +159,13 @@ export default function SignupPage() {
         }),
       });
       const data = await res.json();
-      if (!data.ok) {
-        setBizError(data.error || t("auth.bizVerifyFailed"));
-        setBizVerified(false);
-      } else if (data.verified) {
+      if (data.valid === true) {
         setBizVerified(true);
         setBizStatus(data.status || "정상");
         setBizError("");
       } else {
         setBizVerified(false);
-        setBizError(data.reason || t("auth.bizVerifyMismatch"));
+        setBizError(data.error || t("auth.bizVerifyFailed"));
       }
     } catch (e) {
       setBizError(t("auth.bizVerifyServerError"));
