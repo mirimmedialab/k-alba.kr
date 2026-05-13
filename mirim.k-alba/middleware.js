@@ -121,14 +121,24 @@ export async function middleware(request) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // 디버깅: user_type 확인
+  console.log("[middleware] User ID:", user.id);
+  console.log("[middleware] user_metadata:", user.user_metadata);
+  console.log("[middleware] app_metadata:", user.app_metadata);
+
   // ─── 5) 페르소나 가드 ───
   for (const guard of GUARDS) {
     if (!guard.matcher(path)) continue;
     if (guard.excludes?.some((ex) => path.startsWith(ex))) continue;
 
     const ok = await checkGuard(supabase, user, guard.requires);
+    console.log("[middleware] Guard check:", guard.name, "Result:", ok);
     if (!ok) {
-      return NextResponse.redirect(new URL(guard.redirect(path), request.url));
+      // 디버그 정보를 URL에 포함
+      const redirectUrl = new URL(guard.redirect(path), request.url);
+      redirectUrl.searchParams.set("debug_user_type", user.user_metadata?.user_type || "undefined");
+      redirectUrl.searchParams.set("debug_guard", guard.name);
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
