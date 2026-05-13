@@ -263,16 +263,12 @@ export default function SignupPage() {
                 color: T.ink3,
                 fontSize: 13,
                 textDecoration: "none",
-                marginBottom: 40,
+                marginBottom: 48,
                 fontWeight: 600,
               }}
             >
               ← 홈으로
             </Link>
-
-            <div style={{ marginBottom: 20 }}>
-              <KWordmark size={28} />
-            </div>
 
             <h1
               style={{
@@ -533,6 +529,10 @@ export default function SignupPage() {
               box-shadow: none !important;
               padding: 32px 20px !important;
             }
+            .signup-footer {
+              padding: 16px 20px 12px !important;
+              font-size: 9px !important;
+            }
           }
           @media (min-width: 1024px) {
             .signup-container {
@@ -555,18 +555,20 @@ export default function SignupPage() {
         {/* 페이지 푸터 */}
         <footer
           style={{
-            padding: "24px 20px",
+            padding: "20px 20px 16px",
             background: T.paper,
-            borderTop: `1px solid ${T.border}`,
+            borderTop: `1px solid ${T.border}20`,
           }}
+          className="signup-footer"
         >
           <div
             style={{
               maxWidth: 1080,
               margin: "0 auto",
-              fontSize: 11,
+              fontSize: 10,
               color: T.ink3,
-              lineHeight: 1.7,
+              opacity: 0.7,
+              lineHeight: 1.6,
               textAlign: "center",
             }}
           >
