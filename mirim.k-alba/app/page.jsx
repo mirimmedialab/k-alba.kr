@@ -75,96 +75,136 @@ export default function LandingPage() {
         // 비로그인 상태
         <section
           style={{
-            padding: "60px 20px 64px",
-            background: T.n9,
+            padding: "80px 20px 96px",
+            background: `linear-gradient(135deg, ${T.n9} 0%, #0F2037 100%)`,
             color: T.paper,
             position: "relative",
             overflow: "hidden",
-            borderTop: `3px solid ${T.gold}`,
+            borderTop: `4px solid ${T.gold}`,
           }}
         >
-          <div style={{ maxWidth: 960, margin: "0 auto" }}>
+          {/* Subtle background pattern */}
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: `radial-gradient(circle at 20% 50%, rgba(184, 148, 74, 0.06) 0%, transparent 50%),
+                             radial-gradient(circle at 80% 80%, rgba(184, 148, 74, 0.04) 0%, transparent 50%)`,
+            pointerEvents: "none",
+          }} />
+
+          <div style={{ maxWidth: 1080, margin: "0 auto", position: "relative" }}>
             {/* 상단 워드마크 */}
-            <div style={{ marginBottom: 40 }}>
-              <KWordmark variant="dark" size={24} />
+            <div style={{ marginBottom: 56 }}>
+              <KWordmark variant="dark" size={28} />
             </div>
 
-            <h1
-              style={{
-                fontWeight: 800,
-                fontSize: "clamp(32px, 4vw, 42px)",
-                lineHeight: 1.25,
-                letterSpacing: "-0.03em",
-                marginBottom: 20,
-              }}
-            >
-              한국 거주 외국인{" "}
-              <em style={{ fontStyle: "normal", color: T.gold }}>260만 명</em>
-              을 위한 합법적 알바 플랫폼
-            </h1>
-            <p
-              style={{
-                fontSize: 16,
-                lineHeight: 1.65,
-                color: "rgba(255,255,255,0.78)",
-                marginBottom: 32,
-              }}
-            >
-              비자별 맞춤 공고, 7개 언어 지원, 카카오톡 챗봇으로 3분 만에 근로계약서까지.
-            </p>
-
-            <div style={{ display: "flex", gap: 12, marginBottom: 36 }}>
-              <Button variant="landingPrimary" href="/signup" size="lg">
-                서비스 시작하기 →
-              </Button>
-              <Button
-                variant="landingDark"
-                href="/login"
-                size="lg"
+            <div style={{ textAlign: "center", marginBottom: 64 }}>
+              <h1
                 style={{
-                  background: "transparent",
-                  color: T.paper,
-                  border: "1px solid rgba(255,255,255,0.3)",
+                  fontWeight: 900,
+                  fontSize: "clamp(36px, 5vw, 52px)",
+                  lineHeight: 1.2,
+                  letterSpacing: "-0.04em",
+                  marginBottom: 24,
                 }}
               >
-                이미 계정이 있어요
-              </Button>
-            </div>
+                한국 거주 외국인{" "}
+                <em style={{
+                  fontStyle: "normal",
+                  background: `linear-gradient(135deg, ${T.gold} 0%, #D4A960 100%)`,
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}>260만 명</em>
+                을 위한<br />합법적 알바 플랫폼
+              </h1>
+              <p
+                style={{
+                  fontSize: 18,
+                  lineHeight: 1.7,
+                  color: "rgba(255,255,255,0.82)",
+                  marginBottom: 40,
+                  maxWidth: 680,
+                  margin: "0 auto 40px",
+                }}
+              >
+                비자별 맞춤 공고, 7개 언어 지원, 카카오톡 챗봇으로 3분 만에 근로계약서까지.
+                <br />신뢰할 수 있는 외국인 채용 플랫폼입니다.
+              </p>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gap: 20,
-                padding: "24px 0",
-                borderTop: "1px solid rgba(232,217,181,0.2)",
-                borderBottom: "1px solid rgba(232,217,181,0.2)",
-              }}
-            >
-              {[
-                ["260만", "한국 거주 외국인"],
-                ["12+", "대응 비자 유형"],
-                ["7", "지원 언어"],
-                ["3min", "근로계약 체결"],
-              ].map(([num, label]) => (
-                <div key={label}>
-                  <div
-                    style={{
-                      fontSize: 32,
-                      fontWeight: 800,
-                      color: T.gold,
-                      letterSpacing: "-0.025em",
-                      lineHeight: 1,
-                      marginBottom: 8,
-                    }}
-                  >
-                    {num}
+              <div style={{ display: "flex", gap: 16, justifyContent: "center", marginBottom: 64 }}>
+                <Button
+                  variant="landingPrimary"
+                  href="/signup"
+                  size="lg"
+                  style={{
+                    boxShadow: "0 4px 20px rgba(184, 148, 74, 0.4)",
+                    padding: "16px 32px",
+                    fontSize: 17,
+                    fontWeight: 700,
+                  }}
+                >
+                  서비스 시작하기 →
+                </Button>
+                <Button
+                  variant="landingDark"
+                  href="/login"
+                  size="lg"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.08)",
+                    color: T.paper,
+                    border: "1.5px solid rgba(255,255,255,0.25)",
+                    backdropFilter: "blur(10px)",
+                    padding: "16px 32px",
+                    fontSize: 17,
+                    fontWeight: 600,
+                  }}
+                >
+                  이미 계정이 있어요
+                </Button>
+              </div>
+
+              {/* Stats */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(4, 1fr)",
+                  gap: 32,
+                  padding: "40px 0",
+                  borderTop: "1px solid rgba(255, 255, 255, 0.12)",
+                  borderBottom: "1px solid rgba(255, 255, 255, 0.12)",
+                  maxWidth: 900,
+                  margin: "0 auto",
+                }}
+              >
+                {[
+                  ["260만", "한국 거주 외국인"],
+                  ["12+", "대응 비자 유형"],
+                  ["7", "지원 언어"],
+                  ["3min", "근로계약 체결"],
+                ].map(([num, label]) => (
+                  <div key={label} style={{ textAlign: "center" }}>
+                    <div
+                      style={{
+                        fontSize: 40,
+                        fontWeight: 900,
+                        background: `linear-gradient(135deg, ${T.gold} 0%, #D4A960 100%)`,
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        backgroundClip: "text",
+                        letterSpacing: "-0.03em",
+                        lineHeight: 1,
+                        marginBottom: 12,
+                      }}
+                    >
+                      {num}
+                    </div>
+                    <div style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", lineHeight: 1.5, fontWeight: 500 }}>
+                      {label}
+                    </div>
                   </div>
-                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", lineHeight: 1.4 }}>
-                    {label}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -310,10 +350,176 @@ export default function LandingPage() {
         </section>
       )}
 
+      {/* ═══════════════════ TARGET AUDIENCE CARDS ═══════════════════ */}
+      <section
+        style={{
+          padding: "96px 20px",
+          background: T.paper,
+          borderBottom: `1px solid ${T.border}`,
+        }}
+      >
+        <div style={{ maxWidth: 1080, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <div
+              style={{
+                display: "inline-block",
+                padding: "8px 16px",
+                background: T.goldL,
+                color: T.navy,
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                borderRadius: 24,
+                marginBottom: 20,
+              }}
+            >
+              Who We Serve
+            </div>
+            <h2
+              style={{
+                fontWeight: 800,
+                fontSize: "clamp(28px, 4vw, 38px)",
+                lineHeight: 1.3,
+                letterSpacing: "-0.03em",
+                color: T.ink,
+                marginBottom: 16,
+              }}
+            >
+              세 가지 대상을 위한 전문 솔루션
+            </h2>
+            <p style={{ fontSize: 17, color: T.ink2, lineHeight: 1.7, maxWidth: 640, margin: "0 auto" }}>
+              외국인 구직자, 채용 기업, 대학 담당자 모두를 위한<br />맞춤형 채용 플랫폼
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 32 }}>
+            {[
+              {
+                icon: "🌏",
+                label: "For Workers",
+                title: "외국인 구직자",
+                desc: "7개 언어 지원, 비자별 맞춤 공고, 자동 근로계약서 발급으로 안전한 취업을 시작하세요.",
+                features: ["7개 언어 지원", "비자 자동 필터", "근로계약서 자동 발급", "한국 경력 인증"],
+                color: "#0BD8A2",
+                bgColor: "#E0F8EF",
+              },
+              {
+                icon: "💼",
+                label: "For Employers",
+                title: "채용 기업 · 사장님",
+                desc: "카톡 챗봇으로 3분만에 공고 등록, 비자 검증부터 계약까지 원스톱으로 해결하세요.",
+                features: ["3분 공고 등록", "비자 자동 확인", "260만 인력풀", "지역별 시세 분석"],
+                color: "#C2512A",
+                bgColor: "#F5E8E2",
+              },
+              {
+                icon: "🏫",
+                label: "For Universities",
+                title: "대학 담당자",
+                desc: "유학생 시간제취업 신청부터 확인서 발급까지 모바일로 24시간 내 처리 가능합니다.",
+                features: ["모바일 즉시 처리", "확인서 자동 발급", "출입국법 준수", "IEQAS 평가 대비"],
+                color: "#7C3AED",
+                bgColor: "#F5F3FF",
+              },
+            ].map((item) => (
+              <div
+                key={item.label}
+                style={{
+                  background: T.paper,
+                  border: `1.5px solid ${T.border}`,
+                  borderRadius: 12,
+                  padding: 32,
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  cursor: "pointer",
+                  boxShadow: "0 2px 8px rgba(10, 22, 40, 0.04)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-8px)";
+                  e.currentTarget.style.boxShadow = "0 12px 32px rgba(10, 22, 40, 0.12)";
+                  e.currentTarget.style.borderColor = item.color;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 22, 40, 0.04)";
+                  e.currentTarget.style.borderColor = T.border;
+                }}
+              >
+                <div
+                  style={{
+                    width: 64,
+                    height: 64,
+                    background: item.bgColor,
+                    borderRadius: 16,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 32,
+                    marginBottom: 24,
+                  }}
+                >
+                  {item.icon}
+                </div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: item.color,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    marginBottom: 8,
+                  }}
+                >
+                  {item.label}
+                </div>
+                <h3
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 800,
+                    color: T.ink,
+                    marginBottom: 12,
+                    letterSpacing: "-0.02em",
+                  }}
+                >
+                  {item.title}
+                </h3>
+                <p
+                  style={{
+                    fontSize: 15,
+                    color: T.ink2,
+                    lineHeight: 1.7,
+                    marginBottom: 24,
+                  }}
+                >
+                  {item.desc}
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {item.features.map((feature) => (
+                    <div
+                      key={feature}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        fontSize: 14,
+                        color: T.ink,
+                      }}
+                    >
+                      <span style={{ color: item.color, fontWeight: 700 }}>✓</span>
+                      {feature}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ═══════════════════ PROBLEM (크림 배경) ═══════════════════ */}
       <section
         style={{
-          padding: "48px 20px",
+          padding: "96px 20px",
           background: T.cream,
           borderBottom: `1px solid ${T.border}`,
         }}
@@ -406,7 +612,7 @@ export default function LandingPage() {
       {/* ═══════════════════ WORKER FEATURES ═══════════════════ */}
       <section
         style={{
-          padding: "48px 20px",
+          padding: "96px 20px",
           background: T.paper,
           borderBottom: `1px solid ${T.border}`,
         }}
@@ -485,7 +691,7 @@ export default function LandingPage() {
       {/* ═══════════════════ EMPLOYER FEATURES (크림 배경) ═══════════════════ */}
       <section
         style={{
-          padding: "48px 20px",
+          padding: "96px 20px",
           background: T.cream,
           borderBottom: `1px solid ${T.border}`,
         }}
@@ -564,7 +770,7 @@ export default function LandingPage() {
       {/* ═══════════════════ UNIVERSITY FEATURES ═══════════════════ */}
       <section
         style={{
-          padding: "48px 20px",
+          padding: "96px 20px",
           background: T.paper,
           borderBottom: `1px solid ${T.border}`,
         }}
@@ -641,7 +847,7 @@ export default function LandingPage() {
       {/* ═══════════════════ PROCESS ═══════════════════ */}
       <section
         style={{
-          padding: "48px 20px",
+          padding: "96px 20px",
           background: T.paper,
           borderBottom: `1px solid ${T.border}`,
         }}
@@ -734,13 +940,21 @@ export default function LandingPage() {
       {/* ═══════════════════ FINAL CTA ═══════════════════ */}
       <section
         style={{
-          padding: "56px 20px",
-          background: T.n9,
+          padding: "96px 20px",
+          background: `linear-gradient(135deg, ${T.n9} 0%, #0F2037 100%)`,
           color: T.paper,
-          borderTop: `3px solid ${T.gold}`,
+          borderTop: `4px solid ${T.gold}`,
           position: "relative",
+          overflow: "hidden",
         }}
       >
+        {/* Subtle background pattern */}
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: `radial-gradient(circle at 50% 50%, rgba(184, 148, 74, 0.08) 0%, transparent 70%)`,
+          pointerEvents: "none",
+        }} />
         <div style={{ maxWidth: 720, margin: "0 auto", textAlign: "center" }}>
           <h2
             style={{
