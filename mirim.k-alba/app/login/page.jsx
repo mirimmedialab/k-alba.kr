@@ -60,17 +60,18 @@ export default function LoginPage() {
     >
       <div
         style={{
-          maxWidth: 960,
+          maxWidth: 600,
           margin: "0 auto",
           display: "flex",
-          gap: 60,
+          gap: 20,
           alignItems: "flex-start",
+          justifyContent: "center",
         }}
         className="login-layout"
       >
         <form
           onSubmit={handleSubmit}
-          style={{ flex: 1, maxWidth: 480 }}
+          style={{ width: 440 }}
         >
         {/* Back link */}
         <Link

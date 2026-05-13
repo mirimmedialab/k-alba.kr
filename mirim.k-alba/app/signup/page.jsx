@@ -237,16 +237,17 @@ export default function SignupPage() {
       >
         <div
           style={{
-            maxWidth: 960,
+            maxWidth: 600,
             margin: "0 auto",
             display: "flex",
-            gap: 60,
+            gap: 20,
             alignItems: "flex-start",
+            justifyContent: "center",
           }}
           className="signup-layout"
         >
           {/* 메인 콘텐츠 */}
-          <div style={{ flex: 1, maxWidth: 480 }}>
+          <div style={{ width: 440 }}>
             {/* 뒤로 + 워드마크 */}
             <div
               style={{
