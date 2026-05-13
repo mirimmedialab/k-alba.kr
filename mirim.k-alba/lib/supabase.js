@@ -1,11 +1,12 @@
-import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-// 환경변수 없을 때 빈 클라이언트 반환 (개발 중 에러 방지)
-export const supabase = supabaseUrl && supabaseKey
-  ? createClient(supabaseUrl, supabaseKey)
+// 브라우저/클라이언트 컴포넌트용 Supabase 클라이언트
+// SSR 쿠키 기반 세션 관리
+export const supabase = typeof window !== "undefined"
+  ? createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    )
   : null;
 
 // ────────────────────────────────

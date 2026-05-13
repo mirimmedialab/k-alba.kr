@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@/lib/supabase/middleware";
 
 /**
  * K-ALBA 통합 미들웨어 (디바이스 라우팅 + 페르소나 권한 가드)
@@ -88,28 +88,7 @@ export async function middleware(request) {
   if (!requiresAuth) return NextResponse.next();
 
   // ─── 4) Supabase 세션 확인 ───
-  let response = NextResponse.next();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      cookies: {
-        get(name) {
-          return request.cookies.get(name)?.value;
-        },
-        set(name, value, options) {
-          request.cookies.set({ name, value, ...options });
-          response = NextResponse.next({ request });
-          response.cookies.set({ name, value, ...options });
-        },
-        remove(name, options) {
-          request.cookies.set({ name, value: "", ...options });
-          response = NextResponse.next({ request });
-          response.cookies.set({ name, value: "", ...options });
-        },
-      },
-    }
-  );
+  const { supabase, response } = createClient(request);
 
   const {
     data: { user },
