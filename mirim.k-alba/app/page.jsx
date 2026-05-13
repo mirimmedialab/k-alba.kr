@@ -322,15 +322,15 @@ export default function LandingPage() {
           borderBottom: `1px solid ${T.border}`,
         }}
       >
-        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+        <div style={{ maxWidth: 960, margin: "0 auto" }}>
           <h2
             style={{
               fontWeight: 800,
-              fontSize: "clamp(20px, 5vw, 26px)",
+              fontSize: "clamp(20px, 5vw, 28px)",
               lineHeight: 1.35,
               letterSpacing: "-0.025em",
               color: T.ink,
-              marginBottom: 28,
+              marginBottom: 32,
             }}
           >
             기존 플랫폼이 외국인을{" "}
@@ -412,7 +412,7 @@ export default function LandingPage() {
           borderBottom: `1px solid ${T.border}`,
         }}
       >
-        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+        <div style={{ maxWidth: 960, margin: "0 auto" }}>
           <div
             style={{
               display: "inline-block",
@@ -432,18 +432,18 @@ export default function LandingPage() {
           <h2
             style={{
               fontWeight: 800,
-              fontSize: "clamp(20px, 5vw, 26px)",
+              fontSize: "clamp(20px, 5vw, 28px)",
               lineHeight: 1.35,
               letterSpacing: "-0.025em",
               color: T.ink,
-              marginBottom: 24,
+              marginBottom: 32,
             }}
           >
             한국어를 잘 못해도, 비자가 복잡해도 —{" "}
             <span style={{ color: T.accent }}>안심하고 알바할 수 있습니다</span>
           </h2>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
             {[
               ["🌐", "내 언어로 알바 찾기", "한국어·영어·중국어·베트남어·우즈벡어·몽골어·일본어 7개 언어 지원."],
               ["🛂", "내 비자에 맞는 공고만", "비자 유형 입력하면 합법적으로 일할 수 있는 공고만 자동 필터링."],
@@ -455,19 +455,20 @@ export default function LandingPage() {
               <div
                 key={title}
                 style={{
-                  padding: 18,
+                  padding: 20,
                   background: T.paper,
                   border: `1px solid ${T.border}`,
                   borderRadius: 6,
+                  transition: "border-color 0.2s",
                 }}
               >
-                <div style={{ fontSize: 22, marginBottom: 8 }}>{ic}</div>
+                <div style={{ fontSize: 24, marginBottom: 10 }}>{ic}</div>
                 <div
                   style={{
                     fontSize: 15,
                     fontWeight: 800,
                     color: T.ink,
-                    marginBottom: 4,
+                    marginBottom: 6,
                     letterSpacing: "-0.02em",
                   }}
                 >
@@ -490,7 +491,7 @@ export default function LandingPage() {
           borderBottom: `1px solid ${T.border}`,
         }}
       >
-        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+        <div style={{ maxWidth: 960, margin: "0 auto" }}>
           <div
             style={{
               display: "inline-block",
@@ -510,18 +511,18 @@ export default function LandingPage() {
           <h2
             style={{
               fontWeight: 800,
-              fontSize: "clamp(20px, 5vw, 26px)",
+              fontSize: "clamp(20px, 5vw, 28px)",
               lineHeight: 1.35,
               letterSpacing: "-0.025em",
               color: T.ink,
-              marginBottom: 24,
+              marginBottom: 32,
             }}
           >
             외국인 채용이 어렵고 복잡했나요?{" "}
             <span style={{ color: T.accent }}>K-ALBA가 다 해드립니다</span>
           </h2>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
             {[
               ["📢", "카카오톡으로 3분 공고 등록", "14단계 챗봇 질문에 답하면 공고 자동 완성."],
               ["🛂", "비자 자동 확인", "지원자의 비자를 자동 검증. 불법 고용 위험 없이 채용."],
@@ -533,19 +534,20 @@ export default function LandingPage() {
               <div
                 key={title}
                 style={{
-                  padding: 18,
+                  padding: 20,
                   background: T.paper,
                   border: `1px solid ${T.border}`,
                   borderRadius: 6,
+                  transition: "border-color 0.2s",
                 }}
               >
-                <div style={{ fontSize: 22, marginBottom: 8 }}>{ic}</div>
+                <div style={{ fontSize: 24, marginBottom: 10 }}>{ic}</div>
                 <div
                   style={{
                     fontSize: 15,
                     fontWeight: 800,
                     color: T.ink,
-                    marginBottom: 4,
+                    marginBottom: 6,
                     letterSpacing: "-0.02em",
                   }}
                 >
@@ -568,7 +570,7 @@ export default function LandingPage() {
           borderBottom: `1px solid ${T.border}`,
         }}
       >
-        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+        <div style={{ maxWidth: 960, margin: "0 auto" }}>
           <div
             style={{
               display: "inline-block",
@@ -588,17 +590,17 @@ export default function LandingPage() {
           <h2
             style={{
               fontWeight: 800,
-              fontSize: "clamp(20px, 5vw, 26px)",
+              fontSize: "clamp(20px, 5vw, 28px)",
               lineHeight: 1.35,
               letterSpacing: "-0.025em",
               color: T.ink,
-              marginBottom: 28,
+              marginBottom: 32,
             }}
           >
             유학생 시간제취업, <em style={{ fontStyle: "normal", color: T.accent }}>이제 사무실 컴퓨터 없이</em>
           </h2>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
             {[
               ["⚡", "24시간 내 모바일 처리", "카카오톡으로 신청서 받아 모바일에서 즉시 검토·서명. 학생을 기다리게 하지 않습니다."],
               ["📄", "확인서 자동 생성", "손글씨 서명 한 번이면 PDF 자동 발급. 학교 인장도 디지털로 적용됩니다."],
@@ -609,31 +611,27 @@ export default function LandingPage() {
               <div
                 key={title}
                 style={{
-                  padding: 18,
+                  padding: 20,
                   background: T.paper,
                   border: `1px solid ${T.border}`,
                   borderRadius: 6,
-                  transition: "border-color 0.15s",
+                  transition: "border-color 0.2s",
                 }}
               >
-                <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                  <span style={{ fontSize: 20, lineHeight: 1 }}>{ic}</span>
-                  <div style={{ flex: 1 }}>
-                    <div
-                      style={{
-                        fontWeight: 700,
-                        fontSize: 15,
-                        color: T.ink,
-                        marginBottom: 4,
-                        letterSpacing: "-0.02em",
-                      }}
-                    >
-                      {title}
-                    </div>
-                    <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.55 }}>
-                      {desc}
-                    </div>
-                  </div>
+                <div style={{ fontSize: 24, marginBottom: 10 }}>{ic}</div>
+                <div
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 15,
+                    color: T.ink,
+                    marginBottom: 6,
+                    letterSpacing: "-0.02em",
+                  }}
+                >
+                  {title}
+                </div>
+                <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.55 }}>
+                  {desc}
                 </div>
               </div>
             ))}
@@ -649,15 +647,15 @@ export default function LandingPage() {
           borderBottom: `1px solid ${T.border}`,
         }}
       >
-        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+        <div style={{ maxWidth: 720, margin: "0 auto" }}>
           <h2
             style={{
               fontWeight: 800,
-              fontSize: "clamp(20px, 5vw, 26px)",
+              fontSize: "clamp(20px, 5vw, 28px)",
               lineHeight: 1.35,
               letterSpacing: "-0.025em",
               color: T.ink,
-              marginBottom: 28,
+              marginBottom: 32,
             }}
           >
             <em style={{ fontStyle: "normal", color: T.gold }}>5단계, 평균 3분.</em>{" "}
@@ -745,7 +743,7 @@ export default function LandingPage() {
           position: "relative",
         }}
       >
-        <div style={{ maxWidth: 560, margin: "0 auto", textAlign: "center" }}>
+        <div style={{ maxWidth: 720, margin: "0 auto", textAlign: "center" }}>
           <h2
             style={{
               fontWeight: 800,
