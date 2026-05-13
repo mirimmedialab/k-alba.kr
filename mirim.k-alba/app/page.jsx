@@ -560,6 +560,87 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ═══════════════════ UNIVERSITY FEATURES ═══════════════════ */}
+      <section
+        style={{
+          padding: "48px 20px",
+          background: T.paper,
+          borderBottom: `1px solid ${T.border}`,
+        }}
+      >
+        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+          <div
+            style={{
+              display: "inline-block",
+              color: "#9333EA",
+              background: "#FAE8FF",
+              padding: "4px 12px",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.05em",
+              textTransform: "uppercase",
+              marginBottom: 14,
+              borderRadius: 2,
+            }}
+          >
+            For Universities · 학교 담당자
+          </div>
+          <h2
+            style={{
+              fontWeight: 800,
+              fontSize: "clamp(20px, 5vw, 26px)",
+              lineHeight: 1.35,
+              letterSpacing: "-0.025em",
+              color: T.ink,
+              marginBottom: 28,
+            }}
+          >
+            유학생 시간제취업, <em style={{ fontStyle: "normal", color: "#9333EA" }}>이제 사무실 컴퓨터 없이</em>
+          </h2>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {[
+              ["⚡", "24시간 내 모바일 처리", "카카오톡으로 신청서 받아 모바일에서 즉시 검토·서명. 학생을 기다리게 하지 않습니다."],
+              ["📄", "확인서 자동 생성", "손글씨 서명 한 번이면 PDF 자동 발급. 학교 인장도 디지털로 적용됩니다."],
+              ["⚖️", "출입국관리법 자동 준수", "출석률 70% 미만, C학점 미만 학생 자동 차단. 위반 조건을 시스템이 검증합니다."],
+              ["🏆", "IEQAS 평가 가점", "유학생 관리 시스템 도입으로 교육국제화역량인증 평가 가산점 확보."],
+              ["📊", "실시간 대시보드", "학과별·국가별 시간제취업 신청 현황을 한눈에 파악. 승인·반려 추이 실시간 추적."],
+            ].map(([ic, title, desc]) => (
+              <div
+                key={title}
+                style={{
+                  padding: 18,
+                  background: T.paper,
+                  border: `1px solid ${T.border}`,
+                  borderRadius: 6,
+                  transition: "border-color 0.15s",
+                }}
+              >
+                <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 20, lineHeight: 1 }}>{ic}</span>
+                  <div style={{ flex: 1 }}>
+                    <div
+                      style={{
+                        fontWeight: 700,
+                        fontSize: 15,
+                        color: T.ink,
+                        marginBottom: 4,
+                        letterSpacing: "-0.02em",
+                      }}
+                    >
+                      {title}
+                    </div>
+                    <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.55 }}>
+                      {desc}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ═══════════════════ PROCESS ═══════════════════ */}
       <section
         style={{

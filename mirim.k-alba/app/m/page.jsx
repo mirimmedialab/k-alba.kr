@@ -474,6 +474,29 @@ export default function MobileLandingPage() {
         </div>
       </div>
 
+      {/* ── 학교 담당자: 시간제취업 관리 ── */}
+      <div style={{ ...S.section, paddingBottom: 40 }}>
+        <div style={{ background: "linear-gradient(135deg,#FDF4FF,#FAE8FF)", borderRadius: 20, padding: "28px 22px", border: "1.5px solid #E9D5FF" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", color: "#9333EA", padding: "5px 12px", borderRadius: 100, fontSize: 10, fontWeight: 800, marginBottom: 12 }}>🏫 학교 담당자</div>
+          <h3 style={{ fontSize: 20, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: -0.5 }}>시간제취업 신청,<br />이제 모바일로</h3>
+          <p style={{ fontSize: 13, lineHeight: 1.7, color: T.ink2, marginBottom: 18 }}>유학생 시간제취업 신청부터 확인서 발급까지 카카오톡으로 처리하세요. 출석률·성적 자동 검증으로 IEQAS 평가 대비도 완벽!</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            {[
+              ["⚡", "24시간 내 처리", "모바일로 즉시 승인", "#FDF4FF"],
+              ["📄", "확인서 자동 발급", "PDF 자동 생성·인장", "#F3E8FF"],
+              ["⚖️", "출입국법 자동 준수", "위반 학생 자동 차단", "#FEF3C7"],
+              ["📊", "실시간 대시보드", "학과별 신청 현황", "#DBEAFE"],
+            ].map(([ic, ti, de, bg]) => (
+              <div key={ti} style={{ background: "#fff", borderRadius: 12, padding: "14px 12px", border: `1px solid ${T.border}` }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, marginBottom: 8 }}>{ic}</div>
+                <div style={{ fontWeight: 700, fontSize: 12, color: T.navy, marginBottom: 3 }}>{ti}</div>
+                <div style={{ fontSize: 10, color: T.ink3, lineHeight: 1.5 }}>{de}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* ── TESTIMONIALS ── */}
       <div style={{ background: T.cream, padding: "48px 20px" }}>
         <div style={{ maxWidth: 600, margin: "0 auto" }}>
