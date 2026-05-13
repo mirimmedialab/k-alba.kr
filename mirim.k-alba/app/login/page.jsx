@@ -53,59 +53,39 @@ export default function LoginPage() {
   return (
     <div
       style={{
-        minHeight: "calc(100vh - 56px - 180px)", // nav - footer
-        padding: "56px 20px 40px",
+        minHeight: "calc(100vh - 180px)",
+        padding: "40px 20px",
         background: T.paper,
       }}
     >
       <form
         onSubmit={handleSubmit}
-        style={{ maxWidth: 420, margin: "0 auto" }}
+        style={{ maxWidth: 440, margin: "0 auto" }}
       >
-        {/* Back link — 서브하게 */}
+        {/* Back link */}
         <Link
           href="/"
           style={{
             color: T.ink3,
             fontSize: 13,
-            marginBottom: 28,
+            marginBottom: 32,
             display: "inline-block",
             letterSpacing: "-0.01em",
+            fontWeight: 600,
           }}
         >
           ← {t("common.back")}
         </Link>
 
-        {/* Editorial 상단 — 코랄 라인 + 작은 라벨 */}
-        <div
-          style={{
-            width: 40,
-            height: 3,
-            background: "#FF6B5A",
-            marginBottom: 20,
-          }}
-        />
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 700,
-            color: T.ink3,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            marginBottom: 10,
-          }}
-        >
-          Account · 로그인
-        </div>
-
         <h1
           style={{
-            fontSize: 28,
+            fontSize: 26,
             fontWeight: 800,
             color: T.ink,
             letterSpacing: "-0.025em",
-            lineHeight: 1.25,
-            marginBottom: 32,
+            lineHeight: 1.3,
+            marginBottom: 28,
+            textAlign: "center",
           }}
         >
           {t("auth.loginTitle")}
@@ -229,6 +209,7 @@ export default function LoginPage() {
             fontSize: 13,
             color: T.ink3,
             letterSpacing: "-0.01em",
+            marginBottom: 32,
           }}
         >
           {t("auth.noAccount")}{" "}
@@ -244,6 +225,42 @@ export default function LoginPage() {
             {t("auth.signupLink")}
           </Link>
         </p>
+
+        {/* 카카오톡 채널 + QR - 작은 보조 블록 */}
+        <div
+          style={{
+            background: T.cream,
+            borderRadius: 8,
+            padding: "14px 16px",
+            border: `1px solid ${T.border}`,
+            textAlign: "center",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 8 }}>
+            <span style={{ fontSize: 16 }}>💬</span>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.ink }}>카카오톡 채널</div>
+          </div>
+          <p style={{ fontSize: 11, color: T.ink2, lineHeight: 1.5, marginBottom: 10 }}>
+            사장님은 카카오톡 챗봇으로 3분만에 공고 등록
+          </p>
+          <a
+            href="https://pf.kakao.com/_qTxouX"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-block",
+              fontSize: 12,
+              fontWeight: 700,
+              color: T.paper,
+              background: "#FEE500",
+              padding: "6px 12px",
+              borderRadius: 6,
+              textDecoration: "none",
+            }}
+          >
+            채널 열기 →
+          </a>
+        </div>
       </form>
     </div>
   );

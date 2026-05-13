@@ -32,18 +32,21 @@ import { I18nProvider } from "@/lib/i18n";
 const HIDE_NAVBAR_ON = ["/", "/m", "/login", "/signup"];
 // Footer를 숨길 경로 (자체 푸터가 있는 페이지)
 const HIDE_FOOTER_ON = ["/", "/m"];
+// DesktopMobileFrame을 사용하지 않을 경로 (단순 중앙 정렬)
+const NO_FRAME_ON = ["/", "/m", "/login", "/signup"];
 
 export default function AppFrame({ children }) {
   const pathname = usePathname();
   const showNavBar = !HIDE_NAVBAR_ON.includes(pathname);
   const showFooter = !HIDE_FOOTER_ON.includes(pathname);
+  const useFrame = !NO_FRAME_ON.includes(pathname);
 
-  // 루트 `/`는 데스크톱 풀 랜딩 또는 모바일 미들웨어 rewrite 결과인 /m
-  // 어느 쪽이든 NavBar 없이 풀스크린 렌더 (랜딩에는 자체 푸터가 있음)
-  if (pathname === "/") {
+  // 루트 `/` 또는 frame 불필요한 경로: 직접 렌더
+  if (!useFrame) {
     return (
       <I18nProvider>
         {children}
+        {showFooter && <Footer />}
       </I18nProvider>
     );
   }
