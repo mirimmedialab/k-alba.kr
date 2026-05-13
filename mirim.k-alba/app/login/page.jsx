@@ -58,10 +58,20 @@ export default function LoginPage() {
         background: T.paper,
       }}
     >
-      <form
-        onSubmit={handleSubmit}
-        style={{ maxWidth: 440, margin: "0 auto" }}
+      <div
+        style={{
+          maxWidth: 960,
+          margin: "0 auto",
+          display: "flex",
+          gap: 60,
+          alignItems: "flex-start",
+        }}
+        className="login-layout"
       >
+        <form
+          onSubmit={handleSubmit}
+          style={{ flex: 1, maxWidth: 480 }}
+        >
         {/* Back link */}
         <Link
           href="/"
@@ -226,67 +236,89 @@ export default function LoginPage() {
           </Link>
         </p>
 
-        {/* 카카오톡 채널 + QR - 작은 보조 블록 */}
+        {/* 카카오톡 채널 */}
         <div
           style={{
             background: T.cream,
             borderRadius: 8,
             padding: "16px",
             border: `1px solid ${T.border}`,
-            display: "flex",
-            alignItems: "center",
-            gap: 16,
           }}
         >
-          <div style={{ flex: 1 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <span style={{ fontSize: 16 }}>💬</span>
-              <div style={{ fontSize: 13, fontWeight: 700, color: T.ink }}>카카오톡 채널</div>
-            </div>
-            <p style={{ fontSize: 11, color: T.ink2, lineHeight: 1.5, marginBottom: 10 }}>
-              사장님은 카카오톡 챗봇으로<br />3분만에 공고 등록 가능
-            </p>
-            <a
-              href="https://pf.kakao.com/_qTxouX"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "inline-block",
-                fontSize: 12,
-                fontWeight: 700,
-                color: T.paper,
-                background: "#FEE500",
-                padding: "6px 12px",
-                borderRadius: 6,
-                textDecoration: "none",
-              }}
-            >
-              채널 열기 →
-            </a>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <span style={{ fontSize: 18 }}>💬</span>
+            <div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>카카오톡 채널</div>
           </div>
-          <div style={{ textAlign: "center" }}>
-            <div
-              style={{
-                width: 80,
-                height: 80,
-                borderRadius: 8,
-                background: "#fff",
-                padding: 8,
-                marginBottom: 6,
-              }}
-            >
-              <img
-                src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https%3A%2F%2Fk-alba.kr&margin=0"
-                alt="K-ALBA QR"
-                style={{ width: "100%", height: "100%", display: "block" }}
-              />
-            </div>
-            <div style={{ fontSize: 9, color: T.ink3, lineHeight: 1.4 }}>
-              휴대폰으로<br />접속하세요
-            </div>
-          </div>
+          <p style={{ fontSize: 13, color: T.ink2, lineHeight: 1.6, marginBottom: 12 }}>
+            사장님은 카카오톡 챗봇으로 3분만에 공고 등록 가능
+          </p>
+          <a
+            href="https://pf.kakao.com/_qTxouX"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-block",
+              fontSize: 13,
+              fontWeight: 700,
+              color: T.paper,
+              background: "#FEE500",
+              padding: "8px 16px",
+              borderRadius: 6,
+              textDecoration: "none",
+            }}
+          >
+            채널 열기 →
+          </a>
         </div>
       </form>
+
+      {/* 우측 QR 코드 */}
+      <div
+        style={{
+          display: "none",
+          textAlign: "center",
+          paddingTop: 80,
+        }}
+        className="qr-section"
+      >
+        <div
+          style={{
+            width: 140,
+            height: 140,
+            borderRadius: 12,
+            background: "#fff",
+            padding: 12,
+            marginBottom: 12,
+            border: `1px solid ${T.border}`,
+          }}
+        >
+          <img
+            src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https%3A%2F%2Fk-alba.kr&margin=0"
+            alt="K-ALBA QR"
+            style={{ width: "100%", height: "100%", display: "block" }}
+          />
+        </div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 4 }}>
+          K-ALBA 외국인 알바
+        </div>
+        <div style={{ fontSize: 12, color: T.ink2, lineHeight: 1.5 }}>
+          휴대폰으로 손쉽게<br />접속하세요
+        </div>
+      </div>
+    </div>
+
+    <style jsx>{`
+      @media (min-width: 1024px) {
+        .qr-section {
+          display: block !important;
+        }
+      }
+      @media (max-width: 1023px) {
+        .login-layout {
+          flex-direction: column;
+        }
+      }
+    `}</style>
     </div>
   );
 }
