@@ -7,15 +7,17 @@ import { T } from "@/lib/theme";
  *
  * 모든 페이지 하단에 표시되는 사업자 정보 및 저작권 표시
  * 데스크톱/모바일 반응형 디자인
+ * Onboarding 페이지 흐름을 방해하지 않도록 경량화
  */
 export default function Footer() {
   return (
     <footer
       style={{
-        padding: "40px 20px",
+        padding: "20px 20px 16px",
         background: T.paper,
-        borderTop: `1px solid ${T.border}`,
+        borderTop: `1px solid ${T.border}30`,
       }}
+      className="global-footer"
     >
       <div
         style={{
@@ -25,16 +27,17 @@ export default function Footer() {
         }}
       >
         {/* 이용약관 및 개인정보처리방침 */}
-        <div style={{ marginBottom: 20 }}>
+        <div style={{ marginBottom: 12 }}>
           <Link
             href="/terms"
             style={{
-              fontSize: 14,
+              fontSize: 11,
               fontWeight: 600,
-              color: T.ink2,
+              color: T.ink3,
               textDecoration: "none",
-              marginRight: 24,
+              marginRight: 16,
               letterSpacing: "-0.01em",
+              opacity: 0.8,
             }}
           >
             이용약관
@@ -42,11 +45,12 @@ export default function Footer() {
           <Link
             href="/privacy"
             style={{
-              fontSize: 14,
+              fontSize: 11,
               fontWeight: 600,
-              color: T.ink2,
+              color: T.ink3,
               textDecoration: "none",
               letterSpacing: "-0.01em",
+              opacity: 0.8,
             }}
           >
             개인정보처리방침
@@ -56,11 +60,12 @@ export default function Footer() {
         {/* 법적 정보 */}
         <div
           style={{
-            fontSize: 13,
+            fontSize: 10,
             color: T.ink3,
-            lineHeight: 1.8,
+            lineHeight: 1.6,
             letterSpacing: "-0.01em",
-            marginBottom: 12,
+            marginBottom: 8,
+            opacity: 0.7,
           }}
         >
           K-ALBA | 대표: 남기환 | 사업자등록번호: 119-86-61402
@@ -69,14 +74,24 @@ export default function Footer() {
         </div>
         <div
           style={{
-            fontSize: 12,
-            color: T.g500,
+            fontSize: 9,
+            color: T.ink3,
             letterSpacing: "-0.01em",
+            opacity: 0.6,
           }}
         >
           © 2026 K-ALBA. All rights reserved.
         </div>
       </div>
+
+      {/* 모바일 추가 최소화 */}
+      <style jsx>{`
+        @media (max-width: 767px) {
+          .global-footer {
+            padding: 16px 20px 12px !important;
+          }
+        }
+      `}</style>
     </footer>
   );
 }

@@ -281,7 +281,7 @@ export default function SignupPage() {
               }}
             >
               외국인 채용과 시간제취업 신청을<br />
-              <span style={{ color: T.gold }}>더 쉽고 안전하게</span>
+              <span style={{ color: "#FF6B5A" }}>더 쉽고 안전하게</span>
             </h1>
             <p
               style={{
@@ -315,7 +315,7 @@ export default function SignupPage() {
                     style={{
                       fontSize: 24,
                       fontWeight: 800,
-                      color: T.gold,
+                      color: "#FF6B5A",
                       letterSpacing: "-0.02em",
                       marginBottom: 4,
                     }}
@@ -529,10 +529,6 @@ export default function SignupPage() {
               box-shadow: none !important;
               padding: 32px 20px !important;
             }
-            .signup-footer {
-              padding: 16px 20px 12px !important;
-              font-size: 9px !important;
-            }
           }
           @media (min-width: 1024px) {
             .signup-container {
@@ -551,32 +547,6 @@ export default function SignupPage() {
             }
           }
         `}</style>
-
-        {/* 페이지 푸터 */}
-        <footer
-          style={{
-            padding: "20px 20px 16px",
-            background: T.paper,
-            borderTop: `1px solid ${T.border}20`,
-          }}
-          className="signup-footer"
-        >
-          <div
-            style={{
-              maxWidth: 1080,
-              margin: "0 auto",
-              fontSize: 10,
-              color: T.ink3,
-              opacity: 0.7,
-              lineHeight: 1.6,
-              textAlign: "center",
-            }}
-          >
-            {COMPANY.name} · 사업자등록번호 {COMPANY.businessNumber}
-            <br />
-            직업정보제공사업 신고번호 {COMPANY.jobInfoLicense}
-          </div>
-        </footer>
       </div>
     );
   }
