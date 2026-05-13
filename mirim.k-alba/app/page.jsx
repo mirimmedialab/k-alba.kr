@@ -572,8 +572,8 @@ export default function LandingPage() {
           <div
             style={{
               display: "inline-block",
-              color: "#9333EA",
-              background: "#FAE8FF",
+              color: T.navy,
+              background: T.gold,
               padding: "4px 12px",
               fontSize: 11,
               fontWeight: 700,
@@ -595,7 +595,7 @@ export default function LandingPage() {
               marginBottom: 28,
             }}
           >
-            유학생 시간제취업, <em style={{ fontStyle: "normal", color: "#9333EA" }}>이제 사무실 컴퓨터 없이</em>
+            유학생 시간제취업, <em style={{ fontStyle: "normal", color: T.accent }}>이제 사무실 컴퓨터 없이</em>
           </h2>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
