@@ -464,26 +464,26 @@ export default function SignupPage() {
           >
             <div
               style={{
-                width: 140,
-                height: 140,
-                borderRadius: 12,
+                width: 100,
+                height: 100,
+                borderRadius: 8,
                 background: "#fff",
-                padding: 12,
-                marginBottom: 12,
+                padding: 8,
+                marginBottom: 8,
                 border: `1px solid ${T.border}`,
               }}
             >
               <img
-                src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https%3A%2F%2Fk-alba.kr&margin=0"
+                src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https%3A%2F%2Fk-alba.kr&margin=0"
                 alt="K-ALBA QR"
                 style={{ width: "100%", height: "100%", display: "block" }}
               />
             </div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 4 }}>
-              K-ALBA 외국인 알바
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.ink, marginBottom: 3 }}>
+              K-ALBA
             </div>
-            <div style={{ fontSize: 12, color: T.ink2, lineHeight: 1.5 }}>
-              휴대폰으로 손쉽게<br />접속하세요
+            <div style={{ fontSize: 10, color: T.ink2, lineHeight: 1.4 }}>
+              휴대폰으로<br />접속하세요
             </div>
           </div>
         </div>
