@@ -244,7 +244,7 @@ export default function LoginPage() {
               <div style={{ fontSize: 13, fontWeight: 700, color: T.ink }}>카카오톡 채널</div>
             </div>
             <p style={{ fontSize: 11, color: T.ink2, lineHeight: 1.5, marginBottom: 10 }}>
-              사장님은 카카오톡 챗봇으로<br />3분만에 공고 등록
+              사장님은 카카오톡 챗봇으로<br />3분만에 공고 등록 가능
             </p>
             <a
               href="https://pf.kakao.com/_qTxouX"
@@ -264,21 +264,26 @@ export default function LoginPage() {
               채널 열기 →
             </a>
           </div>
-          <div
-            style={{
-              width: 80,
-              height: 80,
-              borderRadius: 8,
-              background: "#fff",
-              padding: 8,
-              flexShrink: 0,
-            }}
-          >
-            <img
-              src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https%3A%2F%2Fk-alba.kr&margin=0"
-              alt="K-ALBA QR"
-              style={{ width: "100%", height: "100%", display: "block" }}
-            />
+          <div style={{ textAlign: "center" }}>
+            <div
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: 8,
+                background: "#fff",
+                padding: 8,
+                marginBottom: 6,
+              }}
+            >
+              <img
+                src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https%3A%2F%2Fk-alba.kr&margin=0"
+                alt="K-ALBA QR"
+                style={{ width: "100%", height: "100%", display: "block" }}
+              />
+            </div>
+            <div style={{ fontSize: 9, color: T.ink3, lineHeight: 1.4 }}>
+              휴대폰으로<br />접속하세요
+            </div>
           </div>
         </div>
       </form>
