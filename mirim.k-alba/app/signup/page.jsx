@@ -230,20 +230,19 @@ export default function SignupPage() {
     return (
       <div
         style={{
-          minHeight: "100vh",
+          minHeight: "calc(100vh - 180px)",
           background: T.paper,
+          padding: "56px 20px 40px",
         }}
       >
         <div
           style={{
             maxWidth: 960,
             margin: "0 auto",
-            padding: "48px 20px",
             display: "grid",
             gridTemplateColumns: "1fr",
-            gap: 40,
+            gap: 48,
             alignItems: "center",
-            minHeight: "calc(100vh - 96px)",
           }}
           className="signup-container"
         >
@@ -263,7 +262,7 @@ export default function SignupPage() {
                 color: T.ink3,
                 fontSize: 13,
                 textDecoration: "none",
-                marginBottom: 32,
+                marginBottom: 28,
                 fontWeight: 600,
               }}
             >
@@ -294,7 +293,7 @@ export default function SignupPage() {
             </p>
           </div>
 
-          {/* ══════ 우측: Signup 카드 영역 ══════ */}
+          {/* ══════ 우측: Signup 영역 ══════ */}
           <div
             style={{
               maxWidth: 420,
@@ -302,215 +301,189 @@ export default function SignupPage() {
               width: "100%",
             }}
           >
+            {/* 모바일: 뒤로 + 워드마크 */}
             <div
               style={{
-                background: T.paper,
-                border: `1px solid ${T.border}`,
-                borderRadius: 8,
-                padding: "24px 20px",
-                boxShadow: "0 2px 8px rgba(10, 22, 40, 0.04)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 28,
               }}
-              className="signup-card"
+              className="mobile-header"
             >
-              {/* 모바일: 뒤로 + 워드마크 */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 20,
-                }}
-                className="mobile-header"
+              <Link
+                href="/"
+                style={{ color: T.ink3, fontSize: 13, textDecoration: "none", fontWeight: 600 }}
               >
-                <Link
-                  href="/"
-                  style={{ color: T.ink3, fontSize: 13, textDecoration: "none", fontWeight: 600 }}
-                >
-                  ← 뒤로
-                </Link>
-                <KWordmark size={16} />
-              </div>
+                ← 뒤로
+              </Link>
+              <KWordmark size={18} />
+            </div>
 
-              <div style={{ marginBottom: 20 }}>
-                <h1
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 800,
-                    color: T.ink,
-                    letterSpacing: "-0.025em",
-                    lineHeight: 1.3,
-                    marginBottom: 6,
-                  }}
-                >
-                  K-ALBA 시작하기
-                </h1>
-                <p style={{ color: T.ink2, fontSize: 13, lineHeight: 1.5 }}>
-                  사용자 유형을 선택해주세요
-                </p>
-              </div>
+            <div style={{ marginBottom: 32 }}>
+              <h1
+                style={{
+                  fontSize: 28,
+                  fontWeight: 800,
+                  color: T.ink,
+                  letterSpacing: "-0.025em",
+                  lineHeight: 1.25,
+                  marginBottom: 10,
+                }}
+              >
+                K-ALBA 시작하기
+              </h1>
+              <p style={{ color: T.ink2, fontSize: 14, lineHeight: 1.6 }}>
+                사용자 유형을 선택해주세요
+              </p>
+            </div>
 
-              {/* 선택 카드 */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {[
-                  [
-                    "worker",
-                    "🌏",
-                    "외국인 구직자",
-                    "한국에서 합법적으로 일자리를 찾고 싶어요",
-                    T.gold,
-                    "#FFF8E5",
-                  ],
-                  [
-                    "employer",
-                    "💼",
-                    "사장님",
-                    "외국인 직원을 안전하게 채용하고 싶어요",
-                    T.accent,
-                    "#FFF3F0",
-                  ],
-                  [
-                    "university",
-                    "🏫",
-                    "대학 담당자",
-                    "유학생 취업·시간제취업 관리를 돕고 싶어요",
-                    "#7C3AED",
-                    "#F5F3FF",
-                  ],
-                ].map(([r, icon, title, desc, accentColor, bgColor]) => {
-                  const isComingSoon = r === "university";
-                  return (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => {
-                        if (isComingSoon) return;
-                        setRole(r);
-                        setStep(1);
-                      }}
-                      disabled={isComingSoon}
+            {/* 선택 카드 */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {[
+                [
+                  "worker",
+                  "🌏",
+                  "외국인 구직자",
+                  "한국에서 합법적으로 일자리를 찾고 싶어요",
+                  T.gold,
+                  "#FFF8E5",
+                ],
+                [
+                  "employer",
+                  "💼",
+                  "사장님",
+                  "외국인 직원을 안전하게 채용하고 싶어요",
+                  T.accent,
+                  "#FFF3F0",
+                ],
+                [
+                  "university",
+                  "🏫",
+                  "대학 담당자",
+                  "유학생 취업·시간제취업 관리를 돕고 싶어요",
+                  "#7C3AED",
+                  "#F5F3FF",
+                ],
+              ].map(([r, icon, title, desc, accentColor, bgColor]) => {
+                const isComingSoon = r === "university";
+                return (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => {
+                      if (isComingSoon) return;
+                      setRole(r);
+                      setStep(1);
+                    }}
+                    disabled={isComingSoon}
+                    style={{
+                      width: "100%",
+                      padding: "16px 14px",
+                      background: T.paper,
+                      border: `1px solid ${T.border}`,
+                      borderRadius: 8,
+                      textAlign: "left",
+                      cursor: isComingSoon ? "not-allowed" : "pointer",
+                      fontFamily: "inherit",
+                      transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      position: "relative",
+                      opacity: isComingSoon ? 0.6 : 1,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (isComingSoon) return;
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                      e.currentTarget.style.boxShadow = "0 8px 20px rgba(10, 22, 40, 0.08)";
+                      e.currentTarget.style.borderColor = accentColor;
+                    }}
+                    onMouseLeave={(e) => {
+                      if (isComingSoon) return;
+                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.boxShadow = "none";
+                      e.currentTarget.style.borderColor = T.border;
+                    }}
+                  >
+                    <div
                       style={{
-                        width: "100%",
-                        padding: "14px 12px",
-                        background: T.paper,
-                        border: `1px solid ${T.border}`,
-                        borderRadius: 6,
-                        textAlign: "left",
-                        cursor: isComingSoon ? "not-allowed" : "pointer",
-                        fontFamily: "inherit",
-                        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                        width: 40,
+                        height: 40,
+                        borderRadius: 8,
+                        background: bgColor,
                         display: "flex",
                         alignItems: "center",
-                        gap: 10,
-                        position: "relative",
-                        opacity: isComingSoon ? 0.6 : 1,
-                      }}
-                      onMouseEnter={(e) => {
-                        if (isComingSoon) return;
-                        e.currentTarget.style.transform = "translateY(-1px)";
-                        e.currentTarget.style.boxShadow = "0 4px 12px rgba(10, 22, 40, 0.08)";
-                        e.currentTarget.style.borderColor = accentColor;
-                      }}
-                      onMouseLeave={(e) => {
-                        if (isComingSoon) return;
-                        e.currentTarget.style.transform = "translateY(0)";
-                        e.currentTarget.style.boxShadow = "none";
-                        e.currentTarget.style.borderColor = T.border;
+                        justifyContent: "center",
+                        fontSize: 20,
+                        flexShrink: 0,
                       }}
                     >
+                      {icon}
+                    </div>
+                    <div style={{ flex: 1 }}>
                       <div
                         style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: 6,
-                          background: bgColor,
+                          fontSize: 15,
+                          fontWeight: 700,
+                          color: T.ink,
+                          marginBottom: 2,
+                          letterSpacing: "-0.02em",
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "center",
+                          gap: 6,
+                        }}
+                      >
+                        {title}
+                        {isComingSoon && (
+                          <span
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 600,
+                              color: T.ink3,
+                              background: T.cream,
+                              padding: "2px 6px",
+                              borderRadius: 3,
+                            }}
+                          >
+                            준비중
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: 12, color: T.ink2, lineHeight: 1.5 }}>
+                        {desc}
+                      </div>
+                    </div>
+                    {!isComingSoon && (
+                      <div
+                        style={{
                           fontSize: 18,
+                          color: accentColor,
                           flexShrink: 0,
                         }}
                       >
-                        {icon}
+                        →
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <div
-                          style={{
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: T.ink,
-                            marginBottom: 2,
-                            letterSpacing: "-0.02em",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 6,
-                          }}
-                        >
-                          {title}
-                          {isComingSoon && (
-                            <span
-                              style={{
-                                fontSize: 9,
-                                fontWeight: 600,
-                                color: T.ink3,
-                                background: T.cream,
-                                padding: "2px 5px",
-                                borderRadius: 3,
-                              }}
-                            >
-                              준비중
-                            </span>
-                          )}
-                        </div>
-                        <div style={{ fontSize: 11, color: T.ink2, lineHeight: 1.4 }}>
-                          {desc}
-                        </div>
-                      </div>
-                      {!isComingSoon && (
-                        <div
-                          style={{
-                            fontSize: 16,
-                            color: accentColor,
-                            flexShrink: 0,
-                          }}
-                        >
-                          →
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
 
         {/* PC 레이아웃 적용 CSS */}
         <style jsx>{`
-          @media (max-width: 1023px) {
-            .signup-card {
-              border: none !important;
-              border-radius: 0 !important;
-              box-shadow: none !important;
-              padding: 24px 20px !important;
-            }
-            .signup-intro {
-              display: none !important;
-            }
-          }
           @media (min-width: 1024px) {
             .signup-container {
               grid-template-columns: 1fr 1fr;
-              gap: 48px;
+              gap: 60px;
             }
             .signup-intro {
               display: block !important;
             }
             .mobile-header {
               display: none !important;
-            }
-            .signup-card {
-              border: 1px solid ${T.border};
-              box-shadow: 0 2px 8px rgba(10, 22, 40, 0.05);
             }
           }
         `}</style>
