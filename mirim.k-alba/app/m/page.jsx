@@ -402,13 +402,13 @@ export default function MobileLandingPage() {
         </div>
       </div>
 
-      {/* ── 구직자: 한국 서류 ── */}
+      {/* ── 구직자: 한국 생활 완벽 가이드 ── */}
       <div style={{ ...S.section, paddingBottom: 28 }}>
         <div style={{ background: "linear-gradient(135deg,#EEF2FF,#E0E7FF)", borderRadius: 20, padding: "28px 22px", border: "1.5px solid #C7D2FE" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", color: "#4F46E5", padding: "5px 12px", borderRadius: 100, fontSize: 10, fontWeight: 800, marginBottom: 12 }}>🌏 외국인 구직자</div>
           <h3 style={{ fontSize: 20, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: -0.5 }}>한국 서류가<br />어렵지 않으세요?</h3>
           <p style={{ fontSize: 13, lineHeight: 1.7, color: T.ink2, marginBottom: 18 }}>근로계약서 자동 작성부터 하이코리아 체류자격외활동허가 서류까지. 복잡한 한국어 서류를 7개 언어로 안내하고 자동으로 생성해 드립니다.</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
             {[
               ["📝", "근로계약서", "7개 언어 자동 작성", "#EEF2FF"],
               ["🏛️", "하이코리아 서류", "체류자격외활동허가", "#F5F3FF"],
@@ -421,6 +421,29 @@ export default function MobileLandingPage() {
                 <div style={{ fontSize: 10, color: T.ink3, lineHeight: 1.5 }}>{de}</div>
               </div>
             ))}
+          </div>
+
+          {/* 한국 경력 인증 섹션 */}
+          <div style={{ borderTop: `1px solid #C7D2FE`, paddingTop: 20 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: -0.5 }}>한국 경력도<br />자동으로 쌓여요</h3>
+            <p style={{ fontSize: 13, lineHeight: 1.7, color: T.ink2, marginBottom: 16 }}>K-ALBA를 통해 근무한 경력은 사장님 평가와 함께 자동으로 프로필에 기록됩니다. 다음 알바 지원 시 <strong>인증된 한국 경력</strong>으로 바로 증명!</p>
+            <div style={{ background: "#fff", borderRadius: 12, padding: 16, border: `1.5px solid ${T.mint}30`, marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                <span style={{ padding: "2px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: T.mintL, color: "#059669" }}>✓ K-ALBA 인증</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: T.navy }}>카페 바리스타</span>
+              </div>
+              <div style={{ fontSize: 11, color: T.ink3, marginBottom: 8 }}>블루보틀 강남점 · 2025.09~2026.02 (6개월)</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <span style={{ fontSize: 12, color: "#F59E0B", fontWeight: 700 }}>⭐ 4.8</span>
+                <span style={{ fontSize: 11, color: T.ink3 }}>사장님 평가</span>
+              </div>
+              <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                {["성실", "시간 준수", "친절"].map((tg) => (
+                  <span key={tg} style={{ padding: "3px 10px", borderRadius: 6, fontSize: 10, fontWeight: 600, background: "#EEF2FF", color: "#4F46E5" }}>{tg}</span>
+                ))}
+              </div>
+            </div>
+            <p style={{ fontSize: 11, color: T.ink3, lineHeight: 1.6, textAlign: "center" }}>✨ 인증된 고용주 + 이용 후기 + 평가 기반 신뢰 시스템</p>
           </div>
         </div>
       </div>
@@ -448,36 +471,10 @@ export default function MobileLandingPage() {
         </div>
       </div>
 
-      {/* ── 구직자: 한국 경력 인증 ── */}
-      <div style={{ ...S.section, paddingBottom: 40 }}>
-        <div style={{ background: "linear-gradient(135deg,#F5F3FF,#EDE9FE)", borderRadius: 20, padding: "28px 22px", border: "1.5px solid #DDD6FE" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", color: "#7C3AED", padding: "5px 12px", borderRadius: 100, fontSize: 10, fontWeight: 800, marginBottom: 12 }}>🌏 외국인 구직자</div>
-          <h3 style={{ fontSize: 20, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: -0.5 }}>한국 경력도<br />자동으로 쌓여요</h3>
-          <p style={{ fontSize: 13, lineHeight: 1.7, color: T.ink2, marginBottom: 16 }}>K-ALBA를 통해 근무한 경력은 사장님 평가와 함께 자동으로 프로필에 기록됩니다. 다음 알바 지원 시 <strong>인증된 한국 경력</strong>으로 바로 증명!</p>
-          <div style={{ background: "#fff", borderRadius: 12, padding: 16, border: `1.5px solid ${T.mint}30`, marginBottom: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-              <span style={{ padding: "2px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: T.mintL, color: "#059669" }}>✓ K-ALBA 인증</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: T.navy }}>카페 바리스타</span>
-            </div>
-            <div style={{ fontSize: 11, color: T.ink3, marginBottom: 8 }}>블루보틀 강남점 · 2025.09~2026.02 (6개월)</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 12, color: "#F59E0B", fontWeight: 700 }}>⭐ 4.8</span>
-              <span style={{ fontSize: 11, color: T.ink3 }}>사장님 평가</span>
-            </div>
-            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-              {["성실", "시간 준수", "친절"].map((tg) => (
-                <span key={tg} style={{ padding: "3px 10px", borderRadius: 6, fontSize: 10, fontWeight: 600, background: "#EEF2FF", color: "#4F46E5" }}>{tg}</span>
-              ))}
-            </div>
-          </div>
-          <p style={{ fontSize: 11, color: T.ink3, lineHeight: 1.6, textAlign: "center" }}>✨ 인증된 고용주 + 이용 후기 + 평가 기반 신뢰 시스템</p>
-        </div>
-      </div>
-
       {/* ── 학교 담당자: 시간제취업 관리 ── */}
       <div style={{ ...S.section, paddingBottom: 40 }}>
-        <div style={{ background: "linear-gradient(135deg,#FDF4FF,#FAE8FF)", borderRadius: 20, padding: "28px 22px", border: "1.5px solid #E9D5FF" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", color: "#9333EA", padding: "5px 12px", borderRadius: 100, fontSize: 10, fontWeight: 800, marginBottom: 12 }}>🏫 학교 담당자</div>
+        <div style={{ background: "linear-gradient(135deg,#F5F3FF,#EDE9FE)", borderRadius: 20, padding: "28px 22px", border: "1.5px solid #DDD6FE" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", color: "#7C3AED", padding: "5px 12px", borderRadius: 100, fontSize: 10, fontWeight: 800, marginBottom: 12 }}>🏫 학교 담당자</div>
           <h3 style={{ fontSize: 20, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: -0.5 }}>시간제취업 신청,<br />이제 모바일로</h3>
           <p style={{ fontSize: 13, lineHeight: 1.7, color: T.ink2, marginBottom: 18 }}>유학생 시간제취업 신청부터 확인서 발급까지 카카오톡으로 처리하세요. 출석률·성적 자동 검증으로 IEQAS 평가 대비도 완벽!</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
