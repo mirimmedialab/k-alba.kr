@@ -75,7 +75,7 @@ export default function LandingPage() {
         // 비로그인 상태
         <section
           style={{
-            padding: "48px 20px 56px",
+            padding: "60px 20px 64px",
             background: T.n9,
             color: T.paper,
             position: "relative",
@@ -83,47 +83,44 @@ export default function LandingPage() {
             borderTop: `3px solid ${T.gold}`,
           }}
         >
-          <div style={{ maxWidth: 560, margin: "0 auto" }}>
+          <div style={{ maxWidth: 960, margin: "0 auto" }}>
             {/* 상단 워드마크 */}
-            <div style={{ marginBottom: 32 }}>
-              <KWordmark variant="dark" size={22} />
+            <div style={{ marginBottom: 40 }}>
+              <KWordmark variant="dark" size={24} />
             </div>
 
             <h1
               style={{
                 fontWeight: 800,
-                fontSize: "clamp(26px, 6vw, 36px)",
+                fontSize: "clamp(32px, 4vw, 42px)",
                 lineHeight: 1.25,
                 letterSpacing: "-0.03em",
-                marginBottom: 18,
+                marginBottom: 20,
               }}
             >
               한국 거주 외국인{" "}
               <em style={{ fontStyle: "normal", color: T.gold }}>260만 명</em>
-              을 위한<br />
-              합법적 알바 플랫폼
+              을 위한 합법적 알바 플랫폼
             </h1>
             <p
               style={{
-                fontSize: 15,
+                fontSize: 16,
                 lineHeight: 1.65,
                 color: "rgba(255,255,255,0.78)",
-                marginBottom: 24,
+                marginBottom: 32,
               }}
             >
-              비자별 맞춤 공고, 7개 언어 지원, 카카오톡 챗봇으로 3분 만에
-              근로계약서까지.
+              비자별 맞춤 공고, 7개 언어 지원, 카카오톡 챗봇으로 3분 만에 근로계약서까지.
             </p>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
-              <Button variant="landingPrimary" href="/signup" size="lg" fullWidth>
+            <div style={{ display: "flex", gap: 12, marginBottom: 36 }}>
+              <Button variant="landingPrimary" href="/signup" size="lg">
                 서비스 시작하기 →
               </Button>
               <Button
                 variant="landingDark"
                 href="/login"
                 size="lg"
-                fullWidth
                 style={{
                   background: "transparent",
                   color: T.paper,
@@ -137,12 +134,11 @@ export default function LandingPage() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
-                gap: 16,
-                padding: 20,
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(232,217,181,0.2)",
-                borderRadius: 6,
+                gridTemplateColumns: "repeat(4, 1fr)",
+                gap: 20,
+                padding: "24px 0",
+                borderTop: "1px solid rgba(232,217,181,0.2)",
+                borderBottom: "1px solid rgba(232,217,181,0.2)",
               }}
             >
               {[
@@ -154,12 +150,12 @@ export default function LandingPage() {
                 <div key={label}>
                   <div
                     style={{
-                      fontSize: 26,
+                      fontSize: 32,
                       fontWeight: 800,
                       color: T.gold,
                       letterSpacing: "-0.025em",
                       lineHeight: 1,
-                      marginBottom: 4,
+                      marginBottom: 8,
                     }}
                   >
                     {num}
@@ -338,8 +334,8 @@ export default function LandingPage() {
             하는 3가지 이유
           </h2>
 
-          {/* MECE 3-item (모바일: 세로 쌓기) */}
-          <div style={{ borderTop: `2px solid ${T.n9}` }}>
+          {/* 3가지 이유 - 3열 카드 */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
             {[
               ["1", "언어 장벽", "알바몬·알바천국은 한국어 전용. 외국인은 공고 내용도 급여 조건도 계약 조항도 이해하기 어렵습니다.", "73%", "한국어 장벽으로 구직 포기한 유학생 비율"],
               ["2", "비자 불투명성", "D-2, E-9, F-4 등 12가지 비자별로 가능한 업종이 다름. 근로자도 사업주도 법적 적합성을 판단하기 어렵습니다.", "31%", "비자 혼란을 가장 큰 장벽으로 꼽는 외국인 비율"],
@@ -348,8 +344,10 @@ export default function LandingPage() {
               <div
                 key={num}
                 style={{
-                  padding: "20px 0",
-                  borderBottom: `1px solid ${T.border}`,
+                  padding: 24,
+                  background: T.paper,
+                  border: `1px solid ${T.border}`,
+                  borderRadius: 6,
                 }}
               >
                 <div
@@ -357,45 +355,46 @@ export default function LandingPage() {
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    width: 26,
-                    height: 26,
+                    width: 32,
+                    height: 32,
                     background: T.n9,
                     color: T.gold,
                     fontWeight: 800,
-                    fontSize: 14,
+                    fontSize: 16,
                     borderRadius: 4,
-                    marginBottom: 10,
+                    marginBottom: 16,
                   }}
                 >
                   {num}
                 </div>
                 <h3
                   style={{
-                    fontSize: 17,
+                    fontSize: 18,
                     fontWeight: 800,
                     lineHeight: 1.3,
-                    marginBottom: 6,
+                    marginBottom: 10,
                     color: T.ink,
                     letterSpacing: "-0.02em",
                   }}
                 >
                   {title}
                 </h3>
-                <p style={{ fontSize: 14, color: T.ink2, lineHeight: 1.65, marginBottom: 12 }}>
+                <p style={{ fontSize: 14, color: T.ink2, lineHeight: 1.65, marginBottom: 20 }}>
                   {desc}
                 </p>
                 <div
                   style={{
-                    fontSize: 28,
+                    fontSize: 32,
                     fontWeight: 800,
                     color: T.accent,
                     letterSpacing: "-0.025em",
                     lineHeight: 1,
+                    marginBottom: 6,
                   }}
                 >
                   {stat}
                 </div>
-                <div style={{ fontSize: 13, color: T.ink3, marginTop: 4, lineHeight: 1.4 }}>
+                <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.4 }}>
                   {statLabel}
                 </div>
               </div>
@@ -662,73 +661,72 @@ export default function LandingPage() {
             카카오톡을 쓸 줄 안다면 누구나
           </h2>
 
-          {/* 모바일: 세로 타임라인 */}
+          {/* 5단계 - 가로 타임라인 */}
           <div style={{ position: "relative" }}>
-            {/* 세로 연결선 */}
+            {/* 가로 연결선 */}
             <div
               style={{
                 position: "absolute",
-                left: 22,
-                top: 22,
-                bottom: 22,
-                width: 2,
+                left: "10%",
+                right: "10%",
+                top: 28,
+                height: 2,
                 background: T.border,
                 zIndex: 0,
               }}
             />
-            {[
-              ["1", "공고 탐색", "비자·언어 자동 필터"],
-              ["2", "챗봇 지원", "5단계 질문 응답"],
-              ["3", "사장님 검토", "24시간 내 응답"],
-              ["4", "계약 체결", "자동 생성·양측 서명"],
-              ["5", "근무 시작", "PDF 보관, 이력 적립"],
-            ].map(([num, title, desc]) => (
-              <div
-                key={num}
-                style={{
-                  display: "flex",
-                  gap: 14,
-                  alignItems: "flex-start",
-                  marginBottom: 20,
-                  position: "relative",
-                  zIndex: 1,
-                }}
-              >
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 16 }}>
+              {[
+                ["1", "공고 탐색", "비자·언어 자동 필터"],
+                ["2", "챗봇 지원", "5단계 질문 응답"],
+                ["3", "사장님 검토", "24시간 내 응답"],
+                ["4", "계약 체결", "자동 생성·양측 서명"],
+                ["5", "근무 시작", "PDF 보관, 이력 적립"],
+              ].map(([num, title, desc]) => (
                 <div
+                  key={num}
                   style={{
-                    width: 44,
-                    height: 44,
-                    background: T.n9,
-                    color: T.gold,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 16,
-                    fontWeight: 800,
-                    borderRadius: "50%",
-                    flexShrink: 0,
+                    flex: 1,
+                    textAlign: "center",
+                    position: "relative",
+                    zIndex: 1,
                   }}
                 >
-                  {num}
-                </div>
-                <div style={{ flex: 1, paddingTop: 8 }}>
+                  <div
+                    style={{
+                      width: 56,
+                      height: 56,
+                      background: T.n9,
+                      color: T.gold,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 20,
+                      fontWeight: 800,
+                      borderRadius: "50%",
+                      margin: "0 auto 16px",
+                      border: `3px solid ${T.paper}`,
+                    }}
+                  >
+                    {num}
+                  </div>
                   <div
                     style={{
                       fontSize: 15,
                       fontWeight: 700,
                       color: T.ink,
-                      marginBottom: 2,
+                      marginBottom: 6,
                       letterSpacing: "-0.02em",
                     }}
                   >
                     {title}
                   </div>
-                  <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5 }}>
                     {desc}
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
