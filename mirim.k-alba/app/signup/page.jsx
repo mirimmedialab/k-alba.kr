@@ -416,35 +416,55 @@ export default function SignupPage() {
             style={{
               background: T.cream,
               borderRadius: 8,
-              padding: "14px 16px",
+              padding: "16px",
               border: `1px solid ${T.border}`,
-              textAlign: "center",
+              display: "flex",
+              alignItems: "center",
+              gap: 16,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 16 }}>💬</span>
-              <div style={{ fontSize: 13, fontWeight: 700, color: T.ink }}>카카오톡 채널</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                <span style={{ fontSize: 16 }}>💬</span>
+                <div style={{ fontSize: 13, fontWeight: 700, color: T.ink }}>카카오톡 채널</div>
+              </div>
+              <p style={{ fontSize: 11, color: T.ink2, lineHeight: 1.5, marginBottom: 10 }}>
+                사장님은 카카오톡 챗봇으로<br />3분만에 공고 등록
+              </p>
+              <a
+                href="https://pf.kakao.com/_qTxouX"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-block",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: T.paper,
+                  background: "#FEE500",
+                  padding: "6px 12px",
+                  borderRadius: 6,
+                  textDecoration: "none",
+                }}
+              >
+                채널 열기 →
+              </a>
             </div>
-            <p style={{ fontSize: 11, color: T.ink2, lineHeight: 1.5, marginBottom: 10 }}>
-              사장님은 카카오톡 챗봇으로 3분만에 공고 등록
-            </p>
-            <a
-              href="https://pf.kakao.com/_qTxouX"
-              target="_blank"
-              rel="noopener noreferrer"
+            <div
               style={{
-                display: "inline-block",
-                fontSize: 12,
-                fontWeight: 700,
-                color: T.paper,
-                background: "#FEE500",
-                padding: "6px 12px",
-                borderRadius: 6,
-                textDecoration: "none",
+                width: 80,
+                height: 80,
+                borderRadius: 8,
+                background: "#fff",
+                padding: 8,
+                flexShrink: 0,
               }}
             >
-              채널 열기 →
-            </a>
+              <img
+                src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https%3A%2F%2Fk-alba.kr&margin=0"
+                alt="K-ALBA QR"
+                style={{ width: "100%", height: "100%", display: "block" }}
+              />
+            </div>
           </div>
         </div>
       </div>
