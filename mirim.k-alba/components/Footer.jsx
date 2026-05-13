@@ -13,9 +13,9 @@ export default function Footer() {
   return (
     <footer
       style={{
-        padding: "20px 20px 16px",
+        padding: "16px 20px 12px",
         background: T.paper,
-        borderTop: `1px solid ${T.border}30`,
+        borderTop: `1px solid ${T.border}20`,
       }}
       className="global-footer"
     >
@@ -27,17 +27,17 @@ export default function Footer() {
         }}
       >
         {/* 이용약관 및 개인정보처리방침 */}
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginBottom: 8 }}>
           <Link
             href="/terms"
             style={{
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: 600,
               color: T.ink3,
               textDecoration: "none",
-              marginRight: 16,
+              marginRight: 12,
               letterSpacing: "-0.01em",
-              opacity: 0.8,
+              opacity: 0.7,
             }}
           >
             이용약관
@@ -45,12 +45,12 @@ export default function Footer() {
           <Link
             href="/privacy"
             style={{
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: 600,
               color: T.ink3,
               textDecoration: "none",
               letterSpacing: "-0.01em",
-              opacity: 0.8,
+              opacity: 0.7,
             }}
           >
             개인정보처리방침
@@ -60,12 +60,12 @@ export default function Footer() {
         {/* 법적 정보 */}
         <div
           style={{
-            fontSize: 10,
+            fontSize: 9,
             color: T.ink3,
-            lineHeight: 1.6,
+            lineHeight: 1.5,
             letterSpacing: "-0.01em",
-            marginBottom: 8,
-            opacity: 0.7,
+            marginBottom: 6,
+            opacity: 0.6,
           }}
         >
           K-ALBA | 대표: 남기환 | 사업자등록번호: 119-86-61402
@@ -74,10 +74,10 @@ export default function Footer() {
         </div>
         <div
           style={{
-            fontSize: 9,
+            fontSize: 8,
             color: T.ink3,
             letterSpacing: "-0.01em",
-            opacity: 0.6,
+            opacity: 0.5,
           }}
         >
           © 2026 K-ALBA. All rights reserved.
@@ -88,7 +88,7 @@ export default function Footer() {
       <style jsx>{`
         @media (max-width: 767px) {
           .global-footer {
-            padding: 16px 20px 12px !important;
+            padding: 12px 20px 10px !important;
           }
         }
       `}</style>

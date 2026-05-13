@@ -236,14 +236,14 @@ export default function SignupPage() {
       >
         <div
           style={{
-            maxWidth: 1080,
+            maxWidth: 960,
             margin: "0 auto",
-            padding: "60px 20px",
+            padding: "48px 20px",
             display: "grid",
             gridTemplateColumns: "1fr",
-            gap: 48,
+            gap: 40,
             alignItems: "center",
-            minHeight: "calc(100vh - 120px)",
+            minHeight: "calc(100vh - 96px)",
           }}
           className="signup-container"
         >
@@ -263,7 +263,7 @@ export default function SignupPage() {
                 color: T.ink3,
                 fontSize: 13,
                 textDecoration: "none",
-                marginBottom: 48,
+                marginBottom: 32,
                 fontWeight: 600,
               }}
             >
@@ -272,68 +272,32 @@ export default function SignupPage() {
 
             <h1
               style={{
-                fontSize: "clamp(28px, 3.5vw, 36px)",
+                fontSize: 30,
                 fontWeight: 800,
                 color: T.ink,
                 letterSpacing: "-0.03em",
-                lineHeight: 1.3,
-                marginBottom: 16,
+                lineHeight: 1.25,
+                marginBottom: 12,
               }}
             >
-              외국인 채용과 시간제취업 신청을<br />
+              외국인 채용과 시간제취업,<br />
               <span style={{ color: "#FF6B5A" }}>더 쉽고 안전하게</span>
             </h1>
             <p
               style={{
-                fontSize: 15,
+                fontSize: 14,
                 color: T.ink2,
-                lineHeight: 1.7,
-                marginBottom: 32,
-                maxWidth: 440,
+                lineHeight: 1.6,
               }}
             >
-              K-ALBA에서 구직자, 사장님, 대학 담당자별로 시작하세요.
-              7개 언어 지원, 자동 근로계약서, 비자 검증까지.
+              사용자 유형을 선택해주세요.
             </p>
-
-            {/* PC 전용 통계 */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: 20,
-                maxWidth: 420,
-              }}
-            >
-              {[
-                ["260만+", "한국 거주 외국인"],
-                ["7개 언어", "다국어 지원"],
-                ["3분", "계약서 생성"],
-              ].map(([num, label]) => (
-                <div key={label}>
-                  <div
-                    style={{
-                      fontSize: 24,
-                      fontWeight: 800,
-                      color: "#FF6B5A",
-                      letterSpacing: "-0.02em",
-                      marginBottom: 4,
-                    }}
-                  >
-                    {num}
-                  </div>
-                  <div style={{ fontSize: 12, color: T.ink3, fontWeight: 600 }}>
-                    {label}
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* ══════ 우측: Signup 카드 영역 ══════ */}
           <div
             style={{
-              maxWidth: 460,
+              maxWidth: 420,
               margin: "0 auto",
               width: "100%",
             }}
@@ -343,7 +307,7 @@ export default function SignupPage() {
                 background: T.paper,
                 border: `1px solid ${T.border}`,
                 borderRadius: 8,
-                padding: "32px 24px",
+                padding: "24px 20px",
                 boxShadow: "0 2px 8px rgba(10, 22, 40, 0.04)",
               }}
               className="signup-card"
@@ -354,7 +318,7 @@ export default function SignupPage() {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginBottom: 24,
+                  marginBottom: 20,
                 }}
                 className="mobile-header"
               >
@@ -364,29 +328,29 @@ export default function SignupPage() {
                 >
                   ← 뒤로
                 </Link>
-                <KWordmark size={18} />
+                <KWordmark size={16} />
               </div>
 
-              <div style={{ marginBottom: 24 }}>
+              <div style={{ marginBottom: 20 }}>
                 <h1
                   style={{
-                    fontSize: 22,
+                    fontSize: 20,
                     fontWeight: 800,
                     color: T.ink,
                     letterSpacing: "-0.025em",
                     lineHeight: 1.3,
-                    marginBottom: 8,
+                    marginBottom: 6,
                   }}
                 >
                   K-ALBA 시작하기
                 </h1>
-                <p style={{ color: T.ink2, fontSize: 14, lineHeight: 1.6 }}>
-                  어떤 사용자로 이용하시나요?
+                <p style={{ color: T.ink2, fontSize: 13, lineHeight: 1.5 }}>
+                  사용자 유형을 선택해주세요
                 </p>
               </div>
 
               {/* 선택 카드 */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {[
                   [
                     "worker",
@@ -426,24 +390,24 @@ export default function SignupPage() {
                       disabled={isComingSoon}
                       style={{
                         width: "100%",
-                        padding: "16px 14px",
+                        padding: "14px 12px",
                         background: T.paper,
                         border: `1px solid ${T.border}`,
-                        borderRadius: 8,
+                        borderRadius: 6,
                         textAlign: "left",
                         cursor: isComingSoon ? "not-allowed" : "pointer",
                         fontFamily: "inherit",
-                        transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                         display: "flex",
                         alignItems: "center",
-                        gap: 12,
+                        gap: 10,
                         position: "relative",
                         opacity: isComingSoon ? 0.6 : 1,
                       }}
                       onMouseEnter={(e) => {
                         if (isComingSoon) return;
-                        e.currentTarget.style.transform = "translateY(-2px)";
-                        e.currentTarget.style.boxShadow = "0 8px 20px rgba(10, 22, 40, 0.08)";
+                        e.currentTarget.style.transform = "translateY(-1px)";
+                        e.currentTarget.style.boxShadow = "0 4px 12px rgba(10, 22, 40, 0.08)";
                         e.currentTarget.style.borderColor = accentColor;
                       }}
                       onMouseLeave={(e) => {
@@ -455,14 +419,14 @@ export default function SignupPage() {
                     >
                       <div
                         style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 8,
+                          width: 36,
+                          height: 36,
+                          borderRadius: 6,
                           background: bgColor,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          fontSize: 20,
+                          fontSize: 18,
                           flexShrink: 0,
                         }}
                       >
@@ -471,7 +435,7 @@ export default function SignupPage() {
                       <div style={{ flex: 1 }}>
                         <div
                           style={{
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: 700,
                             color: T.ink,
                             marginBottom: 2,
@@ -485,11 +449,11 @@ export default function SignupPage() {
                           {isComingSoon && (
                             <span
                               style={{
-                                fontSize: 10,
+                                fontSize: 9,
                                 fontWeight: 600,
                                 color: T.ink3,
                                 background: T.cream,
-                                padding: "2px 6px",
+                                padding: "2px 5px",
                                 borderRadius: 3,
                               }}
                             >
@@ -497,14 +461,14 @@ export default function SignupPage() {
                             </span>
                           )}
                         </div>
-                        <div style={{ fontSize: 12, color: T.ink2, lineHeight: 1.5 }}>
+                        <div style={{ fontSize: 11, color: T.ink2, lineHeight: 1.4 }}>
                           {desc}
                         </div>
                       </div>
                       {!isComingSoon && (
                         <div
                           style={{
-                            fontSize: 18,
+                            fontSize: 16,
                             color: accentColor,
                             flexShrink: 0,
                           }}
@@ -527,13 +491,16 @@ export default function SignupPage() {
               border: none !important;
               border-radius: 0 !important;
               box-shadow: none !important;
-              padding: 32px 20px !important;
+              padding: 24px 20px !important;
+            }
+            .signup-intro {
+              display: none !important;
             }
           }
           @media (min-width: 1024px) {
             .signup-container {
               grid-template-columns: 1fr 1fr;
-              gap: 60px;
+              gap: 48px;
             }
             .signup-intro {
               display: block !important;
@@ -543,7 +510,7 @@ export default function SignupPage() {
             }
             .signup-card {
               border: 1px solid ${T.border};
-              box-shadow: 0 4px 12px rgba(10, 22, 40, 0.06);
+              box-shadow: 0 2px 8px rgba(10, 22, 40, 0.05);
             }
           }
         `}</style>
