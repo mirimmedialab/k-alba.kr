@@ -790,58 +790,65 @@ export default function LandingPage() {
       {/* ═══════════════════ FOOTER (BI v2 신규: 회사 정보 노출) ═══════════════════ */}
       <footer
         style={{
-          padding: "32px 20px",
+          padding: "48px 20px",
           background: T.paper,
           borderTop: `1px solid ${T.border}`,
         }}
       >
-        <div style={{ maxWidth: 560, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-            <KWordmark size={18} />
-            <span style={{ fontSize: 12, color: T.ink3 }}>
-              외국인과 사장님을 잇는 카톡 알바 플랫폼
-            </span>
+        <div style={{ maxWidth: 960, margin: "0 auto" }}>
+          {/* 상단: 로고 + 링크 가로 배치 */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, flexWrap: "wrap", gap: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <KWordmark size={20} />
+              <span style={{ fontSize: 13, color: T.ink3 }}>
+                외국인과 사장님을 잇는 카톡 알바 플랫폼
+              </span>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                gap: 24,
+                fontSize: 13,
+                color: T.ink3,
+              }}
+            >
+              <a href="/about" style={{ color: T.ink3, textDecoration: "none", fontWeight: 600 }}>회사 소개</a>
+              <a href="/terms" style={{ color: T.ink3, textDecoration: "none", fontWeight: 600 }}>이용약관</a>
+              <a href="/privacy" style={{ color: T.ink3, textDecoration: "none", fontWeight: 600 }}>개인정보처리방침</a>
+              <a href={`mailto:${COMPANY.email}`} style={{ color: T.ink3, textDecoration: "none", fontWeight: 600 }}>
+                문의: {COMPANY.email}
+              </a>
+            </div>
           </div>
 
+          {/* 하단: 회사 정보 */}
           <div
             style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 16,
               fontSize: 12,
               color: T.ink3,
-              marginBottom: 16,
-            }}
-          >
-            <a href="/about" style={{ color: T.ink3, textDecoration: "none" }}>회사 소개</a>
-            <a href="/terms" style={{ color: T.ink3, textDecoration: "none" }}>이용약관</a>
-            <a href="/privacy" style={{ color: T.ink3, textDecoration: "none" }}>개인정보처리방침</a>
-            <a href={`mailto:${COMPANY.email}`} style={{ color: T.ink3, textDecoration: "none" }}>
-              문의: {COMPANY.email}
-            </a>
-          </div>
-
-          {/* BI v2 핵심: 사업자번호 + 신고번호 노출 (사장님 신뢰감) */}
-          <div
-            style={{
-              fontSize: 11,
-              color: T.ink3,
-              lineHeight: 1.7,
-              paddingTop: 16,
+              lineHeight: 1.8,
+              paddingTop: 24,
               borderTop: `1px solid ${T.border}`,
             }}
           >
-            <div>
-              <strong style={{ color: T.ink2, fontWeight: 700 }}>{COMPANY.name}</strong>
-              {" · "}대표: {COMPANY.ceo}
-              {" · "}사업자등록번호: {COMPANY.businessNumber}
-            </div>
-            <div style={{ marginTop: 2 }}>
-              직업정보제공사업 신고번호: {COMPANY.jobInfoLicense}
-              {" · "}{COMPANY.address}
-            </div>
-            <div style={{ marginTop: 8, fontSize: 10, color: T.borderStrong }}>
-              © 2026 {COMPANY.brandName}. All rights reserved.
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
+              <div style={{ flex: 1, minWidth: 300 }}>
+                <div style={{ marginBottom: 4 }}>
+                  <strong style={{ color: T.ink2, fontWeight: 700 }}>{COMPANY.name}</strong>
+                  {" · "}대표: {COMPANY.ceo}
+                  {" · "}사업자등록번호: {COMPANY.businessNumber}
+                </div>
+                <div>
+                  직업정보제공사업 신고번호: {COMPANY.jobInfoLicense}
+                </div>
+                <div style={{ marginTop: 2, fontSize: 11 }}>
+                  {COMPANY.address}
+                </div>
+              </div>
+              <div style={{ fontSize: 11, color: T.borderStrong, paddingTop: 4 }}>
+                © 2026 {COMPANY.brandName}. All rights reserved.
+              </div>
             </div>
           </div>
         </div>
