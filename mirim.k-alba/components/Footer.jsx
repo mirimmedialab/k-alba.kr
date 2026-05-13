@@ -27,7 +27,7 @@ export default function Footer() {
         }}
       >
         {/* 이용약관 및 개인정보처리방침 */}
-        <div style={{ marginBottom: 8 }}>
+        <div style={{ marginBottom: 8 }} className="footer-links">
           <Link
             href="/terms"
             style={{
@@ -59,6 +59,7 @@ export default function Footer() {
 
         {/* 법적 정보 */}
         <div
+          className="footer-legal"
           style={{
             fontSize: 9,
             color: T.ink3,
@@ -73,6 +74,7 @@ export default function Footer() {
           직업정보제공사업 신고번호: J1204020260002 | 미림미디어랩 주식회사
         </div>
         <div
+          className="footer-copyright"
           style={{
             fontSize: 8,
             color: T.ink3,
@@ -84,8 +86,19 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* 모바일 추가 최소화 */}
+      {/* 반응형 조정 */}
       <style jsx>{`
+        @media (min-width: 1024px) {
+          .footer-links a {
+            font-size: 12px !important;
+          }
+          .footer-legal {
+            font-size: 11px !important;
+          }
+          .footer-copyright {
+            font-size: 10px !important;
+          }
+        }
         @media (max-width: 767px) {
           .global-footer {
             padding: 12px 20px 10px !important;
