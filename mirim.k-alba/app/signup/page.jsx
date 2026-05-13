@@ -231,47 +231,19 @@ export default function SignupPage() {
       <div
         style={{
           minHeight: "100vh",
-          background: "linear-gradient(135deg, #F7F9FC 0%, #FDFEFF 100%)",
-          position: "relative",
-          overflow: "hidden",
+          background: T.paper,
         }}
       >
-        {/* Subtle blur blobs */}
         <div
           style={{
-            position: "absolute",
-            top: "-10%",
-            right: "-5%",
-            width: "40%",
-            height: "40%",
-            background: "radial-gradient(circle, rgba(184, 148, 74, 0.08) 0%, transparent 70%)",
-            filter: "blur(60px)",
-            pointerEvents: "none",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: "-10%",
-            left: "-5%",
-            width: "35%",
-            height: "35%",
-            background: "radial-gradient(circle, rgba(10, 22, 40, 0.06) 0%, transparent 70%)",
-            filter: "blur(60px)",
-            pointerEvents: "none",
-          }}
-        />
-
-        <div
-          style={{
-            maxWidth: 1200,
+            maxWidth: 1080,
             margin: "0 auto",
             padding: "60px 20px",
             display: "grid",
             gridTemplateColumns: "1fr",
-            gap: 60,
+            gap: 48,
             alignItems: "center",
-            minHeight: "100vh",
+            minHeight: "calc(100vh - 120px)",
           }}
           className="signup-container"
         >
@@ -287,45 +259,45 @@ export default function SignupPage() {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 8,
+                gap: 6,
                 color: T.ink3,
-                fontSize: 14,
+                fontSize: 13,
                 textDecoration: "none",
-                marginBottom: 48,
+                marginBottom: 40,
                 fontWeight: 600,
               }}
             >
               ← 홈으로
             </Link>
 
-            <div style={{ marginBottom: 24 }}>
-              <KWordmark size={32} />
+            <div style={{ marginBottom: 20 }}>
+              <KWordmark size={28} />
             </div>
 
             <h1
               style={{
-                fontSize: "clamp(32px, 4vw, 42px)",
-                fontWeight: 900,
+                fontSize: "clamp(28px, 3.5vw, 36px)",
+                fontWeight: 800,
                 color: T.ink,
                 letterSpacing: "-0.03em",
-                lineHeight: 1.25,
-                marginBottom: 20,
+                lineHeight: 1.3,
+                marginBottom: 16,
               }}
             >
-              외국인 채용과<br />시간제취업 신청을<br />
+              외국인 채용과 시간제취업 신청을<br />
               <span style={{ color: T.gold }}>더 쉽고 안전하게</span>
             </h1>
             <p
               style={{
-                fontSize: 17,
+                fontSize: 15,
                 color: T.ink2,
                 lineHeight: 1.7,
-                marginBottom: 40,
-                maxWidth: 480,
+                marginBottom: 32,
+                maxWidth: 440,
               }}
             >
               K-ALBA에서 구직자, 사장님, 대학 담당자별로 시작하세요.
-              <br />7개 언어 지원, 자동 근로계약서, 비자 검증까지 모두 한 곳에서.
+              7개 언어 지원, 자동 근로계약서, 비자 검증까지.
             </p>
 
             {/* PC 전용 통계 */}
@@ -333,20 +305,20 @@ export default function SignupPage() {
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(3, 1fr)",
-                gap: 24,
-                maxWidth: 480,
+                gap: 20,
+                maxWidth: 420,
               }}
             >
               {[
                 ["260만+", "한국 거주 외국인"],
                 ["7개 언어", "다국어 지원"],
-                ["3분", "계약서 자동 생성"],
+                ["3분", "계약서 생성"],
               ].map(([num, label]) => (
                 <div key={label}>
                   <div
                     style={{
-                      fontSize: 28,
-                      fontWeight: 900,
+                      fontSize: 24,
+                      fontWeight: 800,
                       color: T.gold,
                       letterSpacing: "-0.02em",
                       marginBottom: 4,
@@ -354,7 +326,7 @@ export default function SignupPage() {
                   >
                     {num}
                   </div>
-                  <div style={{ fontSize: 13, color: T.ink3, fontWeight: 600 }}>
+                  <div style={{ fontSize: 12, color: T.ink3, fontWeight: 600 }}>
                     {label}
                   </div>
                 </div>
@@ -362,23 +334,23 @@ export default function SignupPage() {
             </div>
           </div>
 
-          {/* ══════ 우측: 모바일 Mockup 스타일 회원가입 카드 ══════ */}
+          {/* ══════ 우측: Signup 카드 영역 ══════ */}
           <div
             style={{
-              maxWidth: 430,
+              maxWidth: 460,
               margin: "0 auto",
               width: "100%",
             }}
           >
-            {/* Mobile mockup card */}
             <div
               style={{
-                background: "#fff",
-                borderRadius: 20,
-                padding: "40px 32px",
-                boxShadow: "0 20px 60px rgba(10, 22, 40, 0.1), 0 0 0 1px rgba(10, 22, 40, 0.04)",
-                position: "relative",
+                background: T.paper,
+                border: `1px solid ${T.border}`,
+                borderRadius: 8,
+                padding: "32px 24px",
+                boxShadow: "0 2px 8px rgba(10, 22, 40, 0.04)",
               }}
+              className="signup-card"
             >
               {/* 모바일: 뒤로 + 워드마크 */}
               <div
@@ -386,39 +358,39 @@ export default function SignupPage() {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginBottom: 32,
+                  marginBottom: 24,
                 }}
                 className="mobile-header"
               >
                 <Link
                   href="/"
-                  style={{ color: T.ink3, fontSize: 14, textDecoration: "none", fontWeight: 600 }}
+                  style={{ color: T.ink3, fontSize: 13, textDecoration: "none", fontWeight: 600 }}
                 >
                   ← 뒤로
                 </Link>
-                <KWordmark size={20} />
+                <KWordmark size={18} />
               </div>
 
-              <div style={{ marginBottom: 32 }}>
+              <div style={{ marginBottom: 24 }}>
                 <h1
                   style={{
-                    fontSize: 26,
-                    fontWeight: 900,
+                    fontSize: 22,
+                    fontWeight: 800,
                     color: T.ink,
-                    letterSpacing: "-0.03em",
+                    letterSpacing: "-0.025em",
                     lineHeight: 1.3,
-                    marginBottom: 10,
+                    marginBottom: 8,
                   }}
                 >
                   K-ALBA 시작하기
                 </h1>
-                <p style={{ color: T.ink2, fontSize: 15, lineHeight: 1.6 }}>
+                <p style={{ color: T.ink2, fontSize: 14, lineHeight: 1.6 }}>
                   어떤 사용자로 이용하시나요?
                 </p>
               </div>
 
               {/* 선택 카드 */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {[
                   [
                     "worker",
@@ -458,24 +430,24 @@ export default function SignupPage() {
                       disabled={isComingSoon}
                       style={{
                         width: "100%",
-                        padding: "20px 18px",
+                        padding: "16px 14px",
                         background: T.paper,
-                        border: `1.5px solid ${T.border}`,
-                        borderRadius: 12,
+                        border: `1px solid ${T.border}`,
+                        borderRadius: 8,
                         textAlign: "left",
                         cursor: isComingSoon ? "not-allowed" : "pointer",
                         fontFamily: "inherit",
-                        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                        transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                         display: "flex",
-                        alignItems: "flex-start",
-                        gap: 14,
+                        alignItems: "center",
+                        gap: 12,
                         position: "relative",
                         opacity: isComingSoon ? 0.6 : 1,
                       }}
                       onMouseEnter={(e) => {
                         if (isComingSoon) return;
-                        e.currentTarget.style.transform = "translateY(-4px)";
-                        e.currentTarget.style.boxShadow = "0 12px 32px rgba(10, 22, 40, 0.12)";
+                        e.currentTarget.style.transform = "translateY(-2px)";
+                        e.currentTarget.style.boxShadow = "0 8px 20px rgba(10, 22, 40, 0.08)";
                         e.currentTarget.style.borderColor = accentColor;
                       }}
                       onMouseLeave={(e) => {
@@ -487,14 +459,14 @@ export default function SignupPage() {
                     >
                       <div
                         style={{
-                          width: 48,
-                          height: 48,
-                          borderRadius: 12,
+                          width: 40,
+                          height: 40,
+                          borderRadius: 8,
                           background: bgColor,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          fontSize: 24,
+                          fontSize: 20,
                           flexShrink: 0,
                         }}
                       >
@@ -503,43 +475,42 @@ export default function SignupPage() {
                       <div style={{ flex: 1 }}>
                         <div
                           style={{
-                            fontSize: 16,
-                            fontWeight: 800,
+                            fontSize: 15,
+                            fontWeight: 700,
                             color: T.ink,
-                            marginBottom: 4,
+                            marginBottom: 2,
                             letterSpacing: "-0.02em",
                             display: "flex",
                             alignItems: "center",
-                            gap: 8,
+                            gap: 6,
                           }}
                         >
                           {title}
                           {isComingSoon && (
                             <span
                               style={{
-                                fontSize: 11,
-                                fontWeight: 700,
+                                fontSize: 10,
+                                fontWeight: 600,
                                 color: T.ink3,
                                 background: T.cream,
-                                padding: "2px 8px",
-                                borderRadius: 4,
+                                padding: "2px 6px",
+                                borderRadius: 3,
                               }}
                             >
                               준비중
                             </span>
                           )}
                         </div>
-                        <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5 }}>
+                        <div style={{ fontSize: 12, color: T.ink2, lineHeight: 1.5 }}>
                           {desc}
                         </div>
                       </div>
                       {!isComingSoon && (
                         <div
                           style={{
-                            fontSize: 20,
+                            fontSize: 18,
                             color: accentColor,
                             flexShrink: 0,
-                            alignSelf: "center",
                           }}
                         >
                           →
@@ -548,23 +519,6 @@ export default function SignupPage() {
                     </button>
                   );
                 })}
-              </div>
-
-              {/* 푸터 정보 — 작고 정돈되게 */}
-              <div
-                style={{
-                  marginTop: 32,
-                  paddingTop: 24,
-                  borderTop: `1px solid ${T.border}`,
-                  fontSize: 11,
-                  color: T.ink3,
-                  lineHeight: 1.7,
-                  textAlign: "center",
-                }}
-              >
-                {COMPANY.name} · 사업자등록번호 {COMPANY.businessNumber}
-                <br />
-                직업정보제공사업 신고번호 {COMPANY.jobInfoLicense}
               </div>
             </div>
           </div>
@@ -575,7 +529,7 @@ export default function SignupPage() {
           @media (min-width: 1024px) {
             .signup-container {
               grid-template-columns: 1fr 1fr;
-              gap: 80px;
+              gap: 60px;
             }
             .signup-intro {
               display: block !important;
@@ -583,8 +537,36 @@ export default function SignupPage() {
             .mobile-header {
               display: none !important;
             }
+            .signup-card {
+              border: 1px solid ${T.border};
+              box-shadow: 0 4px 12px rgba(10, 22, 40, 0.06);
+            }
           }
         `}</style>
+
+        {/* 페이지 푸터 */}
+        <footer
+          style={{
+            padding: "24px 20px",
+            background: T.paper,
+            borderTop: `1px solid ${T.border}`,
+          }}
+        >
+          <div
+            style={{
+              maxWidth: 1080,
+              margin: "0 auto",
+              fontSize: 11,
+              color: T.ink3,
+              lineHeight: 1.7,
+              textAlign: "center",
+            }}
+          >
+            {COMPANY.name} · 사업자등록번호 {COMPANY.businessNumber}
+            <br />
+            직업정보제공사업 신고번호 {COMPANY.jobInfoLicense}
+          </div>
+        </footer>
       </div>
     );
   }
