@@ -30,7 +30,7 @@ import { Button, KWordmark, PageLoading } from "@/components/ui";
  *   - 비로그인/로그인-사장님/로그인-구직자 3가지 분기
  */
 /**
- * Animation variants for scroll reveals
+ * Animation variants for scroll reveals - 섹션별 차별화
  */
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -41,6 +41,39 @@ const fadeInUp = {
   }
 };
 
+// 위에서 아래로 내려오는 효과 (Target Audience Cards)
+const fadeInDown = {
+  hidden: { opacity: 0, y: -30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
+// 좌우로 약간 회전되어 펼쳐지는 효과 (For Workers)
+const rotateUnfold = {
+  hidden: { opacity: 0, rotateY: -15, x: -20 },
+  visible: {
+    opacity: 1,
+    rotateY: 0,
+    x: 0,
+    transition: { duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }
+  }
+};
+
+// Scale + blur 효과 (Employer)
+const scaleBlur = {
+  hidden: { opacity: 0, scale: 0.92, filter: "blur(4px)" },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    filter: "blur(0px)",
+    transition: { duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }
+  }
+};
+
+// 기본 stagger 컨테이너
 const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
@@ -52,6 +85,102 @@ const staggerContainer = {
   }
 };
 
+// Rotate unfold용 stagger 컨테이너
+const rotateUnfoldContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.15
+    }
+  }
+};
+
+const rotateUnfoldItem = {
+  hidden: { opacity: 0, rotateY: -12, x: -15 },
+  visible: {
+    opacity: 1,
+    rotateY: 0,
+    x: 0,
+    transition: { duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }
+  }
+};
+
+// Scale blur용 stagger 컨테이너
+const scaleBlurContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.2
+    }
+  }
+};
+
+const scaleBlurItem = {
+  hidden: { opacity: 0, scale: 0.92, filter: "blur(4px)" },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    filter: "blur(0px)",
+    transition: { duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }
+  }
+};
+
+// Slide from left (University)
+const slideFromLeft = {
+  hidden: { opacity: 0, x: -40 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
+const slideFromLeftContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.15
+    }
+  }
+};
+
+const slideFromLeftItem = {
+  hidden: { opacity: 0, x: -30 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
+// Target cards용 stagger (위에서 내려오기)
+const staggerDownContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.1
+    }
+  }
+};
+
+const staggerDownItem = {
+  hidden: { opacity: 0, y: -20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
+// 기본 stagger 아이템
 const staggerItem = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -59,6 +188,21 @@ const staggerItem = {
     y: 0,
     transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }
   }
+};
+
+// Scale pulse 아이템 (Problem cards)
+const scalePulseItem = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: (i) => ({
+    opacity: 1,
+    scale: [0.9, 1.05, 1],
+    transition: {
+      duration: 0.8,
+      delay: i * 0.2,
+      times: [0, 0.6, 1],
+      ease: [0.34, 1.56, 0.64, 1]
+    }
+  })
 };
 
 export default function LandingPage() {
@@ -125,125 +269,6 @@ export default function LandingPage() {
                              radial-gradient(circle at 80% 80%, rgba(184, 148, 74, 0.04) 0%, transparent 50%)`,
             pointerEvents: "none",
           }} />
-
-          {/* Floating UI badges */}
-          {!prefersReducedMotion && (
-            <>
-              <motion.div
-                animate={{
-                  y: [0, -15, 0],
-                  rotate: [-2, 2, -2],
-                }}
-                transition={{
-                  duration: 6,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                style={{
-                  position: "absolute",
-                  top: "15%",
-                  left: "8%",
-                  background: "rgba(255, 255, 255, 0.12)",
-                  backdropFilter: "blur(12px)",
-                  padding: "10px 16px",
-                  borderRadius: 24,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: T.paper,
-                  border: "1px solid rgba(255, 255, 255, 0.2)",
-                  boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
-                }}
-              >
-                🛂 Work Permit
-              </motion.div>
-
-              <motion.div
-                animate={{
-                  y: [0, 20, 0],
-                  rotate: [2, -2, 2],
-                }}
-                transition={{
-                  duration: 7,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 0.5
-                }}
-                style={{
-                  position: "absolute",
-                  top: "25%",
-                  right: "10%",
-                  background: "rgba(184, 148, 74, 0.18)",
-                  backdropFilter: "blur(12px)",
-                  padding: "10px 16px",
-                  borderRadius: 24,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: T.gold,
-                  border: `1px solid ${T.gold}`,
-                  boxShadow: "0 8px 24px rgba(184, 148, 74, 0.25)",
-                }}
-              >
-                📝 D-2 Visa
-              </motion.div>
-
-              <motion.div
-                animate={{
-                  y: [0, -18, 0],
-                  rotate: [-1, 1, -1],
-                }}
-                transition={{
-                  duration: 5.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 1
-                }}
-                style={{
-                  position: "absolute",
-                  bottom: "15%",
-                  left: "12%",
-                  background: "rgba(255, 255, 255, 0.1)",
-                  backdropFilter: "blur(12px)",
-                  padding: "8px 14px",
-                  borderRadius: 20,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: T.paper,
-                  border: "1px solid rgba(255, 255, 255, 0.2)",
-                  boxShadow: "0 6px 20px rgba(0, 0, 0, 0.12)",
-                }}
-              >
-                🌐 7 Languages
-              </motion.div>
-
-              <motion.div
-                animate={{
-                  y: [0, 12, 0],
-                }}
-                transition={{
-                  duration: 6.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 1.5
-                }}
-                style={{
-                  position: "absolute",
-                  bottom: "20%",
-                  right: "15%",
-                  background: "rgba(255, 255, 255, 0.12)",
-                  backdropFilter: "blur(12px)",
-                  padding: "8px 14px",
-                  borderRadius: 20,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: T.paper,
-                  border: "1px solid rgba(255, 255, 255, 0.2)",
-                  boxShadow: "0 6px 20px rgba(0, 0, 0, 0.12)",
-                }}
-              >
-                ⚡ 3min
-              </motion.div>
-            </>
-          )}
 
           <div style={{ maxWidth: 1080, margin: "0 auto", position: "relative" }}>
             {/* 상단 워드마크 */}
@@ -508,7 +533,7 @@ export default function LandingPage() {
         initial={prefersReducedMotion ? "visible" : "hidden"}
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
-        variants={fadeInUp}
+        variants={fadeInDown}
         style={{
           padding: "96px 20px",
           background: T.paper,
@@ -520,7 +545,7 @@ export default function LandingPage() {
             initial={prefersReducedMotion ? "visible" : "hidden"}
             whileInView="visible"
             viewport={{ once: true }}
-            variants={fadeInUp}
+            variants={fadeInDown}
             style={{ textAlign: "center", marginBottom: 56 }}
           >
             <div
@@ -560,7 +585,7 @@ export default function LandingPage() {
             initial={prefersReducedMotion ? "visible" : "hidden"}
             whileInView="visible"
             viewport={{ once: true, amount: 0.1 }}
-            variants={staggerContainer}
+            variants={staggerDownContainer}
             style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 32 }}
           >
             {[
@@ -594,7 +619,7 @@ export default function LandingPage() {
             ].map((item) => (
               <motion.div
                 key={item.label}
-                variants={staggerItem}
+                variants={staggerDownItem}
                 whileHover={prefersReducedMotion ? {} : {
                   y: -8,
                   boxShadow: "0 12px 32px rgba(10, 22, 40, 0.12)",
@@ -713,21 +738,19 @@ export default function LandingPage() {
           </motion.h2>
 
           {/* 3가지 이유 - 3열 카드 */}
-          <motion.div
-            initial={prefersReducedMotion ? "visible" : "hidden"}
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
-            variants={staggerContainer}
-            style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}
-          >
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
             {[
               ["1", "언어 장벽", "알바몬·알바천국은 한국어 전용. 외국인은 공고 내용도 급여 조건도 계약 조항도 이해하기 어렵습니다.", "73%", "한국어 장벽으로 구직 포기한 유학생 비율"],
               ["2", "비자 불투명성", "D-2, E-9, F-4 등 12가지 비자별로 가능한 업종이 다름. 근로자도 사업주도 법적 적합성을 판단하기 어렵습니다.", "31%", "비자 혼란을 가장 큰 장벽으로 꼽는 외국인 비율"],
               ["3", "계약서 부재", "근로기준법상 서면 계약이 의무이나 대부분 구두 합의로 진행. 분쟁 시 외국인이 불리한 위치에 놓입니다.", "54%", "서면 근로계약 없이 일하는 파트타임 근로자"],
-            ].map(([num, title, desc, stat, statLabel]) => (
+            ].map(([num, title, desc, stat, statLabel], index) => (
               <motion.div
                 key={num}
-                variants={staggerItem}
+                initial={prefersReducedMotion ? "visible" : "hidden"}
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.3 }}
+                custom={index}
+                variants={scalePulseItem}
                 style={{
                   padding: 24,
                   background: T.paper,
@@ -784,7 +807,7 @@ export default function LandingPage() {
                 </div>
               </motion.div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </motion.section>
 
@@ -793,7 +816,7 @@ export default function LandingPage() {
         initial={prefersReducedMotion ? "visible" : "hidden"}
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
-        variants={fadeInUp}
+        variants={rotateUnfold}
         style={{
           padding: "96px 20px",
           background: T.paper,
@@ -805,7 +828,7 @@ export default function LandingPage() {
             initial={prefersReducedMotion ? "visible" : "hidden"}
             whileInView="visible"
             viewport={{ once: true }}
-            variants={fadeInUp}
+            variants={fadeInDown}
           >
             <div
               style={{
@@ -842,7 +865,7 @@ export default function LandingPage() {
             initial={prefersReducedMotion ? "visible" : "hidden"}
             whileInView="visible"
             viewport={{ once: true, amount: 0.1 }}
-            variants={staggerContainer}
+            variants={rotateUnfoldContainer}
             style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}
           >
             {[
@@ -855,7 +878,7 @@ export default function LandingPage() {
             ].map(([ic, title, desc]) => (
               <motion.div
                 key={title}
-                variants={staggerItem}
+                variants={rotateUnfoldItem}
                 whileHover={prefersReducedMotion ? {} : {
                   y: -4,
                   borderColor: T.accent,
@@ -895,7 +918,7 @@ export default function LandingPage() {
         initial={prefersReducedMotion ? "visible" : "hidden"}
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
-        variants={fadeInUp}
+        variants={scaleBlur}
         style={{
           padding: "96px 20px",
           background: T.cream,
@@ -907,7 +930,7 @@ export default function LandingPage() {
             initial={prefersReducedMotion ? "visible" : "hidden"}
             whileInView="visible"
             viewport={{ once: true }}
-            variants={fadeInUp}
+            variants={fadeInDown}
           >
             <div
               style={{
@@ -944,7 +967,7 @@ export default function LandingPage() {
             initial={prefersReducedMotion ? "visible" : "hidden"}
             whileInView="visible"
             viewport={{ once: true, amount: 0.1 }}
-            variants={staggerContainer}
+            variants={scaleBlurContainer}
             style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}
           >
             {[
@@ -957,7 +980,7 @@ export default function LandingPage() {
             ].map(([ic, title, desc]) => (
               <motion.div
                 key={title}
-                variants={staggerItem}
+                variants={scaleBlurItem}
                 whileHover={prefersReducedMotion ? {} : {
                   y: -4,
                   borderColor: T.gold,
@@ -997,7 +1020,7 @@ export default function LandingPage() {
         initial={prefersReducedMotion ? "visible" : "hidden"}
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
-        variants={fadeInUp}
+        variants={slideFromLeft}
         style={{
           padding: "96px 20px",
           background: T.paper,
@@ -1009,7 +1032,7 @@ export default function LandingPage() {
             initial={prefersReducedMotion ? "visible" : "hidden"}
             whileInView="visible"
             viewport={{ once: true }}
-            variants={fadeInUp}
+            variants={fadeInDown}
           >
             <div
               style={{
@@ -1045,7 +1068,7 @@ export default function LandingPage() {
             initial={prefersReducedMotion ? "visible" : "hidden"}
             whileInView="visible"
             viewport={{ once: true, amount: 0.1 }}
-            variants={staggerContainer}
+            variants={slideFromLeftContainer}
             style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}
           >
             {[
@@ -1057,7 +1080,7 @@ export default function LandingPage() {
             ].map(([ic, title, desc]) => (
               <motion.div
                 key={title}
-                variants={staggerItem}
+                variants={slideFromLeftItem}
                 whileHover={prefersReducedMotion ? {} : {
                   y: -4,
                   borderColor: T.gold,
