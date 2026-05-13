@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { T, COMPANY } from "@/lib/theme";
 import { useT } from "@/lib/i18n";
 import { getSession, supabase } from "@/lib/supabase";
@@ -28,8 +29,41 @@ import { Button, KWordmark, PageLoading } from "@/components/ui";
  *   - tight letter-spacing
  *   - 비로그인/로그인-사장님/로그인-구직자 3가지 분기
  */
+/**
+ * Animation variants for scroll reveals
+ */
+const fadeInUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }
+  }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    }
+  }
+};
+
+const staggerItem = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }
+  }
+};
+
 export default function LandingPage() {
   const t = useT();
+  const prefersReducedMotion = useReducedMotion();
   const [authChecked, setAuthChecked] = useState(false);
   const [user, setUser] = useState(null);
   const [userType, setUserType] = useState(null);
@@ -91,6 +125,125 @@ export default function LandingPage() {
                              radial-gradient(circle at 80% 80%, rgba(184, 148, 74, 0.04) 0%, transparent 50%)`,
             pointerEvents: "none",
           }} />
+
+          {/* Floating UI badges */}
+          {!prefersReducedMotion && (
+            <>
+              <motion.div
+                animate={{
+                  y: [0, -15, 0],
+                  rotate: [-2, 2, -2],
+                }}
+                transition={{
+                  duration: 6,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                style={{
+                  position: "absolute",
+                  top: "15%",
+                  left: "8%",
+                  background: "rgba(255, 255, 255, 0.12)",
+                  backdropFilter: "blur(12px)",
+                  padding: "10px 16px",
+                  borderRadius: 24,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: T.paper,
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
+                }}
+              >
+                🛂 Work Permit
+              </motion.div>
+
+              <motion.div
+                animate={{
+                  y: [0, 20, 0],
+                  rotate: [2, -2, 2],
+                }}
+                transition={{
+                  duration: 7,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.5
+                }}
+                style={{
+                  position: "absolute",
+                  top: "25%",
+                  right: "10%",
+                  background: "rgba(184, 148, 74, 0.18)",
+                  backdropFilter: "blur(12px)",
+                  padding: "10px 16px",
+                  borderRadius: 24,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: T.gold,
+                  border: `1px solid ${T.gold}`,
+                  boxShadow: "0 8px 24px rgba(184, 148, 74, 0.25)",
+                }}
+              >
+                📝 D-2 Visa
+              </motion.div>
+
+              <motion.div
+                animate={{
+                  y: [0, -18, 0],
+                  rotate: [-1, 1, -1],
+                }}
+                transition={{
+                  duration: 5.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 1
+                }}
+                style={{
+                  position: "absolute",
+                  bottom: "15%",
+                  left: "12%",
+                  background: "rgba(255, 255, 255, 0.1)",
+                  backdropFilter: "blur(12px)",
+                  padding: "8px 14px",
+                  borderRadius: 20,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: T.paper,
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  boxShadow: "0 6px 20px rgba(0, 0, 0, 0.12)",
+                }}
+              >
+                🌐 7 Languages
+              </motion.div>
+
+              <motion.div
+                animate={{
+                  y: [0, 12, 0],
+                }}
+                transition={{
+                  duration: 6.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 1.5
+                }}
+                style={{
+                  position: "absolute",
+                  bottom: "20%",
+                  right: "15%",
+                  background: "rgba(255, 255, 255, 0.12)",
+                  backdropFilter: "blur(12px)",
+                  padding: "8px 14px",
+                  borderRadius: 20,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: T.paper,
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  boxShadow: "0 6px 20px rgba(0, 0, 0, 0.12)",
+                }}
+              >
+                ⚡ 3min
+              </motion.div>
+            </>
+          )}
 
           <div style={{ maxWidth: 1080, margin: "0 auto", position: "relative" }}>
             {/* 상단 워드마크 */}
@@ -351,7 +504,11 @@ export default function LandingPage() {
       )}
 
       {/* ═══════════════════ TARGET AUDIENCE CARDS ═══════════════════ */}
-      <section
+      <motion.section
+        initial={prefersReducedMotion ? "visible" : "hidden"}
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={fadeInUp}
         style={{
           padding: "96px 20px",
           background: T.paper,
@@ -359,7 +516,13 @@ export default function LandingPage() {
         }}
       >
         <div style={{ maxWidth: 1080, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 56 }}>
+          <motion.div
+            initial={prefersReducedMotion ? "visible" : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
+            style={{ textAlign: "center", marginBottom: 56 }}
+          >
             <div
               style={{
                 display: "inline-block",
@@ -391,9 +554,15 @@ export default function LandingPage() {
             <p style={{ fontSize: 17, color: T.ink2, lineHeight: 1.7, maxWidth: 640, margin: "0 auto" }}>
               외국인 구직자, 채용 기업, 대학 담당자 모두를 위한<br />맞춤형 채용 플랫폼
             </p>
-          </div>
+          </motion.div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 32 }}>
+          <motion.div
+            initial={prefersReducedMotion ? "visible" : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+            variants={staggerContainer}
+            style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 32 }}
+          >
             {[
               {
                 icon: "🌏",
@@ -423,26 +592,21 @@ export default function LandingPage() {
                 bgColor: "#F5F3FF",
               },
             ].map((item) => (
-              <div
+              <motion.div
                 key={item.label}
+                variants={staggerItem}
+                whileHover={prefersReducedMotion ? {} : {
+                  y: -8,
+                  boxShadow: "0 12px 32px rgba(10, 22, 40, 0.12)",
+                  transition: { duration: 0.3 }
+                }}
                 style={{
                   background: T.paper,
                   border: `1.5px solid ${T.border}`,
                   borderRadius: 12,
                   padding: 32,
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                   cursor: "pointer",
                   boxShadow: "0 2px 8px rgba(10, 22, 40, 0.04)",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-8px)";
-                  e.currentTarget.style.boxShadow = "0 12px 32px rgba(10, 22, 40, 0.12)";
-                  e.currentTarget.style.borderColor = item.color;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 22, 40, 0.04)";
-                  e.currentTarget.style.borderColor = T.border;
                 }}
               >
                 <div
@@ -510,14 +674,18 @@ export default function LandingPage() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* ═══════════════════ PROBLEM (크림 배경) ═══════════════════ */}
-      <section
+      <motion.section
+        initial={prefersReducedMotion ? "visible" : "hidden"}
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={fadeInUp}
         style={{
           padding: "96px 20px",
           background: T.cream,
@@ -525,7 +693,11 @@ export default function LandingPage() {
         }}
       >
         <div style={{ maxWidth: 960, margin: "0 auto" }}>
-          <h2
+          <motion.h2
+            initial={prefersReducedMotion ? "visible" : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
             style={{
               fontWeight: 800,
               fontSize: "clamp(20px, 5vw, 28px)",
@@ -538,17 +710,24 @@ export default function LandingPage() {
             기존 플랫폼이 외국인을{" "}
             <span style={{ color: T.accent }}>구조적으로 배제</span>
             하는 3가지 이유
-          </h2>
+          </motion.h2>
 
           {/* 3가지 이유 - 3열 카드 */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+          <motion.div
+            initial={prefersReducedMotion ? "visible" : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+            variants={staggerContainer}
+            style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}
+          >
             {[
               ["1", "언어 장벽", "알바몬·알바천국은 한국어 전용. 외국인은 공고 내용도 급여 조건도 계약 조항도 이해하기 어렵습니다.", "73%", "한국어 장벽으로 구직 포기한 유학생 비율"],
               ["2", "비자 불투명성", "D-2, E-9, F-4 등 12가지 비자별로 가능한 업종이 다름. 근로자도 사업주도 법적 적합성을 판단하기 어렵습니다.", "31%", "비자 혼란을 가장 큰 장벽으로 꼽는 외국인 비율"],
               ["3", "계약서 부재", "근로기준법상 서면 계약이 의무이나 대부분 구두 합의로 진행. 분쟁 시 외국인이 불리한 위치에 놓입니다.", "54%", "서면 근로계약 없이 일하는 파트타임 근로자"],
             ].map(([num, title, desc, stat, statLabel]) => (
-              <div
+              <motion.div
                 key={num}
+                variants={staggerItem}
                 style={{
                   padding: 24,
                   background: T.paper,
@@ -603,14 +782,18 @@ export default function LandingPage() {
                 <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.4 }}>
                   {statLabel}
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* ═══════════════════ WORKER FEATURES ═══════════════════ */}
-      <section
+      <motion.section
+        initial={prefersReducedMotion ? "visible" : "hidden"}
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={fadeInUp}
         style={{
           padding: "96px 20px",
           background: T.paper,
@@ -618,37 +801,50 @@ export default function LandingPage() {
         }}
       >
         <div style={{ maxWidth: 960, margin: "0 auto" }}>
-          <div
-            style={{
-              display: "inline-block",
-              padding: "4px 10px",
-              background: T.abg || T.accentBg,
-              color: T.accent,
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: "0.05em",
-              textTransform: "uppercase",
-              marginBottom: 14,
-              borderRadius: 2,
-            }}
+          <motion.div
+            initial={prefersReducedMotion ? "visible" : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
           >
-            For Workers · 외국인 구직자
-          </div>
-          <h2
-            style={{
-              fontWeight: 800,
-              fontSize: "clamp(20px, 5vw, 28px)",
-              lineHeight: 1.35,
-              letterSpacing: "-0.025em",
-              color: T.ink,
-              marginBottom: 32,
-            }}
-          >
-            한국어를 잘 못해도, 비자가 복잡해도 —{" "}
-            <span style={{ color: T.accent }}>안심하고 알바할 수 있습니다</span>
-          </h2>
+            <div
+              style={{
+                display: "inline-block",
+                padding: "4px 10px",
+                background: T.abg || T.accentBg,
+                color: T.accent,
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.05em",
+                textTransform: "uppercase",
+                marginBottom: 14,
+                borderRadius: 2,
+              }}
+            >
+              For Workers · 외국인 구직자
+            </div>
+            <h2
+              style={{
+                fontWeight: 800,
+                fontSize: "clamp(20px, 5vw, 28px)",
+                lineHeight: 1.35,
+                letterSpacing: "-0.025em",
+                color: T.ink,
+                marginBottom: 32,
+              }}
+            >
+              한국어를 잘 못해도, 비자가 복잡해도 —{" "}
+              <span style={{ color: T.accent }}>안심하고 알바할 수 있습니다</span>
+            </h2>
+          </motion.div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
+          <motion.div
+            initial={prefersReducedMotion ? "visible" : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+            variants={staggerContainer}
+            style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}
+          >
             {[
               ["🌐", "내 언어로 알바 찾기", "한국어·영어·중국어·베트남어·우즈벡어·몽골어·일본어 7개 언어 지원."],
               ["🛂", "내 비자에 맞는 공고만", "비자 유형 입력하면 합법적으로 일할 수 있는 공고만 자동 필터링."],
@@ -657,14 +853,20 @@ export default function LandingPage() {
               ["💬", "전화 없이 카톡으로", "5단계 카카오톡 챗봇으로 지원부터 합격까지 완료."],
               ["⭐", "K-ALBA 인증 경력", "근무 완료 시 사장님 평가와 함께 경력 자동 적립."],
             ].map(([ic, title, desc]) => (
-              <div
+              <motion.div
                 key={title}
+                variants={staggerItem}
+                whileHover={prefersReducedMotion ? {} : {
+                  y: -4,
+                  borderColor: T.accent,
+                  boxShadow: "0 8px 24px rgba(10, 22, 40, 0.08)",
+                  transition: { duration: 0.3 }
+                }}
                 style={{
                   padding: 20,
                   background: T.paper,
                   border: `1px solid ${T.border}`,
                   borderRadius: 6,
-                  transition: "border-color 0.2s",
                 }}
               >
                 <div style={{ fontSize: 24, marginBottom: 10 }}>{ic}</div>
@@ -682,14 +884,18 @@ export default function LandingPage() {
                 <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.55 }}>
                   {desc}
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* ═══════════════════ EMPLOYER FEATURES (크림 배경) ═══════════════════ */}
-      <section
+      <motion.section
+        initial={prefersReducedMotion ? "visible" : "hidden"}
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={fadeInUp}
         style={{
           padding: "96px 20px",
           background: T.cream,
@@ -697,37 +903,50 @@ export default function LandingPage() {
         }}
       >
         <div style={{ maxWidth: 960, margin: "0 auto" }}>
-          <div
-            style={{
-              display: "inline-block",
-              padding: "4px 10px",
-              background: T.n9,
-              color: T.gold,
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: "0.05em",
-              textTransform: "uppercase",
-              marginBottom: 14,
-              borderRadius: 2,
-            }}
+          <motion.div
+            initial={prefersReducedMotion ? "visible" : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
           >
-            For Employers · 사장님
-          </div>
-          <h2
-            style={{
-              fontWeight: 800,
-              fontSize: "clamp(20px, 5vw, 28px)",
-              lineHeight: 1.35,
-              letterSpacing: "-0.025em",
-              color: T.ink,
-              marginBottom: 32,
-            }}
-          >
-            외국인 채용이 어렵고 복잡했나요?{" "}
-            <span style={{ color: T.accent }}>K-ALBA가 다 해드립니다</span>
-          </h2>
+            <div
+              style={{
+                display: "inline-block",
+                padding: "4px 10px",
+                background: T.n9,
+                color: T.gold,
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.05em",
+                textTransform: "uppercase",
+                marginBottom: 14,
+                borderRadius: 2,
+              }}
+            >
+              For Employers · 사장님
+            </div>
+            <h2
+              style={{
+                fontWeight: 800,
+                fontSize: "clamp(20px, 5vw, 28px)",
+                lineHeight: 1.35,
+                letterSpacing: "-0.025em",
+                color: T.ink,
+                marginBottom: 32,
+              }}
+            >
+              외국인 채용이 어렵고 복잡했나요?{" "}
+              <span style={{ color: T.accent }}>K-ALBA가 다 해드립니다</span>
+            </h2>
+          </motion.div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
+          <motion.div
+            initial={prefersReducedMotion ? "visible" : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+            variants={staggerContainer}
+            style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}
+          >
             {[
               ["📢", "카카오톡으로 3분 공고 등록", "14단계 챗봇 질문에 답하면 공고 자동 완성."],
               ["🛂", "비자 자동 확인", "지원자의 비자를 자동 검증. 불법 고용 위험 없이 채용."],
@@ -736,14 +955,20 @@ export default function LandingPage() {
               ["🔍", "국세청 인증 사업주", "사업자번호 실시간 검증으로 인증 배지 부여."],
               ["📊", "지역·업종별 시세 안내", "13개 업종 × 지역별 평균 급여 실시간 제공."],
             ].map(([ic, title, desc]) => (
-              <div
+              <motion.div
                 key={title}
+                variants={staggerItem}
+                whileHover={prefersReducedMotion ? {} : {
+                  y: -4,
+                  borderColor: T.gold,
+                  boxShadow: "0 8px 24px rgba(10, 22, 40, 0.08)",
+                  transition: { duration: 0.3 }
+                }}
                 style={{
                   padding: 20,
                   background: T.paper,
                   border: `1px solid ${T.border}`,
                   borderRadius: 6,
-                  transition: "border-color 0.2s",
                 }}
               >
                 <div style={{ fontSize: 24, marginBottom: 10 }}>{ic}</div>
@@ -761,14 +986,18 @@ export default function LandingPage() {
                 <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.55 }}>
                   {desc}
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* ═══════════════════ UNIVERSITY FEATURES ═══════════════════ */}
-      <section
+      <motion.section
+        initial={prefersReducedMotion ? "visible" : "hidden"}
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={fadeInUp}
         style={{
           padding: "96px 20px",
           background: T.paper,
@@ -776,36 +1005,49 @@ export default function LandingPage() {
         }}
       >
         <div style={{ maxWidth: 960, margin: "0 auto" }}>
-          <div
-            style={{
-              display: "inline-block",
-              color: T.navy,
-              background: T.gold,
-              padding: "4px 12px",
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: "0.05em",
-              textTransform: "uppercase",
-              marginBottom: 14,
-              borderRadius: 2,
-            }}
+          <motion.div
+            initial={prefersReducedMotion ? "visible" : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
           >
-            For Universities · 학교 담당자
-          </div>
-          <h2
-            style={{
-              fontWeight: 800,
-              fontSize: "clamp(20px, 5vw, 28px)",
-              lineHeight: 1.35,
-              letterSpacing: "-0.025em",
-              color: T.ink,
-              marginBottom: 32,
-            }}
-          >
-            유학생 시간제취업, <em style={{ fontStyle: "normal", color: T.accent }}>이제 사무실 컴퓨터 없이</em>
-          </h2>
+            <div
+              style={{
+                display: "inline-block",
+                color: T.navy,
+                background: T.gold,
+                padding: "4px 12px",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.05em",
+                textTransform: "uppercase",
+                marginBottom: 14,
+                borderRadius: 2,
+              }}
+            >
+              For Universities · 학교 담당자
+            </div>
+            <h2
+              style={{
+                fontWeight: 800,
+                fontSize: "clamp(20px, 5vw, 28px)",
+                lineHeight: 1.35,
+                letterSpacing: "-0.025em",
+                color: T.ink,
+                marginBottom: 32,
+              }}
+            >
+              유학생 시간제취업, <em style={{ fontStyle: "normal", color: T.accent }}>이제 사무실 컴퓨터 없이</em>
+            </h2>
+          </motion.div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
+          <motion.div
+            initial={prefersReducedMotion ? "visible" : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+            variants={staggerContainer}
+            style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}
+          >
             {[
               ["⚡", "24시간 내 모바일 처리", "카카오톡으로 신청서 받아 모바일에서 즉시 검토·서명. 학생을 기다리게 하지 않습니다."],
               ["📄", "확인서 자동 생성", "손글씨 서명 한 번이면 PDF 자동 발급. 학교 인장도 디지털로 적용됩니다."],
@@ -813,14 +1055,20 @@ export default function LandingPage() {
               ["🏆", "IEQAS 평가 가점", "유학생 관리 시스템 도입으로 교육국제화역량인증 평가 가산점 확보."],
               ["📊", "실시간 대시보드", "학과별·국가별 시간제취업 신청 현황을 한눈에 파악. 승인·반려 추이 실시간 추적."],
             ].map(([ic, title, desc]) => (
-              <div
+              <motion.div
                 key={title}
+                variants={staggerItem}
+                whileHover={prefersReducedMotion ? {} : {
+                  y: -4,
+                  borderColor: T.gold,
+                  boxShadow: "0 8px 24px rgba(10, 22, 40, 0.08)",
+                  transition: { duration: 0.3 }
+                }}
                 style={{
                   padding: 20,
                   background: T.paper,
                   border: `1px solid ${T.border}`,
                   borderRadius: 6,
-                  transition: "border-color 0.2s",
                 }}
               >
                 <div style={{ fontSize: 24, marginBottom: 10 }}>{ic}</div>
@@ -838,14 +1086,18 @@ export default function LandingPage() {
                 <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.55 }}>
                   {desc}
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* ═══════════════════ PROCESS ═══════════════════ */}
-      <section
+      <motion.section
+        initial={prefersReducedMotion ? "visible" : "hidden"}
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={fadeInUp}
         style={{
           padding: "96px 20px",
           background: T.paper,
@@ -853,7 +1105,11 @@ export default function LandingPage() {
         }}
       >
         <div style={{ maxWidth: 720, margin: "0 auto" }}>
-          <h2
+          <motion.h2
+            initial={prefersReducedMotion ? "visible" : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUp}
             style={{
               fontWeight: 800,
               fontSize: "clamp(20px, 5vw, 28px)",
@@ -865,10 +1121,16 @@ export default function LandingPage() {
           >
             <em style={{ fontStyle: "normal", color: T.gold }}>5단계, 평균 3분.</em>{" "}
             카카오톡을 쓸 줄 안다면 누구나
-          </h2>
+          </motion.h2>
 
           {/* 5단계 - 가로 타임라인 */}
-          <div style={{ position: "relative" }}>
+          <motion.div
+            initial={prefersReducedMotion ? "visible" : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+            variants={staggerContainer}
+            style={{ position: "relative" }}
+          >
             {/* 가로 연결선 */}
             <div
               style={{
@@ -889,8 +1151,9 @@ export default function LandingPage() {
                 ["4", "계약 체결", "자동 생성·양측 서명"],
                 ["5", "근무 시작", "PDF 보관, 이력 적립"],
               ].map(([num, title, desc]) => (
-                <div
+                <motion.div
                   key={num}
+                  variants={staggerItem}
                   style={{
                     flex: 1,
                     textAlign: "center",
@@ -930,15 +1193,19 @@ export default function LandingPage() {
                   <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5 }}>
                     {desc}
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* ═══════════════════ FINAL CTA ═══════════════════ */}
-      <section
+      <motion.section
+        initial={prefersReducedMotion ? "visible" : "hidden"}
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }}
+        variants={fadeInUp}
         style={{
           padding: "96px 20px",
           background: `linear-gradient(135deg, ${T.n9} 0%, #0F2037 100%)`,
@@ -955,7 +1222,13 @@ export default function LandingPage() {
           backgroundImage: `radial-gradient(circle at 50% 50%, rgba(184, 148, 74, 0.08) 0%, transparent 70%)`,
           pointerEvents: "none",
         }} />
-        <div style={{ maxWidth: 720, margin: "0 auto", textAlign: "center" }}>
+        <motion.div
+          initial={prefersReducedMotion ? "visible" : "hidden"}
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          style={{ maxWidth: 720, margin: "0 auto", textAlign: "center" }}
+        >
           <h2
             style={{
               fontWeight: 800,
@@ -998,8 +1271,8 @@ export default function LandingPage() {
               문의하기
             </Button>
           </div>
-        </div>
-      </section>
+        </motion.div>
+      </motion.section>
 
       {/* ═══════════════════ FOOTER (BI v2 신규: 회사 정보 노출) ═══════════════════ */}
       <footer
