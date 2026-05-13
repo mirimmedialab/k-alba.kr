@@ -738,19 +738,21 @@ export default function LandingPage() {
           </motion.h2>
 
           {/* 3가지 이유 - 3열 카드 */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+          <motion.div
+            initial={prefersReducedMotion ? "visible" : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+            variants={staggerContainer}
+            style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}
+          >
             {[
               ["1", "언어 장벽", "알바몬·알바천국은 한국어 전용. 외국인은 공고 내용도 급여 조건도 계약 조항도 이해하기 어렵습니다.", "73%", "한국어 장벽으로 구직 포기한 유학생 비율"],
               ["2", "비자 불투명성", "D-2, E-9, F-4 등 12가지 비자별로 가능한 업종이 다름. 근로자도 사업주도 법적 적합성을 판단하기 어렵습니다.", "31%", "비자 혼란을 가장 큰 장벽으로 꼽는 외국인 비율"],
               ["3", "계약서 부재", "근로기준법상 서면 계약이 의무이나 대부분 구두 합의로 진행. 분쟁 시 외국인이 불리한 위치에 놓입니다.", "54%", "서면 근로계약 없이 일하는 파트타임 근로자"],
-            ].map(([num, title, desc, stat, statLabel], index) => (
+            ].map(([num, title, desc, stat, statLabel]) => (
               <motion.div
                 key={num}
-                initial={prefersReducedMotion ? "visible" : "hidden"}
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.3 }}
-                custom={index}
-                variants={scalePulseItem}
+                variants={staggerItem}
                 style={{
                   padding: 24,
                   background: T.paper,
@@ -807,7 +809,7 @@ export default function LandingPage() {
                 </div>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </motion.section>
 
