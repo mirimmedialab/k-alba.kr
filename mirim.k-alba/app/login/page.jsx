@@ -76,12 +76,12 @@ export default function LoginPage() {
           ← {t("common.back")}
         </Link>
 
-        {/* Editorial 상단 — 골드 라인 + 작은 라벨 */}
+        {/* Editorial 상단 — 코랄 라인 + 작은 라벨 */}
         <div
           style={{
             width: 40,
             height: 3,
-            background: T.gold,
+            background: "#FF6B5A",
             marginBottom: 20,
           }}
         />

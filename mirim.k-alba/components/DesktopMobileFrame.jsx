@@ -176,17 +176,17 @@ export default function DesktopMobileFrame({ children }) {
 
         <div
           style={{
-            background: "#FEE500",
+            background: "#fff",
             borderRadius: 16,
             padding: "16px 18px",
-            border: "1px solid #FEE500",
+            border: "1px solid #EDEAE6",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
             <span style={{ fontSize: 18 }}>💬</span>
-            <div style={{ fontSize: 13, fontWeight: 800, color: "#3C1E1E" }}>카카오톡 채널</div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "#1A1F3D" }}>카카오톡 채널</div>
           </div>
-          <div style={{ fontSize: 12, color: "#3C1E1E", lineHeight: 1.6, marginBottom: 10 }}>
+          <div style={{ fontSize: 12, color: "#4A4640", lineHeight: 1.6, marginBottom: 10 }}>
             사장님은 카카오톡 챗봇으로
             <br />
             3분만에 공고 등록 가능
@@ -199,8 +199,8 @@ export default function DesktopMobileFrame({ children }) {
               display: "inline-block",
               fontSize: 12,
               fontWeight: 700,
-              color: "#3C1E1E",
-              background: "#fff",
+              color: "#fff",
+              background: "#FF6B5A",
               padding: "6px 12px",
               borderRadius: 6,
               textDecoration: "none",
