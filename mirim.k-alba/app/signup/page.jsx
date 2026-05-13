@@ -247,7 +247,7 @@ export default function SignupPage() {
           className="signup-layout"
         >
           {/* 메인 콘텐츠 */}
-          <div style={{ width: 440 }}>
+          <div style={{ width: 440 }} className="main-content">
             {/* 뒤로 + 워드마크 */}
             <div
               style={{
@@ -498,6 +498,10 @@ export default function SignupPage() {
           @media (max-width: 1023px) {
             .signup-layout {
               flex-direction: column;
+              max-width: 100% !important;
+            }
+            .main-content {
+              width: 100% !important;
             }
           }
         `}</style>

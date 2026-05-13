@@ -72,6 +72,7 @@ export default function LoginPage() {
         <form
           onSubmit={handleSubmit}
           style={{ width: 440 }}
+          className="main-content"
         >
         {/* Back link */}
         <Link
@@ -317,6 +318,10 @@ export default function LoginPage() {
       @media (max-width: 1023px) {
         .login-layout {
           flex-direction: column;
+          max-width: 100% !important;
+        }
+        .main-content {
+          width: 100% !important;
         }
       }
     `}</style>
