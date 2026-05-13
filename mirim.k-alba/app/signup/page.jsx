@@ -230,109 +230,361 @@ export default function SignupPage() {
     return (
       <div
         style={{
-          minHeight: "calc(100vh - 56px - 180px)",
-          padding: "56px 20px 40px",
-          background: T.paper,
+          minHeight: "100vh",
+          background: "linear-gradient(135deg, #F7F9FC 0%, #FDFEFF 100%)",
+          position: "relative",
+          overflow: "hidden",
         }}
       >
-        <div style={{ maxWidth: 460, margin: "0 auto" }}>
-          {/* 상단: 워드마크 + 뒤로 */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
-            <Link
-              href="/"
-              style={{ color: T.ink3, fontSize: 13, textDecoration: "none" }}
-            >
-              ← {t("common.back")}
-            </Link>
-            <KWordmark size={18} />
-          </div>
+        {/* Subtle blur blobs */}
+        <div
+          style={{
+            position: "absolute",
+            top: "-10%",
+            right: "-5%",
+            width: "40%",
+            height: "40%",
+            background: "radial-gradient(circle, rgba(184, 148, 74, 0.08) 0%, transparent 70%)",
+            filter: "blur(60px)",
+            pointerEvents: "none",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: "-10%",
+            left: "-5%",
+            width: "35%",
+            height: "35%",
+            background: "radial-gradient(circle, rgba(10, 22, 40, 0.06) 0%, transparent 70%)",
+            filter: "blur(60px)",
+            pointerEvents: "none",
+          }}
+        />
 
-          <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 20 }} />
+        <div
+          style={{
+            maxWidth: 1200,
+            margin: "0 auto",
+            padding: "60px 20px",
+            display: "grid",
+            gridTemplateColumns: "1fr",
+            gap: 60,
+            alignItems: "center",
+            minHeight: "100vh",
+          }}
+          className="signup-container"
+        >
+          {/* ══════ PC: 좌측 소개 영역 ══════ */}
           <div
             style={{
-              fontSize: 11,
-              fontWeight: 700,
-              color: T.ink3,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              marginBottom: 10,
+              display: "none",
             }}
+            className="signup-intro"
           >
-            {t("auth.signupTitle")}
-          </div>
-          <h1
-            style={{
-              fontSize: 28,
-              fontWeight: 800,
-              color: T.ink,
-              letterSpacing: "-0.025em",
-              lineHeight: 1.25,
-              marginBottom: 8,
-            }}
-          >
-            {t("auth.signupTitle")}
-          </h1>
-          <p style={{ color: T.ink2, fontSize: 14, marginBottom: 32, lineHeight: 1.6 }}>
-            {t("auth.signupSubtitle")}
-          </p>
-
-          {[
-            ["worker", t("auth.asSeeker"), t("auth.asSeekerDesc"), T.gold],
-            ["employer", t("auth.asEmployer"), t("auth.asEmployerDesc"), T.accent],
-          ].map(([r, ti, de, accent]) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => {
-                setRole(r);
-                setStep(1);
-              }}
+            <Link
+              href="/"
               style={{
-                width: "100%",
-                padding: "22px 20px",
-                background: T.paper,
-                border: `1px solid ${T.border}`,
-                borderLeft: `3px solid ${accent}`,
-                borderRadius: 4,
-                marginBottom: 12,
-                textAlign: "left",
-                cursor: "pointer",
-                fontFamily: "inherit",
-                transition: "all 0.15s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = T.n9;
-                e.currentTarget.style.borderLeftColor = accent;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = T.border;
-                e.currentTarget.style.borderLeftColor = accent;
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                color: T.ink3,
+                fontSize: 14,
+                textDecoration: "none",
+                marginBottom: 48,
+                fontWeight: 600,
               }}
             >
+              ← 홈으로
+            </Link>
+
+            <div style={{ marginBottom: 24 }}>
+              <KWordmark size={32} />
+            </div>
+
+            <h1
+              style={{
+                fontSize: "clamp(32px, 4vw, 42px)",
+                fontWeight: 900,
+                color: T.ink,
+                letterSpacing: "-0.03em",
+                lineHeight: 1.25,
+                marginBottom: 20,
+              }}
+            >
+              외국인 채용과<br />시간제취업 신청을<br />
+              <span style={{ color: T.gold }}>더 쉽고 안전하게</span>
+            </h1>
+            <p
+              style={{
+                fontSize: 17,
+                color: T.ink2,
+                lineHeight: 1.7,
+                marginBottom: 40,
+                maxWidth: 480,
+              }}
+            >
+              K-ALBA에서 구직자, 사장님, 대학 담당자별로 시작하세요.
+              <br />7개 언어 지원, 자동 근로계약서, 비자 검증까지 모두 한 곳에서.
+            </p>
+
+            {/* PC 전용 통계 */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: 24,
+                maxWidth: 480,
+              }}
+            >
+              {[
+                ["260만+", "한국 거주 외국인"],
+                ["7개 언어", "다국어 지원"],
+                ["3분", "계약서 자동 생성"],
+              ].map(([num, label]) => (
+                <div key={label}>
+                  <div
+                    style={{
+                      fontSize: 28,
+                      fontWeight: 900,
+                      color: T.gold,
+                      letterSpacing: "-0.02em",
+                      marginBottom: 4,
+                    }}
+                  >
+                    {num}
+                  </div>
+                  <div style={{ fontSize: 13, color: T.ink3, fontWeight: 600 }}>
+                    {label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ══════ 우측: 모바일 Mockup 스타일 회원가입 카드 ══════ */}
+          <div
+            style={{
+              maxWidth: 430,
+              margin: "0 auto",
+              width: "100%",
+            }}
+          >
+            {/* Mobile mockup card */}
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 20,
+                padding: "40px 32px",
+                boxShadow: "0 20px 60px rgba(10, 22, 40, 0.1), 0 0 0 1px rgba(10, 22, 40, 0.04)",
+                position: "relative",
+              }}
+            >
+              {/* 모바일: 뒤로 + 워드마크 */}
               <div
                 style={{
-                  fontSize: 16,
-                  fontWeight: 800,
-                  color: T.ink,
-                  marginBottom: 4,
-                  letterSpacing: "-0.02em",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 32,
+                }}
+                className="mobile-header"
+              >
+                <Link
+                  href="/"
+                  style={{ color: T.ink3, fontSize: 14, textDecoration: "none", fontWeight: 600 }}
+                >
+                  ← 뒤로
+                </Link>
+                <KWordmark size={20} />
+              </div>
+
+              <div style={{ marginBottom: 32 }}>
+                <h1
+                  style={{
+                    fontSize: 26,
+                    fontWeight: 900,
+                    color: T.ink,
+                    letterSpacing: "-0.03em",
+                    lineHeight: 1.3,
+                    marginBottom: 10,
+                  }}
+                >
+                  K-ALBA 시작하기
+                </h1>
+                <p style={{ color: T.ink2, fontSize: 15, lineHeight: 1.6 }}>
+                  어떤 사용자로 이용하시나요?
+                </p>
+              </div>
+
+              {/* 선택 카드 */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {[
+                  [
+                    "worker",
+                    "🌏",
+                    "외국인 구직자",
+                    "한국에서 합법적으로 일자리를 찾고 싶어요",
+                    T.gold,
+                    "#FFF8E5",
+                  ],
+                  [
+                    "employer",
+                    "💼",
+                    "사장님",
+                    "외국인 직원을 안전하게 채용하고 싶어요",
+                    T.accent,
+                    "#FFF3F0",
+                  ],
+                  [
+                    "university",
+                    "🏫",
+                    "대학 담당자",
+                    "유학생 취업·시간제취업 관리를 돕고 싶어요",
+                    "#7C3AED",
+                    "#F5F3FF",
+                  ],
+                ].map(([r, icon, title, desc, accentColor, bgColor]) => {
+                  const isComingSoon = r === "university";
+                  return (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => {
+                        if (isComingSoon) return;
+                        setRole(r);
+                        setStep(1);
+                      }}
+                      disabled={isComingSoon}
+                      style={{
+                        width: "100%",
+                        padding: "20px 18px",
+                        background: T.paper,
+                        border: `1.5px solid ${T.border}`,
+                        borderRadius: 12,
+                        textAlign: "left",
+                        cursor: isComingSoon ? "not-allowed" : "pointer",
+                        fontFamily: "inherit",
+                        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 14,
+                        position: "relative",
+                        opacity: isComingSoon ? 0.6 : 1,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (isComingSoon) return;
+                        e.currentTarget.style.transform = "translateY(-4px)";
+                        e.currentTarget.style.boxShadow = "0 12px 32px rgba(10, 22, 40, 0.12)";
+                        e.currentTarget.style.borderColor = accentColor;
+                      }}
+                      onMouseLeave={(e) => {
+                        if (isComingSoon) return;
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow = "none";
+                        e.currentTarget.style.borderColor = T.border;
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: 12,
+                          background: bgColor,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 24,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {icon}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div
+                          style={{
+                            fontSize: 16,
+                            fontWeight: 800,
+                            color: T.ink,
+                            marginBottom: 4,
+                            letterSpacing: "-0.02em",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
+                        >
+                          {title}
+                          {isComingSoon && (
+                            <span
+                              style={{
+                                fontSize: 11,
+                                fontWeight: 700,
+                                color: T.ink3,
+                                background: T.cream,
+                                padding: "2px 8px",
+                                borderRadius: 4,
+                              }}
+                            >
+                              준비중
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5 }}>
+                          {desc}
+                        </div>
+                      </div>
+                      {!isComingSoon && (
+                        <div
+                          style={{
+                            fontSize: 20,
+                            color: accentColor,
+                            flexShrink: 0,
+                            alignSelf: "center",
+                          }}
+                        >
+                          →
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* 푸터 정보 — 작고 정돈되게 */}
+              <div
+                style={{
+                  marginTop: 32,
+                  paddingTop: 24,
+                  borderTop: `1px solid ${T.border}`,
+                  fontSize: 11,
+                  color: T.ink3,
+                  lineHeight: 1.7,
+                  textAlign: "center",
                 }}
               >
-                {ti}
+                {COMPANY.name} · 사업자등록번호 {COMPANY.businessNumber}
+                <br />
+                직업정보제공사업 신고번호 {COMPANY.jobInfoLicense}
               </div>
-              <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5 }}>
-                {de}
-              </div>
-            </button>
-          ))}
-
-          {/* BI v2 신뢰 액센트: 사업자번호/신고번호 */}
-          <div style={{ marginTop: 24, fontSize: 11, color: T.ink3, lineHeight: 1.7, textAlign: "center" }}>
-            {COMPANY.name} · 사업자등록번호 {COMPANY.businessNumber}
-            <br />
-            직업정보제공사업 신고번호 {COMPANY.jobInfoLicense}
+            </div>
           </div>
         </div>
+
+        {/* PC 레이아웃 적용 CSS */}
+        <style jsx>{`
+          @media (min-width: 1024px) {
+            .signup-container {
+              grid-template-columns: 1fr 1fr;
+              gap: 80px;
+            }
+            .signup-intro {
+              display: block !important;
+            }
+            .mobile-header {
+              display: none !important;
+            }
+          }
+        `}</style>
       </div>
     );
   }
