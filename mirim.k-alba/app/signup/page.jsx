@@ -526,6 +526,14 @@ export default function SignupPage() {
 
         {/* PC 레이아웃 적용 CSS */}
         <style jsx>{`
+          @media (max-width: 1023px) {
+            .signup-card {
+              border: none !important;
+              border-radius: 0 !important;
+              box-shadow: none !important;
+              padding: 32px 20px !important;
+            }
+          }
           @media (min-width: 1024px) {
             .signup-container {
               grid-template-columns: 1fr 1fr;
