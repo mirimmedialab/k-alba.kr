@@ -414,51 +414,9 @@ export default function SignupPage() {
               })}
             </div>
           </div>
-
-          {/* 우측 QR 코드 */}
-          <div
-            style={{
-              display: "none",
-              textAlign: "center",
-              paddingTop: 80,
-            }}
-            className="qr-section"
-          >
-            <div
-              style={{
-                width: 100,
-                height: 100,
-                borderRadius: 8,
-                background: "#fff",
-                padding: 8,
-                marginBottom: 8,
-                border: `1px solid ${T.border}`,
-              }}
-            >
-              <img
-                src="/img/k-alba-qr.png"
-                alt="K-ALBA QR"
-                style={{ width: "100%", height: "100%", display: "block" }}
-              />
-            </div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: T.ink, marginBottom: 3 }}>
-              K-ALBA
-            </div>
-            <div style={{ fontSize: 10, color: T.ink2, lineHeight: 1.4 }}>
-              휴대폰으로<br />접속하세요
-            </div>
-          </div>
         </div>
 
         <style jsx>{`
-          .qr-section {
-            display: none;
-          }
-          @media (min-width: 1024px) {
-            .qr-section {
-              display: block !important;
-            }
-          }
           @media (max-width: 1023px) {
             .signup-layout {
               padding-left: 0 !important;
@@ -881,51 +839,9 @@ export default function SignupPage() {
           </Link>
         </p>
       </form>
-
-      {/* 우측 QR 코드 */}
-      <div
-        style={{
-          display: "none",
-          textAlign: "center",
-          paddingTop: 80,
-        }}
-        className="qr-section"
-      >
-        <div
-          style={{
-            width: 100,
-            height: 100,
-            borderRadius: 8,
-            background: "#fff",
-            padding: 8,
-            marginBottom: 8,
-            border: `1px solid ${T.border}`,
-          }}
-        >
-          <img
-            src="/img/k-alba-qr.png"
-            alt="K-ALBA QR"
-            style={{ width: "100%", height: "100%", display: "block" }}
-          />
-        </div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink, marginBottom: 3 }}>
-          K-ALBA
-        </div>
-        <div style={{ fontSize: 10, color: T.ink2, lineHeight: 1.4 }}>
-          휴대폰으로<br />접속하세요
-        </div>
-      </div>
       </div>
 
       <style jsx>{`
-        .qr-section {
-          display: none;
-        }
-        @media (min-width: 1024px) {
-          .qr-section {
-            display: block !important;
-          }
-        }
         @media (max-width: 1023px) {
           .signup-step1-layout {
             padding-left: 0 !important;
