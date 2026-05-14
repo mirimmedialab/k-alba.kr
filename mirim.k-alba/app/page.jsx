@@ -311,36 +311,34 @@ export default function LandingPage() {
                 <br />신뢰할 수 있는 외국인 채용 플랫폼입니다.
               </p>
 
-              <div style={{ display: "flex", gap: 16, justifyContent: "center", marginBottom: 64 }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, marginBottom: 64 }}>
                 <Button
                   variant="landingPrimary"
-                  href="/signup"
+                  href="/jobs"
                   size="lg"
                   style={{
                     boxShadow: "0 4px 20px rgba(184, 148, 74, 0.4)",
-                    padding: "16px 32px",
+                    padding: "16px 48px",
                     fontSize: 17,
                     fontWeight: 700,
                   }}
                 >
-                  서비스 시작하기 →
+                  서비스 둘러보기 →
                 </Button>
-                <Button
-                  variant="landingDark"
-                  href="/login"
-                  size="lg"
-                  style={{
-                    background: "rgba(255, 255, 255, 0.08)",
-                    color: T.paper,
-                    border: "1.5px solid rgba(255,255,255,0.25)",
-                    backdropFilter: "blur(10px)",
-                    padding: "16px 32px",
-                    fontSize: 17,
-                    fontWeight: 600,
-                  }}
-                >
-                  이미 계정이 있어요
-                </Button>
+                <div style={{ fontSize: 14, color: "rgba(255,255,255,0.7)" }}>
+                  이미 계정이 있나요?{" "}
+                  <a
+                    href="/login"
+                    style={{
+                      color: T.gold,
+                      fontWeight: 600,
+                      textDecoration: "underline",
+                      textUnderlineOffset: "3px",
+                    }}
+                  >
+                    로그인
+                  </a>
+                </div>
               </div>
 
               {/* Stats */}
