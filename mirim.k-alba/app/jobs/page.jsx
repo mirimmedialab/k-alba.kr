@@ -113,7 +113,8 @@ export default function JobsPage() {
   // 표시할 공고 결정
   let displayJobs;
   if (sortMode === "recommended") {
-    displayJobs = recommendedJobs;
+    // 비로그인 사용자는 일반 공고 표시
+    displayJobs = userProfile ? recommendedJobs : fallbackJobs;
   } else if (sortMode === "nearest") {
     displayJobs = nearbyJobs;
   } else {
@@ -214,6 +215,32 @@ export default function JobsPage() {
           );
         })}
       </div>
+
+      {/* 비로그인 추천순 안내 배너 */}
+      {sortMode === "recommended" && !userProfile && (
+        <Link href="/login" style={{ textDecoration: "none" }}>
+          <div style={{
+            background: T.goldL,
+            color: T.ink,
+            padding: "12px 16px",
+            borderRadius: 4,
+            borderLeft: `3px solid ${T.gold}`,
+            marginBottom: 16,
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            cursor: "pointer",
+          }}>
+            <div style={{ fontSize: 18 }}>🔑</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 600, fontSize: 13, letterSpacing: "-0.01em" }}>
+                로그인하고 내 비자, 위치에 맞는 맞춤 추천을 받아보세요
+              </div>
+            </div>
+            <div style={{ fontSize: 16, color: T.gold, fontWeight: 700 }}>→</div>
+          </div>
+        </Link>
+      )}
 
       {/* 반경 조절 (가까운 순일 때만) */}
       {sortMode === "nearest" && (
