@@ -413,35 +413,39 @@ export default function SignupPage() {
             </div>
 
             {/* 카카오톡 채널 */}
-            <div
+            <a
+              href="https://pf.kakao.com/_qTxouX"
+              target="_blank"
+              rel="noopener noreferrer"
               style={{
-                display: "flex",
+                display: "inline-flex",
                 alignItems: "center",
-                justifyContent: "space-between",
-                marginTop: 16,
                 gap: 12,
+                padding: "8px 14px",
+                background: T.cream,
+                border: `1px solid ${T.border}`,
+                borderRadius: 999,
+                textDecoration: "none",
+                marginTop: 16,
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = T.ink3;
+                e.currentTarget.style.background = T.paper;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = T.border;
+                e.currentTarget.style.background = T.cream;
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ fontSize: 14 }}>💬</span>
                 <span style={{ fontSize: 12, color: T.ink2 }}>카카오톡 채널 연결</span>
               </div>
-              <a
-                href="https://pf.kakao.com/_qTxouX"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: T.ink3,
-                  textDecoration: "none",
-                  borderBottom: `1px solid ${T.ink3}`,
-                  paddingBottom: 1,
-                }}
-              >
+              <span style={{ fontSize: 12, fontWeight: 600, color: T.ink3 }}>
                 채널 열기 →
-              </a>
-            </div>
+              </span>
+            </a>
           </div>
 
           {/* 우측 QR 코드 */}
