@@ -248,23 +248,20 @@ export default function SignupPage() {
         >
           {/* 메인 콘텐츠 */}
           <div style={{ width: 440 }} className="main-content">
-            {/* 뒤로 + 워드마크 */}
-            <div
+            {/* 뒤로 */}
+            <Link
+              href="/"
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
+                color: T.ink3,
+                fontSize: 13,
+                textDecoration: "none",
+                fontWeight: 600,
                 marginBottom: 32,
+                display: "block",
               }}
             >
-              <Link
-                href="/"
-                style={{ color: T.ink3, fontSize: 13, textDecoration: "none", fontWeight: 600 }}
-              >
-                ← 뒤로
-              </Link>
-              <KWordmark size={18} />
-            </div>
+              ← 뒤로
+            </Link>
 
             {/* 헤드라인 */}
             <div style={{ marginBottom: 28, textAlign: "center" }}>
