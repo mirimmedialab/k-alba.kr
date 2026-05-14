@@ -113,13 +113,13 @@ export function KakaoFloatingButton() {
           <div
             style={{
               position: "absolute",
-              right: -10,
-              bottom: 32,
+              right: 30,
+              bottom: -10,
               width: 0,
               height: 0,
-              borderLeft: "18px solid #FFFFFF",
-              borderTop: "10px solid transparent",
-              borderBottom: "10px solid transparent",
+              borderTop: "18px solid #FFFFFF",
+              borderLeft: "10px solid transparent",
+              borderRight: "10px solid transparent",
               filter: "drop-shadow(3px 3px 3px rgba(0, 0, 0, 0.06))",
             }}
           />
@@ -132,8 +132,8 @@ export function KakaoFloatingButton() {
           rel="noopener noreferrer"
           style={{
             position: "absolute",
-            right: -24,
-            bottom: 8,
+            right: -12,
+            bottom: -8,
             width: 84,
             height: 84,
             borderRadius: "50%",
@@ -155,7 +155,7 @@ export function KakaoFloatingButton() {
           <img
             src="/img/k-alba-logo.png"
             alt="K-ALBA"
-            style={{ width: 60, height: 60 }}
+            style={{ width: 72, height: 72, marginTop: 10 }}
           />
         </a>
       </div>
