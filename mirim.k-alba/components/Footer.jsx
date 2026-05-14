@@ -23,10 +23,11 @@ export default function Footer() {
         style={{
           maxWidth: 1200,
           margin: "0 auto",
+          textAlign: "center",
         }}
       >
         {/* 이용약관 및 개인정보처리방침 */}
-        <div style={{ marginBottom: 8, textAlign: "center" }} className="footer-links">
+        <div style={{ marginBottom: 8 }} className="footer-links">
           <Link
             href="/terms"
             style={{
@@ -56,36 +57,32 @@ export default function Footer() {
           </Link>
         </div>
 
-        {/* 첫 번째 줄: 회사명 (좌) + 저작권 (우) */}
+        {/* 법적 정보 */}
         <div
-          className="footer-top"
+          className="footer-legal"
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
             fontSize: 9,
             color: T.ink3,
+            lineHeight: 1.5,
             letterSpacing: "-0.01em",
-            opacity: 0.7,
-            marginBottom: 4,
+            marginBottom: 6,
+            opacity: 0.6,
           }}
         >
-          <span>미림미디어랩 주식회사</span>
-          <span>© 2026 K-ALBA. All rights reserved.</span>
+          K-ALBA | 대표: 남기환 | 사업자등록번호: 119-86-61402
+          <br />
+          직업정보제공사업 신고번호: J1204020260002 | 미림미디어랩 주식회사
         </div>
-
-        {/* 두 번째 줄: 법적 정보 (중앙 정렬) */}
         <div
-          className="footer-bottom"
+          className="footer-copyright"
           style={{
             fontSize: 8,
             color: T.ink3,
             letterSpacing: "-0.01em",
-            opacity: 0.6,
-            textAlign: "center",
+            opacity: 0.5,
           }}
         >
-          대표: 남기환 | 사업자등록번호: 119-86-61402 | 직업정보제공사업 신고번호: J1204020260002 | 주소: 서울특별시 관악구 남부순환로 1820, 에그옐로우 A동 406호
+          © 2026 K-ALBA. All rights reserved.
         </div>
       </div>
 
@@ -95,25 +92,16 @@ export default function Footer() {
           .footer-links a {
             font-size: 12px !important;
           }
-          .footer-top {
+          .footer-legal {
             font-size: 11px !important;
           }
-          .footer-bottom {
+          .footer-copyright {
             font-size: 10px !important;
           }
         }
         @media (max-width: 767px) {
           .global-footer {
             padding: 12px 20px 10px !important;
-          }
-          .footer-top {
-            flex-direction: column;
-            gap: 2px;
-            text-align: center;
-          }
-          .footer-bottom {
-            font-size: 7px !important;
-            line-height: 1.4;
           }
         }
       `}</style>

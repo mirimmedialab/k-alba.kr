@@ -1330,33 +1330,24 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* 하단: 회사 정보 */}
+          {/* 하단: 회사 정보 (2줄 구조) */}
           <div
             style={{
               fontSize: 12,
               color: T.ink3,
-              lineHeight: 1.8,
               paddingTop: 24,
               borderTop: `1px solid ${T.border}`,
             }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
-              <div style={{ flex: 1, minWidth: 300 }}>
-                <div style={{ marginBottom: 4 }}>
-                  <strong style={{ color: T.ink2, fontWeight: 700 }}>{COMPANY.name}</strong>
-                  {" · "}대표: {COMPANY.ceo}
-                  {" · "}사업자등록번호: {COMPANY.businessNumber}
-                </div>
-                <div>
-                  직업정보제공사업 신고번호: {COMPANY.jobInfoLicense}
-                </div>
-                <div style={{ marginTop: 2, fontSize: 11 }}>
-                  {COMPANY.address}
-                </div>
-              </div>
-              <div style={{ fontSize: 11, color: T.borderStrong, paddingTop: 4 }}>
-                © 2026 {COMPANY.brandName}. All rights reserved.
-              </div>
+            {/* 첫 번째 줄: 회사명 (좌) + 저작권 (우) */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <span style={{ fontWeight: 700, color: T.ink2 }}>{COMPANY.name}</span>
+              <span style={{ fontSize: 11, color: T.ink3 }}>© 2026 {COMPANY.brandName}. All rights reserved.</span>
+            </div>
+
+            {/* 두 번째 줄: 법적 정보 (중앙 정렬) */}
+            <div style={{ fontSize: 11, color: T.ink3, textAlign: "center", lineHeight: 1.6 }}>
+              대표: {COMPANY.ceo} | 사업자등록번호: {COMPANY.businessNumber} | 직업정보제공사업 신고번호: {COMPANY.jobInfoLicense} | 주소: {COMPANY.address}
             </div>
           </div>
         </div>
