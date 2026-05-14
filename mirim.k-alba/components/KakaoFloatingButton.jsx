@@ -9,7 +9,7 @@ export function KakaoFloatingButton() {
     <div
       style={{
         position: "fixed",
-        bottom: 28,
+        bottom: 38,
         right: 28,
         zIndex: 1000,
       }}
@@ -30,6 +30,7 @@ export function KakaoFloatingButton() {
             background: "#FFFFFF",
             borderRadius: 20,
             padding: "14px 20px",
+            paddingRight: 20,
             boxShadow: isHovered
               ? "0 16px 40px rgba(0, 0, 0, 0.16)"
               : "0 10px 30px rgba(0, 0, 0, 0.12)",
@@ -107,21 +108,6 @@ export function KakaoFloatingButton() {
             채널 열기
             <span style={{ fontSize: 12 }}>→</span>
           </div>
-
-          {/* 말풍선 꼬리 - 아래로 튀어나옴 */}
-          <div
-            style={{
-              position: "absolute",
-              right: 96,
-              bottom: -12,
-              width: 0,
-              height: 0,
-              borderTop: "12px solid #FFFFFF",
-              borderLeft: "10px solid transparent",
-              borderRight: "10px solid transparent",
-              filter: "drop-shadow(2px 3px 4px rgba(0, 0, 0, 0.08))",
-            }}
-          />
         </a>
 
         {/* 원형 버튼 - 말풍선 오른쪽 하단 모서리를 침범하여 겹침 */}
