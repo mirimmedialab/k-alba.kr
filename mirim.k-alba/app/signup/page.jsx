@@ -436,7 +436,7 @@ export default function SignupPage() {
               }}
             >
               <img
-                src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https%3A%2F%2Fk-alba.kr&margin=0"
+                src="/img/k-alba-qr.png"
                 alt="K-ALBA QR"
                 style={{ width: "100%", height: "100%", display: "block" }}
               />
@@ -903,7 +903,7 @@ export default function SignupPage() {
           }}
         >
           <img
-            src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https%3A%2F%2Fk-alba.kr&margin=0"
+            src="/img/k-alba-qr.png"
             alt="K-ALBA QR"
             style={{ width: "100%", height: "100%", display: "block" }}
           />

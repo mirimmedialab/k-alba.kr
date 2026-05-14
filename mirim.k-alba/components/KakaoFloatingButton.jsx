@@ -77,13 +77,12 @@ export function KakaoFloatingButton() {
           e.currentTarget.style.boxShadow = "0 4px 20px rgba(0, 0, 0, 0.15)";
         }}
       >
-        {/* 카카오톡 아이콘 */}
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M12 3C6.477 3 2 6.58 2 11c0 2.79 1.91 5.23 4.76 6.53-.2.73-.66 2.43-.76 2.82-.12.47.17.46.37.33.15-.09 2.49-1.67 3.45-2.32.39.05.79.08 1.18.08 5.523 0 10-3.58 10-8S17.523 3 12 3z"
-            fill="#1A1A1A"
-          />
-        </svg>
+        {/* K-ALBA 로고 */}
+        <img
+          src="/img/k-alba-logo.png"
+          alt="K-ALBA"
+          style={{ width: 32, height: 32 }}
+        />
       </a>
 
       {/* 모바일 스타일 */}
