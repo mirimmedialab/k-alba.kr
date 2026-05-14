@@ -66,7 +66,7 @@ export default function DesktopMobileFrame({ children }) {
             background: T.paper,
             borderRadius: 16,
             boxShadow: "0 4px 20px rgba(10, 22, 40, 0.08), 0 1px 4px rgba(10, 22, 40, 0.04)",
-            overflow: "hidden",
+            overflow: "visible",
           }}
         >
           {children}
