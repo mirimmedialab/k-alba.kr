@@ -60,8 +60,8 @@ export function KakaoFloatingButton() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          width: 56,
-          height: 56,
+          width: 60,
+          height: 60,
           background: "#FEE500",
           borderRadius: "50%",
           boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
@@ -81,7 +81,7 @@ export function KakaoFloatingButton() {
         <img
           src="/img/k-alba-logo.png"
           alt="K-ALBA"
-          style={{ width: 40, height: 40 }}
+          style={{ width: 44, height: 44 }}
         />
       </a>
 
