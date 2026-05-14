@@ -107,6 +107,21 @@ export function KakaoFloatingButton() {
             채널 열기
             <span style={{ fontSize: 12 }}>→</span>
           </div>
+
+          {/* 말풍선 꼬리 - 아래로 튀어나옴 */}
+          <div
+            style={{
+              position: "absolute",
+              right: 96,
+              bottom: -12,
+              width: 0,
+              height: 0,
+              borderTop: "12px solid #FFFFFF",
+              borderLeft: "10px solid transparent",
+              borderRight: "10px solid transparent",
+              filter: "drop-shadow(2px 3px 4px rgba(0, 0, 0, 0.08))",
+            }}
+          />
         </a>
 
         {/* 원형 버튼 - 말풍선 오른쪽 하단 모서리를 침범하여 겹침 */}
