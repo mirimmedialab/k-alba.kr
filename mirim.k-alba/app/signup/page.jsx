@@ -241,6 +241,7 @@ export default function SignupPage() {
             display: "flex",
             gap: 20,
             alignItems: "flex-start",
+            paddingLeft: "calc(50% - 220px)", // PC 기본값 (초기 렌더링부터 적용)
           }}
           className="signup-layout"
         >
@@ -450,16 +451,17 @@ export default function SignupPage() {
         </div>
 
         <style jsx>{`
+          .qr-section {
+            display: none;
+          }
           @media (min-width: 1024px) {
-            .signup-layout {
-              padding-left: calc(50% - 220px);
-            }
             .qr-section {
               display: block !important;
             }
           }
           @media (max-width: 1023px) {
             .signup-layout {
+              padding-left: 0 !important;
               flex-direction: column;
               max-width: 440px;
               margin: 0 auto;
@@ -490,6 +492,7 @@ export default function SignupPage() {
           display: "flex",
           gap: 20,
           alignItems: "flex-start",
+          paddingLeft: "calc(50% - 220px)", // PC 기본값 (초기 렌더링부터 적용)
         }}
         className="signup-step1-layout"
       >
@@ -915,16 +918,17 @@ export default function SignupPage() {
       </div>
 
       <style jsx>{`
+        .qr-section {
+          display: none;
+        }
         @media (min-width: 1024px) {
-          .signup-step1-layout {
-            padding-left: calc(50% - 220px);
-          }
           .qr-section {
             display: block !important;
           }
         }
         @media (max-width: 1023px) {
           .signup-step1-layout {
+            padding-left: 0 !important;
             flex-direction: column;
             max-width: 440px;
             margin: 0 auto;

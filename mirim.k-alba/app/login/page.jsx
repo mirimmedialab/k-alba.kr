@@ -64,6 +64,7 @@ export default function LoginPage() {
           display: "flex",
           gap: 20,
           alignItems: "flex-start",
+          paddingLeft: "calc(50% - 220px)", // PC 기본값 (초기 렌더링부터 적용)
         }}
         className="login-layout"
       >
@@ -273,16 +274,17 @@ export default function LoginPage() {
     </div>
 
     <style jsx>{`
+      .qr-section {
+        display: none;
+      }
       @media (min-width: 1024px) {
-        .login-layout {
-          padding-left: calc(50% - 220px);
-        }
         .qr-section {
           display: block !important;
         }
       }
       @media (max-width: 1023px) {
         .login-layout {
+          padding-left: 0 !important;
           flex-direction: column;
           max-width: 440px;
           margin: 0 auto;
