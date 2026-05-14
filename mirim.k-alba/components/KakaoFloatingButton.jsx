@@ -27,10 +27,11 @@ export function KakaoFloatingButton() {
           style={{
             display: "block",
             position: "relative",
+            top: -5,
             background: "#FFFFFF",
             borderRadius: 20,
             padding: "14px 20px",
-            paddingRight: 20,
+            paddingRight: 50,
             boxShadow: isHovered
               ? "0 16px 40px rgba(0, 0, 0, 0.16)"
               : "0 10px 30px rgba(0, 0, 0, 0.12)",
