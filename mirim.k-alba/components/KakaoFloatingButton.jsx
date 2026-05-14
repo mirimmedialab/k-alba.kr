@@ -18,7 +18,7 @@ export function KakaoFloatingButton() {
       className="kakao-floating-container"
     >
       {/* 겹침 구조: 말풍선 + 버튼 */}
-      <div style={{ position: "relative", paddingRight: 48 }}>
+      <div style={{ position: "relative", paddingRight: 70 }}>
         {/* 말풍선 카드 */}
         <a
           href="https://pf.kakao.com/_qTxouX"
@@ -30,7 +30,7 @@ export function KakaoFloatingButton() {
             background: "#FFFFFF",
             borderRadius: 20,
             padding: "24px 28px",
-            paddingRight: 40,
+            paddingRight: 52,
             boxShadow: isHovered
               ? "0 16px 40px rgba(0, 0, 0, 0.16)"
               : "0 10px 30px rgba(0, 0, 0, 0.12)",
