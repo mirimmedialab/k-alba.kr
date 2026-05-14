@@ -60,12 +60,9 @@ export default function LoginPage() {
     >
       <div
         style={{
-          maxWidth: 600,
-          margin: "0 auto",
           display: "flex",
           gap: 20,
           alignItems: "flex-start",
-          justifyContent: "center",
         }}
         className="login-layout"
       >
@@ -311,6 +308,9 @@ export default function LoginPage() {
 
     <style jsx>{`
       @media (min-width: 1024px) {
+        .login-layout {
+          padding-left: calc(50% - 220px);
+        }
         .qr-section {
           display: block !important;
         }
@@ -318,7 +318,8 @@ export default function LoginPage() {
       @media (max-width: 1023px) {
         .login-layout {
           flex-direction: column;
-          max-width: 100% !important;
+          max-width: 440px;
+          margin: 0 auto;
         }
         .main-content {
           width: 100% !important;

@@ -237,12 +237,9 @@ export default function SignupPage() {
       >
         <div
           style={{
-            maxWidth: 600,
-            margin: "0 auto",
             display: "flex",
             gap: 20,
             alignItems: "flex-start",
-            justifyContent: "center",
           }}
           className="signup-layout"
         >
@@ -488,6 +485,9 @@ export default function SignupPage() {
 
         <style jsx>{`
           @media (min-width: 1024px) {
+            .signup-layout {
+              padding-left: calc(50% - 220px);
+            }
             .qr-section {
               display: block !important;
             }
@@ -495,7 +495,8 @@ export default function SignupPage() {
           @media (max-width: 1023px) {
             .signup-layout {
               flex-direction: column;
-              max-width: 100% !important;
+              max-width: 440px;
+              margin: 0 auto;
             }
             .main-content {
               width: 100% !important;
@@ -515,7 +516,15 @@ export default function SignupPage() {
         background: T.paper,
       }}
     >
-      <form onSubmit={handleSubmit} style={{ maxWidth: 460, margin: "0 auto" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 20,
+          alignItems: "flex-start",
+        }}
+        className="signup-step1-layout"
+      >
+      <form onSubmit={handleSubmit} style={{ width: 440 }} className="main-content">
         <button
           type="button"
           onClick={() => setStep(0)}
@@ -900,6 +909,62 @@ export default function SignupPage() {
           </Link>
         </p>
       </form>
+
+      {/* 우측 QR 코드 */}
+      <div
+        style={{
+          display: "none",
+          textAlign: "center",
+          paddingTop: 80,
+        }}
+        className="qr-section"
+      >
+        <div
+          style={{
+            width: 100,
+            height: 100,
+            borderRadius: 8,
+            background: "#fff",
+            padding: 8,
+            marginBottom: 8,
+            border: `1px solid ${T.border}`,
+          }}
+        >
+          <img
+            src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https%3A%2F%2Fk-alba.kr&margin=0"
+            alt="K-ALBA QR"
+            style={{ width: "100%", height: "100%", display: "block" }}
+          />
+        </div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink, marginBottom: 3 }}>
+          K-ALBA
+        </div>
+        <div style={{ fontSize: 10, color: T.ink2, lineHeight: 1.4 }}>
+          휴대폰으로<br />접속하세요
+        </div>
+      </div>
+      </div>
+
+      <style jsx>{`
+        @media (min-width: 1024px) {
+          .signup-step1-layout {
+            padding-left: calc(50% - 220px);
+          }
+          .qr-section {
+            display: block !important;
+          }
+        }
+        @media (max-width: 1023px) {
+          .signup-step1-layout {
+            flex-direction: column;
+            max-width: 440px;
+            margin: 0 auto;
+          }
+          .main-content {
+            width: 100% !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
