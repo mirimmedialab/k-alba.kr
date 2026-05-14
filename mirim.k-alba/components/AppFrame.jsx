@@ -55,11 +55,11 @@ export default function AppFrame({ children }) {
   // 그 외 경로: DesktopMobileFrame 적용 + 필요한 경우 NavBar/Footer 추가
   return (
     <I18nProvider>
+      {showNavBar && <NavBar />}
       <DesktopMobileFrame>
-        {showNavBar && <NavBar />}
         {children}
-        {showFooter && <Footer />}
       </DesktopMobileFrame>
+      {showFooter && <Footer />}
       {/* 플로팅 카카오톡 버튼 - DesktopMobileFrame 사용하는 모든 페이지에 표시 */}
       <KakaoFloatingButton />
     </I18nProvider>
