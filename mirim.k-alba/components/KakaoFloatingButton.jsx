@@ -29,7 +29,7 @@ export function KakaoFloatingButton() {
             position: "relative",
             background: "#FFFFFF",
             borderRadius: 20,
-            padding: "24px 28px",
+            padding: "14px 20px",
             paddingRight: 52,
             boxShadow: isHovered
               ? "0 16px 40px rgba(0, 0, 0, 0.16)"
@@ -82,45 +82,24 @@ export function KakaoFloatingButton() {
               color: "#1A1A1A",
               lineHeight: 1.5,
               letterSpacing: "-0.03em",
-              marginBottom: 16,
               marginLeft: 42,
             }}
           >
             공고 등록부터 계약까지
           </div>
 
-          {/* 채널 열기 버튼 */}
-          <div
-            style={{
-              background: "#FEE500",
-              borderRadius: 12,
-              padding: "10px 20px",
-              fontSize: 14,
-              fontWeight: 800,
-              color: "#3C1E1E",
-              letterSpacing: "-0.02em",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              marginLeft: 42,
-            }}
-          >
-            채널 열기
-            <span style={{ fontSize: 14 }}>→</span>
-          </div>
-
           {/* 말풍선 꼬리 */}
           <div
             style={{
               position: "absolute",
-              right: 30,
-              bottom: -10,
+              right: -14,
+              bottom: 20,
               width: 0,
               height: 0,
-              borderTop: "18px solid #FFFFFF",
-              borderLeft: "10px solid transparent",
-              borderRight: "10px solid transparent",
-              filter: "drop-shadow(3px 3px 3px rgba(0, 0, 0, 0.06))",
+              borderLeft: "14px solid #FFFFFF",
+              borderTop: "8px solid transparent",
+              borderBottom: "8px solid transparent",
+              filter: "drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.08))",
             }}
           />
         </a>
