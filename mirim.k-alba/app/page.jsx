@@ -1345,8 +1345,8 @@ export default function LandingPage() {
               <span style={{ fontSize: 11, color: T.ink3 }}>© 2026 {COMPANY.brandName}. All rights reserved.</span>
             </div>
 
-            {/* 두 번째 줄: 법적 정보 (중앙 정렬) */}
-            <div style={{ fontSize: 11, color: T.ink3, textAlign: "center", lineHeight: 1.6 }}>
+            {/* 두 번째 줄: 법적 정보 (왼쪽 정렬) */}
+            <div style={{ fontSize: 11, color: T.ink3, lineHeight: 1.6 }}>
               대표: {COMPANY.ceo} | 사업자등록번호: {COMPANY.businessNumber} | 직업정보제공사업 신고번호: {COMPANY.jobInfoLicense} | 주소: {COMPANY.address}
             </div>
           </div>
