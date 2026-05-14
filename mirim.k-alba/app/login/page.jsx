@@ -6,7 +6,6 @@ import { T } from "@/lib/theme";
 import { Btn, Inp } from "@/components/UI";
 import { signIn, signInWithOAuth } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
-import { KakaoFloatingButton } from "@/components/KakaoFloatingButton";
 
 /**
  * 로그인 페이지 — McKinsey 에디토리얼 스타일
@@ -52,27 +51,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "calc(100vh - 180px)",
-        padding: "40px 20px",
-        background: T.paper,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          gap: 20,
-          alignItems: "flex-start",
-          paddingLeft: "calc(50% - 220px)", // PC 기본값 (초기 렌더링부터 적용)
-        }}
-        className="login-layout"
-      >
-        <form
-          onSubmit={handleSubmit}
-          style={{ width: 440 }}
-          className="main-content"
-        >
+    <div style={{ padding: "32px 20px" }}>
+      <form onSubmit={handleSubmit}>
         {/* Back link */}
         <Link
           href="/"
@@ -237,24 +217,6 @@ export default function LoginPage() {
           </Link>
         </p>
       </form>
-    </div>
-
-    <style jsx>{`
-      @media (max-width: 1023px) {
-        .login-layout {
-          padding-left: 0 !important;
-          flex-direction: column;
-          max-width: 440px;
-          margin: 0 auto;
-        }
-        .main-content {
-          width: 100% !important;
-        }
-      }
-    `}</style>
-
-    {/* 플로팅 카카오톡 버튼 */}
-    <KakaoFloatingButton />
     </div>
   );
 }

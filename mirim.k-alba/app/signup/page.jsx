@@ -6,7 +6,6 @@ import { T, COMPANY } from "@/lib/theme";
 import { signUp, signInWithOAuth } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 import { Button, Input, KWordmark, ButtonLoading } from "@/components/ui";
-import { KakaoFloatingButton } from "@/components/KakaoFloatingButton";
 
 /**
  * /signup 회원가입 (BI v2)
@@ -229,25 +228,8 @@ export default function SignupPage() {
   // ──────────────── Step 0: 역할 선택 ────────────────
   if (step === 0) {
     return (
-      <div
-        style={{
-          minHeight: "calc(100vh - 180px)",
-          background: T.paper,
-          padding: "40px 20px",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            gap: 20,
-            alignItems: "flex-start",
-            paddingLeft: "calc(50% - 220px)", // PC 기본값 (초기 렌더링부터 적용)
-          }}
-          className="signup-layout"
-        >
-          {/* 메인 콘텐츠 */}
-          <div style={{ width: 440 }} className="main-content">
-            {/* 뒤로 */}
+      <div style={{ padding: "32px 20px" }}>
+        {/* 뒤로 */}
             <Link
               href="/"
               style={{
@@ -413,48 +395,14 @@ export default function SignupPage() {
                 );
               })}
             </div>
-          </div>
-        </div>
-
-        <style jsx>{`
-          @media (max-width: 1023px) {
-            .signup-layout {
-              padding-left: 0 !important;
-              flex-direction: column;
-              max-width: 440px;
-              margin: 0 auto;
-            }
-            .main-content {
-              width: 100% !important;
-            }
-          }
-        `}</style>
-
-        {/* 플로팅 카카오톡 버튼 */}
-        <KakaoFloatingButton />
       </div>
     );
   }
 
   // ──────────────── Step 1: 폼 입력 ────────────────
   return (
-    <div
-      style={{
-        minHeight: "calc(100vh - 56px - 180px)",
-        padding: "40px 20px",
-        background: T.paper,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          gap: 20,
-          alignItems: "flex-start",
-          paddingLeft: "calc(50% - 220px)", // PC 기본값 (초기 렌더링부터 적용)
-        }}
-        className="signup-step1-layout"
-      >
-      <form onSubmit={handleSubmit} style={{ width: 440 }} className="main-content">
+    <div style={{ padding: "32px 20px" }}>
+      <form onSubmit={handleSubmit}>
         <button
           type="button"
           onClick={() => setStep(0)}
@@ -839,24 +787,6 @@ export default function SignupPage() {
           </Link>
         </p>
       </form>
-      </div>
-
-      <style jsx>{`
-        @media (max-width: 1023px) {
-          .signup-step1-layout {
-            padding-left: 0 !important;
-            flex-direction: column;
-            max-width: 440px;
-            margin: 0 auto;
-          }
-          .main-content {
-            width: 100% !important;
-          }
-        }
-      `}</style>
-
-      {/* 플로팅 카카오톡 버튼 */}
-      <KakaoFloatingButton />
     </div>
   );
 }

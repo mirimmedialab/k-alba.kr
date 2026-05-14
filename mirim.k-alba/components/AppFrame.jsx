@@ -29,8 +29,8 @@ import { I18nProvider } from "@/lib/i18n";
  *   모바일에서는 풀폭, 데스크톱에서는 480px 가운데 영역 안에 표시됨.
  */
 
-// NavBar를 숨길 경로 (정확히 일치)
-const HIDE_NAVBAR_ON = ["/", "/m", "/login", "/signup"];
+// NavBar를 숨길 경로 (랜딩 페이지만 자체 히어로가 있어 숨김)
+const HIDE_NAVBAR_ON = ["/", "/m"];
 // Footer를 숨길 경로 (자체 푸터가 있는 페이지)
 const HIDE_FOOTER_ON = ["/", "/m"];
 // DesktopMobileFrame을 사용하지 않을 경로 (랜딩페이지만 제외)
