@@ -1325,12 +1325,8 @@ export default function LandingPage() {
                 color: T.ink3,
               }}
             >
-              <a href="/about" style={{ color: T.ink3, textDecoration: "none", fontWeight: 600 }}>회사 소개</a>
               <a href="/terms" style={{ color: T.ink3, textDecoration: "none", fontWeight: 600 }}>이용약관</a>
               <a href="/privacy" style={{ color: T.ink3, textDecoration: "none", fontWeight: 600 }}>개인정보처리방침</a>
-              <a href={`mailto:${COMPANY.email}`} style={{ color: T.ink3, textDecoration: "none", fontWeight: 600 }}>
-                문의: {COMPANY.email}
-              </a>
             </div>
           </div>
 
