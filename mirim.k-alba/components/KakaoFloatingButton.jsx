@@ -37,6 +37,8 @@ export function KakaoFloatingButton() {
               : "0 10px 30px rgba(0, 0, 0, 0.12)",
             transition: "all 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
             transform: isHovered ? "translateY(-6px)" : "translateY(0)",
+            opacity: isHovered ? 1 : 0,
+            pointerEvents: isHovered ? "auto" : "none",
             textDecoration: "none",
             cursor: "pointer",
           }}
