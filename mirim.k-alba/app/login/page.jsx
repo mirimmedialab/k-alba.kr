@@ -238,32 +238,28 @@ export default function LoginPage() {
         {/* 카카오톡 채널 */}
         <div
           style={{
-            background: T.cream,
-            borderRadius: 8,
-            padding: "16px",
-            border: `1px solid ${T.border}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginTop: 16,
+            gap: 12,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <span style={{ fontSize: 18 }}>💬</span>
-            <div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>카카오톡 채널</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 14 }}>💬</span>
+            <span style={{ fontSize: 12, color: T.ink2 }}>카카오톡 채널 연결</span>
           </div>
-          <p style={{ fontSize: 13, color: T.ink2, lineHeight: 1.6, marginBottom: 12 }}>
-            사장님은 카카오톡 챗봇으로 3분만에 공고 등록 가능
-          </p>
           <a
             href="https://pf.kakao.com/_qTxouX"
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              display: "inline-block",
-              fontSize: 13,
-              fontWeight: 700,
-              color: T.paper,
-              background: "#FEE500",
-              padding: "8px 16px",
-              borderRadius: 6,
+              fontSize: 12,
+              fontWeight: 600,
+              color: T.ink3,
               textDecoration: "none",
+              borderBottom: `1px solid ${T.ink3}`,
+              paddingBottom: 1,
             }}
           >
             채널 열기 →
