@@ -48,7 +48,7 @@ export default function DesktopMobileFrame({ children }) {
       style={{
         minHeight: "100vh",
         padding: "40px 20px",
-        background: T.paper,
+        background: T.cream,
       }}
     >
       <div
@@ -59,8 +59,16 @@ export default function DesktopMobileFrame({ children }) {
           paddingLeft: "calc(50% - 220px)", // 메인 영역(440px) 중앙 정렬
         }}
       >
-        {/* ── 메인 콘텐츠 (440px) ── */}
-        <main style={{ width: 440 }}>
+        {/* ── 메인 콘텐츠 (440px) - 카드 스타일 ── */}
+        <main
+          style={{
+            width: 440,
+            background: T.paper,
+            borderRadius: 16,
+            boxShadow: "0 4px 20px rgba(10, 22, 40, 0.08), 0 1px 4px rgba(10, 22, 40, 0.04)",
+            overflow: "hidden",
+          }}
+        >
           {children}
         </main>
 

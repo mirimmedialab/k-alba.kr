@@ -33,8 +33,8 @@ import { I18nProvider } from "@/lib/i18n";
 const HIDE_NAVBAR_ON = ["/", "/m", "/login", "/signup"];
 // Footer를 숨길 경로 (자체 푸터가 있는 페이지)
 const HIDE_FOOTER_ON = ["/", "/m"];
-// DesktopMobileFrame을 사용하지 않을 경로 (단순 중앙 정렬)
-const NO_FRAME_ON = ["/", "/m", "/login", "/signup"];
+// DesktopMobileFrame을 사용하지 않을 경로 (랜딩페이지만 제외)
+const NO_FRAME_ON = ["/", "/m"];
 
 export default function AppFrame({ children }) {
   const pathname = usePathname();
