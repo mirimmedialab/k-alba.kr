@@ -9,8 +9,8 @@ export function KakaoFloatingButton() {
     <div
       style={{
         position: "fixed",
-        bottom: 38,
-        right: 28,
+        bottom: 48,
+        right: 38,
         zIndex: 1000,
       }}
       onMouseEnter={() => setIsHovered(true)}
