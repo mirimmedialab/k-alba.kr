@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
 import { getJobs } from "@/lib/supabase";
@@ -166,24 +165,25 @@ export default function JobsPage() {
       )}
 
       {/* 챗봇 체험 배너 */}
-      <Link href="/simulator?mode=worker&job=k1&autostart=1" style={{ textDecoration: "none" }}>
-        <div style={{
+      <div
+        onClick={() => router.push("/simulator?mode=worker&job=k1&autostart=1")}
+        style={{
           background: T.n9, color: T.paper, padding: "14px 16px", borderRadius: 4,
           borderLeft: `3px solid ${T.gold}`, marginBottom: 20,
           display: "flex", alignItems: "center", gap: 12, cursor: "pointer",
-        }}>
-          <div style={{ fontSize: 22 }}>💬</div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 14, letterSpacing: "-0.01em", marginBottom: 2 }}>
-              {t("jobs.chatbotBannerTitle")}
-            </div>
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)" }}>
-              {t("jobs.chatbotBannerDesc")}
-            </div>
+        }}
+      >
+        <div style={{ fontSize: 22 }}>💬</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 700, fontSize: 14, letterSpacing: "-0.01em", marginBottom: 2 }}>
+            {t("jobs.chatbotBannerTitle")}
           </div>
-          <div style={{ fontSize: 18, color: T.gold }}>→</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)" }}>
+            {t("jobs.chatbotBannerDesc")}
+          </div>
         </div>
-      </Link>
+        <div style={{ fontSize: 18, color: T.gold }}>→</div>
+      </div>
 
       {/* 정렬 탭 */}
       <div style={{ display: "flex", gap: 4, marginBottom: 12, borderBottom: `1px solid ${T.border}`, overflowX: "auto" }}>
@@ -436,18 +436,19 @@ function LocationBanner({ source, location, onRequestLocation, loading }) {
  */
 function JobListItem({ job, index, showDistance, showReason }) {
   const t = useT();
+  const router = useRouter();
   return (
-    <Link href={`/jobs/${job.id}`} style={{ textDecoration: "none" }}>
-      <div
-        style={{
-          padding: "18px 0",
-          borderBottom: `1px solid ${T.border}`,
-          display: "flex", alignItems: "flex-start", gap: 16,
-          transition: "background 0.15s", cursor: "pointer",
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = T.cream)}
-        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-      >
+    <div
+      onClick={() => router.push(`/jobs/${job.id}`)}
+      style={{
+        padding: "18px 0",
+        borderBottom: `1px solid ${T.border}`,
+        display: "flex", alignItems: "flex-start", gap: 16,
+        transition: "background 0.15s", cursor: "pointer",
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = T.cream)}
+      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+    >
         {/* 인덱스 */}
         <div style={{
           minWidth: 24, fontSize: 12, fontWeight: 700,
@@ -543,6 +544,5 @@ function JobListItem({ job, index, showDistance, showReason }) {
           </div>
         </div>
       </div>
-    </Link>
   );
 }
