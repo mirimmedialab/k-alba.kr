@@ -519,24 +519,24 @@ export default function SignupPage() {
       }}
     >
       <form onSubmit={handleSubmit} style={{ maxWidth: 460, margin: "0 auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-          <button
-            type="button"
-            onClick={() => setStep(0)}
-            style={{
-              background: "none",
-              border: "none",
-              color: T.ink3,
-              fontSize: 13,
-              cursor: "pointer",
-              padding: 0,
-              fontFamily: "inherit",
-            }}
-          >
-            ← {t("common.back")}
-          </button>
-          <KWordmark size={16} />
-        </div>
+        <button
+          type="button"
+          onClick={() => setStep(0)}
+          style={{
+            background: "none",
+            border: "none",
+            color: T.ink3,
+            fontSize: 13,
+            cursor: "pointer",
+            padding: 0,
+            fontFamily: "inherit",
+            marginBottom: 32,
+            display: "block",
+            fontWeight: 600,
+          }}
+        >
+          ← {t("common.back")}
+        </button>
 
         <div
           style={{
