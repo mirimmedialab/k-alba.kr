@@ -16,7 +16,7 @@ export function useRecommendedJobs({
 
   useEffect(() => {
     if (!enabled) {
-      setJobs([]);
+      setJobs((prev) => (prev.length === 0 ? prev : []));
       return;
     }
 

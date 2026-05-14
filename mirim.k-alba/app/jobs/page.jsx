@@ -38,6 +38,8 @@ import { Input, VisaBadge, PageLoading, Empty } from "@/components/ui";
  *   - 다국어 (useT)
  */
 
+const DEFAULT_TRANSPORT = ["transit", "walk"];
+
 const DEMO_JOBS = [
   { id: 1, title: "카페 바리스타", company_name: "블루보틀 강남점", sigungu: "강남구", address: "서울 강남구 테헤란로 152", pay_type: "시급", pay_amount: 12000, visa_types: ["D-2", "F-4", "H-2"], created_at: "2026-04-22", latitude: 37.5012, longitude: 127.0396 },
   { id: 2, title: "영어 과외 선생님", company_name: "에듀커넥트", sigungu: "온라인", address: "온라인", pay_type: "시급", pay_amount: 25000, visa_types: ["D-2", "E-7", "F-2", "F-5"], created_at: "2026-04-23", latitude: null, longitude: null },
@@ -72,7 +74,7 @@ export default function JobsPage() {
   } = useRecommendedJobs({
     userVisa: userProfile?.visa,
     userKoreanLevel: userProfile?.korean_level,
-    userTransport: userProfile?.transport_modes || ["transit", "walk"],
+    userTransport: userProfile?.transport_modes || DEFAULT_TRANSPORT,
     radius: userProfile?.search_radius_km || radius,
     limit: 50,
     enabled: sortMode === "recommended" && userProfile !== null,
