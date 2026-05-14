@@ -221,37 +221,40 @@ export default function NavBar() {
         {!onLanding && authChecked && !user && (
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <LanguageSwitcher compact />
-            <Link
-              href="/login"
+            <button
+              onClick={() => router.push("/login")}
               style={{
                 padding: "8px 14px",
                 borderRadius: 4,
                 fontSize: 14,
                 fontWeight: 600,
-                textDecoration: "none",
                 color: T.ink,
                 background: "transparent",
                 border: `1px solid ${T.border}`,
                 letterSpacing: "-0.01em",
+                cursor: "pointer",
+                fontFamily: "inherit",
               }}
             >
               {t("nav.login")}
-            </Link>
-            <Link
-              href="/signup"
+            </button>
+            <button
+              onClick={() => router.push("/signup")}
               style={{
                 padding: "8px 14px",
                 borderRadius: 4,
                 fontSize: 14,
                 fontWeight: 600,
-                textDecoration: "none",
                 color: T.paper,
                 background: T.n9,
+                border: "none",
                 letterSpacing: "-0.01em",
+                cursor: "pointer",
+                fontFamily: "inherit",
               }}
             >
               {t("nav.signup")}
-            </Link>
+            </button>
           </div>
         )}
       </div>
