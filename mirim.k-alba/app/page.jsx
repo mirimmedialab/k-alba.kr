@@ -6,6 +6,7 @@ import { useT } from "@/lib/i18n";
 import { getSession, supabase } from "@/lib/supabase";
 import { UserChip } from "@/components/UserChip";
 import { Button, KWordmark, PageLoading } from "@/components/ui";
+import { KakaoFloatingButton } from "@/components/KakaoFloatingButton";
 
 /**
  * K-ALBA 데스크톱 랜딩 (BI v2 Section 3.2)
@@ -1352,6 +1353,9 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* 플로팅 카카오톡 버튼 */}
+      <KakaoFloatingButton />
     </div>
   );
 }

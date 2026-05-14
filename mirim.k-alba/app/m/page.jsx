@@ -6,6 +6,7 @@ import { UserChip } from "@/components/UserChip";
 import { T, COMPANY } from "@/lib/theme";
 import { Button, KIcon, KWordmark, PageLoading } from "@/components/ui";
 import { useT, useLocale } from "@/lib/i18n";
+import { KakaoFloatingButton } from "@/components/KakaoFloatingButton";
 
 /**
  * 모바일 랜딩 페이지 (BI v2 적용)
@@ -584,6 +585,9 @@ export default function MobileLandingPage() {
           </div>
         </div>
       </div>
+
+      {/* 플로팅 카카오톡 버튼 */}
+      <KakaoFloatingButton />
     </div>
   );
 }
