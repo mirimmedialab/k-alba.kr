@@ -3,6 +3,7 @@ import { usePathname } from "next/navigation";
 import DesktopMobileFrame from "./DesktopMobileFrame";
 import NavBar from "./NavBar";
 import Footer from "./Footer";
+import { KakaoFloatingButton } from "./KakaoFloatingButton";
 import { I18nProvider } from "@/lib/i18n";
 
 /**
@@ -59,6 +60,8 @@ export default function AppFrame({ children }) {
         {children}
         {showFooter && <Footer />}
       </DesktopMobileFrame>
+      {/* 플로팅 카카오톡 버튼 - DesktopMobileFrame 사용하는 모든 페이지에 표시 */}
+      <KakaoFloatingButton />
     </I18nProvider>
   );
 }
