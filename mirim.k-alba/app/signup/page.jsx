@@ -6,6 +6,7 @@ import { T, COMPANY } from "@/lib/theme";
 import { signUp, signInWithOAuth } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 import { Button, Input, KWordmark, ButtonLoading } from "@/components/ui";
+import { KakaoFloatingButton } from "@/components/KakaoFloatingButton";
 
 /**
  * /signup 회원가입 (BI v2)
@@ -411,41 +412,6 @@ export default function SignupPage() {
                 );
               })}
             </div>
-
-            {/* 카카오톡 채널 */}
-            <a
-              href="https://pf.kakao.com/_qTxouX"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 12,
-                padding: "8px 14px",
-                background: T.cream,
-                border: `1px solid ${T.border}`,
-                borderRadius: 999,
-                textDecoration: "none",
-                marginTop: 16,
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = T.ink3;
-                e.currentTarget.style.background = T.paper;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = T.border;
-                e.currentTarget.style.background = T.cream;
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 14 }}>💬</span>
-                <span style={{ fontSize: 12, color: T.ink2 }}>카카오톡 채널 연결</span>
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, color: T.ink3 }}>
-                채널 열기 →
-              </span>
-            </a>
           </div>
 
           {/* 우측 QR 코드 */}
@@ -503,6 +469,9 @@ export default function SignupPage() {
             }
           }
         `}</style>
+
+        {/* 플로팅 카카오톡 버튼 */}
+        <KakaoFloatingButton />
       </div>
     );
   }
@@ -965,6 +934,9 @@ export default function SignupPage() {
           }
         }
       `}</style>
+
+      {/* 플로팅 카카오톡 버튼 */}
+      <KakaoFloatingButton />
     </div>
   );
 }
