@@ -731,9 +731,8 @@ export default function LandingPage() {
               marginBottom: 32,
             }}
           >
-            기존 플랫폼이 외국인을{" "}
-            <span style={{ color: T.accent }}>구조적으로 배제</span>
-            하는 3가지 이유
+            외국인 취업 과정에서 발생하는{" "}
+            <span style={{ color: T.accent }}>어려움</span>
           </motion.h2>
 
           {/* 3가지 이유 - 3열 카드 */}
@@ -745,10 +744,10 @@ export default function LandingPage() {
             style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}
           >
             {[
-              ["1", "언어 장벽", "알바몬·알바천국은 한국어 전용. 외국인은 공고 내용도 급여 조건도 계약 조항도 이해하기 어렵습니다.", "73%", "한국어 장벽으로 구직 포기한 유학생 비율"],
-              ["2", "비자 불투명성", "D-2, E-9, F-4 등 12가지 비자별로 가능한 업종이 다름. 근로자도 사업주도 법적 적합성을 판단하기 어렵습니다.", "31%", "비자 혼란을 가장 큰 장벽으로 꼽는 외국인 비율"],
-              ["3", "계약서 부재", "근로기준법상 서면 계약이 의무이나 대부분 구두 합의로 진행. 분쟁 시 외국인이 불리한 위치에 놓입니다.", "54%", "서면 근로계약 없이 일하는 파트타임 근로자"],
-            ].map(([num, title, desc, stat, statLabel]) => (
+              ["1", "언어 장벽", "알바 플랫폼 대부분은 한국어 중심으로 운영됩니다. 외국인 구직자는 공고 내용, 급여 조건, 계약 조항을 이해하기 어려운 경우가 많습니다."],
+              ["2", "복잡한 취업 절차", "외국인 유학생은 시간제취업 신청, 확인서 발급 등 복잡한 절차를 거쳐야 합니다. 절차와 정보 접근이 어려워 정식적인 취업 과정을 진행하기 힘든 경우가 많습니다."],
+              ["3", "비공식 취업 구조", "취업 절차와 관리 체계가 복잡하다 보니 외국인 근로자가 비공식적이거나 불법적인 경로로 취업하게 되는 사례가 발생합니다."],
+            ].map(([num, title, desc]) => (
               <motion.div
                 key={num}
                 variants={staggerItem}
@@ -788,24 +787,9 @@ export default function LandingPage() {
                 >
                   {title}
                 </h3>
-                <p style={{ fontSize: 14, color: T.ink2, lineHeight: 1.65, marginBottom: 20 }}>
+                <p style={{ fontSize: 14, color: T.ink2, lineHeight: 1.7 }}>
                   {desc}
                 </p>
-                <div
-                  style={{
-                    fontSize: 32,
-                    fontWeight: 800,
-                    color: T.accent,
-                    letterSpacing: "-0.025em",
-                    lineHeight: 1,
-                    marginBottom: 6,
-                  }}
-                >
-                  {stat}
-                </div>
-                <div style={{ fontSize: 13, color: T.ink3, lineHeight: 1.4 }}>
-                  {statLabel}
-                </div>
               </motion.div>
             ))}
           </motion.div>
