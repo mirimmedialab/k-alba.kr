@@ -295,7 +295,7 @@ export default function LandingPage() {
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
                 }}>260만 명</em>
-                을 위한<br />합법적 알바 플랫폼
+                을 위한<br />안전한 취업·채용 플랫폼
               </h1>
               <p
                 style={{
@@ -307,8 +307,8 @@ export default function LandingPage() {
                   margin: "0 auto 40px",
                 }}
               >
-                비자별 맞춤 공고, 7개 언어 지원, 카카오톡 챗봇으로 3분 만에 근로계약서까지.
-                <br />신뢰할 수 있는 외국인 채용 플랫폼입니다.
+                비자 조건에 맞는 채용 공고부터 근로계약서 작성까지
+                <br />외국인 근로자와 사업장을 위한 취업 절차를 지원합니다.
               </p>
 
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, marginBottom: 64 }}>
@@ -573,10 +573,10 @@ export default function LandingPage() {
                 marginBottom: 16,
               }}
             >
-              세 가지 대상을 위한 전문 솔루션
+              각 사용자에 최적화된 솔루션
             </h2>
             <p style={{ fontSize: 17, color: T.ink2, lineHeight: 1.7, maxWidth: 640, margin: "0 auto" }}>
-              외국인 구직자, 채용 기업, 대학 담당자 모두를 위한<br />맞춤형 채용 플랫폼
+              모두를 위한 맞춤형 채용 플랫폼
             </p>
           </motion.div>
 
@@ -600,7 +600,7 @@ export default function LandingPage() {
               {
                 icon: "💼",
                 label: "For Employers",
-                title: "사장님을 위한 효율적인 채용 관리",
+                title: "사장님을 위한\n효율적인 채용 관리",
                 desc: "카카오톡 기반 간편 채용으로 외국인 인재 모집부터 근로계약까지 한 번에 관리하세요.",
                 features: ["3분 공고 등록", "카카오톡 간편 채용", "근로계약서 자동 작성", "근로계약 관리"],
                 color: "#C2512A",
@@ -609,7 +609,7 @@ export default function LandingPage() {
               {
                 icon: "🏫",
                 label: "For Universities",
-                title: "학교 담당자를 위한 학생 근로 운영 시스템",
+                title: "학교 담당자를 위한\n학생 근로 운영 시스템",
                 desc: "외국인 유학생 시간제취업 확인서 발급부터 관리까지 대학의 유학생 행정을 더 간편하고 체계적으로 운영하세요.",
                 features: ["외국인 유학생 시간제취업 확인서 모바일 발급", "클릭 한 번으로 승인 및 관리", "유학생 불법 취업 최소화", "교육국제화역량 인증제(IEQAS) 대응"],
                 color: "#7C3AED",
@@ -667,6 +667,7 @@ export default function LandingPage() {
                     color: T.ink,
                     marginBottom: 12,
                     letterSpacing: "-0.02em",
+                    whiteSpace: "pre-line",
                   }}
                 >
                   {item.title}
