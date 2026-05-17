@@ -841,14 +841,14 @@ export default function LandingPage() {
               <h2
                 style={{
                   fontWeight: 800,
-                  fontSize: "clamp(26px, 4vw, 34px)",
-                  lineHeight: 1.25,
+                  fontSize: "clamp(24px, 3.6vw, 30px)",
+                  lineHeight: 1.3,
                   letterSpacing: "-0.025em",
                   color: T.ink,
                   marginBottom: 20,
                 }}
               >
-                외국인 구직자
+                외국인 근로자를 위한 취업 지원
               </h2>
               <div style={{ height: 1, background: T.border, marginBottom: 24 }} />
               <p
@@ -859,8 +859,8 @@ export default function LandingPage() {
                   letterSpacing: "-0.01em",
                 }}
               >
-                한국어를 잘 못해도, 비자가 복잡해도 —{" "}
-                <span style={{ color: T.accent, fontWeight: 700 }}>안심하고 알바할 수 있습니다</span>
+                외국인 취업 절차를{" "}
+                <span style={{ color: T.accent, fontWeight: 700 }}>더 간편하게</span>
               </p>
             </motion.div>
 
@@ -872,12 +872,10 @@ export default function LandingPage() {
               style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}
             >
               {[
-                ["🌐", "내 언어로 알바 찾기", "한국어·영어·중국어·베트남어·우즈벡어·몽골어·일본어 7개 언어 지원."],
-                ["🛂", "내 비자에 맞는 공고만", "비자 유형 입력하면 합법적으로 일할 수 있는 공고만 자동 필터링."],
-                ["📝", "근로계약서 자동 발급", "변호사 검토 완료 양식을 카톡 챗봇으로 3분 만에 서명."],
-                ["💰", "최저시급 보장 확인", "시급 10,030원 미달 공고는 경고 표시, 주휴수당 자동 안내."],
-                ["💬", "전화 없이 카톡으로", "5단계 카카오톡 챗봇으로 지원부터 합격까지 완료."],
-                ["⭐", "K-ALBA 인증 경력", "근무 완료 시 사장님 평가와 함께 경력 자동 적립."],
+                ["🌐", "다국어 지원", "7개 언어로 채용 공고와 취업 절차를 안내합니다."],
+                ["📄", "시간제취업 확인서 발급 지원", "외국인 유학생의 시간제취업 확인서 발급 절차를 지원합니다."],
+                ["📝", "근로계약서 자동 작성", "근로계약서를 카카오톡 기반으로 간편하게 작성할 수 있습니다."],
+                ["⚖️", "합법적 취업 절차 지원", "비자 및 근로 기준에 맞는 취업 절차를 안내합니다."],
               ].map(([ic, title, desc]) => (
                 <motion.div
                   key={title}
@@ -961,14 +959,14 @@ export default function LandingPage() {
               <h2
                 style={{
                   fontWeight: 800,
-                  fontSize: "clamp(26px, 4vw, 34px)",
-                  lineHeight: 1.25,
+                  fontSize: "clamp(24px, 3.6vw, 30px)",
+                  lineHeight: 1.3,
                   letterSpacing: "-0.025em",
                   color: T.ink,
                   marginBottom: 20,
                 }}
               >
-                사장님
+                사장님을 위한 외국인 채용 관리
               </h2>
               <div style={{ height: 1, background: T.border, marginBottom: 24 }} />
               <p
@@ -979,8 +977,8 @@ export default function LandingPage() {
                   letterSpacing: "-0.01em",
                 }}
               >
-                외국인 채용이 어렵고 복잡했나요?{" "}
-                <span style={{ color: T.accent, fontWeight: 700 }}>K-ALBA가 다 해드립니다</span>
+                외국인 채용 절차를{" "}
+                <span style={{ color: T.accent, fontWeight: 700 }}>더 간편하게</span>
               </p>
             </motion.div>
 
@@ -992,12 +990,11 @@ export default function LandingPage() {
               style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}
             >
               {[
-                ["📢", "카카오톡으로 3분 공고 등록", "14단계 챗봇 질문에 답하면 공고 자동 완성."],
-                ["🛂", "비자 자동 확인", "지원자의 비자를 자동 검증. 불법 고용 위험 없이 채용."],
-                ["📝", "근로계약서 자동 생성", "공고 정보가 계약서에 자동 입력, 법무법인 검토 완료."],
-                ["💼", "인력난 해소", "260만 외국인 근로자 풀에 직접 접근."],
-                ["🔍", "국세청 인증 사업주", "사업자번호 실시간 검증으로 인증 배지 부여."],
-                ["📊", "지역·업종별 시세 안내", "13개 업종 × 지역별 평균 급여 실시간 제공."],
+                ["💬", "카카오톡 기반 공고 등록", "카카오톡 챗봇과의 간단한 질의응답만으로 채용 공고를 등록할 수 있습니다."],
+                ["📋", "채용 공고 작성 지원", "입력한 정보를 기반으로 채용 공고 작성 과정을 간편하게 지원합니다."],
+                ["📝", "근로계약서 자동 작성", "채용 정보 기반으로 근로계약서를 자동 작성할 수 있습니다."],
+                ["🧭", "외국인 채용 절차 지원", "외국인 채용 과정에서 필요한 절차와 정보를 안내합니다."],
+                ["📨", "카카오톡 기반 지원 관리", "지원자 문의 및 채용 과정을 카카오톡 기반으로 관리할 수 있습니다."],
               ].map(([ic, title, desc]) => (
                 <motion.div
                   key={title}
@@ -1081,14 +1078,14 @@ export default function LandingPage() {
               <h2
                 style={{
                   fontWeight: 800,
-                  fontSize: "clamp(26px, 4vw, 34px)",
-                  lineHeight: 1.25,
+                  fontSize: "clamp(24px, 3.6vw, 30px)",
+                  lineHeight: 1.3,
                   letterSpacing: "-0.025em",
                   color: T.ink,
                   marginBottom: 20,
                 }}
               >
-                학교 담당자
+                학교 담당자를 위한 유학생 근로 운영 지원
               </h2>
               <div style={{ height: 1, background: T.border, marginBottom: 24 }} />
               <p
@@ -1099,8 +1096,8 @@ export default function LandingPage() {
                   letterSpacing: "-0.01em",
                 }}
               >
-                유학생 시간제취업,{" "}
-                <span style={{ color: T.accent, fontWeight: 700 }}>이제 사무실 컴퓨터 없이</span>
+                유학생 시간제취업 운영을{" "}
+                <span style={{ color: T.accent, fontWeight: 700 }}>더 간편하게</span>
               </p>
             </motion.div>
 
@@ -1112,11 +1109,11 @@ export default function LandingPage() {
               style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}
             >
               {[
-                ["⚡", "24시간 내 모바일 처리", "카카오톡으로 신청서 받아 모바일에서 즉시 검토·서명. 학생을 기다리게 하지 않습니다."],
-                ["📄", "확인서 자동 생성", "손글씨 서명 한 번이면 PDF 자동 발급. 학교 인장도 디지털로 적용됩니다."],
-                ["⚖️", "출입국관리법 자동 준수", "출석률 70% 미만, C학점 미만 학생 자동 차단. 위반 조건을 시스템이 검증합니다."],
-                ["🏆", "IEQAS 평가 가점", "유학생 관리 시스템 도입으로 교육국제화역량인증 평가 가산점 확보."],
-                ["📊", "실시간 대시보드", "학과별·국가별 시간제취업 신청 현황을 한눈에 파악. 승인·반려 추이 실시간 추적."],
+                ["📱", "시간제취업 확인서 모바일 발급 지원", "외국인 유학생 시간제취업 확인서를 모바일 기반으로 발급할 수 있습니다."],
+                ["✅", "모바일 기반 승인 및 관리", "학교 담당자가 모바일에서도 신청 내역을 검토하고 승인할 수 있습니다."],
+                ["📊", "유학생 근로 현황 관리 지원", "유학생 근로 및 신청 현황을 보다 체계적으로 관리할 수 있습니다."],
+                ["⚖️", "유학생 불법 취업 최소화 지원", "시간제취업 절차 기반 운영으로 유학생의 불법 취업 가능성을 줄일 수 있습니다."],
+                ["🏆", "교육국제화역량 인증제(IEQAS) 대응 지원", "유학생 관리 및 운영 체계 구축을 지원합니다."],
               ].map(([ic, title, desc]) => (
                 <motion.div
                   key={title}
