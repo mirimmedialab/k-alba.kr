@@ -804,200 +804,236 @@ export default function LandingPage() {
         viewport={{ once: true, amount: 0.2 }}
         variants={rotateUnfold}
         style={{
-          padding: "96px 20px",
-          background: T.paper,
-          borderBottom: `1px solid ${T.border}`,
+          padding: "clamp(60px, 8vw, 96px) 20px",
+          background: T.cream,
         }}
       >
         <div style={{ maxWidth: 960, margin: "0 auto" }}>
-          <motion.div
-            initial={prefersReducedMotion ? "visible" : "hidden"}
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeInDown}
+          <div
+            style={{
+              background: T.paper,
+              border: `1px solid ${T.border}`,
+              borderTop: `4px solid ${T.accent}`,
+              borderRadius: 10,
+              padding: "clamp(40px, 6vw, 56px) clamp(24px, 5vw, 48px)",
+              boxShadow: "0 2px 12px rgba(10, 22, 40, 0.04)",
+            }}
           >
-            <div
-              style={{
-                display: "inline-block",
-                padding: "4px 10px",
-                background: T.abg || T.accentBg,
-                color: T.accent,
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-                marginBottom: 14,
-                borderRadius: 2,
-              }}
+            <motion.div
+              initial={prefersReducedMotion ? "visible" : "hidden"}
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInDown}
+              style={{ marginBottom: 40 }}
             >
-              For Workers · 외국인 구직자
-            </div>
-            <h2
-              style={{
-                fontWeight: 800,
-                fontSize: "clamp(20px, 5vw, 28px)",
-                lineHeight: 1.35,
-                letterSpacing: "-0.025em",
-                color: T.ink,
-                marginBottom: 32,
-              }}
-            >
-              한국어를 잘 못해도, 비자가 복잡해도 —{" "}
-              <span style={{ color: T.accent }}>안심하고 알바할 수 있습니다</span>
-            </h2>
-          </motion.div>
-
-          <motion.div
-            initial={prefersReducedMotion ? "visible" : "hidden"}
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
-            variants={rotateUnfoldContainer}
-            style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}
-          >
-            {[
-              ["🌐", "내 언어로 알바 찾기", "한국어·영어·중국어·베트남어·우즈벡어·몽골어·일본어 7개 언어 지원."],
-              ["🛂", "내 비자에 맞는 공고만", "비자 유형 입력하면 합법적으로 일할 수 있는 공고만 자동 필터링."],
-              ["📝", "근로계약서 자동 발급", "변호사 검토 완료 양식을 카톡 챗봇으로 3분 만에 서명."],
-              ["💰", "최저시급 보장 확인", "시급 10,030원 미달 공고는 경고 표시, 주휴수당 자동 안내."],
-              ["💬", "전화 없이 카톡으로", "5단계 카카오톡 챗봇으로 지원부터 합격까지 완료."],
-              ["⭐", "K-ALBA 인증 경력", "근무 완료 시 사장님 평가와 함께 경력 자동 적립."],
-            ].map(([ic, title, desc]) => (
-              <motion.div
-                key={title}
-                variants={rotateUnfoldItem}
-                whileHover={prefersReducedMotion ? {} : {
-                  y: -4,
-                  borderColor: T.accent,
-                  boxShadow: "0 8px 24px rgba(10, 22, 40, 0.08)",
-                  transition: { duration: 0.3 }
-                }}
+              <div
                 style={{
-                  padding: 20,
-                  background: T.paper,
-                  border: `1px solid ${T.border}`,
-                  borderRadius: 6,
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: T.accent,
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  marginBottom: 12,
                 }}
               >
-                <div style={{ fontSize: 24, marginBottom: 10 }}>{ic}</div>
-                <div
+                For Workers
+              </div>
+              <h2
+                style={{
+                  fontWeight: 800,
+                  fontSize: "clamp(26px, 4vw, 34px)",
+                  lineHeight: 1.25,
+                  letterSpacing: "-0.025em",
+                  color: T.ink,
+                  marginBottom: 20,
+                }}
+              >
+                외국인 구직자
+              </h2>
+              <div style={{ height: 1, background: T.border, marginBottom: 24 }} />
+              <p
+                style={{
+                  fontSize: 17,
+                  color: T.ink2,
+                  lineHeight: 1.7,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                한국어를 잘 못해도, 비자가 복잡해도 —{" "}
+                <span style={{ color: T.accent, fontWeight: 700 }}>안심하고 알바할 수 있습니다</span>
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={prefersReducedMotion ? "visible" : "hidden"}
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.1 }}
+              variants={rotateUnfoldContainer}
+              style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}
+            >
+              {[
+                ["🌐", "내 언어로 알바 찾기", "한국어·영어·중국어·베트남어·우즈벡어·몽골어·일본어 7개 언어 지원."],
+                ["🛂", "내 비자에 맞는 공고만", "비자 유형 입력하면 합법적으로 일할 수 있는 공고만 자동 필터링."],
+                ["📝", "근로계약서 자동 발급", "변호사 검토 완료 양식을 카톡 챗봇으로 3분 만에 서명."],
+                ["💰", "최저시급 보장 확인", "시급 10,030원 미달 공고는 경고 표시, 주휴수당 자동 안내."],
+                ["💬", "전화 없이 카톡으로", "5단계 카카오톡 챗봇으로 지원부터 합격까지 완료."],
+                ["⭐", "K-ALBA 인증 경력", "근무 완료 시 사장님 평가와 함께 경력 자동 적립."],
+              ].map(([ic, title, desc]) => (
+                <motion.div
+                  key={title}
+                  variants={rotateUnfoldItem}
+                  whileHover={prefersReducedMotion ? {} : {
+                    y: -4,
+                    borderColor: T.accent,
+                    boxShadow: "0 8px 24px rgba(10, 22, 40, 0.08)",
+                    transition: { duration: 0.3 }
+                  }}
                   style={{
-                    fontSize: 15,
-                    fontWeight: 800,
-                    color: T.ink,
-                    marginBottom: 6,
-                    letterSpacing: "-0.02em",
+                    padding: 24,
+                    background: T.paper,
+                    border: `1px solid ${T.border}`,
+                    borderRadius: 8,
                   }}
                 >
-                  {title}
-                </div>
-                <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.55 }}>
-                  {desc}
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+                  <div style={{ fontSize: 26, marginBottom: 12 }}>{ic}</div>
+                  <div
+                    style={{
+                      fontSize: 15,
+                      fontWeight: 800,
+                      color: T.ink,
+                      marginBottom: 8,
+                      letterSpacing: "-0.02em",
+                    }}
+                  >
+                    {title}
+                  </div>
+                  <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.65 }}>
+                    {desc}
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
         </div>
       </motion.section>
 
-      {/* ═══════════════════ EMPLOYER FEATURES (크림 배경) ═══════════════════ */}
+      {/* ═══════════════════ EMPLOYER FEATURES ═══════════════════ */}
       <motion.section
         initial={prefersReducedMotion ? "visible" : "hidden"}
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
         variants={scaleBlur}
         style={{
-          padding: "96px 20px",
+          padding: "clamp(60px, 8vw, 96px) 20px",
           background: T.cream,
-          borderBottom: `1px solid ${T.border}`,
         }}
       >
         <div style={{ maxWidth: 960, margin: "0 auto" }}>
-          <motion.div
-            initial={prefersReducedMotion ? "visible" : "hidden"}
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeInDown}
+          <div
+            style={{
+              background: T.paper,
+              border: `1px solid ${T.border}`,
+              borderTop: `4px solid ${T.gold}`,
+              borderRadius: 10,
+              padding: "clamp(40px, 6vw, 56px) clamp(24px, 5vw, 48px)",
+              boxShadow: "0 2px 12px rgba(10, 22, 40, 0.04)",
+            }}
           >
-            <div
-              style={{
-                display: "inline-block",
-                padding: "4px 10px",
-                background: T.n9,
-                color: T.gold,
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-                marginBottom: 14,
-                borderRadius: 2,
-              }}
+            <motion.div
+              initial={prefersReducedMotion ? "visible" : "hidden"}
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInDown}
+              style={{ marginBottom: 40 }}
             >
-              For Employers · 사장님
-            </div>
-            <h2
-              style={{
-                fontWeight: 800,
-                fontSize: "clamp(20px, 5vw, 28px)",
-                lineHeight: 1.35,
-                letterSpacing: "-0.025em",
-                color: T.ink,
-                marginBottom: 32,
-              }}
-            >
-              외국인 채용이 어렵고 복잡했나요?{" "}
-              <span style={{ color: T.accent }}>K-ALBA가 다 해드립니다</span>
-            </h2>
-          </motion.div>
-
-          <motion.div
-            initial={prefersReducedMotion ? "visible" : "hidden"}
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
-            variants={scaleBlurContainer}
-            style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}
-          >
-            {[
-              ["📢", "카카오톡으로 3분 공고 등록", "14단계 챗봇 질문에 답하면 공고 자동 완성."],
-              ["🛂", "비자 자동 확인", "지원자의 비자를 자동 검증. 불법 고용 위험 없이 채용."],
-              ["📝", "근로계약서 자동 생성", "공고 정보가 계약서에 자동 입력, 법무법인 검토 완료."],
-              ["💼", "인력난 해소", "260만 외국인 근로자 풀에 직접 접근."],
-              ["🔍", "국세청 인증 사업주", "사업자번호 실시간 검증으로 인증 배지 부여."],
-              ["📊", "지역·업종별 시세 안내", "13개 업종 × 지역별 평균 급여 실시간 제공."],
-            ].map(([ic, title, desc]) => (
-              <motion.div
-                key={title}
-                variants={scaleBlurItem}
-                whileHover={prefersReducedMotion ? {} : {
-                  y: -4,
-                  borderColor: T.gold,
-                  boxShadow: "0 8px 24px rgba(10, 22, 40, 0.08)",
-                  transition: { duration: 0.3 }
-                }}
+              <div
                 style={{
-                  padding: 20,
-                  background: T.paper,
-                  border: `1px solid ${T.border}`,
-                  borderRadius: 6,
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: T.gold,
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  marginBottom: 12,
                 }}
               >
-                <div style={{ fontSize: 24, marginBottom: 10 }}>{ic}</div>
-                <div
+                For Employers
+              </div>
+              <h2
+                style={{
+                  fontWeight: 800,
+                  fontSize: "clamp(26px, 4vw, 34px)",
+                  lineHeight: 1.25,
+                  letterSpacing: "-0.025em",
+                  color: T.ink,
+                  marginBottom: 20,
+                }}
+              >
+                사장님
+              </h2>
+              <div style={{ height: 1, background: T.border, marginBottom: 24 }} />
+              <p
+                style={{
+                  fontSize: 17,
+                  color: T.ink2,
+                  lineHeight: 1.7,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                외국인 채용이 어렵고 복잡했나요?{" "}
+                <span style={{ color: T.accent, fontWeight: 700 }}>K-ALBA가 다 해드립니다</span>
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={prefersReducedMotion ? "visible" : "hidden"}
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.1 }}
+              variants={scaleBlurContainer}
+              style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}
+            >
+              {[
+                ["📢", "카카오톡으로 3분 공고 등록", "14단계 챗봇 질문에 답하면 공고 자동 완성."],
+                ["🛂", "비자 자동 확인", "지원자의 비자를 자동 검증. 불법 고용 위험 없이 채용."],
+                ["📝", "근로계약서 자동 생성", "공고 정보가 계약서에 자동 입력, 법무법인 검토 완료."],
+                ["💼", "인력난 해소", "260만 외국인 근로자 풀에 직접 접근."],
+                ["🔍", "국세청 인증 사업주", "사업자번호 실시간 검증으로 인증 배지 부여."],
+                ["📊", "지역·업종별 시세 안내", "13개 업종 × 지역별 평균 급여 실시간 제공."],
+              ].map(([ic, title, desc]) => (
+                <motion.div
+                  key={title}
+                  variants={scaleBlurItem}
+                  whileHover={prefersReducedMotion ? {} : {
+                    y: -4,
+                    borderColor: T.gold,
+                    boxShadow: "0 8px 24px rgba(10, 22, 40, 0.08)",
+                    transition: { duration: 0.3 }
+                  }}
                   style={{
-                    fontSize: 15,
-                    fontWeight: 800,
-                    color: T.ink,
-                    marginBottom: 6,
-                    letterSpacing: "-0.02em",
+                    padding: 24,
+                    background: T.paper,
+                    border: `1px solid ${T.border}`,
+                    borderRadius: 8,
                   }}
                 >
-                  {title}
-                </div>
-                <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.55 }}>
-                  {desc}
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+                  <div style={{ fontSize: 26, marginBottom: 12 }}>{ic}</div>
+                  <div
+                    style={{
+                      fontSize: 15,
+                      fontWeight: 800,
+                      color: T.ink,
+                      marginBottom: 8,
+                      letterSpacing: "-0.02em",
+                    }}
+                  >
+                    {title}
+                  </div>
+                  <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.65 }}>
+                    {desc}
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
         </div>
       </motion.section>
 
@@ -1008,96 +1044,115 @@ export default function LandingPage() {
         viewport={{ once: true, amount: 0.2 }}
         variants={slideFromLeft}
         style={{
-          padding: "96px 20px",
-          background: T.paper,
-          borderBottom: `1px solid ${T.border}`,
+          padding: "clamp(60px, 8vw, 96px) 20px",
+          background: T.cream,
         }}
       >
         <div style={{ maxWidth: 960, margin: "0 auto" }}>
-          <motion.div
-            initial={prefersReducedMotion ? "visible" : "hidden"}
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeInDown}
+          <div
+            style={{
+              background: T.paper,
+              border: `1px solid ${T.border}`,
+              borderTop: `4px solid ${T.navy}`,
+              borderRadius: 10,
+              padding: "clamp(40px, 6vw, 56px) clamp(24px, 5vw, 48px)",
+              boxShadow: "0 2px 12px rgba(10, 22, 40, 0.04)",
+            }}
           >
-            <div
-              style={{
-                display: "inline-block",
-                color: T.navy,
-                background: T.gold,
-                padding: "4px 12px",
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-                marginBottom: 14,
-                borderRadius: 2,
-              }}
+            <motion.div
+              initial={prefersReducedMotion ? "visible" : "hidden"}
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInDown}
+              style={{ marginBottom: 40 }}
             >
-              For Universities · 학교 담당자
-            </div>
-            <h2
-              style={{
-                fontWeight: 800,
-                fontSize: "clamp(20px, 5vw, 28px)",
-                lineHeight: 1.35,
-                letterSpacing: "-0.025em",
-                color: T.ink,
-                marginBottom: 32,
-              }}
-            >
-              유학생 시간제취업, <em style={{ fontStyle: "normal", color: T.accent }}>이제 사무실 컴퓨터 없이</em>
-            </h2>
-          </motion.div>
-
-          <motion.div
-            initial={prefersReducedMotion ? "visible" : "hidden"}
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
-            variants={slideFromLeftContainer}
-            style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}
-          >
-            {[
-              ["⚡", "24시간 내 모바일 처리", "카카오톡으로 신청서 받아 모바일에서 즉시 검토·서명. 학생을 기다리게 하지 않습니다."],
-              ["📄", "확인서 자동 생성", "손글씨 서명 한 번이면 PDF 자동 발급. 학교 인장도 디지털로 적용됩니다."],
-              ["⚖️", "출입국관리법 자동 준수", "출석률 70% 미만, C학점 미만 학생 자동 차단. 위반 조건을 시스템이 검증합니다."],
-              ["🏆", "IEQAS 평가 가점", "유학생 관리 시스템 도입으로 교육국제화역량인증 평가 가산점 확보."],
-              ["📊", "실시간 대시보드", "학과별·국가별 시간제취업 신청 현황을 한눈에 파악. 승인·반려 추이 실시간 추적."],
-            ].map(([ic, title, desc]) => (
-              <motion.div
-                key={title}
-                variants={slideFromLeftItem}
-                whileHover={prefersReducedMotion ? {} : {
-                  y: -4,
-                  borderColor: T.gold,
-                  boxShadow: "0 8px 24px rgba(10, 22, 40, 0.08)",
-                  transition: { duration: 0.3 }
-                }}
+              <div
                 style={{
-                  padding: 20,
-                  background: T.paper,
-                  border: `1px solid ${T.border}`,
-                  borderRadius: 6,
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: T.navy,
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  marginBottom: 12,
                 }}
               >
-                <div style={{ fontSize: 24, marginBottom: 10 }}>{ic}</div>
-                <div
+                For Universities
+              </div>
+              <h2
+                style={{
+                  fontWeight: 800,
+                  fontSize: "clamp(26px, 4vw, 34px)",
+                  lineHeight: 1.25,
+                  letterSpacing: "-0.025em",
+                  color: T.ink,
+                  marginBottom: 20,
+                }}
+              >
+                학교 담당자
+              </h2>
+              <div style={{ height: 1, background: T.border, marginBottom: 24 }} />
+              <p
+                style={{
+                  fontSize: 17,
+                  color: T.ink2,
+                  lineHeight: 1.7,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                유학생 시간제취업,{" "}
+                <span style={{ color: T.accent, fontWeight: 700 }}>이제 사무실 컴퓨터 없이</span>
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={prefersReducedMotion ? "visible" : "hidden"}
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.1 }}
+              variants={slideFromLeftContainer}
+              style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}
+            >
+              {[
+                ["⚡", "24시간 내 모바일 처리", "카카오톡으로 신청서 받아 모바일에서 즉시 검토·서명. 학생을 기다리게 하지 않습니다."],
+                ["📄", "확인서 자동 생성", "손글씨 서명 한 번이면 PDF 자동 발급. 학교 인장도 디지털로 적용됩니다."],
+                ["⚖️", "출입국관리법 자동 준수", "출석률 70% 미만, C학점 미만 학생 자동 차단. 위반 조건을 시스템이 검증합니다."],
+                ["🏆", "IEQAS 평가 가점", "유학생 관리 시스템 도입으로 교육국제화역량인증 평가 가산점 확보."],
+                ["📊", "실시간 대시보드", "학과별·국가별 시간제취업 신청 현황을 한눈에 파악. 승인·반려 추이 실시간 추적."],
+              ].map(([ic, title, desc]) => (
+                <motion.div
+                  key={title}
+                  variants={slideFromLeftItem}
+                  whileHover={prefersReducedMotion ? {} : {
+                    y: -4,
+                    borderColor: T.navy,
+                    boxShadow: "0 8px 24px rgba(10, 22, 40, 0.08)",
+                    transition: { duration: 0.3 }
+                  }}
                   style={{
-                    fontWeight: 700,
-                    fontSize: 15,
-                    color: T.ink,
-                    marginBottom: 6,
-                    letterSpacing: "-0.02em",
+                    padding: 24,
+                    background: T.paper,
+                    border: `1px solid ${T.border}`,
+                    borderRadius: 8,
                   }}
                 >
-                  {title}
-                </div>
-                <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.55 }}>
-                  {desc}
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+                  <div style={{ fontSize: 26, marginBottom: 12 }}>{ic}</div>
+                  <div
+                    style={{
+                      fontWeight: 800,
+                      fontSize: 15,
+                      color: T.ink,
+                      marginBottom: 8,
+                      letterSpacing: "-0.02em",
+                    }}
+                  >
+                    {title}
+                  </div>
+                  <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.65 }}>
+                    {desc}
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
         </div>
       </motion.section>
 
