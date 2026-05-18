@@ -308,7 +308,7 @@ export default function MobileLandingPage() {
                     transition: "opacity 0.6s ease-in-out",
                   }}
                 >
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.kakaoYellow, color: "#3C1E1E", padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.coralL, color: T.coral, padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
                     💼 사장님을 위한
                   </div>
                   <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: T.navy, marginBottom: 16, letterSpacing: -1 }}>
@@ -342,6 +342,9 @@ export default function MobileLandingPage() {
                 >
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#F5F3FF", color: "#7C3AED", padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
                     🏫 학교 담당자를 위한
+                    <span style={{ fontSize: 10, fontWeight: 700, color: T.ink3, background: "#fff", padding: "1px 6px", borderRadius: 4, marginLeft: 2 }}>
+                      준비중
+                    </span>
                   </div>
                   <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: T.navy, marginBottom: 16, letterSpacing: -1 }}>
                     유학생 시간제취업,<br />
@@ -353,26 +356,10 @@ export default function MobileLandingPage() {
                     시간제취업 확인서 발급부터 승인까지, 카카오톡으로 유학생 행정을 더 간편하게 운영하세요.
                   </p>
                   <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-                    <Link href="/login" style={{ textDecoration: "none" }}>
-                      <button
-                        style={{
-                          background: "#7C3AED",
-                          color: "#fff",
-                          padding: "12px 24px",
-                          borderRadius: 12,
-                          fontSize: 14,
-                          fontWeight: 700,
-                          border: "none",
-                          cursor: "pointer",
-                          fontFamily: "inherit",
-                          boxShadow: "0 4px 16px rgba(124, 58, 237, 0.25)",
-                          letterSpacing: "-0.01em",
-                        }}
-                      >
-                        🏫 학교 담당자 시작하기
-                      </button>
-                    </Link>
-                    <Button variant="secondary" href="/login">{t("landing.haveAccount")}</Button>
+                    <Button variant="primary" disabled style={{ boxShadow: `0 4px 16px ${T.coral}40` }}>
+                      학교 담당자 시작
+                    </Button>
+                    <Button variant="secondary" disabled>{t("landing.haveAccount")}</Button>
                   </div>
                 </div>
               </div>
@@ -416,7 +403,7 @@ export default function MobileLandingPage() {
             </div>
 
             <div style={{ fontSize: 48, marginBottom: 12 }}>👋</div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.kakaoYellow, color: "#3C1E1E", padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.coralL, color: T.coral, padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
               💼 사장님
             </div>
             <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: T.navy, marginBottom: 16, letterSpacing: -1 }}>
@@ -1180,6 +1167,45 @@ export default function MobileLandingPage() {
                   💼 사장님으로 시작
                 </button>
               </Link>
+              <button
+                type="button"
+                disabled
+                aria-label="학교 담당자로 시작 (서비스 준비중)"
+                style={{
+                  width: "100%",
+                  background: "#7C3AED",
+                  color: "#fff",
+                  padding: "18px 24px",
+                  borderRadius: 14,
+                  fontSize: 16,
+                  fontWeight: 800,
+                  border: "none",
+                  cursor: "not-allowed",
+                  fontFamily: "inherit",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  opacity: 0.55,
+                  letterSpacing: "-0.01em",
+                  position: "relative",
+                }}
+              >
+                🏫 학교 담당자로 시작
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: "#7C3AED",
+                    background: "#fff",
+                    padding: "2px 8px",
+                    borderRadius: 6,
+                    letterSpacing: "-0.01em",
+                  }}
+                >
+                  준비중
+                </span>
+              </button>
             </div>
           </div>
         </div>
