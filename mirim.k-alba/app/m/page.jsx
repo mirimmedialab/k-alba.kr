@@ -478,48 +478,71 @@ export default function MobileLandingPage() {
                 transition: "opacity 0.6s ease-in-out",
               }}
             >
-              <div style={{ width: 240, background: "#fff", borderRadius: 32, boxShadow: "0 30px 80px rgba(10,22,40,0.14),0 0 0 1px rgba(10,22,40,0.04)", overflow: "hidden", border: "7px solid #1a1a2e" }}>
+              <div style={{ width: 240, background: "#B2C7D9", borderRadius: 32, boxShadow: "0 30px 80px rgba(10,22,40,0.14),0 0 0 1px rgba(10,22,40,0.04)", overflow: "hidden", border: "7px solid #1a1a2e" }}>
                 <div style={{ width: 80, height: 22, background: "#1a1a2e", borderRadius: "0 0 14px 14px", margin: "0 auto" }} />
-                <div style={{ padding: 12, minHeight: 460 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, background: "#fff", padding: "8px 12px", borderRadius: 10, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-                    <KIcon size="xs" style={{ width: 24, height: 24, fontSize: 12, borderRadius: 7 }} />
+                <div style={{ padding: 12, background: "#B2C7D9", minHeight: 460 }}>
+                  {/* Header */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, background: "#fff", padding: "8px 12px", borderRadius: 10 }}>
+                    <KIcon variant="kakao" size="xs" style={{ width: 24, height: 24, fontSize: 12, borderRadius: 7 }} />
                     <div style={{ flex: 1 }}>
-                      <KWordmark size={11} />
+                      <div style={{ fontSize: 11, fontWeight: 800, color: T.navy }}>K-ALBA 알바 도우미</div>
                       <div style={{ fontSize: 8, color: T.ink3 }}>Linh T. · 🇻🇳 D-2 비자</div>
                     </div>
                     <div style={{ width: 6, height: 6, borderRadius: 3, background: T.mint }} />
                   </div>
-                  <div style={{ background: T.cream, borderRadius: 10, padding: "7px 12px", fontSize: 10, color: T.ink3, marginBottom: 8 }}>🔍 알바 검색...</div>
-                  <div style={{ display: "flex", gap: 4, marginBottom: 8, flexWrap: "wrap" }}>
-                    {[{ l: "D-2 가능", active: true }, { l: "강남", active: false }, { l: "주 20시간", active: false }, { l: "한국어 초급", active: false }].map((c, i) => (
-                      <span key={i} style={{ fontSize: 8, fontWeight: 700, padding: "3px 8px", borderRadius: 10, background: c.active ? T.mintL : "#fff", color: c.active ? "#059669" : T.ink3, border: `1px solid ${c.active ? T.mint + "40" : T.border}` }}>{c.l}</span>
-                    ))}
+
+                  {/* Bot greeting */}
+                  <div style={{ display: "flex", gap: 5, marginBottom: 6 }}>
+                    <KIcon variant="kakao" size="xxs" style={{ width: 22, height: 22, fontSize: 10, borderRadius: 7 }} />
+                    <div style={{ background: "#fff", padding: "6px 9px", borderRadius: "3px 10px 10px 10px", fontSize: 9, color: T.navy }}>안녕하세요! 어떤 알바 찾으세요?</div>
                   </div>
-                  <div style={{ background: `linear-gradient(135deg,${T.mintL},#D1FAE5)`, borderRadius: 8, padding: "6px 10px", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontSize: 11 }}>✨</span>
-                    <span style={{ fontSize: 9, fontWeight: 700, color: "#059669" }}>비자에 맞는 알바 <strong>28건</strong> 찾음!</span>
+
+                  {/* User reply */}
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 6 }}>
+                    <div style={{ background: T.kakaoYellowMsg, padding: "6px 9px", borderRadius: "10px 3px 10px 10px", fontSize: 9, color: T.navy, fontWeight: 700 }}>강남 · 주 20시간 🙋</div>
                   </div>
-                  {[
-                    { ic: "☕", t: "카페 바리스타", m: "강남구 · 주 20시간", p: "₩12,000", v: "D-2", bg: "#FFF7ED", match: "95%" },
-                    { ic: "📚", t: "영어 과외", m: "온라인 · 자유시간", p: "₩25,000", v: "F-2", bg: "#EEF2FF", match: "88%" },
-                    { ic: "🏭", t: "공장 생산직", m: "수원 · 주 40시간", p: "₩12,500", v: "E-9", bg: "#ECFDF5", match: "82%" },
-                    { ic: "🏨", t: "호텔 프론트", m: "명동 · 주 30시간", p: "₩13,000", v: "H-1", bg: "#FEF2F2", match: "78%" },
-                  ].map((j, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 10, border: `1px solid ${T.border}`, marginBottom: 5, background: "#fff" }}>
-                      <div style={{ width: 30, height: 30, borderRadius: 8, background: j.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}>{j.ic}</div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: T.navy }}>{j.t}</span>
-                          <span style={{ fontSize: 7, fontWeight: 700, background: T.mintL, color: "#059669", padding: "1px 4px", borderRadius: 3 }}>{j.match}</span>
+
+                  {/* Bot recommendation card */}
+                  <div style={{ display: "flex", gap: 5, marginBottom: 6 }}>
+                    <KIcon variant="kakao" size="xxs" style={{ width: 22, height: 22, fontSize: 10, borderRadius: 7 }} />
+                    <div style={{ background: "#fff", padding: "8px 10px", borderRadius: "3px 10px 10px 10px", maxWidth: "85%", width: "85%" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 6, paddingBottom: 5, borderBottom: `1px solid ${T.cream}` }}>
+                        <span style={{ fontSize: 11 }}>✨</span>
+                        <span style={{ fontSize: 9, fontWeight: 800, color: T.navy }}>비자에 맞는 알바 <strong>28건</strong></span>
+                      </div>
+                      {[
+                        { ic: "☕", t: "카페 바리스타", m: "강남 · 주 20시간", p: "₩12,000", match: "95%" },
+                        { ic: "📚", t: "영어 과외", m: "온라인 · 자유시간", p: "₩25,000", match: "88%" },
+                        { ic: "🏨", t: "호텔 프론트", m: "명동 · 주 30시간", p: "₩13,000", match: "78%" },
+                      ].map((j, i) => (
+                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 0", borderTop: i > 0 ? `1px solid ${T.cream}` : "none" }}>
+                          <div style={{ width: 22, height: 22, borderRadius: 6, background: T.cream, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11 }}>{j.ic}</div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                              <span style={{ fontSize: 9, fontWeight: 700, color: T.navy }}>{j.t}</span>
+                              <span style={{ fontSize: 7, fontWeight: 700, background: T.mintL, color: "#059669", padding: "1px 4px", borderRadius: 3 }}>{j.match}</span>
+                            </div>
+                            <div style={{ fontSize: 8, color: T.ink3, marginTop: 1 }}>{j.m}</div>
+                          </div>
+                          <span style={{ fontSize: 9, fontWeight: 800, color: T.mint }}>{j.p}</span>
                         </div>
-                        <div style={{ fontSize: 8, color: T.ink3, marginTop: 1 }}>{j.m}</div>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: 11, fontWeight: 800, color: T.mint }}>{j.p}</div>
-                        <span style={{ fontSize: 7, fontWeight: 700, background: "#EEF2FF", color: "#4F46E5", padding: "1px 5px", borderRadius: 3 }}>{j.v} ✓</span>
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+
+                  {/* User select */}
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 6 }}>
+                    <div style={{ background: T.kakaoYellowMsg, padding: "6px 9px", borderRadius: "10px 3px 10px 10px", fontSize: 9, color: T.navy, fontWeight: 700 }}>카페 바리스타 지원 ✓</div>
+                  </div>
+
+                  {/* Bot confirmation */}
+                  <div style={{ display: "flex", gap: 5 }}>
+                    <KIcon variant="kakao" size="xxs" style={{ width: 22, height: 22, fontSize: 10, borderRadius: 7 }} />
+                    <div style={{ background: "#fff", padding: "6px 9px", borderRadius: "3px 10px 10px 10px", fontSize: 9, color: "#059669", fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+                      <span>✓</span>
+                      <span>지원 완료! 사장님 응답 대기중</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -638,77 +661,77 @@ export default function MobileLandingPage() {
                 transition: "opacity 0.6s ease-in-out",
               }}
             >
-              <div style={{ width: 240, background: "#fff", borderRadius: 32, boxShadow: "0 30px 80px rgba(10,22,40,0.14),0 0 0 1px rgba(10,22,40,0.04)", overflow: "hidden", border: "7px solid #1a1a2e" }}>
+              <div style={{ width: 240, background: "#B2C7D9", borderRadius: 32, boxShadow: "0 30px 80px rgba(10,22,40,0.14),0 0 0 1px rgba(10,22,40,0.04)", overflow: "hidden", border: "7px solid #1a1a2e" }}>
                 <div style={{ width: 80, height: 22, background: "#1a1a2e", borderRadius: "0 0 14px 14px", margin: "0 auto" }} />
-                <div style={{ padding: 12, minHeight: 460 }}>
+                <div style={{ padding: 12, background: "#B2C7D9", minHeight: 460 }}>
                   {/* Header */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, background: "#fff", padding: "8px 12px", borderRadius: 10, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", border: `1px solid ${T.border}` }}>
-                    <div style={{ width: 24, height: 24, borderRadius: 7, background: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#fff" }}>🏫</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, background: "#fff", padding: "8px 12px", borderRadius: 10 }}>
+                    <KIcon variant="kakao" size="xs" style={{ width: 24, height: 24, fontSize: 12, borderRadius: 7 }} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 11, fontWeight: 800, color: T.navy }}>K-ALBA 학교 행정</div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: T.navy }}>K-ALBA 학교 도우미</div>
                       <div style={{ fontSize: 8, color: T.ink3 }}>김교수 · 한국외대</div>
                     </div>
                     <div style={{ width: 6, height: 6, borderRadius: 3, background: T.mint }} />
                   </div>
 
-                  {/* Stat row */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4, marginBottom: 8 }}>
-                    {[
-                      ["신규", "5", "#7C3AED"],
-                      ["검토중", "3", "#F59E0B"],
-                      ["승인", "12", "#10B981"],
-                    ].map(([l, n, c]) => (
-                      <div key={l} style={{ background: "#fff", borderRadius: 8, padding: "6px 4px", textAlign: "center", border: `1px solid ${T.border}` }}>
-                        <div style={{ fontSize: 14, fontWeight: 900, color: c, lineHeight: 1 }}>{n}</div>
-                        <div style={{ fontSize: 7, color: T.ink3, marginTop: 2 }}>{l}</div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Alert chip */}
-                  <div style={{ background: `linear-gradient(135deg,#F5F3FF,#EDE9FE)`, borderRadius: 8, padding: "6px 10px", marginBottom: 8, display: "flex", alignItems: "center", gap: 6, border: `1px solid #DDD6FE` }}>
-                    <span style={{ fontSize: 11 }}>🔔</span>
-                    <span style={{ fontSize: 9, fontWeight: 700, color: "#7C3AED" }}>승인 대기 <strong>3건</strong> 검토해주세요</span>
-                  </div>
-
-                  {/* Recent applications list */}
-                  <div style={{ background: "#fff", borderRadius: 10, padding: "9px 10px", marginBottom: 6 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7, paddingBottom: 5, borderBottom: `1px solid ${T.cream}` }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                        <span style={{ fontSize: 11 }}>📋</span>
-                        <span style={{ fontSize: 9, fontWeight: 800, color: T.navy }}>시간제취업 신청</span>
-                      </div>
-                      <span style={{ fontSize: 8, fontWeight: 700, color: "#fff", background: "#7C3AED", padding: "2px 6px", borderRadius: 8 }}>20명</span>
+                  {/* Bot notification */}
+                  <div style={{ display: "flex", gap: 5, marginBottom: 6 }}>
+                    <KIcon variant="kakao" size="xxs" style={{ width: 22, height: 22, fontSize: 10, borderRadius: 7 }} />
+                    <div style={{ background: "#fff", padding: "6px 9px", borderRadius: "3px 10px 10px 10px", fontSize: 9, color: T.navy }}>
+                      🔔 시간제취업 신청 <strong>5건</strong> 도착!
                     </div>
-                    {[
-                      { flag: "🇻🇳", name: "Hoa N.", dept: "경영학과", status: "검토중", color: "#92400E", bg: "#FEF3C7" },
-                      { flag: "🇨🇳", name: "Chen W.", dept: "컴퓨터공학", status: "대기", color: "#1E40AF", bg: "#DBEAFE" },
-                      { flag: "🇺🇿", name: "Alim K.", dept: "화학과", status: "승인", color: "#065F46", bg: "#D1FAE5" },
-                      { flag: "🇰🇭", name: "Sokha M.", dept: "디자인학과", status: "검토중", color: "#92400E", bg: "#FEF3C7" },
-                    ].map((p, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 0", borderTop: i > 0 ? `1px solid ${T.cream}` : "none" }}>
-                        <div style={{ width: 22, height: 22, borderRadius: 6, background: "#F5F3FF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11 }}>{p.flag}</div>
+                  </div>
+
+                  {/* User reply */}
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 6 }}>
+                    <div style={{ background: T.kakaoYellowMsg, padding: "6px 9px", borderRadius: "10px 3px 10px 10px", fontSize: 9, color: T.navy, fontWeight: 700 }}>첫 번째 신청 확인 🙋</div>
+                  </div>
+
+                  {/* Bot student card */}
+                  <div style={{ display: "flex", gap: 5, marginBottom: 6 }}>
+                    <KIcon variant="kakao" size="xxs" style={{ width: 22, height: 22, fontSize: 10, borderRadius: 7 }} />
+                    <div style={{ background: "#fff", padding: "8px 10px", borderRadius: "3px 10px 10px 10px", maxWidth: "85%", width: "85%" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 6, paddingBottom: 5, borderBottom: `1px solid ${T.cream}` }}>
+                        <span style={{ fontSize: 10 }}>📋</span>
+                        <span style={{ fontSize: 9, fontWeight: 800, color: T.navy }}>시간제취업 신청서</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
+                        <div style={{ width: 22, height: 22, borderRadius: 6, background: T.cream, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11 }}>🇻🇳</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 9, fontWeight: 700, color: T.navy }}>{p.name}</div>
-                          <div style={{ fontSize: 8, color: T.ink3, marginTop: 1 }}>{p.dept}</div>
+                          <div style={{ fontSize: 9, fontWeight: 700, color: T.navy }}>Hoa N. · 경영학과</div>
+                          <div style={{ fontSize: 8, color: T.ink3, marginTop: 1 }}>출석률 92% · 학점 B+</div>
                         </div>
-                        <span style={{ fontSize: 7, fontWeight: 700, padding: "3px 6px", borderRadius: 4, background: p.bg, color: p.color }}>{p.status}</span>
                       </div>
-                    ))}
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                        <span style={{ fontSize: 8, color: T.ink3 }}>근무지</span>
+                        <span style={{ fontSize: 8, fontWeight: 700, color: T.navy }}>강남 카페 · 주 20시간</span>
+                      </div>
+                      <div style={{ display: "flex", gap: 4, marginTop: 7 }}>
+                        <span style={{ flex: 1, fontSize: 9, fontWeight: 800, color: "#fff", background: "#10B981", padding: "5px 6px", borderRadius: 6, textAlign: "center" }}>✓ 승인</span>
+                        <span style={{ flex: 1, fontSize: 9, fontWeight: 800, color: "#fff", background: "#DC2626", padding: "5px 6px", borderRadius: 6, textAlign: "center" }}>반려</span>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Semester summary chart */}
-                  <div style={{ background: "linear-gradient(135deg,#F5F3FF,#EDE9FE)", borderRadius: 10, padding: "9px 10px", border: `1px solid #DDD6FE` }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                      <span style={{ fontSize: 9, fontWeight: 800, color: T.navy }}>📊 이번 학기 누적</span>
-                      <span style={{ fontSize: 13, fontWeight: 900, color: "#7C3AED", letterSpacing: "-0.02em" }}>1,284건</span>
+                  {/* User approve */}
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 6 }}>
+                    <div style={{ background: T.kakaoYellowMsg, padding: "6px 9px", borderRadius: "10px 3px 10px 10px", fontSize: 9, color: T.navy, fontWeight: 700 }}>승인 ✓</div>
+                  </div>
+
+                  {/* Bot stat summary */}
+                  <div style={{ display: "flex", gap: 5 }}>
+                    <KIcon variant="kakao" size="xxs" style={{ width: 22, height: 22, fontSize: 10, borderRadius: 7 }} />
+                    <div style={{ background: "#fff", padding: "8px 10px", borderRadius: "3px 10px 10px 10px", maxWidth: "85%", width: "85%" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
+                        <span style={{ fontSize: 9, fontWeight: 800, color: T.navy }}>📊 이번 학기 누적</span>
+                        <span style={{ fontSize: 12, fontWeight: 900, color: "#7C3AED" }}>1,284건</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "end", gap: 2, height: 14 }}>
+                        {[30, 55, 70, 50, 85, 95, 75, 60].map((h, i) => (
+                          <div key={i} style={{ flex: 1, height: `${h}%`, background: "#7C3AED", opacity: 0.75, borderRadius: "2px 2px 0 0" }} />
+                        ))}
+                      </div>
                     </div>
-                    <div style={{ display: "flex", alignItems: "end", gap: 2, height: 14 }}>
-                      {[30, 55, 70, 50, 85, 95, 75, 60].map((h, i) => (
-                        <div key={i} style={{ flex: 1, height: `${h}%`, background: "#7C3AED", opacity: 0.75, borderRadius: "2px 2px 0 0" }} />
-                      ))}
-                    </div>
-                    <div style={{ fontSize: 7, color: T.ink3, textAlign: "center", marginTop: 3 }}>3월 ~ 6월 신청 추이</div>
                   </div>
                 </div>
               </div>
@@ -895,7 +918,7 @@ export default function MobileLandingPage() {
               position: "absolute",
               left: 6,
               top: "50%",
-              transform: "translateY(-50%)",
+              transform: "translateY(calc(-50% + 3px))",
               width: 28,
               height: 28,
               borderRadius: "50%",
@@ -929,7 +952,7 @@ export default function MobileLandingPage() {
               position: "absolute",
               right: 6,
               top: "50%",
-              transform: "translateY(-50%)",
+              transform: "translateY(calc(-50% + 3px))",
               width: 28,
               height: 28,
               borderRadius: "50%",
