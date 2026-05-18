@@ -31,63 +31,83 @@ import { KakaoFloatingButton } from "@/components/KakaoFloatingButton";
  *   - 모든 카피와 콘텐츠
  */
 
-// ─────────── 모바일 Audience 스와이프 탭 데이터 ───────────
-// 컬러는 모바일 BI(코랄/민트/보라) 유지, 카피는 PC 와 동일한 행정 톤
+// ─────────── 모바일 Audience 캐러셀 데이터 ───────────
+// 컬러는 모바일 BI(코랄/민트/보라) 유지, 카드 1장에 체크리스트 3개로 간결화
 const AUDIENCE_TABS_M = [
   {
     id: "workers",
     icon: "🌏",
-    short: "구직자",
     label: "외국인 구직자",
     accent: "#4F46E5",
     gradient: "linear-gradient(135deg,#EEF2FF,#E0E7FF)",
     border: "#C7D2FE",
-    title: "외국인 근로자를 위한\n취업 지원",
-    desc: "내 비자 조건에 맞는 알바 공고 확인부터 근로계약서 작성까지, 7개 언어로 더 쉽고 빠르게 도와드립니다.",
+    title: "한국어 서류 작성이 어려우신가요?\n모국어로 간편하게 자동 완성",
     items: [
-      ["🌐", "다국어 지원", "7개 언어로 공고·절차 안내", "#EEF2FF"],
-      ["📱", "모바일 기반 취업 지원", "공고 확인부터 지원까지 한 번에", "#F5F3FF"],
-      ["💬", "카카오톡 기반 지원", "지원과 안내를 카카오톡으로", "#FEF2F2"],
-      ["📄", "시간제취업 확인서 발급 지원", "유학생 발급 절차 지원", "#FFF7ED"],
-      ["📝", "근로계약서 자동 작성", "카카오톡 기반 간편 작성", "#ECFDF5"],
-      ["⚖️", "합법적 취업 절차 지원", "비자·근로 기준 안내", "#FFFBEB"],
+      "내 조건에 꼭 맞는 알바 매칭",
+      "클릭 몇 번으로 쓰는 표준근로계약서",
+      "시간제취업 신청 서류 자동 완성",
     ],
   },
   {
     id: "employers",
     icon: "💼",
-    short: "사장님",
     label: "사장님",
     accent: "#FF6B5A",
     gradient: "linear-gradient(135deg,#FFE8E4,#FFE4E0)",
     border: "rgba(255,107,90,0.25)",
-    title: "사장님을 위한\n외국인 채용 관리",
-    desc: "카카오톡 챗봇으로 공고 등록부터 근로계약 관리까지, 외국인 채용 절차를 더 간편하게 도와드립니다.",
+    title: "외국인 알바 채용부터 계약까지\n복잡한 절차를 한 번에",
     items: [
-      ["💬", "카카오톡 기반 공고 등록", "챗봇 질의응답으로 등록", "#FEF2F2"],
-      ["📋", "채용 공고 작성 지원", "입력 기반 간편 작성", "#FFF7ED"],
-      ["📝", "근로계약서 자동 작성", "채용 정보 기반 자동 생성", "#FFFBEB"],
-      ["🧭", "외국인 채용 절차 지원", "필요한 절차와 정보 안내", "#FFF1F2"],
-      ["📨", "카카오톡 기반 지원 관리", "지원자 문의·과정 관리", "#FEF2F2"],
+      "우리 매장 맞춤형 인재 매칭",
+      "고용 신고 필수 표준근로계약서 간편 작성",
+      "편리한 구인 공고 및 지원자 관리",
     ],
   },
   {
     id: "universities",
     icon: "🏫",
-    short: "학교",
     label: "학교 담당자",
     accent: "#7C3AED",
     gradient: "linear-gradient(135deg,#F5F3FF,#EDE9FE)",
     border: "#DDD6FE",
-    title: "학교 담당자를 위한\n유학생 근로 운영 지원",
-    desc: "유학생 시간제취업 확인서 발급부터 관리까지, 대학의 유학생 행정을 더 간편하고 체계적으로 운영하세요.",
+    title: "교내 유학생들의 알바 현황과\n출입국 서류를 스마트하게",
     items: [
-      ["📱", "시간제취업 확인서 모바일 발급 지원", "모바일 기반 발급", "#FDF4FF"],
-      ["✅", "모바일 기반 승인 및 관리", "신청 검토·승인을 모바일에서", "#F3E8FF"],
-      ["📊", "유학생 근로 현황 관리 지원", "근로·신청 현황 체계적 관리", "#DBEAFE"],
-      ["⚖️", "유학생 불법 취업 최소화 지원", "정식 절차 기반 운영", "#FEF3C7"],
-      ["🏆", "교육국제화역량 인증제 대응", "유학생 관리 체계 구축 지원", "#FDF4FF"],
+      "유학생 알바 매칭 및 취업 현황 관리",
+      "시간제취업 신청서 및 출입국 통합신청서 자동 작성",
+      "효율적인 통합 서류 인프라",
     ],
+  },
+];
+
+// ─────────── 모바일 후기 데이터 ───────────
+// 1~2줄 짧은 강조 멘트 + 작성자 정보 (작고 그레이)
+const TESTIMONIALS_M = [
+  {
+    quote: "내 조건에 딱 맞는 알바를\n일주일 만에 찾았어요.",
+    flag: "🇻🇳",
+    name: "흐엉",
+    role: "베트남 · 서울대 유학생",
+    bg: "#EEF2FF",
+  },
+  {
+    quote: "카카오톡 챗봇으로\n3분 만에 공고를 올렸어요.",
+    flag: "🇰🇷",
+    name: "박영호",
+    role: "평택 딸기농장 대표",
+    bg: "#FFFBEB",
+  },
+  {
+    quote: "한국어 실력에 맞는 알바를\n쉽게 찾을 수 있었어요.",
+    flag: "🇰🇭",
+    name: "Sokha M.",
+    role: "캄보디아 · 결혼이민자",
+    bg: "#FFF7ED",
+  },
+  {
+    quote: "외국인 채용 절차를\n친절하게 안내받았어요.",
+    flag: "🇰🇷",
+    name: "김민수",
+    role: "이태원 음식점 대표",
+    bg: "#ECFDF5",
   },
 ];
 
@@ -106,7 +126,29 @@ export default function MobileLandingPage() {
   const [userType, setUserType] = useState(null);
   const [heroIdx, setHeroIdx] = useState(0);
   const [audienceTab, setAudienceTab] = useState(0);
-  const audienceTrackRef = useRef(null);
+  const audienceTouchX = useRef(null);
+  const audienceTouchY = useRef(null);
+  const [testimonialIdx, setTestimonialIdx] = useState(0);
+  const testimonialTrackRef = useRef(null);
+
+  const audienceN = AUDIENCE_TABS_M.length;
+  const goAudiencePrev = () => setAudienceTab((i) => (i - 1 + audienceN) % audienceN);
+  const goAudienceNext = () => setAudienceTab((i) => (i + 1) % audienceN);
+  const handleAudienceTouchStart = (e) => {
+    audienceTouchX.current = e.touches[0].clientX;
+    audienceTouchY.current = e.touches[0].clientY;
+  };
+  const handleAudienceTouchEnd = (e) => {
+    if (audienceTouchX.current == null) return;
+    const dx = e.changedTouches[0].clientX - audienceTouchX.current;
+    const dy = e.changedTouches[0].clientY - audienceTouchY.current;
+    audienceTouchX.current = null;
+    audienceTouchY.current = null;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) goAudienceNext();
+      else goAudiencePrev();
+    }
+  };
 
   // 세션 체크
   useEffect(() => {
@@ -414,38 +456,13 @@ export default function MobileLandingPage() {
             )}
           </div>
 
-          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            {isSeeker ? (
-              <>
-                <div style={{ background: "#fff", borderRadius: 14, boxShadow: "0 4px 16px rgba(10,22,40,0.06)", padding: "10px 18px", display: "flex", alignItems: "center", gap: 8, border: `1px solid ${T.border}` }}>
-                  <span style={{ fontSize: 18, fontWeight: 900, color: T.coral }}>2,340+</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: T.ink2 }}>건의 알바</span>
-                </div>
-                <div style={{ background: "#fff", borderRadius: 14, boxShadow: "0 4px 16px rgba(10,22,40,0.06)", padding: "10px 18px", display: "flex", alignItems: "center", gap: 8, border: `1px solid ${T.border}` }}>
-                  <span style={{ fontSize: 18, fontWeight: 900, color: T.mint }}>25,000+</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: T.ink2 }}>가입 외국인</span>
-                </div>
-              </>
-            ) : (
-              <>
-                <div style={{ background: "#fff", borderRadius: 14, boxShadow: "0 4px 16px rgba(10,22,40,0.06)", padding: "10px 18px", display: "flex", alignItems: "center", gap: 8, border: `1px solid ${T.border}` }}>
-                  <span style={{ fontSize: 18, fontWeight: 900, color: T.coral }}>1,200+</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: T.ink2 }}>외국인 구인기업</span>
-                </div>
-                <div style={{ background: "#fff", borderRadius: 14, boxShadow: "0 4px 16px rgba(10,22,40,0.06)", padding: "10px 18px", display: "flex", alignItems: "center", gap: 8, border: `1px solid ${T.border}` }}>
-                  <span style={{ fontSize: 18, fontWeight: 900, color: T.mint }}>3분</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: T.ink2 }}>공고 등록</span>
-                </div>
-              </>
-            )}
-          </div>
         </div>
       </div>
 
       {/* ── TRUST BAR ── */}
       <div style={{ ...S.section, paddingBottom: 24 }}>
         <div style={{ display: "flex", justifyContent: "center", gap: 20, flexWrap: "wrap", padding: "14px 0", borderTop: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}` }}>
-          {[["🏛️", "유료직업소개사업"], ["📊", "직업정보제공사업"], ["🌐", "7개 언어 지원"], ["📱", "모바일 기반"]].map(([ic, l]) => (
+          {[["📊", "직업정보제공사업"], ["🌐", "7개 언어 지원"], ["💬", "카카오톡 기반"]].map(([ic, l]) => (
             <div key={l} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, color: T.ink3 }}>
               <span style={{ fontSize: 14 }}>{ic}</span>{l}
             </div>
@@ -453,143 +470,139 @@ export default function MobileLandingPage() {
         </div>
       </div>
 
-      {/* ── STATS ── */}
-      <div style={{ ...S.section, paddingBottom: 40 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
-          {[["2,340+", "등록 알바"], ["25,000+", "가입 외국인"], ["1,200+", "외국인 구인기업"]].map(([n, l]) => (
-            <div key={l} style={{ textAlign: "center", padding: "20px 8px", background: "#fff", borderRadius: 16, border: `1px solid ${T.border}` }}>
-              <div style={{ fontSize: 22, fontWeight: 900, color: T.navy }}>{n}</div>
-              <div style={{ fontSize: 10, color: T.ink3, marginTop: 2 }}>{l}</div>
-            </div>
-          ))}
-        </div>
-      </div>
 
-      {/* ── AUDIENCE CAROUSEL (Workers / Employers / Universities) ── */}
-      <div style={{ ...S.section, paddingBottom: 40 }}>
-        {/* Carousel viewport with overlay arrows */}
+      {/* ── AUDIENCE CAROUSEL (single-card center · infinite loop) ── */}
+      <div style={{ ...S.section, paddingBottom: 32 }}>
         <div style={{ position: "relative" }}>
-          {/* Swipeable track */}
+          {/* Viewport — clip to exactly one card */}
           <div
-            ref={audienceTrackRef}
-            onScroll={(e) => {
-              const w = e.currentTarget.clientWidth;
-              if (!w) return;
-              const idx = Math.round(e.currentTarget.scrollLeft / w);
-              if (idx !== audienceTab) setAudienceTab(idx);
-            }}
-            style={{
-              display: "flex",
-              overflowX: "auto",
-              scrollSnapType: "x mandatory",
-              scrollBehavior: "smooth",
-              gap: 0,
-              margin: "0 -20px",
-              padding: "0 20px",
-              WebkitOverflowScrolling: "touch",
-              scrollbarWidth: "none",
-            }}
-            className="audience-swipe-track"
+            style={{ overflow: "hidden", borderRadius: 20 }}
+            onTouchStart={handleAudienceTouchStart}
+            onTouchEnd={handleAudienceTouchEnd}
           >
-            <style>{`.audience-swipe-track::-webkit-scrollbar{display:none;}`}</style>
-
-            {AUDIENCE_TABS_M.map((tab) => (
-              <div
-                key={tab.id}
-                style={{
-                  flex: "0 0 100%",
-                  scrollSnapAlign: "start",
-                  paddingRight: 8,
-                }}
-              >
+            {/* Track — flex row, translateX driven by activeTab */}
+            <div
+              style={{
+                display: "flex",
+                width: `${audienceN * 100}%`,
+                transform: `translateX(-${(audienceTab * 100) / audienceN}%)`,
+                transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+              }}
+            >
+              {AUDIENCE_TABS_M.map((tab) => (
                 <div
+                  key={tab.id}
                   style={{
-                    background: tab.gradient,
-                    borderRadius: 20,
-                    padding: "28px 22px",
-                    border: `1.5px solid ${tab.border}`,
+                    width: `${100 / audienceN}%`,
+                    flexShrink: 0,
+                    boxSizing: "border-box",
                   }}
                 >
                   <div
                     style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 6,
-                      background: "#fff",
-                      color: tab.accent,
-                      padding: "5px 12px",
-                      borderRadius: 100,
-                      fontSize: 10,
-                      fontWeight: 800,
-                      marginBottom: 12,
+                      background: tab.gradient,
+                      borderRadius: 20,
+                      padding: "28px 22px",
+                      border: `1.5px solid ${tab.border}`,
+                      minHeight: 340,
                     }}
                   >
-                    {tab.icon} {tab.label}
-                  </div>
-                  <h3
-                    style={{
-                      fontSize: 20,
-                      fontWeight: 900,
-                      color: T.navy,
-                      marginBottom: 8,
-                      letterSpacing: -0.5,
-                      whiteSpace: "pre-line",
-                    }}
-                  >
-                    {tab.title}
-                  </h3>
-                  <p style={{ fontSize: 13, lineHeight: 1.7, color: T.ink2, marginBottom: 18 }}>
-                    {tab.desc}
-                  </p>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    {tab.items.map(([ic, ti, de, bg]) => (
-                      <div
-                        key={ti}
-                        style={{
-                          background: "#fff",
-                          borderRadius: 12,
-                          padding: "14px 12px",
-                          border: `1px solid ${T.border}`,
-                        }}
-                      >
-                        <div
+                    <div
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        background: "#fff",
+                        color: tab.accent,
+                        padding: "5px 12px",
+                        borderRadius: 100,
+                        fontSize: 10,
+                        fontWeight: 800,
+                        marginBottom: 14,
+                      }}
+                    >
+                      {tab.icon} {tab.label}
+                    </div>
+                    <h3
+                      style={{
+                        fontSize: 18,
+                        fontWeight: 900,
+                        color: T.navy,
+                        marginBottom: 18,
+                        letterSpacing: -0.5,
+                        lineHeight: 1.4,
+                        whiteSpace: "pre-line",
+                      }}
+                    >
+                      {tab.title}
+                    </h3>
+                    <ul
+                      style={{
+                        listStyle: "none",
+                        padding: 0,
+                        margin: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 10,
+                      }}
+                    >
+                      {tab.items.map((item) => (
+                        <li
+                          key={item}
                           style={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: 10,
-                            background: bg,
                             display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: 16,
-                            marginBottom: 8,
+                            alignItems: "flex-start",
+                            gap: 10,
+                            padding: "14px 14px",
+                            background: "#fff",
+                            border: `1px solid ${T.border}`,
+                            borderRadius: 12,
                           }}
                         >
-                          {ic}
-                        </div>
-                        <div style={{ fontWeight: 700, fontSize: 12, color: T.navy, marginBottom: 3 }}>
-                          {ti}
-                        </div>
-                        <div style={{ fontSize: 10, color: T.ink3, lineHeight: 1.5 }}>{de}</div>
-                      </div>
-                    ))}
+                          <span
+                            aria-hidden="true"
+                            style={{
+                              flexShrink: 0,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              width: 22,
+                              height: 22,
+                              borderRadius: "50%",
+                              background: tab.accent,
+                              color: "#fff",
+                              fontSize: 11,
+                              fontWeight: 800,
+                              lineHeight: 1,
+                            }}
+                          >
+                            ✓
+                          </span>
+                          <span
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 700,
+                              color: T.navy,
+                              lineHeight: 1.55,
+                              letterSpacing: "-0.01em",
+                            }}
+                          >
+                            {item}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          {/* Left arrow */}
+          {/* Left arrow — always enabled (loops) */}
           <button
             type="button"
             aria-label="이전"
-            disabled={audienceTab === 0}
-            onClick={() => {
-              const next = Math.max(0, audienceTab - 1);
-              setAudienceTab(next);
-              const el = audienceTrackRef.current;
-              if (el) el.scrollTo({ left: next * el.clientWidth, behavior: "smooth" });
-            }}
+            onClick={goAudiencePrev}
             style={{
               position: "absolute",
               left: -6,
@@ -601,9 +614,7 @@ export default function MobileLandingPage() {
               background: "#fff",
               border: `1px solid ${T.border}`,
               boxShadow: "0 4px 14px rgba(10,22,40,0.10)",
-              color: audienceTab === 0 ? T.ink3 : T.navy,
-              opacity: audienceTab === 0 ? 0.4 : 1,
-              cursor: audienceTab === 0 ? "default" : "pointer",
+              color: T.navy,
               fontSize: 18,
               fontWeight: 800,
               display: "flex",
@@ -611,24 +622,18 @@ export default function MobileLandingPage() {
               justifyContent: "center",
               padding: 0,
               fontFamily: "inherit",
-              transition: "opacity 0.2s ease, transform 0.2s ease",
+              cursor: "pointer",
               zIndex: 2,
             }}
           >
             ←
           </button>
 
-          {/* Right arrow */}
+          {/* Right arrow — always enabled (loops) */}
           <button
             type="button"
             aria-label="다음"
-            disabled={audienceTab === AUDIENCE_TABS_M.length - 1}
-            onClick={() => {
-              const next = Math.min(AUDIENCE_TABS_M.length - 1, audienceTab + 1);
-              setAudienceTab(next);
-              const el = audienceTrackRef.current;
-              if (el) el.scrollTo({ left: next * el.clientWidth, behavior: "smooth" });
-            }}
+            onClick={goAudienceNext}
             style={{
               position: "absolute",
               right: -6,
@@ -640,11 +645,7 @@ export default function MobileLandingPage() {
               background: "#fff",
               border: `1px solid ${T.border}`,
               boxShadow: "0 4px 14px rgba(10,22,40,0.10)",
-              color:
-                audienceTab === AUDIENCE_TABS_M.length - 1 ? T.ink3 : T.navy,
-              opacity: audienceTab === AUDIENCE_TABS_M.length - 1 ? 0.4 : 1,
-              cursor:
-                audienceTab === AUDIENCE_TABS_M.length - 1 ? "default" : "pointer",
+              color: T.navy,
               fontSize: 18,
               fontWeight: 800,
               display: "flex",
@@ -652,7 +653,7 @@ export default function MobileLandingPage() {
               justifyContent: "center",
               padding: 0,
               fontFamily: "inherit",
-              transition: "opacity 0.2s ease, transform 0.2s ease",
+              cursor: "pointer",
               zIndex: 2,
             }}
           >
@@ -667,11 +668,7 @@ export default function MobileLandingPage() {
               key={tab.id}
               type="button"
               aria-label={`${tab.label} 보기`}
-              onClick={() => {
-                setAudienceTab(i);
-                const el = audienceTrackRef.current;
-                if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
-              }}
+              onClick={() => setAudienceTab(i)}
               style={{
                 width: i === audienceTab ? 22 : 7,
                 height: 7,
@@ -687,28 +684,137 @@ export default function MobileLandingPage() {
         </div>
       </div>
 
-      {/* ── TESTIMONIALS ── */}
-      <div style={{ background: T.cream, padding: "48px 20px" }}>
-        <div style={{ maxWidth: 600, margin: "0 auto" }}>
+      {/* ── TESTIMONIALS (compact swipe carousel) ── */}
+      <div style={{ background: T.cream, padding: "48px 0 56px" }}>
+        <div style={{ maxWidth: 600, margin: "0 auto", padding: "0 20px" }}>
           <div style={S.label}>이용 후기</div>
           <div style={S.title}>실제 사용자들의 이야기</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 24 }}>
-            {[
-              ["★★★★★", "내 비자 조건에 맞는 알바를 찾기 어려웠는데, K-ALBA에서 조건에 맞는 공고를 바로 확인할 수 있었어요. 서울대 근처 카페에서 일주일 만에 합격!", "🇻🇳", "Linh T.", "베트남 · 서울대 유학생", "#EEF2FF"],
-              ["★★★★★", "카카오톡 챗봇으로 딱 3분만에 공고를 등록했어요. 외국인 채용이 이렇게 간편할 줄 몰랐습니다.", "🇰🇷", "박영호", "평택 딸기농장 대표", "#FFFBEB"],
-              ["★★★★★", "결혼이민자로 한국에 온 지 3년인데, 한국어 실력에 맞는 알바를 쉽게 찾았어요. 근로계약서 자동 작성이 정말 편해요!", "🇰🇭", "Sokha M.", "캄보디아 · 결혼이민자", "#FFF7ED"],
-              ["★★★★★", "외국인 채용이 처음이라 막막했는데, 업종별 맞춤 예시가 있어서 그대로 올렸더니 바로 지원자가 왔어요. 절차 안내도 친절해서 안심됐어요.", "🇰🇷", "김민수", "이태원 음식점 대표", "#ECFDF5"],
-            ].map(([stars, text, flag, name, role, bg]) => (
-              <div key={name} style={{ background: "#fff", borderRadius: 18, padding: "24px 20px", border: `1px solid ${T.border}` }}>
-                <div style={{ color: "#FBBF24", fontSize: 14, marginBottom: 12, letterSpacing: 2 }}>{stars}</div>
-                <div style={{ fontSize: 13, lineHeight: 1.8, color: T.ink2, marginBottom: 16 }}>{text}</div>
+        </div>
+
+        <div
+          ref={testimonialTrackRef}
+          onScroll={(e) => {
+            const w = e.currentTarget.clientWidth;
+            if (!w) return;
+            const idx = Math.round(e.currentTarget.scrollLeft / w);
+            if (idx !== testimonialIdx) setTestimonialIdx(idx);
+          }}
+          style={{
+            display: "flex",
+            overflowX: "auto",
+            scrollSnapType: "x mandatory",
+            scrollBehavior: "smooth",
+            marginTop: 22,
+            padding: "0 20px",
+            gap: 12,
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none",
+          }}
+          className="testimonial-track"
+        >
+          <style>{`.testimonial-track::-webkit-scrollbar{display:none;}`}</style>
+
+          {TESTIMONIALS_M.map((t) => (
+            <div
+              key={t.name}
+              style={{
+                flex: "0 0 calc(100% - 20px)",
+                maxWidth: 360,
+                scrollSnapAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  background: "#fff",
+                  borderRadius: 20,
+                  padding: "26px 22px",
+                  border: `1px solid ${T.border}`,
+                  position: "relative",
+                  boxShadow: "0 6px 24px rgba(10,22,40,0.05)",
+                }}
+              >
+                {/* Stars */}
+                <div
+                  style={{
+                    color: "#FBBF24",
+                    fontSize: 13,
+                    letterSpacing: 2,
+                    marginBottom: 14,
+                  }}
+                >
+                  ★★★★★
+                </div>
+
+                {/* Bold short quote (1-2 lines) */}
+                <div
+                  style={{
+                    fontSize: 17,
+                    fontWeight: 800,
+                    color: T.navy,
+                    lineHeight: 1.5,
+                    letterSpacing: "-0.02em",
+                    whiteSpace: "pre-line",
+                    marginBottom: 20,
+                    minHeight: 78,
+                  }}
+                >
+                  {t.quote}
+                </div>
+
+                {/* Author meta */}
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 12, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>{flag}</div>
-                  <div><div style={{ fontSize: 13, fontWeight: 800, color: T.navy }}>{name}</div><div style={{ fontSize: 11, color: T.ink3 }}>{role}</div></div>
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 12,
+                      background: t.bg,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 18,
+                    }}
+                  >
+                    {t.flag}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: T.ink2 }}>
+                      {t.name}
+                    </div>
+                    <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>
+                      {t.role}
+                    </div>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Dots */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 16 }}>
+          {TESTIMONIALS_M.map((t, i) => (
+            <button
+              key={t.name}
+              type="button"
+              aria-label={`후기 ${i + 1} 보기`}
+              onClick={() => {
+                setTestimonialIdx(i);
+                const el = testimonialTrackRef.current;
+                if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+              }}
+              style={{
+                width: i === testimonialIdx ? 22 : 7,
+                height: 7,
+                borderRadius: 4,
+                background: i === testimonialIdx ? T.coral : T.borderStrong,
+                border: "none",
+                cursor: "pointer",
+                transition: "all 0.25s ease",
+                padding: 0,
+              }}
+            />
+          ))}
         </div>
       </div>
 
