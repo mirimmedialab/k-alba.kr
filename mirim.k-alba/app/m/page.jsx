@@ -638,11 +638,11 @@ export default function MobileLandingPage() {
                 transition: "opacity 0.6s ease-in-out",
               }}
             >
-              <div style={{ width: 240, background: "#FAF5FF", borderRadius: 32, boxShadow: "0 30px 80px rgba(10,22,40,0.14),0 0 0 1px rgba(10,22,40,0.04)", overflow: "hidden", border: "7px solid #1a1a2e" }}>
+              <div style={{ width: 240, background: "#fff", borderRadius: 32, boxShadow: "0 30px 80px rgba(10,22,40,0.14),0 0 0 1px rgba(10,22,40,0.04)", overflow: "hidden", border: "7px solid #1a1a2e" }}>
                 <div style={{ width: 80, height: 22, background: "#1a1a2e", borderRadius: "0 0 14px 14px", margin: "0 auto" }} />
                 <div style={{ padding: 12, minHeight: 460 }}>
                   {/* Header */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, background: "#fff", padding: "8px 12px", borderRadius: 10, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, background: "#fff", padding: "8px 12px", borderRadius: 10, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", border: `1px solid ${T.border}` }}>
                     <div style={{ width: 24, height: 24, borderRadius: 7, background: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#fff" }}>🏫</div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 11, fontWeight: 800, color: T.navy }}>K-ALBA 학교 행정</div>
@@ -886,25 +886,25 @@ export default function MobileLandingPage() {
             </div>
           </div>
 
-          {/* Left arrow — always loops */}
+          {/* Left arrow — small + translucent so it doesn't block card copy */}
           <button
             type="button"
             aria-label="이전"
             onClick={goAudiencePrev}
             style={{
               position: "absolute",
-              left: -6,
+              left: 6,
               top: "50%",
               transform: "translateY(-50%)",
-              width: 40,
-              height: 40,
+              width: 28,
+              height: 28,
               borderRadius: "50%",
-              background: "#fff",
-              border: `1px solid ${T.border}`,
-              boxShadow: "0 4px 14px rgba(10,22,40,0.10)",
-              color: T.navy,
-              fontSize: 18,
-              fontWeight: 800,
+              background: "rgba(255, 255, 255, 0.7)",
+              border: `1px solid rgba(10, 22, 40, 0.08)`,
+              boxShadow: "0 2px 6px rgba(10,22,40,0.08)",
+              color: T.ink2,
+              fontSize: 13,
+              fontWeight: 700,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -912,31 +912,33 @@ export default function MobileLandingPage() {
               fontFamily: "inherit",
               cursor: "pointer",
               zIndex: 2,
+              backdropFilter: "blur(4px)",
+              WebkitBackdropFilter: "blur(4px)",
               transition: "all 0.2s ease-in-out",
             }}
           >
-            ←
+            &lt;
           </button>
 
-          {/* Right arrow — always loops */}
+          {/* Right arrow — small + translucent */}
           <button
             type="button"
             aria-label="다음"
             onClick={goAudienceNext}
             style={{
               position: "absolute",
-              right: -6,
+              right: 6,
               top: "50%",
               transform: "translateY(-50%)",
-              width: 40,
-              height: 40,
+              width: 28,
+              height: 28,
               borderRadius: "50%",
-              background: "#fff",
-              border: `1px solid ${T.border}`,
-              boxShadow: "0 4px 14px rgba(10,22,40,0.10)",
-              color: T.navy,
-              fontSize: 18,
-              fontWeight: 800,
+              background: "rgba(255, 255, 255, 0.7)",
+              border: `1px solid rgba(10, 22, 40, 0.08)`,
+              boxShadow: "0 2px 6px rgba(10,22,40,0.08)",
+              color: T.ink2,
+              fontSize: 13,
+              fontWeight: 700,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -944,10 +946,12 @@ export default function MobileLandingPage() {
               fontFamily: "inherit",
               cursor: "pointer",
               zIndex: 2,
+              backdropFilter: "blur(4px)",
+              WebkitBackdropFilter: "blur(4px)",
               transition: "all 0.2s ease-in-out",
             }}
           >
-            →
+            &gt;
           </button>
         </div>
 
