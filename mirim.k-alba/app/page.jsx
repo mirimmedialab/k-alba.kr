@@ -1542,148 +1542,86 @@ export default function LandingPage() {
           }}
         />
 
-        <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
-          <div
+        <div
+          style={{
+            maxWidth: 760,
+            margin: "0 auto",
+            position: "relative",
+            textAlign: "center",
+          }}
+        >
+          <h2
             style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1.45fr) minmax(0, 1fr)",
-              gap: 64,
-              alignItems: "center",
+              fontSize: "clamp(28px, 4.2vw, 44px)",
+              fontWeight: 900,
+              lineHeight: 1.3,
+              letterSpacing: "-0.028em",
+              marginBottom: 22,
+              color: "#FFFFFF",
             }}
-            className="final-cta-grid"
           >
-            {/* LEFT: text */}
-            <div>
-              <div
-                style={{
-                  fontSize: 12,
-                  fontWeight: 800,
-                  color: T.gold,
-                  letterSpacing: "0.22em",
-                  textTransform: "uppercase",
-                  marginBottom: 18,
-                }}
-              >
-                K-ALBA · Korea Foreign Workforce Infrastructure
-              </div>
-              <h2
-                style={{
-                  fontSize: "clamp(32px, 4.8vw, 52px)",
-                  fontWeight: 900,
-                  lineHeight: 1.2,
-                  letterSpacing: "-0.03em",
-                  marginBottom: 22,
-                  color: "#FFFFFF",
-                }}
-              >
-                한국의 외국인 근로 인프라를{" "}
-                <span
-                  style={{
-                    background: `linear-gradient(135deg, ${T.gold} 0%, #D4A960 100%)`,
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}
-                >
-                  함께 만들어 갑시다
-                </span>
-              </h2>
-              <p
-                style={{
-                  fontSize: 17,
-                  color: "rgba(255,255,255,0.72)",
-                  lineHeight: 1.7,
-                  letterSpacing: "-0.01em",
-                  maxWidth: 540,
-                }}
-              >
-                외국인 근로자, 사업장, 학교가 만나는 통합 행정 플랫폼.
-                <br />
-                지금 바로 무료로 시작하세요.
-              </p>
-            </div>
-
-            {/* RIGHT: CTA stack */}
-            <div
+            외국인 채용부터 행정 서류까지,
+            <br />
+            이제 K-ALBA로{" "}
+            <span
               style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 12,
-                minWidth: 0,
+                background: `linear-gradient(135deg, ${T.gold} 0%, #D4A960 100%)`,
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
               }}
-              className="final-cta-buttons"
             >
-              <a
-                href="/signup"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.boxShadow = "0 22px 56px rgba(184, 148, 74, 0.45), inset 0 1px 0 rgba(255,255,255,0.25)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "0 16px 44px rgba(184, 148, 74, 0.35), inset 0 1px 0 rgba(255,255,255,0.2)";
-                }}
-                style={{
-                  display: "block",
-                  padding: "22px 36px",
-                  background: `linear-gradient(135deg, ${T.gold} 0%, #D4A960 100%)`,
-                  color: T.navy,
-                  fontSize: 18,
-                  fontWeight: 800,
-                  textAlign: "center",
-                  borderRadius: 12,
-                  textDecoration: "none",
-                  letterSpacing: "-0.015em",
-                  boxShadow: "0 16px 44px rgba(184, 148, 74, 0.35), inset 0 1px 0 rgba(255,255,255,0.2)",
-                  transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-                }}
-              >
-                K-ALBA 시작하기 →
-              </a>
-              <a
-                href={`mailto:${COMPANY.email}`}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(255,255,255,0.1)";
-                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.18)";
-                }}
-                style={{
-                  display: "block",
-                  padding: "18px 28px",
-                  background: "rgba(255, 255, 255, 0.05)",
-                  color: "#FFFFFF",
-                  fontSize: 15,
-                  fontWeight: 600,
-                  textAlign: "center",
-                  border: "1px solid rgba(255, 255, 255, 0.18)",
-                  borderRadius: 12,
-                  textDecoration: "none",
-                  letterSpacing: "-0.01em",
-                  transition: "all 0.25s ease",
-                }}
-              >
-                문의하기
-              </a>
-            </div>
-          </div>
-        </div>
+              한 번에 해결하세요.
+            </span>
+          </h2>
+          <p
+            style={{
+              fontSize: 17,
+              color: "rgba(255,255,255,0.74)",
+              lineHeight: 1.75,
+              letterSpacing: "-0.01em",
+              marginBottom: 44,
+              maxWidth: 620,
+              marginLeft: "auto",
+              marginRight: "auto",
+            }}
+          >
+            더 이상 복잡한 절차로 고민하지 마세요.
+            <br />
+            구인구직과 필수 서류 작성을 가장 쉽고 빠르게 도와드립니다.
+          </p>
 
-        <style jsx>{`
-          @media (max-width: 900px) {
-            :global(.final-cta-grid) {
-              grid-template-columns: 1fr !important;
-              gap: 36px !important;
-              text-align: center !important;
-            }
-            :global(.final-cta-grid) p {
-              margin-left: auto !important;
-              margin-right: auto !important;
-            }
-          }
-        `}</style>
+          <a
+            href="/signup"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow =
+                "0 26px 60px rgba(0, 0, 0, 0.35), 0 6px 16px rgba(0, 0, 0, 0.2)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow =
+                "0 18px 48px rgba(0, 0, 0, 0.28), 0 4px 12px rgba(0, 0, 0, 0.16)";
+            }}
+            style={{
+              display: "inline-block",
+              padding: "22px 56px",
+              background: "#FFFFFF",
+              color: T.navy,
+              fontSize: 17,
+              fontWeight: 800,
+              textAlign: "center",
+              borderRadius: 999,
+              textDecoration: "none",
+              letterSpacing: "-0.01em",
+              boxShadow:
+                "0 18px 48px rgba(0, 0, 0, 0.28), 0 4px 12px rgba(0, 0, 0, 0.16)",
+              transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+          >
+            K-ALBA 무료로 시작하기 →
+          </a>
+        </div>
       </motion.section>
 
       {/* ═══════════════════ FOOTER (BI v2 신규: 회사 정보 노출) ═══════════════════ */}
