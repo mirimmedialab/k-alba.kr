@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { T, COMPANY } from "@/lib/theme";
 import { useT } from "@/lib/i18n";
 import { getSession, supabase } from "@/lib/supabase";
@@ -206,12 +206,316 @@ const scalePulseItem = {
   })
 };
 
+// ─────────── Audience Tabs (Workers / Employers / Universities) ───────────
+const AUDIENCE_TABS = [
+  {
+    id: "workers",
+    en: "For Workers",
+    kr: "외국인 구직자",
+    title: "한국어 서류 작성이 어려우신가요?",
+    titleAccent: "모국어로 확인하고 작성하세요!",
+    items: [
+      ["🌐", "내 조건에 꼭 맞는 맞춤형 알바 매칭 서비스"],
+      ["📄", "클릭 몇 번으로 손쉽게 작성하는 표준근로계약서"],
+      ["📑", "복잡한 시간제취업 신청 서류 원클릭 자동 완성"],
+    ],
+  },
+  {
+    id: "employers",
+    en: "For Employers",
+    kr: "사장님",
+    title: "외국인 알바 채용부터 계약까지",
+    titleAccent: "복잡한 절차를 한 번에",
+    items: [
+      ["🤝", "우리 사업장에 꼭 필요한 맞춤형 외국인 알바 매칭"],
+      ["📝", "고용 신고의 시작, 필수 표준근로계약서 간편 작성 지원"],
+      ["💼", "군더더기 없이 간편한 구인 공고 등록 및 지원자 관리 시스템"],
+    ],
+  },
+  {
+    id: "universities",
+    en: "For Universities",
+    kr: "학교 담당자",
+    title: "교내 유학생들의 알바 현황과",
+    titleAccent: "필수 서류를 스마트하게",
+    items: [
+      ["📊", "우리 학교 외국인 유학생들의 알바 매칭 및 취업 현황 관리"],
+      ["📑", "유학생 시간제취업 신청서 간편 작성 지원"],
+      ["📁", "행정 업무 부담을 획기적으로 줄여주는 효율적인 통합 서류 인프라"],
+    ],
+  },
+];
+
+/** 공용 목업 카드 셸 — 부드러운 그림자 + 보더 + 헤더 도트 */
+function MockupShell({ chromeTitle, children }) {
+  return (
+    <div
+      style={{
+        background: "#FFFFFF",
+        border: "1px solid #E5E7EB",
+        borderRadius: 14,
+        boxShadow: "0 20px 50px -20px rgba(10, 22, 40, 0.18), 0 4px 16px rgba(10, 22, 40, 0.06)",
+        overflow: "hidden",
+      }}
+    >
+      {/* Browser-like chrome */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "10px 14px",
+          background: "#F3F4F6",
+          borderBottom: "1px solid #E5E7EB",
+        }}
+      >
+        <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#FCA5A5" }} />
+        <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#FCD34D" }} />
+        <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#86EFAC" }} />
+        <span style={{
+          marginLeft: 10,
+          fontSize: 11,
+          fontWeight: 600,
+          color: "#6B7280",
+          letterSpacing: "-0.01em",
+        }}>
+          {chromeTitle}
+        </span>
+      </div>
+      <div style={{ padding: 20 }}>{children}</div>
+    </div>
+  );
+}
+
+/** Worker 목업 — 다국어 서류 작성 대시보드 */
+function WorkerMockup() {
+  return (
+    <MockupShell chromeTitle="k-alba.kr · 표준근로계약서 작성">
+      {/* 언어 탭 */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
+        {["🇰🇷 한국어", "🇻🇳 Tiếng Việt", "🇨🇳 中文", "🇺🇿 Oʻzbek"].map((l, i) => (
+          <span
+            key={l}
+            style={{
+              padding: "5px 11px",
+              fontSize: 11,
+              fontWeight: 700,
+              borderRadius: 999,
+              background: i === 1 ? "#0A1628" : "#F3F4F6",
+              color: i === 1 ? "#FFFFFF" : "#374151",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {l}
+          </span>
+        ))}
+      </div>
+
+      {/* 단계 progress */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 18, alignItems: "center" }}>
+        {[
+          ["1", "정보 입력", true],
+          ["2", "자동 번역", true],
+          ["3", "서명", false],
+        ].map(([n, label, done], i) => (
+          <div key={n} style={{ display: "flex", alignItems: "center", gap: 6, flex: 1 }}>
+            <div style={{
+              width: 22, height: 22, borderRadius: "50%",
+              background: done ? "#0BD8A2" : "#E5E7EB",
+              color: done ? "#FFFFFF" : "#9CA3AF",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 11, fontWeight: 800,
+            }}>{done ? "✓" : n}</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: done ? "#0A1628" : "#9CA3AF" }}>
+              {label}
+            </div>
+            {i < 2 && <div style={{ flex: 1, height: 2, background: "#E5E7EB" }} />}
+          </div>
+        ))}
+      </div>
+
+      {/* Form fields (bilingual) */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {[
+          ["근로자 성명", "Nguyễn Văn Hòa"],
+          ["비자 유형", "D-2 (유학)"],
+          ["시급", "₩ 12,000"],
+          ["근무 기간", "2026.06.01 ~ 2026.12.31"],
+        ].map(([k, v]) => (
+          <div key={k} style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "10px 12px", background: "#F9FAFB", borderRadius: 6,
+            border: "1px solid #E5E7EB",
+          }}>
+            <span style={{ fontSize: 11, fontWeight: 600, color: "#6B7280" }}>{k}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#0A1628" }}>{v}</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{
+        marginTop: 14, padding: "10px 12px",
+        background: "#EFF6FF", border: "1px solid #BFDBFE",
+        borderRadius: 6, fontSize: 11, color: "#1E40AF", fontWeight: 600,
+        display: "flex", alignItems: "center", gap: 8,
+      }}>
+        <span>🌐</span>
+        <span>실시간 베트남어 번역이 적용되었습니다</span>
+      </div>
+    </MockupShell>
+  );
+}
+
+/** Employer 목업 — 사장님 관리자 대시보드 */
+function EmployerMockup() {
+  return (
+    <MockupShell chromeTitle="k-alba.kr · 사장님 대시보드">
+      {/* Stat row */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 18 }}>
+        {[
+          ["지원자", "24", "#0A1628"],
+          ["진행 공고", "3", "#B8944A"],
+          ["체결 계약", "12", "#0BD8A2"],
+        ].map(([label, val, color]) => (
+          <div key={label} style={{
+            padding: "12px 14px", background: "#F9FAFB",
+            border: "1px solid #E5E7EB", borderRadius: 8,
+          }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "#6B7280", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 4 }}>
+              {label}
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 800, color, letterSpacing: "-0.02em" }}>
+              {val}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Applicant list */}
+      <div style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", marginBottom: 10, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+        최근 지원자
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {[
+          ["응웬 반 호아", "D-2 · 유학", "검토 중", "#FEF3C7", "#92400E"],
+          ["알리바예바 마디나", "E-9 · 비전문취업", "면접 대기", "#DBEAFE", "#1E40AF"],
+          ["첸 웨이밍", "F-4 · 재외동포", "합격", "#D1FAE5", "#065F46"],
+        ].map(([name, visa, status, bg, fg]) => (
+          <div key={name} style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "11px 14px", background: "#FFFFFF",
+            border: "1px solid #E5E7EB", borderRadius: 8,
+          }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#0A1628", letterSpacing: "-0.01em" }}>{name}</span>
+              <span style={{ fontSize: 11, color: "#6B7280" }}>{visa}</span>
+            </div>
+            <span style={{
+              fontSize: 11, fontWeight: 700, padding: "4px 10px",
+              borderRadius: 999, background: bg, color: fg,
+            }}>
+              {status}
+            </span>
+          </div>
+        ))}
+      </div>
+    </MockupShell>
+  );
+}
+
+/** University 목업 — 차트 + 서류 리스트 */
+function UniversityMockup() {
+  const bars = [
+    ["베트남", 42, "#0BD8A2"],
+    ["중국", 28, "#0A1628"],
+    ["우즈벡", 18, "#B8944A"],
+    ["몽골", 9, "#7C3AED"],
+    ["기타", 3, "#9CA3AF"],
+  ];
+  const maxBar = 42;
+  return (
+    <MockupShell chromeTitle="k-alba.kr · 학교 행정 대시보드">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+        {/* Chart */}
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", marginBottom: 10, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+            국가별 신청 현황
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {bars.map(([country, val, color]) => (
+              <div key={country} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 44, fontSize: 11, fontWeight: 600, color: "#374151" }}>{country}</div>
+                <div style={{ flex: 1, height: 8, background: "#F3F4F6", borderRadius: 999, overflow: "hidden" }}>
+                  <div style={{ width: `${(val / maxBar) * 100}%`, height: "100%", background: color, borderRadius: 999 }} />
+                </div>
+                <div style={{ width: 22, fontSize: 11, fontWeight: 700, color: "#0A1628", textAlign: "right" }}>{val}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Document list */}
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", marginBottom: 10, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+            확인서 발급 대기
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {[
+              ["김민수 · 컴공", "승인", "#D1FAE5", "#065F46"],
+              ["호아 · 경영", "검토", "#FEF3C7", "#92400E"],
+              ["체첸 · 디자인", "승인", "#D1FAE5", "#065F46"],
+              ["올자스 · 화학", "반려", "#FEE2E2", "#991B1B"],
+              ["수안 · 전자", "검토", "#FEF3C7", "#92400E"],
+            ].map(([name, status, bg, fg]) => (
+              <div key={name} style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: "8px 10px", background: "#F9FAFB",
+                border: "1px solid #E5E7EB", borderRadius: 6,
+              }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: "#0A1628" }}>{name}</span>
+                <span style={{
+                  fontSize: 10, fontWeight: 700, padding: "2px 7px",
+                  borderRadius: 999, background: bg, color: fg,
+                }}>
+                  {status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer summary */}
+      <div style={{
+        marginTop: 14, padding: "10px 12px",
+        background: "#F3F4F6", borderRadius: 6,
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+      }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#6B7280" }}>
+          이번 학기 누적 신청
+        </span>
+        <span style={{ fontSize: 13, fontWeight: 800, color: "#0A1628" }}>
+          1,284건
+        </span>
+      </div>
+    </MockupShell>
+  );
+}
+
+function AudienceMockup({ id }) {
+  if (id === "workers") return <WorkerMockup />;
+  if (id === "employers") return <EmployerMockup />;
+  if (id === "universities") return <UniversityMockup />;
+  return null;
+}
+
 export default function LandingPage() {
   const t = useT();
   const prefersReducedMotion = useReducedMotion();
   const [authChecked, setAuthChecked] = useState(false);
   const [user, setUser] = useState(null);
   const [userType, setUserType] = useState(null);
+  const [activeAudience, setActiveAudience] = useState("workers");
 
   // 세션 체크
   useEffect(() => {
@@ -797,362 +1101,223 @@ export default function LandingPage() {
         </div>
       </motion.section>
 
-      {/* ═══════════════════ WORKER FEATURES ═══════════════════ */}
+      {/* ═══════════════════ AUDIENCE TABS (Workers / Employers / Universities) ═══════════════════ */}
       <motion.section
         initial={prefersReducedMotion ? "visible" : "hidden"}
         whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-        variants={rotateUnfold}
+        viewport={{ once: true, amount: 0.15 }}
+        variants={fadeInUp}
         style={{
-          padding: "clamp(60px, 8vw, 96px) 20px",
-          background: T.cream,
+          padding: "clamp(80px, 10vw, 120px) 20px",
+          background: "#F8F9FA",
         }}
       >
-        <div style={{ maxWidth: 960, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          {/* SECTION INTRO */}
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <div
+              style={{
+                fontSize: 12,
+                fontWeight: 800,
+                color: T.navy,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                marginBottom: 14,
+              }}
+            >
+              Who We Support
+            </div>
+            <h2
+              style={{
+                fontSize: "clamp(28px, 3.6vw, 36px)",
+                fontWeight: 800,
+                color: T.ink,
+                letterSpacing: "-0.025em",
+                lineHeight: 1.25,
+                marginBottom: 10,
+              }}
+            >
+              각 사용자에 최적화된 솔루션
+            </h2>
+            <p style={{ fontSize: 16, color: T.ink2, lineHeight: 1.7, letterSpacing: "-0.01em" }}>
+              구직자 · 사장님 · 학교 담당자, 모두를 위한 행정 지원 플랫폼
+            </p>
+          </div>
+
+          {/* TAB HEADER */}
           <div
+            role="tablist"
+            aria-label="K-ALBA audience tabs"
             style={{
-              background: T.paper,
-              border: `1px solid ${T.border}`,
-              borderTop: `4px solid ${T.accent}`,
-              borderRadius: 10,
-              padding: "clamp(40px, 6vw, 56px) clamp(24px, 5vw, 48px)",
-              boxShadow: "0 2px 12px rgba(10, 22, 40, 0.04)",
+              display: "flex",
+              justifyContent: "center",
+              gap: 12,
+              marginBottom: 56,
+              flexWrap: "wrap",
             }}
           >
-            <motion.div
-              initial={prefersReducedMotion ? "visible" : "hidden"}
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeInDown}
-              style={{ marginBottom: 40 }}
-            >
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 800,
-                  color: T.accent,
-                  letterSpacing: "0.18em",
-                  textTransform: "uppercase",
-                  marginBottom: 12,
-                }}
-              >
-                For Workers
-              </div>
-              <h2
-                style={{
-                  fontWeight: 800,
-                  fontSize: "clamp(24px, 3.6vw, 30px)",
-                  lineHeight: 1.3,
-                  letterSpacing: "-0.025em",
-                  color: T.ink,
-                  marginBottom: 20,
-                }}
-              >
-                외국인 근로자를 위한 취업 지원
-              </h2>
-              <div style={{ height: 1, background: T.border, marginBottom: 24 }} />
-              <p
-                style={{
-                  fontSize: 17,
-                  color: T.ink2,
-                  lineHeight: 1.7,
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                외국인 취업 절차를{" "}
-                <span style={{ color: T.accent, fontWeight: 700 }}>더 간편하게</span>
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={prefersReducedMotion ? "visible" : "hidden"}
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }}
-              variants={rotateUnfoldContainer}
-              style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}
-            >
-              {[
-                ["🌐", "다국어 지원", "7개 언어로 채용 공고와 취업 절차를 안내합니다."],
-                ["📱", "모바일 기반 취업 지원", "채용 공고 확인부터 지원까지 모바일로 간편하게 진행할 수 있습니다."],
-                ["💬", "카카오톡 기반 지원", "채용 지원과 안내를 카카오톡 기반으로 간편하게 진행할 수 있습니다."],
-                ["📄", "시간제취업 확인서 발급 지원", "외국인 유학생의 시간제취업 확인서 발급 절차를 지원합니다."],
-                ["📝", "근로계약서 자동 작성", "근로계약서를 카카오톡 기반으로 간편하게 작성할 수 있습니다."],
-                ["⚖️", "합법적 취업 절차 지원", "비자 및 근로 기준에 맞는 취업 절차를 안내합니다."],
-              ].map(([ic, title, desc]) => (
-                <motion.div
-                  key={title}
-                  variants={rotateUnfoldItem}
-                  whileHover={prefersReducedMotion ? {} : {
-                    y: -4,
-                    borderColor: T.accent,
-                    boxShadow: "0 8px 24px rgba(10, 22, 40, 0.08)",
-                    transition: { duration: 0.3 }
+            {AUDIENCE_TABS.map((tab) => {
+              const active = activeAudience === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setActiveAudience(tab.id)}
+                  onMouseEnter={(e) => {
+                    if (!active) {
+                      e.currentTarget.style.background = "#FFFFFF";
+                      e.currentTarget.style.borderColor = "#CBD5E1";
+                      e.currentTarget.style.transform = "translateY(-1px)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!active) {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.borderColor = "#E5E7EB";
+                      e.currentTarget.style.transform = "translateY(0)";
+                    }
                   }}
                   style={{
-                    padding: 24,
-                    background: T.paper,
-                    border: `1px solid ${T.border}`,
-                    borderRadius: 8,
+                    minWidth: 260,
+                    padding: "18px 28px",
+                    background: active ? T.navy : "transparent",
+                    color: active ? "#FFFFFF" : T.ink2,
+                    border: `1px solid ${active ? T.navy : "#E5E7EB"}`,
+                    borderRadius: 12,
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                    transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                    boxShadow: active ? "0 8px 24px rgba(10, 22, 40, 0.22)" : "none",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 4,
                   }}
                 >
-                  <div style={{ fontSize: 26, marginBottom: 12 }}>{ic}</div>
-                  <div
+                  <span
                     style={{
-                      fontSize: 15,
-                      fontWeight: 800,
-                      color: T.ink,
-                      marginBottom: 8,
-                      letterSpacing: "-0.02em",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      opacity: active ? 0.75 : 0.55,
                     }}
                   >
-                    {title}
-                  </div>
-                  <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.65 }}>
-                    {desc}
-                  </div>
-                </motion.div>
-              ))}
+                    {tab.en}
+                  </span>
+                  <span style={{ fontSize: 17, fontWeight: active ? 800 : 700, letterSpacing: "-0.015em" }}>
+                    {tab.kr}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* TAB CONTENT (fade + 45/55 split) */}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={activeAudience}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "minmax(0, 45fr) minmax(0, 55fr)",
+                gap: 56,
+                alignItems: "center",
+              }}
+              className="audience-tab-content"
+            >
+              {(() => {
+                const tab =
+                  AUDIENCE_TABS.find((t) => t.id === activeAudience) ?? AUDIENCE_TABS[0];
+                return (
+                  <>
+                    {/* LEFT: copy + checklist */}
+                    <div>
+                      <h3
+                        style={{
+                          fontSize: "clamp(24px, 2.8vw, 32px)",
+                          fontWeight: 800,
+                          color: T.ink,
+                          lineHeight: 1.3,
+                          letterSpacing: "-0.025em",
+                          marginBottom: 36,
+                        }}
+                      >
+                        {tab.title}
+                        <br />
+                        <span style={{ color: T.navy }}>{tab.titleAccent}</span>
+                      </h3>
+                      <ul style={{ display: "flex", flexDirection: "column", gap: 14, listStyle: "none", padding: 0, margin: 0 }}>
+                        {tab.items.map(([icon, text]) => (
+                          <li
+                            key={text}
+                            style={{
+                              display: "flex",
+                              alignItems: "flex-start",
+                              gap: 14,
+                              padding: "18px 20px",
+                              background: "#FFFFFF",
+                              border: "1px solid #E5E7EB",
+                              borderRadius: 10,
+                              transition: "all 0.2s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.borderColor = "#CBD5E1";
+                              e.currentTarget.style.boxShadow = "0 4px 12px rgba(10, 22, 40, 0.06)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.borderColor = "#E5E7EB";
+                              e.currentTarget.style.boxShadow = "none";
+                            }}
+                          >
+                            <span style={{ fontSize: 22, flexShrink: 0, lineHeight: 1.2 }}>{icon}</span>
+                            <span
+                              style={{
+                                fontSize: 15,
+                                color: T.ink,
+                                lineHeight: 1.55,
+                                letterSpacing: "-0.01em",
+                                fontWeight: 600,
+                              }}
+                            >
+                              {text}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* RIGHT: UI mockup */}
+                    <div>
+                      <AudienceMockup id={tab.id} />
+                    </div>
+                  </>
+                );
+              })()}
             </motion.div>
+          </AnimatePresence>
+
+          {/* COMMON CTA */}
+          <div style={{ textAlign: "center", marginTop: 80 }}>
+            <Button variant="landingPrimary" href="/signup" size="lg">
+              K-ALBA 무료로 시작하기 →
+            </Button>
           </div>
         </div>
-      </motion.section>
 
-      {/* ═══════════════════ EMPLOYER FEATURES ═══════════════════ */}
-      <motion.section
-        initial={prefersReducedMotion ? "visible" : "hidden"}
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-        variants={scaleBlur}
-        style={{
-          padding: "clamp(60px, 8vw, 96px) 20px",
-          background: T.cream,
-        }}
-      >
-        <div style={{ maxWidth: 960, margin: "0 auto" }}>
-          <div
-            style={{
-              background: T.paper,
-              border: `1px solid ${T.border}`,
-              borderTop: `4px solid ${T.gold}`,
-              borderRadius: 10,
-              padding: "clamp(40px, 6vw, 56px) clamp(24px, 5vw, 48px)",
-              boxShadow: "0 2px 12px rgba(10, 22, 40, 0.04)",
-            }}
-          >
-            <motion.div
-              initial={prefersReducedMotion ? "visible" : "hidden"}
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeInDown}
-              style={{ marginBottom: 40 }}
-            >
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 800,
-                  color: T.gold,
-                  letterSpacing: "0.18em",
-                  textTransform: "uppercase",
-                  marginBottom: 12,
-                }}
-              >
-                For Employers
-              </div>
-              <h2
-                style={{
-                  fontWeight: 800,
-                  fontSize: "clamp(24px, 3.6vw, 30px)",
-                  lineHeight: 1.3,
-                  letterSpacing: "-0.025em",
-                  color: T.ink,
-                  marginBottom: 20,
-                }}
-              >
-                사장님을 위한 외국인 채용 관리
-              </h2>
-              <div style={{ height: 1, background: T.border, marginBottom: 24 }} />
-              <p
-                style={{
-                  fontSize: 17,
-                  color: T.ink2,
-                  lineHeight: 1.7,
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                외국인 채용 절차를{" "}
-                <span style={{ color: T.accent, fontWeight: 700 }}>더 간편하게</span>
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={prefersReducedMotion ? "visible" : "hidden"}
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }}
-              variants={scaleBlurContainer}
-              style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}
-            >
-              {[
-                ["💬", "카카오톡 기반 공고 등록", "카카오톡 챗봇과의 간단한 질의응답만으로 채용 공고를 등록할 수 있습니다."],
-                ["📋", "채용 공고 작성 지원", "입력한 정보를 기반으로 채용 공고 작성 과정을 간편하게 지원합니다."],
-                ["📝", "근로계약서 자동 작성", "채용 정보 기반으로 근로계약서를 자동 작성할 수 있습니다."],
-                ["🧭", "외국인 채용 절차 지원", "외국인 채용 과정에서 필요한 절차와 정보를 안내합니다."],
-                ["📨", "카카오톡 기반 지원 관리", "지원자 문의 및 채용 과정을 카카오톡 기반으로 관리할 수 있습니다."],
-              ].map(([ic, title, desc]) => (
-                <motion.div
-                  key={title}
-                  variants={scaleBlurItem}
-                  whileHover={prefersReducedMotion ? {} : {
-                    y: -4,
-                    borderColor: T.gold,
-                    boxShadow: "0 8px 24px rgba(10, 22, 40, 0.08)",
-                    transition: { duration: 0.3 }
-                  }}
-                  style={{
-                    padding: 24,
-                    background: T.paper,
-                    border: `1px solid ${T.border}`,
-                    borderRadius: 8,
-                  }}
-                >
-                  <div style={{ fontSize: 26, marginBottom: 12 }}>{ic}</div>
-                  <div
-                    style={{
-                      fontSize: 15,
-                      fontWeight: 800,
-                      color: T.ink,
-                      marginBottom: 8,
-                      letterSpacing: "-0.02em",
-                    }}
-                  >
-                    {title}
-                  </div>
-                  <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.65 }}>
-                    {desc}
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </div>
-      </motion.section>
-
-      {/* ═══════════════════ UNIVERSITY FEATURES ═══════════════════ */}
-      <motion.section
-        initial={prefersReducedMotion ? "visible" : "hidden"}
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-        variants={slideFromLeft}
-        style={{
-          padding: "clamp(60px, 8vw, 96px) 20px",
-          background: T.cream,
-        }}
-      >
-        <div style={{ maxWidth: 960, margin: "0 auto" }}>
-          <div
-            style={{
-              background: T.paper,
-              border: `1px solid ${T.border}`,
-              borderTop: `4px solid ${T.navy}`,
-              borderRadius: 10,
-              padding: "clamp(40px, 6vw, 56px) clamp(24px, 5vw, 48px)",
-              boxShadow: "0 2px 12px rgba(10, 22, 40, 0.04)",
-            }}
-          >
-            <motion.div
-              initial={prefersReducedMotion ? "visible" : "hidden"}
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeInDown}
-              style={{ marginBottom: 40 }}
-            >
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 800,
-                  color: T.navy,
-                  letterSpacing: "0.18em",
-                  textTransform: "uppercase",
-                  marginBottom: 12,
-                }}
-              >
-                For Universities
-              </div>
-              <h2
-                style={{
-                  fontWeight: 800,
-                  fontSize: "clamp(24px, 3.6vw, 30px)",
-                  lineHeight: 1.3,
-                  letterSpacing: "-0.025em",
-                  color: T.ink,
-                  marginBottom: 20,
-                }}
-              >
-                학교 담당자를 위한 유학생 근로 운영 지원
-              </h2>
-              <div style={{ height: 1, background: T.border, marginBottom: 24 }} />
-              <p
-                style={{
-                  fontSize: 17,
-                  color: T.ink2,
-                  lineHeight: 1.7,
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                유학생 시간제취업 운영을{" "}
-                <span style={{ color: T.accent, fontWeight: 700 }}>더 간편하게</span>
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={prefersReducedMotion ? "visible" : "hidden"}
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }}
-              variants={slideFromLeftContainer}
-              style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}
-            >
-              {[
-                ["📱", "시간제취업 확인서 모바일 발급 지원", "외국인 유학생 시간제취업 확인서를 모바일 기반으로 발급할 수 있습니다."],
-                ["✅", "모바일 기반 승인 및 관리", "학교 담당자가 모바일에서도 신청 내역을 검토하고 승인할 수 있습니다."],
-                ["📊", "유학생 근로 현황 관리 지원", "유학생 근로 및 신청 현황을 보다 체계적으로 관리할 수 있습니다."],
-                ["⚖️", "유학생 불법 취업 최소화 지원", "시간제취업 절차 기반 운영으로 유학생의 불법 취업 가능성을 줄일 수 있습니다."],
-                ["🏆", "교육국제화역량 인증제(IEQAS) 대응 지원", "유학생 관리 및 운영 체계 구축을 지원합니다."],
-              ].map(([ic, title, desc]) => (
-                <motion.div
-                  key={title}
-                  variants={slideFromLeftItem}
-                  whileHover={prefersReducedMotion ? {} : {
-                    y: -4,
-                    borderColor: T.navy,
-                    boxShadow: "0 8px 24px rgba(10, 22, 40, 0.08)",
-                    transition: { duration: 0.3 }
-                  }}
-                  style={{
-                    padding: 24,
-                    background: T.paper,
-                    border: `1px solid ${T.border}`,
-                    borderRadius: 8,
-                  }}
-                >
-                  <div style={{ fontSize: 26, marginBottom: 12 }}>{ic}</div>
-                  <div
-                    style={{
-                      fontWeight: 800,
-                      fontSize: 15,
-                      color: T.ink,
-                      marginBottom: 8,
-                      letterSpacing: "-0.02em",
-                    }}
-                  >
-                    {title}
-                  </div>
-                  <div style={{ fontSize: 14, color: T.ink2, lineHeight: 1.65 }}>
-                    {desc}
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </div>
+        <style jsx>{`
+          @media (max-width: 900px) {
+            :global(.audience-tab-content) {
+              grid-template-columns: 1fr !important;
+              gap: 32px !important;
+            }
+          }
+        `}</style>
       </motion.section>
 
       {/* ═══════════════════ PROCESS ═══════════════════ */}
