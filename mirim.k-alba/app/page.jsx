@@ -877,11 +877,8 @@ export default function LandingPage() {
                 marginBottom: 16,
               }}
             >
-              각 사용자에 최적화된 솔루션
-            </h2>
-            <p style={{ fontSize: 17, color: T.ink2, lineHeight: 1.7, maxWidth: 640, margin: "0 auto" }}>
               모두를 위한 맞춤형 채용 플랫폼
-            </p>
+            </h2>
           </motion.div>
 
           <motion.div
@@ -1137,10 +1134,10 @@ export default function LandingPage() {
                 marginBottom: 10,
               }}
             >
-              각 사용자에 최적화된 솔루션
+              역할별 핵심 기능
             </h2>
             <p style={{ fontSize: 16, color: T.ink2, lineHeight: 1.7, letterSpacing: "-0.01em" }}>
-              구직자 · 사장님 · 학교 담당자, 모두를 위한 행정 지원 플랫폼
+              역할을 선택하면 맞춤 기능을 확인할 수 있습니다
             </p>
           </div>
 
@@ -1302,12 +1299,6 @@ export default function LandingPage() {
             </motion.div>
           </AnimatePresence>
 
-          {/* COMMON CTA */}
-          <div style={{ textAlign: "center", marginTop: 80 }}>
-            <Button variant="landingPrimary" href="/signup" size="lg">
-              K-ALBA 무료로 시작하기 →
-            </Button>
-          </div>
         </div>
 
         <style jsx>{`
@@ -1320,186 +1311,379 @@ export default function LandingPage() {
         `}</style>
       </motion.section>
 
-      {/* ═══════════════════ PROCESS ═══════════════════ */}
+      {/* ═══════════════════ PROCESS (horizontal timeline) ═══════════════════ */}
       <motion.section
         initial={prefersReducedMotion ? "visible" : "hidden"}
         whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: true, amount: 0.15 }}
         variants={fadeInUp}
         style={{
-          padding: "96px 20px",
+          padding: "clamp(80px, 10vw, 120px) 20px",
           background: T.paper,
-          borderBottom: `1px solid ${T.border}`,
         }}
       >
-        <div style={{ maxWidth: 720, margin: "0 auto" }}>
-          <motion.h2
-            initial={prefersReducedMotion ? "visible" : "hidden"}
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeInUp}
-            style={{
-              fontWeight: 800,
-              fontSize: "clamp(20px, 5vw, 28px)",
-              lineHeight: 1.35,
-              letterSpacing: "-0.025em",
-              color: T.ink,
-              marginBottom: 32,
-            }}
-          >
-            <em style={{ fontStyle: "normal", color: T.gold }}>5단계, 평균 3분.</em>{" "}
-            카카오톡을 쓸 줄 안다면 누구나
-          </motion.h2>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          {/* Intro */}
+          <div style={{ textAlign: "center", marginBottom: 64 }}>
+            <div
+              style={{
+                fontSize: 12,
+                fontWeight: 800,
+                color: T.gold,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                marginBottom: 14,
+              }}
+            >
+              Process
+            </div>
+            <h2
+              style={{
+                fontSize: "clamp(28px, 3.6vw, 36px)",
+                fontWeight: 800,
+                color: T.ink,
+                letterSpacing: "-0.025em",
+                lineHeight: 1.25,
+                marginBottom: 12,
+              }}
+            >
+              <span style={{ color: T.gold }}>5단계, 평균 3분.</span>{" "}
+              카카오톡을 쓸 줄 안다면 누구나
+            </h2>
+            <p style={{ fontSize: 16, color: T.ink2, lineHeight: 1.7, letterSpacing: "-0.01em" }}>
+              공고 탐색부터 근무 시작까지, 한 화면에서 흐르듯 이어집니다.
+            </p>
+          </div>
 
-          {/* 5단계 - 가로 타임라인 */}
+          {/* Timeline grid */}
           <motion.div
             initial={prefersReducedMotion ? "visible" : "hidden"}
             whileInView="visible"
             viewport={{ once: true, amount: 0.1 }}
             variants={staggerContainer}
-            style={{ position: "relative" }}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
+              gap: 20,
+              position: "relative",
+            }}
+            className="process-timeline"
           >
-            {/* 가로 연결선 */}
-            <div
-              style={{
-                position: "absolute",
-                left: "10%",
-                right: "10%",
-                top: 28,
-                height: 2,
-                background: T.border,
-                zIndex: 0,
-              }}
-            />
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 16 }}>
-              {[
-                ["1", "공고 탐색", "비자·언어 자동 필터"],
-                ["2", "챗봇 지원", "5단계 질문 응답"],
-                ["3", "사장님 검토", "24시간 내 응답"],
-                ["4", "계약 체결", "자동 생성·양측 서명"],
-                ["5", "근무 시작", "PDF 보관, 이력 적립"],
-              ].map(([num, title, desc]) => (
-                <motion.div
-                  key={num}
-                  variants={staggerItem}
+            {[
+              ["🔍", "공고 탐색", "비자·언어로 빠르게 좁히기"],
+              ["💬", "챗봇 지원", "카카오톡 5단계 질의응답"],
+              ["👤", "사장님 검토", "지원 후 사장님 응답"],
+              ["📝", "계약 체결", "자동 생성·양측 서명"],
+              ["🚀", "근무 시작", "PDF 보관·이력 적립"],
+            ].map(([icon, title, desc], i) => (
+              <motion.div
+                key={title}
+                variants={staggerItem}
+                whileHover={prefersReducedMotion ? {} : {
+                  y: -4,
+                  boxShadow: "0 14px 36px rgba(10, 22, 40, 0.08)",
+                  borderColor: T.gold,
+                  transition: { duration: 0.25 },
+                }}
+                style={{
+                  position: "relative",
+                  padding: "32px 22px 26px",
+                  background: T.paper,
+                  border: `1px solid ${T.border}`,
+                  borderRadius: 12,
+                  overflow: "hidden",
+                }}
+              >
+                {/* Faded huge step number */}
+                <div
+                  aria-hidden="true"
                   style={{
-                    flex: 1,
-                    textAlign: "center",
-                    position: "relative",
-                    zIndex: 1,
+                    position: "absolute",
+                    top: -26,
+                    right: -6,
+                    fontSize: 110,
+                    fontWeight: 900,
+                    color: T.navy,
+                    opacity: 0.055,
+                    lineHeight: 1,
+                    letterSpacing: "-0.055em",
+                    pointerEvents: "none",
+                    fontFamily: "inherit",
                   }}
                 >
+                  {String(i + 1).padStart(2, "0")}
+                </div>
+
+                {/* Connector arrow (between cards, hidden on last) */}
+                {i < 4 && (
                   <div
+                    aria-hidden="true"
+                    className="process-connector"
                     style={{
-                      width: 56,
-                      height: 56,
-                      background: T.n9,
-                      color: T.gold,
+                      position: "absolute",
+                      top: "50%",
+                      right: -15,
+                      transform: "translateY(-50%)",
+                      width: 28,
+                      height: 28,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: 20,
-                      fontWeight: 800,
-                      borderRadius: "50%",
-                      margin: "0 auto 16px",
-                      border: `3px solid ${T.paper}`,
+                      fontSize: 18,
+                      fontWeight: 700,
+                      color: T.gold,
+                      zIndex: 3,
+                      pointerEvents: "none",
                     }}
                   >
-                    {num}
+                    →
+                  </div>
+                )}
+
+                <div style={{ position: "relative", zIndex: 1 }}>
+                  <div style={{ fontSize: 30, lineHeight: 1, marginBottom: 16 }}>{icon}</div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 800,
+                      color: T.gold,
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      marginBottom: 6,
+                    }}
+                  >
+                    Step {String(i + 1).padStart(2, "0")}
                   </div>
                   <div
                     style={{
-                      fontSize: 15,
-                      fontWeight: 700,
+                      fontSize: 16,
+                      fontWeight: 800,
                       color: T.ink,
-                      marginBottom: 6,
                       letterSpacing: "-0.02em",
+                      lineHeight: 1.3,
+                      marginBottom: 6,
                     }}
                   >
                     {title}
                   </div>
-                  <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5 }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      color: T.ink2,
+                      lineHeight: 1.55,
+                      letterSpacing: "-0.01em",
+                    }}
+                  >
                     {desc}
                   </div>
-                </motion.div>
-              ))}
-            </div>
+                </div>
+              </motion.div>
+            ))}
           </motion.div>
         </div>
+
+        <style jsx>{`
+          @media (max-width: 1000px) {
+            :global(.process-timeline) {
+              grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+            :global(.process-connector) {
+              display: none !important;
+            }
+          }
+          @media (max-width: 540px) {
+            :global(.process-timeline) {
+              grid-template-columns: 1fr !important;
+            }
+          }
+        `}</style>
       </motion.section>
 
-      {/* ═══════════════════ FINAL CTA ═══════════════════ */}
+      {/* ═══════════════════ FINAL CTA (dark navy banner) ═══════════════════ */}
       <motion.section
         initial={prefersReducedMotion ? "visible" : "hidden"}
         whileInView="visible"
         viewport={{ once: true, amount: 0.3 }}
         variants={fadeInUp}
         style={{
-          padding: "96px 20px",
-          background: `linear-gradient(135deg, ${T.n9} 0%, #0F2037 100%)`,
+          padding: "clamp(100px, 12vw, 140px) 20px",
+          background: `linear-gradient(135deg, #061021 0%, ${T.navy} 50%, #1A2D4D 100%)`,
           color: T.paper,
-          borderTop: `4px solid ${T.gold}`,
           position: "relative",
           overflow: "hidden",
         }}
       >
-        {/* Subtle background pattern */}
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage: `radial-gradient(circle at 50% 50%, rgba(184, 148, 74, 0.08) 0%, transparent 70%)`,
-          pointerEvents: "none",
-        }} />
-        <motion.div
-          initial={prefersReducedMotion ? "visible" : "hidden"}
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeInUp}
-          style={{ maxWidth: 720, margin: "0 auto", textAlign: "center" }}
-        >
-          <h2
+        {/* Decorative radial glow */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "80%",
+            height: "120%",
+            background: "radial-gradient(ellipse at center, rgba(184, 148, 74, 0.14) 0%, transparent 65%)",
+            pointerEvents: "none",
+          }}
+        />
+        {/* Subtle grid lines (infra texture) */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+            pointerEvents: "none",
+            maskImage: "radial-gradient(ellipse at center, black 0%, transparent 75%)",
+            WebkitMaskImage: "radial-gradient(ellipse at center, black 0%, transparent 75%)",
+          }}
+        />
+
+        <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
+          <div
             style={{
-              fontWeight: 800,
-              fontSize: "clamp(22px, 5vw, 30px)",
-              lineHeight: 1.3,
-              letterSpacing: "-0.025em",
-              marginBottom: 16,
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1.45fr) minmax(0, 1fr)",
+              gap: 64,
+              alignItems: "center",
             }}
+            className="final-cta-grid"
           >
-            한국의 외국인 근로 인프라를{" "}
-            <em style={{ fontStyle: "normal", color: T.gold }}>
-              함께 만들어 갑시다
-            </em>
-          </h2>
-          <p
-            style={{
-              fontSize: 15,
-              color: "rgba(255,255,255,0.78)",
-              marginBottom: 24,
-              lineHeight: 1.65,
-            }}
-          >
-            지금 바로 무료로 시작하세요.
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <Button variant="landingPrimary" href="/signup" size="lg" fullWidth>
-              무료로 시작하기 →
-            </Button>
-            <Button
-              variant="landingDark"
-              href={`mailto:${COMPANY.email}`}
-              size="lg"
-              fullWidth
+            {/* LEFT: text */}
+            <div>
+              <div
+                style={{
+                  fontSize: 12,
+                  fontWeight: 800,
+                  color: T.gold,
+                  letterSpacing: "0.22em",
+                  textTransform: "uppercase",
+                  marginBottom: 18,
+                }}
+              >
+                K-ALBA · Korea Foreign Workforce Infrastructure
+              </div>
+              <h2
+                style={{
+                  fontSize: "clamp(32px, 4.8vw, 52px)",
+                  fontWeight: 900,
+                  lineHeight: 1.2,
+                  letterSpacing: "-0.03em",
+                  marginBottom: 22,
+                  color: "#FFFFFF",
+                }}
+              >
+                한국의 외국인 근로 인프라를{" "}
+                <span
+                  style={{
+                    background: `linear-gradient(135deg, ${T.gold} 0%, #D4A960 100%)`,
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}
+                >
+                  함께 만들어 갑시다
+                </span>
+              </h2>
+              <p
+                style={{
+                  fontSize: 17,
+                  color: "rgba(255,255,255,0.72)",
+                  lineHeight: 1.7,
+                  letterSpacing: "-0.01em",
+                  maxWidth: 540,
+                }}
+              >
+                외국인 근로자, 사업장, 학교가 만나는 통합 행정 플랫폼.
+                <br />
+                지금 바로 무료로 시작하세요.
+              </p>
+            </div>
+
+            {/* RIGHT: CTA stack */}
+            <div
               style={{
-                background: "transparent",
-                color: T.paper,
-                border: "1px solid rgba(255,255,255,0.3)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+                minWidth: 0,
               }}
+              className="final-cta-buttons"
             >
-              문의하기
-            </Button>
+              <a
+                href="/signup"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow = "0 22px 56px rgba(184, 148, 74, 0.45), inset 0 1px 0 rgba(255,255,255,0.25)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "0 16px 44px rgba(184, 148, 74, 0.35), inset 0 1px 0 rgba(255,255,255,0.2)";
+                }}
+                style={{
+                  display: "block",
+                  padding: "22px 36px",
+                  background: `linear-gradient(135deg, ${T.gold} 0%, #D4A960 100%)`,
+                  color: T.navy,
+                  fontSize: 18,
+                  fontWeight: 800,
+                  textAlign: "center",
+                  borderRadius: 12,
+                  textDecoration: "none",
+                  letterSpacing: "-0.015em",
+                  boxShadow: "0 16px 44px rgba(184, 148, 74, 0.35), inset 0 1px 0 rgba(255,255,255,0.2)",
+                  transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+              >
+                K-ALBA 시작하기 →
+              </a>
+              <a
+                href={`mailto:${COMPANY.email}`}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.18)";
+                }}
+                style={{
+                  display: "block",
+                  padding: "18px 28px",
+                  background: "rgba(255, 255, 255, 0.05)",
+                  color: "#FFFFFF",
+                  fontSize: 15,
+                  fontWeight: 600,
+                  textAlign: "center",
+                  border: "1px solid rgba(255, 255, 255, 0.18)",
+                  borderRadius: 12,
+                  textDecoration: "none",
+                  letterSpacing: "-0.01em",
+                  transition: "all 0.25s ease",
+                }}
+              >
+                문의하기
+              </a>
+            </div>
           </div>
-        </motion.div>
+        </div>
+
+        <style jsx>{`
+          @media (max-width: 900px) {
+            :global(.final-cta-grid) {
+              grid-template-columns: 1fr !important;
+              gap: 36px !important;
+              text-align: center !important;
+            }
+            :global(.final-cta-grid) p {
+              margin-left: auto !important;
+              margin-right: auto !important;
+            }
+          }
+        `}</style>
       </motion.section>
 
       {/* ═══════════════════ FOOTER (BI v2 신규: 회사 정보 노출) ═══════════════════ */}
