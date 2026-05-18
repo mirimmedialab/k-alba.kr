@@ -226,8 +226,9 @@ export default function MobileLandingPage() {
     return () => listener?.subscription.unsubscribe();
   }, []);
 
+  // 8초마다 hero 3개 패널 (구직자 → 사장님 → 학교 담당자) 사이클
   useEffect(() => {
-    const id = setInterval(() => setHeroIdx((p) => 1 - p), 8000);
+    const id = setInterval(() => setHeroIdx((p) => (p + 1) % 3), 8000);
     return () => clearInterval(id);
   }, []);
 
@@ -239,6 +240,8 @@ export default function MobileLandingPage() {
     return () => clearInterval(id);
   }, []);
   const isSeeker = heroIdx === 0;
+  const isEmployerHero = heroIdx === 1;
+  const isUniversityHero = heroIdx === 2;
 
   // 로딩 중
   if (!authChecked) {
@@ -252,13 +255,13 @@ export default function MobileLandingPage() {
         {!user ? (
           // 비로그인 — 8초마다 구직자/사장님 슬라이드 (좌우 트랙)
           <div style={{ marginBottom: 28 }}>
-            {/* Hero text slide track */}
+            {/* Hero text slide track (3 panels) */}
             <div style={{ overflow: "hidden" }}>
               <div
                 style={{
                   display: "flex",
-                  width: "200%",
-                  transform: `translate3d(${heroIdx * -50}%, 0, 0)`,
+                  width: "300%",
+                  transform: `translate3d(${heroIdx * -(100 / 3)}%, 0, 0)`,
                   transition: "transform 0.8s cubic-bezier(0.22, 1, 0.36, 1)",
                   willChange: "transform",
                 }}
@@ -267,7 +270,7 @@ export default function MobileLandingPage() {
                 <div
                   aria-hidden={!isSeeker}
                   style={{
-                    width: "50%",
+                    width: `${100 / 3}%`,
                     flexShrink: 0,
                     textAlign: "center",
                     padding: "0 4px",
@@ -295,13 +298,13 @@ export default function MobileLandingPage() {
 
                 {/* Employer panel */}
                 <div
-                  aria-hidden={isSeeker}
+                  aria-hidden={!isEmployerHero}
                   style={{
-                    width: "50%",
+                    width: `${100 / 3}%`,
                     flexShrink: 0,
                     textAlign: "center",
                     padding: "0 4px",
-                    opacity: !isSeeker ? 1 : 0.35,
+                    opacity: isEmployerHero ? 1 : 0.35,
                     transition: "opacity 0.6s ease-in-out",
                   }}
                 >
@@ -324,20 +327,75 @@ export default function MobileLandingPage() {
                     <Button variant="secondary" href="/login">{t("landing.haveAccount")}</Button>
                   </div>
                 </div>
+
+                {/* University panel */}
+                <div
+                  aria-hidden={!isUniversityHero}
+                  style={{
+                    width: `${100 / 3}%`,
+                    flexShrink: 0,
+                    textAlign: "center",
+                    padding: "0 4px",
+                    opacity: isUniversityHero ? 1 : 0.35,
+                    transition: "opacity 0.6s ease-in-out",
+                  }}
+                >
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#F5F3FF", color: "#7C3AED", padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
+                    🏫 학교 담당자를 위한
+                  </div>
+                  <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: T.navy, marginBottom: 16, letterSpacing: -1 }}>
+                    유학생 시간제취업,<br />
+                    <span style={{ background: "linear-gradient(135deg,#7C3AED,#A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                      모바일에서 한 번에
+                    </span>
+                  </h1>
+                  <p style={{ fontSize: 14, lineHeight: 1.8, color: T.ink2, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
+                    시간제취업 확인서 발급부터 승인까지, 카카오톡으로 유학생 행정을 더 간편하게 운영하세요.
+                  </p>
+                  <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                    <Link href="/login" style={{ textDecoration: "none" }}>
+                      <button
+                        style={{
+                          background: "#7C3AED",
+                          color: "#fff",
+                          padding: "12px 24px",
+                          borderRadius: 12,
+                          fontSize: 14,
+                          fontWeight: 700,
+                          border: "none",
+                          cursor: "pointer",
+                          fontFamily: "inherit",
+                          boxShadow: "0 4px 16px rgba(124, 58, 237, 0.25)",
+                          letterSpacing: "-0.01em",
+                        }}
+                      >
+                        🏫 학교 담당자 시작하기
+                      </button>
+                    </Link>
+                    <Button variant="secondary" href="/login">{t("landing.haveAccount")}</Button>
+                  </div>
+                </div>
               </div>
             </div>
 
             <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 18 }}>
-              {[0, 1].map((i) => (
+              {[0, 1, 2].map((i) => (
                 <button
                   key={i}
                   onClick={() => setHeroIdx(i)}
-                  aria-label={i === 0 ? "구직자 보기" : "사장님 보기"}
+                  aria-label={i === 0 ? "구직자 보기" : i === 1 ? "사장님 보기" : "학교 담당자 보기"}
                   style={{
                     width: i === heroIdx ? 24 : 8,
                     height: 8,
                     borderRadius: 4,
-                    background: i === heroIdx ? (i === 0 ? T.mint : T.coral) : T.borderStrong,
+                    background:
+                      i === heroIdx
+                        ? i === 0
+                          ? T.mint
+                          : i === 1
+                            ? T.coral
+                            : "#7C3AED"
+                        : T.borderStrong,
                     border: "none",
                     cursor: "pointer",
                     transition: "all 0.3s ease-in-out",
@@ -409,13 +467,13 @@ export default function MobileLandingPage() {
           </div>
         )}
 
-        {/* Phone Mockup — 8초마다 슬라이드 트랙 (Seeker ↔ Employer) */}
+        {/* Phone Mockup — 8초마다 슬라이드 트랙 (Seeker → Employer → University) */}
         <div style={{ overflow: "hidden", marginTop: 18 }}>
           <div
             style={{
               display: "flex",
-              width: "200%",
-              transform: `translate3d(${heroIdx * -50}%, 0, 0)`,
+              width: "300%",
+              transform: `translate3d(${heroIdx * -(100 / 3)}%, 0, 0)`,
               transition: "transform 0.8s cubic-bezier(0.22, 1, 0.36, 1)",
               willChange: "transform",
             }}
@@ -424,7 +482,7 @@ export default function MobileLandingPage() {
             <div
               aria-hidden={!isSeeker}
               style={{
-                width: "50%",
+                width: `${100 / 3}%`,
                 flexShrink: 0,
                 display: "flex",
                 justifyContent: "center",
@@ -481,14 +539,14 @@ export default function MobileLandingPage() {
 
             {/* Employer phone panel */}
             <div
-              aria-hidden={isSeeker}
+              aria-hidden={!isEmployerHero}
               style={{
-                width: "50%",
+                width: `${100 / 3}%`,
                 flexShrink: 0,
                 display: "flex",
                 justifyContent: "center",
                 padding: "0 4px",
-                opacity: !isSeeker ? 1 : 0.4,
+                opacity: isEmployerHero ? 1 : 0.4,
                 transition: "opacity 0.6s ease-in-out",
               }}
             >
@@ -575,6 +633,95 @@ export default function MobileLandingPage() {
                         <span style={{ fontSize: 8, padding: "3px 7px", borderRadius: 5, background: "#EEF2FF", color: "#4F46E5", fontWeight: 700 }}>{p.badge}</span>
                       </div>
                     ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* University phone panel */}
+            <div
+              aria-hidden={!isUniversityHero}
+              style={{
+                width: `${100 / 3}%`,
+                flexShrink: 0,
+                display: "flex",
+                justifyContent: "center",
+                padding: "0 4px",
+                opacity: isUniversityHero ? 1 : 0.4,
+                transition: "opacity 0.6s ease-in-out",
+              }}
+            >
+              <div style={{ width: 240, background: "#FAF5FF", borderRadius: 32, boxShadow: "0 30px 80px rgba(10,22,40,0.14),0 0 0 1px rgba(10,22,40,0.04)", overflow: "hidden", border: "7px solid #1a1a2e" }}>
+                <div style={{ width: 80, height: 22, background: "#1a1a2e", borderRadius: "0 0 14px 14px", margin: "0 auto" }} />
+                <div style={{ padding: 12, minHeight: 460 }}>
+                  {/* Header */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, background: "#fff", padding: "8px 12px", borderRadius: 10, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                    <div style={{ width: 24, height: 24, borderRadius: 7, background: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#fff" }}>🏫</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: T.navy }}>K-ALBA 학교 행정</div>
+                      <div style={{ fontSize: 8, color: T.ink3 }}>김교수 · 한국외대</div>
+                    </div>
+                    <div style={{ width: 6, height: 6, borderRadius: 3, background: T.mint }} />
+                  </div>
+
+                  {/* Stat row */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4, marginBottom: 8 }}>
+                    {[
+                      ["신규", "5", "#7C3AED"],
+                      ["검토중", "3", "#F59E0B"],
+                      ["승인", "12", "#10B981"],
+                    ].map(([l, n, c]) => (
+                      <div key={l} style={{ background: "#fff", borderRadius: 8, padding: "6px 4px", textAlign: "center", border: `1px solid ${T.border}` }}>
+                        <div style={{ fontSize: 14, fontWeight: 900, color: c, lineHeight: 1 }}>{n}</div>
+                        <div style={{ fontSize: 7, color: T.ink3, marginTop: 2 }}>{l}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Alert chip */}
+                  <div style={{ background: `linear-gradient(135deg,#F5F3FF,#EDE9FE)`, borderRadius: 8, padding: "6px 10px", marginBottom: 8, display: "flex", alignItems: "center", gap: 6, border: `1px solid #DDD6FE` }}>
+                    <span style={{ fontSize: 11 }}>🔔</span>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: "#7C3AED" }}>승인 대기 <strong>3건</strong> 검토해주세요</span>
+                  </div>
+
+                  {/* Recent applications list */}
+                  <div style={{ background: "#fff", borderRadius: 10, padding: "9px 10px", marginBottom: 6 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7, paddingBottom: 5, borderBottom: `1px solid ${T.cream}` }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <span style={{ fontSize: 11 }}>📋</span>
+                        <span style={{ fontSize: 9, fontWeight: 800, color: T.navy }}>시간제취업 신청</span>
+                      </div>
+                      <span style={{ fontSize: 8, fontWeight: 700, color: "#fff", background: "#7C3AED", padding: "2px 6px", borderRadius: 8 }}>20명</span>
+                    </div>
+                    {[
+                      { flag: "🇻🇳", name: "Hoa N.", dept: "경영학과", status: "검토중", color: "#92400E", bg: "#FEF3C7" },
+                      { flag: "🇨🇳", name: "Chen W.", dept: "컴퓨터공학", status: "대기", color: "#1E40AF", bg: "#DBEAFE" },
+                      { flag: "🇺🇿", name: "Alim K.", dept: "화학과", status: "승인", color: "#065F46", bg: "#D1FAE5" },
+                      { flag: "🇰🇭", name: "Sokha M.", dept: "디자인학과", status: "검토중", color: "#92400E", bg: "#FEF3C7" },
+                    ].map((p, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 0", borderTop: i > 0 ? `1px solid ${T.cream}` : "none" }}>
+                        <div style={{ width: 22, height: 22, borderRadius: 6, background: "#F5F3FF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11 }}>{p.flag}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 9, fontWeight: 700, color: T.navy }}>{p.name}</div>
+                          <div style={{ fontSize: 8, color: T.ink3, marginTop: 1 }}>{p.dept}</div>
+                        </div>
+                        <span style={{ fontSize: 7, fontWeight: 700, padding: "3px 6px", borderRadius: 4, background: p.bg, color: p.color }}>{p.status}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Semester summary chart */}
+                  <div style={{ background: "linear-gradient(135deg,#F5F3FF,#EDE9FE)", borderRadius: 10, padding: "9px 10px", border: `1px solid #DDD6FE` }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <span style={{ fontSize: 9, fontWeight: 800, color: T.navy }}>📊 이번 학기 누적</span>
+                      <span style={{ fontSize: 13, fontWeight: 900, color: "#7C3AED", letterSpacing: "-0.02em" }}>1,284건</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "end", gap: 2, height: 14 }}>
+                      {[30, 55, 70, 50, 85, 95, 75, 60].map((h, i) => (
+                        <div key={i} style={{ flex: 1, height: `${h}%`, background: "#7C3AED", opacity: 0.75, borderRadius: "2px 2px 0 0" }} />
+                      ))}
+                    </div>
+                    <div style={{ fontSize: 7, color: T.ink3, textAlign: "center", marginTop: 3 }}>3월 ~ 6월 신청 추이</div>
                   </div>
                 </div>
               </div>
