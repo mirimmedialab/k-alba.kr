@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { getSession, supabase } from "@/lib/supabase";
 import { UserChip } from "@/components/UserChip";
@@ -31,6 +31,66 @@ import { KakaoFloatingButton } from "@/components/KakaoFloatingButton";
  *   - 모든 카피와 콘텐츠
  */
 
+// ─────────── 모바일 Audience 스와이프 탭 데이터 ───────────
+// 컬러는 모바일 BI(코랄/민트/보라) 유지, 카피는 PC 와 동일한 행정 톤
+const AUDIENCE_TABS_M = [
+  {
+    id: "workers",
+    icon: "🌏",
+    short: "구직자",
+    label: "외국인 구직자",
+    accent: "#4F46E5",
+    gradient: "linear-gradient(135deg,#EEF2FF,#E0E7FF)",
+    border: "#C7D2FE",
+    title: "외국인 근로자를 위한\n취업 지원",
+    desc: "내 비자 조건에 맞는 알바 공고 확인부터 근로계약서 작성까지, 7개 언어로 더 쉽고 빠르게 도와드립니다.",
+    items: [
+      ["🌐", "다국어 지원", "7개 언어로 공고·절차 안내", "#EEF2FF"],
+      ["📱", "모바일 기반 취업 지원", "공고 확인부터 지원까지 한 번에", "#F5F3FF"],
+      ["💬", "카카오톡 기반 지원", "지원과 안내를 카카오톡으로", "#FEF2F2"],
+      ["📄", "시간제취업 확인서 발급 지원", "유학생 발급 절차 지원", "#FFF7ED"],
+      ["📝", "근로계약서 자동 작성", "카카오톡 기반 간편 작성", "#ECFDF5"],
+      ["⚖️", "합법적 취업 절차 지원", "비자·근로 기준 안내", "#FFFBEB"],
+    ],
+  },
+  {
+    id: "employers",
+    icon: "💼",
+    short: "사장님",
+    label: "사장님",
+    accent: "#FF6B5A",
+    gradient: "linear-gradient(135deg,#FFE8E4,#FFE4E0)",
+    border: "rgba(255,107,90,0.25)",
+    title: "사장님을 위한\n외국인 채용 관리",
+    desc: "카카오톡 챗봇으로 공고 등록부터 근로계약 관리까지, 외국인 채용 절차를 더 간편하게 도와드립니다.",
+    items: [
+      ["💬", "카카오톡 기반 공고 등록", "챗봇 질의응답으로 등록", "#FEF2F2"],
+      ["📋", "채용 공고 작성 지원", "입력 기반 간편 작성", "#FFF7ED"],
+      ["📝", "근로계약서 자동 작성", "채용 정보 기반 자동 생성", "#FFFBEB"],
+      ["🧭", "외국인 채용 절차 지원", "필요한 절차와 정보 안내", "#FFF1F2"],
+      ["📨", "카카오톡 기반 지원 관리", "지원자 문의·과정 관리", "#FEF2F2"],
+    ],
+  },
+  {
+    id: "universities",
+    icon: "🏫",
+    short: "학교",
+    label: "학교 담당자",
+    accent: "#7C3AED",
+    gradient: "linear-gradient(135deg,#F5F3FF,#EDE9FE)",
+    border: "#DDD6FE",
+    title: "학교 담당자를 위한\n유학생 근로 운영 지원",
+    desc: "유학생 시간제취업 확인서 발급부터 관리까지, 대학의 유학생 행정을 더 간편하고 체계적으로 운영하세요.",
+    items: [
+      ["📱", "시간제취업 확인서 모바일 발급 지원", "모바일 기반 발급", "#FDF4FF"],
+      ["✅", "모바일 기반 승인 및 관리", "신청 검토·승인을 모바일에서", "#F3E8FF"],
+      ["📊", "유학생 근로 현황 관리 지원", "근로·신청 현황 체계적 관리", "#DBEAFE"],
+      ["⚖️", "유학생 불법 취업 최소화 지원", "정식 절차 기반 운영", "#FEF3C7"],
+      ["🏆", "교육국제화역량 인증제 대응", "유학생 관리 체계 구축 지원", "#FDF4FF"],
+    ],
+  },
+];
+
 export default function MobileLandingPage() {
   const t = useT();
   const { locale } = useLocale();
@@ -45,6 +105,8 @@ export default function MobileLandingPage() {
   const [user, setUser] = useState(null);
   const [userType, setUserType] = useState(null);
   const [heroIdx, setHeroIdx] = useState(0);
+  const [audienceTab, setAudienceTab] = useState(0);
+  const audienceTrackRef = useRef(null);
 
   // 세션 체크
   useEffect(() => {
@@ -111,7 +173,7 @@ export default function MobileLandingPage() {
                   </span>
                 </h1>
                 <p style={{ fontSize: 14, lineHeight: 1.8, color: T.ink2, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
-                  유학생, 결혼이민자, 취업비자, 워킹홀리데이까지. 비자 유형에 맞는 합법적인 일자리를 다국어로 찾아보세요.
+                  내 비자 조건에 맞는 알바 공고부터 근로계약서 작성까지, 7개 언어로 더 쉽고 빠르게 도와드립니다.
                 </p>
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                   <Button variant="primary" href="/login">{t("landing.seekerCta")}</Button>
@@ -130,7 +192,7 @@ export default function MobileLandingPage() {
                   </span>
                 </h1>
                 <p style={{ fontSize: 14, lineHeight: 1.8, color: T.ink2, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
-                  지역·업종별 현재 시세를 분석해 적정 급여까지 추천! 비자 자동 확인으로 안전하게 외국인 채용하세요.
+                  카카오톡 챗봇으로 공고 등록부터 근로계약서 작성까지, 외국인 채용 절차를 더 간편하게 도와드립니다.
                 </p>
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                   <Button variant="primary" href="/login" style={{ boxShadow: `0 4px 16px ${T.coral}40` }}>
@@ -178,8 +240,8 @@ export default function MobileLandingPage() {
               사장님!
             </h1>
             <p style={{ fontSize: 14, lineHeight: 1.8, color: T.ink2, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
-              외국인 채용이 필요하신가요?<br />
-              카카오톡 챗봇으로 3분만에 공고를 완성하세요.
+              외국인 채용 절차를 더 간편하게.<br />
+              카카오톡으로 공고 등록부터 계약까지 한 번에.
             </p>
             <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
               <Button variant="primary" href="/my/jobs" style={{ boxShadow: `0 4px 16px ${T.coral}40` }}>
@@ -208,8 +270,8 @@ export default function MobileLandingPage() {
               님!
             </h1>
             <p style={{ fontSize: 14, lineHeight: 1.8, color: T.ink2, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
-              당신에게 맞는 새로운 알바를 찾아보세요.<br />
-              비자 유형에 맞는 합법적인 일자리만 추천합니다.
+              당신의 비자 조건에 맞는<br />
+              새로운 알바 공고를 확인해보세요.
             </p>
             <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
               <Button variant="primary" href="/jobs">🔍 알바 찾기 →</Button>
@@ -383,7 +445,7 @@ export default function MobileLandingPage() {
       {/* ── TRUST BAR ── */}
       <div style={{ ...S.section, paddingBottom: 24 }}>
         <div style={{ display: "flex", justifyContent: "center", gap: 20, flexWrap: "wrap", padding: "14px 0", borderTop: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}` }}>
-          {[["🏛️", "유료직업소개사업"], ["📊", "직업정보제공사업"], ["🛡️", "구직자 보호"], ["🌐", "7개 언어"]].map(([ic, l]) => (
+          {[["🏛️", "유료직업소개사업"], ["📊", "직업정보제공사업"], ["🌐", "7개 언어 지원"], ["📱", "모바일 기반"]].map(([ic, l]) => (
             <div key={l} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, color: T.ink3 }}>
               <span style={{ fontSize: 14 }}>{ic}</span>{l}
             </div>
@@ -403,95 +465,209 @@ export default function MobileLandingPage() {
         </div>
       </div>
 
-      {/* ── 구직자: 한국 생활 완벽 가이드 ── */}
-      <div style={{ ...S.section, paddingBottom: 28 }}>
-        <div style={{ background: "linear-gradient(135deg,#EEF2FF,#E0E7FF)", borderRadius: 20, padding: "28px 22px", border: "1.5px solid #C7D2FE" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", color: "#4F46E5", padding: "5px 12px", borderRadius: 100, fontSize: 10, fontWeight: 800, marginBottom: 12 }}>🌏 외국인 구직자</div>
-          <h3 style={{ fontSize: 20, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: -0.5 }}>한국 서류가<br />어렵지 않으세요?</h3>
-          <p style={{ fontSize: 13, lineHeight: 1.7, color: T.ink2, marginBottom: 18 }}>근로계약서 자동 작성부터 하이코리아 체류자격외활동허가 서류까지. 복잡한 한국어 서류를 7개 언어로 안내하고 자동으로 생성해 드립니다.</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
-            {[
-              ["📝", "근로계약서", "7개 언어 자동 작성", "#EEF2FF"],
-              ["🏛️", "하이코리아 서류", "체류자격외활동허가", "#F5F3FF"],
-              ["🌐", "7개 언어", "한·영·중·베·우즈벡·몽골·일", "#FFF7ED"],
-              ["💬", "한국어 필터", "내 실력에 맞는 알바만", "#FEF2F2"],
-            ].map(([ic, ti, de, bg]) => (
-              <div key={ti} style={{ background: "#fff", borderRadius: 12, padding: "14px 12px", border: `1px solid ${T.border}` }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, marginBottom: 8 }}>{ic}</div>
-                <div style={{ fontWeight: 700, fontSize: 12, color: T.navy, marginBottom: 3 }}>{ti}</div>
-                <div style={{ fontSize: 10, color: T.ink3, lineHeight: 1.5 }}>{de}</div>
-              </div>
-            ))}
-          </div>
+      {/* ── AUDIENCE SWIPE TABS (Workers / Employers / Universities) ── */}
+      <div style={{ ...S.section, paddingBottom: 40 }}>
+        {/* Tab header */}
+        <div
+          role="tablist"
+          aria-label="사용자 유형"
+          style={{
+            display: "flex",
+            gap: 6,
+            padding: 4,
+            background: "#fff",
+            border: `1px solid ${T.border}`,
+            borderRadius: 14,
+            marginBottom: 18,
+          }}
+        >
+          {AUDIENCE_TABS_M.map((tab, i) => {
+            const active = audienceTab === i;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => {
+                  setAudienceTab(i);
+                  const el = audienceTrackRef.current;
+                  if (el) {
+                    el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+                  }
+                }}
+                style={{
+                  flex: 1,
+                  padding: "10px 6px",
+                  background: active ? tab.accent : "transparent",
+                  color: active ? "#fff" : T.ink2,
+                  border: "none",
+                  borderRadius: 10,
+                  fontFamily: "inherit",
+                  fontSize: 12,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                  letterSpacing: "-0.01em",
+                  transition: "all 0.2s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 4,
+                }}
+              >
+                <span>{tab.icon}</span>
+                <span>{tab.short}</span>
+              </button>
+            );
+          })}
+        </div>
 
-          {/* 한국 경력 인증 섹션 */}
-          <div style={{ borderTop: `1px solid #C7D2FE`, paddingTop: 20 }}>
-            <h3 style={{ fontSize: 20, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: -0.5 }}>한국 경력도<br />자동으로 쌓여요</h3>
-            <p style={{ fontSize: 13, lineHeight: 1.7, color: T.ink2, marginBottom: 16 }}>K-ALBA를 통해 근무한 경력은 사장님 평가와 함께 자동으로 프로필에 기록됩니다. 다음 알바 지원 시 <strong>인증된 한국 경력</strong>으로 바로 증명!</p>
-            <div style={{ background: "#fff", borderRadius: 12, padding: 16, border: `1.5px solid ${T.mint}30`, marginBottom: 12 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                <span style={{ padding: "2px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: T.mintL, color: "#059669" }}>✓ K-ALBA 인증</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: T.navy }}>카페 바리스타</span>
-              </div>
-              <div style={{ fontSize: 11, color: T.ink3, marginBottom: 8 }}>블루보틀 강남점 · 2025.09~2026.02 (6개월)</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <span style={{ fontSize: 12, color: "#F59E0B", fontWeight: 700 }}>⭐ 4.8</span>
-                <span style={{ fontSize: 11, color: T.ink3 }}>사장님 평가</span>
-              </div>
-              <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                {["성실", "시간 준수", "친절"].map((tg) => (
-                  <span key={tg} style={{ padding: "3px 10px", borderRadius: 6, fontSize: 10, fontWeight: 600, background: "#EEF2FF", color: "#4F46E5" }}>{tg}</span>
-                ))}
+        {/* Swipeable track */}
+        <div
+          ref={audienceTrackRef}
+          onScroll={(e) => {
+            const w = e.currentTarget.clientWidth;
+            if (!w) return;
+            const idx = Math.round(e.currentTarget.scrollLeft / w);
+            if (idx !== audienceTab) setAudienceTab(idx);
+          }}
+          style={{
+            display: "flex",
+            overflowX: "auto",
+            scrollSnapType: "x mandatory",
+            scrollBehavior: "smooth",
+            gap: 0,
+            margin: "0 -20px",
+            padding: "0 20px",
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none",
+          }}
+          className="audience-swipe-track"
+        >
+          <style>{`.audience-swipe-track::-webkit-scrollbar{display:none;}`}</style>
+
+          {AUDIENCE_TABS_M.map((tab) => (
+            <div
+              key={tab.id}
+              role="tabpanel"
+              style={{
+                flex: "0 0 100%",
+                scrollSnapAlign: "start",
+                paddingRight: 8,
+              }}
+            >
+              <div
+                style={{
+                  background: tab.gradient,
+                  borderRadius: 20,
+                  padding: "28px 22px",
+                  border: `1.5px solid ${tab.border}`,
+                }}
+              >
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    background: "#fff",
+                    color: tab.accent,
+                    padding: "5px 12px",
+                    borderRadius: 100,
+                    fontSize: 10,
+                    fontWeight: 800,
+                    marginBottom: 12,
+                  }}
+                >
+                  {tab.icon} {tab.label}
+                </div>
+                <h3
+                  style={{
+                    fontSize: 20,
+                    fontWeight: 900,
+                    color: T.navy,
+                    marginBottom: 8,
+                    letterSpacing: -0.5,
+                    whiteSpace: "pre-line",
+                  }}
+                >
+                  {tab.title}
+                </h3>
+                <p style={{ fontSize: 13, lineHeight: 1.7, color: T.ink2, marginBottom: 18 }}>
+                  {tab.desc}
+                </p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  {tab.items.map(([ic, ti, de, bg]) => (
+                    <div
+                      key={ti}
+                      style={{
+                        background: "#fff",
+                        borderRadius: 12,
+                        padding: "14px 12px",
+                        border: `1px solid ${T.border}`,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: 10,
+                          background: bg,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 16,
+                          marginBottom: 8,
+                        }}
+                      >
+                        {ic}
+                      </div>
+                      <div style={{ fontWeight: 700, fontSize: 12, color: T.navy, marginBottom: 3 }}>
+                        {ti}
+                      </div>
+                      <div style={{ fontSize: 10, color: T.ink3, lineHeight: 1.5 }}>{de}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-            <p style={{ fontSize: 11, color: T.ink3, lineHeight: 1.6, textAlign: "center" }}>✨ 인증된 고용주 + 이용 후기 + 평가 기반 신뢰 시스템</p>
-          </div>
+          ))}
         </div>
-      </div>
 
-      {/* ── 사장님: 안전 채용 ── */}
-      <div style={{ ...S.section, paddingBottom: 28 }}>
-        <div style={{ background: `linear-gradient(135deg,${T.coralL},#FFE4E0)`, borderRadius: 20, padding: "28px 22px", border: `1.5px solid ${T.coral}25` }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", color: T.coral, padding: "5px 12px", borderRadius: 100, fontSize: 10, fontWeight: 800, marginBottom: 12 }}>💼 사장님</div>
-          <h3 style={{ fontSize: 20, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: -0.5 }}>외국인 채용이<br />처음이어도 안전하게</h3>
-          <p style={{ fontSize: 13, lineHeight: 1.7, color: T.ink2, marginBottom: 18 }}>비자를 자동으로 확인해 합법 취업 가능자만 지원할 수 있고, 평가·출석률 기반 검증된 우수 알바생을 추천해 드립니다.</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            {[
-              ["🛂", "비자 자동 확인", "합법 취업자만 지원", "#FEF2F2"],
-              ["⭐", "우수 알바생 추천", "평가·출석률 기반", "#FFF7ED"],
-              ["📄", "다국어 계약서", "외국인용 자동 발급", "#FFFBEB"],
-              ["📊", "지원자 관리", "비교·승인·채팅", "#FFF1F2"],
-            ].map(([ic, ti, de, bg]) => (
-              <div key={ti} style={{ background: "#fff", borderRadius: 12, padding: "14px 12px", border: `1px solid ${T.border}` }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, marginBottom: 8 }}>{ic}</div>
-                <div style={{ fontWeight: 700, fontSize: 12, color: T.navy, marginBottom: 3 }}>{ti}</div>
-                <div style={{ fontSize: 10, color: T.ink3, lineHeight: 1.5 }}>{de}</div>
-              </div>
-            ))}
-          </div>
+        {/* Dots indicator */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 14 }}>
+          {AUDIENCE_TABS_M.map((tab, i) => (
+            <button
+              key={tab.id}
+              type="button"
+              aria-label={`Go to ${tab.label}`}
+              onClick={() => {
+                setAudienceTab(i);
+                const el = audienceTrackRef.current;
+                if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+              }}
+              style={{
+                width: i === audienceTab ? 22 : 7,
+                height: 7,
+                borderRadius: 4,
+                background: i === audienceTab ? AUDIENCE_TABS_M[i].accent : T.borderStrong,
+                border: "none",
+                cursor: "pointer",
+                transition: "all 0.25s ease",
+                padding: 0,
+              }}
+            />
+          ))}
         </div>
-      </div>
-
-      {/* ── 학교 담당자: 시간제취업 관리 ── */}
-      <div style={{ ...S.section, paddingBottom: 40 }}>
-        <div style={{ background: "linear-gradient(135deg,#F5F3FF,#EDE9FE)", borderRadius: 20, padding: "28px 22px", border: "1.5px solid #DDD6FE" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", color: "#7C3AED", padding: "5px 12px", borderRadius: 100, fontSize: 10, fontWeight: 800, marginBottom: 12 }}>🏫 학교 담당자</div>
-          <h3 style={{ fontSize: 20, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: -0.5 }}>시간제취업 신청,<br />이제 모바일로</h3>
-          <p style={{ fontSize: 13, lineHeight: 1.7, color: T.ink2, marginBottom: 18 }}>유학생 시간제취업 신청부터 확인서 발급까지 카카오톡으로 처리하세요. 출석률·성적 자동 검증으로 IEQAS 평가 대비도 완벽!</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            {[
-              ["⚡", "24시간 내 처리", "모바일로 즉시 승인", "#FDF4FF"],
-              ["📄", "확인서 자동 발급", "PDF 자동 생성·인장", "#F3E8FF"],
-              ["⚖️", "출입국법 자동 준수", "위반 학생 자동 차단", "#FEF3C7"],
-              ["📊", "실시간 대시보드", "학과별 신청 현황", "#DBEAFE"],
-            ].map(([ic, ti, de, bg]) => (
-              <div key={ti} style={{ background: "#fff", borderRadius: 12, padding: "14px 12px", border: `1px solid ${T.border}` }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, marginBottom: 8 }}>{ic}</div>
-                <div style={{ fontWeight: 700, fontSize: 12, color: T.navy, marginBottom: 3 }}>{ti}</div>
-                <div style={{ fontSize: 10, color: T.ink3, lineHeight: 1.5 }}>{de}</div>
-              </div>
-            ))}
-          </div>
+        <div
+          style={{
+            marginTop: 8,
+            fontSize: 10,
+            color: T.ink3,
+            textAlign: "center",
+            letterSpacing: "-0.01em",
+          }}
+        >
+          👉 좌우로 스와이프하여 다른 사용자 유형도 확인하세요
         </div>
       </div>
 
@@ -502,10 +678,10 @@ export default function MobileLandingPage() {
           <div style={S.title}>실제 사용자들의 이야기</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 24 }}>
             {[
-              ["★★★★★", "D-2 비자로 할 수 있는 알바를 찾기 힘들었는데, K-ALBA에서 비자 필터로 바로 찾았어요. 서울대 근처 카페에서 일주일 만에 합격!", "🇻🇳", "Linh T.", "베트남 · 서울대 유학생", "#EEF2FF"],
-              ["★★★★★", "카카오톡 챗봇으로 딱 3분만에 공고 등록했어요. 평택 농업 시세가 일급 19만5천원이라고 알려줘서 적정 가격도 바로 알 수 있었어요!", "🇰🇷", "박영호", "평택 딸기농장 대표", "#FFFBEB"],
-              ["★★★★★", "결혼이민자로 한국에 온 지 3년인데, 한국어 실력에 맞는 알바를 쉽게 찾았어요. 근로계약서 자동 작성이 정말 편해요!", "🇰🇭", "Sokha M.", "캄보디아 · F-6 결혼이민", "#FFF7ED"],
-              ["★★★★★", "외국인 채용이 처음이라 막막했는데, 업종별 맞춤 예시가 있어서 그대로 올렸더니 바로 지원자가 왔어요. 비자 확인도 자동이라 안심!", "🇰🇷", "김민수", "이태원 음식점 대표", "#ECFDF5"],
+              ["★★★★★", "내 비자 조건에 맞는 알바를 찾기 어려웠는데, K-ALBA에서 조건에 맞는 공고를 바로 확인할 수 있었어요. 서울대 근처 카페에서 일주일 만에 합격!", "🇻🇳", "Linh T.", "베트남 · 서울대 유학생", "#EEF2FF"],
+              ["★★★★★", "카카오톡 챗봇으로 딱 3분만에 공고를 등록했어요. 외국인 채용이 이렇게 간편할 줄 몰랐습니다.", "🇰🇷", "박영호", "평택 딸기농장 대표", "#FFFBEB"],
+              ["★★★★★", "결혼이민자로 한국에 온 지 3년인데, 한국어 실력에 맞는 알바를 쉽게 찾았어요. 근로계약서 자동 작성이 정말 편해요!", "🇰🇭", "Sokha M.", "캄보디아 · 결혼이민자", "#FFF7ED"],
+              ["★★★★★", "외국인 채용이 처음이라 막막했는데, 업종별 맞춤 예시가 있어서 그대로 올렸더니 바로 지원자가 왔어요. 절차 안내도 친절해서 안심됐어요.", "🇰🇷", "김민수", "이태원 음식점 대표", "#ECFDF5"],
             ].map(([stars, text, flag, name, role, bg]) => (
               <div key={name} style={{ background: "#fff", borderRadius: 18, padding: "24px 20px", border: `1px solid ${T.border}` }}>
                 <div style={{ color: "#FBBF24", fontSize: 14, marginBottom: 12, letterSpacing: 2 }}>{stars}</div>
@@ -524,8 +700,14 @@ export default function MobileLandingPage() {
       <div style={{ padding: "32px 20px 20px" }}>
         <div style={{ maxWidth: 600, margin: "0 auto" }}>
           <div style={{ background: "#fff", borderRadius: 20, padding: "40px 28px", textAlign: "center", border: `1px solid ${T.border}` }}>
-            <h2 style={{ fontSize: 24, fontWeight: 900, color: T.navy, marginBottom: 10, letterSpacing: -0.5 }}>지금 바로 시작하세요</h2>
-            <p style={{ fontSize: 13, color: T.ink3, marginBottom: 24, lineHeight: 1.7 }}>무료 가입 · 2분 완료 · 카카오톡·Google 로그인</p>
+            <h2 style={{ fontSize: 22, fontWeight: 900, color: T.navy, marginBottom: 12, letterSpacing: -0.5, lineHeight: 1.35 }}>
+              외국인 채용부터 행정 서류까지,<br />
+              이제 K-ALBA로 <span style={{ color: T.coral }}>한 번에 해결하세요.</span>
+            </h2>
+            <p style={{ fontSize: 13, color: T.ink3, marginBottom: 24, lineHeight: 1.75 }}>
+              더 이상 복잡한 절차로 고민하지 마세요.<br />
+              구인구직과 필수 서류 작성을 가장 쉽고 빠르게 도와드립니다.
+            </p>
             <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
               <Link href="/login">
                 <button style={{ background: T.mint, color: "#fff", padding: "12px 24px", borderRadius: 12, fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}>
