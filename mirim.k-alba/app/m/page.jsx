@@ -465,181 +465,208 @@ export default function MobileLandingPage() {
         </div>
       </div>
 
-      {/* ── AUDIENCE SWIPE TABS (Workers / Employers / Universities) ── */}
+      {/* ── AUDIENCE CAROUSEL (Workers / Employers / Universities) ── */}
       <div style={{ ...S.section, paddingBottom: 40 }}>
-        {/* Tab header */}
-        <div
-          role="tablist"
-          aria-label="사용자 유형"
-          style={{
-            display: "flex",
-            gap: 6,
-            padding: 4,
-            background: "#fff",
-            border: `1px solid ${T.border}`,
-            borderRadius: 14,
-            marginBottom: 18,
-          }}
-        >
-          {AUDIENCE_TABS_M.map((tab, i) => {
-            const active = audienceTab === i;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => {
-                  setAudienceTab(i);
-                  const el = audienceTrackRef.current;
-                  if (el) {
-                    el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
-                  }
-                }}
-                style={{
-                  flex: 1,
-                  padding: "10px 6px",
-                  background: active ? tab.accent : "transparent",
-                  color: active ? "#fff" : T.ink2,
-                  border: "none",
-                  borderRadius: 10,
-                  fontFamily: "inherit",
-                  fontSize: 12,
-                  fontWeight: 800,
-                  cursor: "pointer",
-                  letterSpacing: "-0.01em",
-                  transition: "all 0.2s ease",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 4,
-                }}
-              >
-                <span>{tab.icon}</span>
-                <span>{tab.short}</span>
-              </button>
-            );
-          })}
-        </div>
+        {/* Carousel viewport with overlay arrows */}
+        <div style={{ position: "relative" }}>
+          {/* Swipeable track */}
+          <div
+            ref={audienceTrackRef}
+            onScroll={(e) => {
+              const w = e.currentTarget.clientWidth;
+              if (!w) return;
+              const idx = Math.round(e.currentTarget.scrollLeft / w);
+              if (idx !== audienceTab) setAudienceTab(idx);
+            }}
+            style={{
+              display: "flex",
+              overflowX: "auto",
+              scrollSnapType: "x mandatory",
+              scrollBehavior: "smooth",
+              gap: 0,
+              margin: "0 -20px",
+              padding: "0 20px",
+              WebkitOverflowScrolling: "touch",
+              scrollbarWidth: "none",
+            }}
+            className="audience-swipe-track"
+          >
+            <style>{`.audience-swipe-track::-webkit-scrollbar{display:none;}`}</style>
 
-        {/* Swipeable track */}
-        <div
-          ref={audienceTrackRef}
-          onScroll={(e) => {
-            const w = e.currentTarget.clientWidth;
-            if (!w) return;
-            const idx = Math.round(e.currentTarget.scrollLeft / w);
-            if (idx !== audienceTab) setAudienceTab(idx);
-          }}
-          style={{
-            display: "flex",
-            overflowX: "auto",
-            scrollSnapType: "x mandatory",
-            scrollBehavior: "smooth",
-            gap: 0,
-            margin: "0 -20px",
-            padding: "0 20px",
-            WebkitOverflowScrolling: "touch",
-            scrollbarWidth: "none",
-          }}
-          className="audience-swipe-track"
-        >
-          <style>{`.audience-swipe-track::-webkit-scrollbar{display:none;}`}</style>
-
-          {AUDIENCE_TABS_M.map((tab) => (
-            <div
-              key={tab.id}
-              role="tabpanel"
-              style={{
-                flex: "0 0 100%",
-                scrollSnapAlign: "start",
-                paddingRight: 8,
-              }}
-            >
+            {AUDIENCE_TABS_M.map((tab) => (
               <div
+                key={tab.id}
                 style={{
-                  background: tab.gradient,
-                  borderRadius: 20,
-                  padding: "28px 22px",
-                  border: `1.5px solid ${tab.border}`,
+                  flex: "0 0 100%",
+                  scrollSnapAlign: "start",
+                  paddingRight: 8,
                 }}
               >
                 <div
                   style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    background: "#fff",
-                    color: tab.accent,
-                    padding: "5px 12px",
-                    borderRadius: 100,
-                    fontSize: 10,
-                    fontWeight: 800,
-                    marginBottom: 12,
+                    background: tab.gradient,
+                    borderRadius: 20,
+                    padding: "28px 22px",
+                    border: `1.5px solid ${tab.border}`,
                   }}
                 >
-                  {tab.icon} {tab.label}
-                </div>
-                <h3
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 900,
-                    color: T.navy,
-                    marginBottom: 8,
-                    letterSpacing: -0.5,
-                    whiteSpace: "pre-line",
-                  }}
-                >
-                  {tab.title}
-                </h3>
-                <p style={{ fontSize: 13, lineHeight: 1.7, color: T.ink2, marginBottom: 18 }}>
-                  {tab.desc}
-                </p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                  {tab.items.map(([ic, ti, de, bg]) => (
-                    <div
-                      key={ti}
-                      style={{
-                        background: "#fff",
-                        borderRadius: 12,
-                        padding: "14px 12px",
-                        border: `1px solid ${T.border}`,
-                      }}
-                    >
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      background: "#fff",
+                      color: tab.accent,
+                      padding: "5px 12px",
+                      borderRadius: 100,
+                      fontSize: 10,
+                      fontWeight: 800,
+                      marginBottom: 12,
+                    }}
+                  >
+                    {tab.icon} {tab.label}
+                  </div>
+                  <h3
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 900,
+                      color: T.navy,
+                      marginBottom: 8,
+                      letterSpacing: -0.5,
+                      whiteSpace: "pre-line",
+                    }}
+                  >
+                    {tab.title}
+                  </h3>
+                  <p style={{ fontSize: 13, lineHeight: 1.7, color: T.ink2, marginBottom: 18 }}>
+                    {tab.desc}
+                  </p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    {tab.items.map(([ic, ti, de, bg]) => (
                       <div
+                        key={ti}
                         style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: 10,
-                          background: bg,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: 16,
-                          marginBottom: 8,
+                          background: "#fff",
+                          borderRadius: 12,
+                          padding: "14px 12px",
+                          border: `1px solid ${T.border}`,
                         }}
                       >
-                        {ic}
+                        <div
+                          style={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: 10,
+                            background: bg,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 16,
+                            marginBottom: 8,
+                          }}
+                        >
+                          {ic}
+                        </div>
+                        <div style={{ fontWeight: 700, fontSize: 12, color: T.navy, marginBottom: 3 }}>
+                          {ti}
+                        </div>
+                        <div style={{ fontSize: 10, color: T.ink3, lineHeight: 1.5 }}>{de}</div>
                       </div>
-                      <div style={{ fontWeight: 700, fontSize: 12, color: T.navy, marginBottom: 3 }}>
-                        {ti}
-                      </div>
-                      <div style={{ fontSize: 10, color: T.ink3, lineHeight: 1.5 }}>{de}</div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          {/* Left arrow */}
+          <button
+            type="button"
+            aria-label="이전"
+            disabled={audienceTab === 0}
+            onClick={() => {
+              const next = Math.max(0, audienceTab - 1);
+              setAudienceTab(next);
+              const el = audienceTrackRef.current;
+              if (el) el.scrollTo({ left: next * el.clientWidth, behavior: "smooth" });
+            }}
+            style={{
+              position: "absolute",
+              left: -6,
+              top: "50%",
+              transform: "translateY(-50%)",
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              background: "#fff",
+              border: `1px solid ${T.border}`,
+              boxShadow: "0 4px 14px rgba(10,22,40,0.10)",
+              color: audienceTab === 0 ? T.ink3 : T.navy,
+              opacity: audienceTab === 0 ? 0.4 : 1,
+              cursor: audienceTab === 0 ? "default" : "pointer",
+              fontSize: 18,
+              fontWeight: 800,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 0,
+              fontFamily: "inherit",
+              transition: "opacity 0.2s ease, transform 0.2s ease",
+              zIndex: 2,
+            }}
+          >
+            ←
+          </button>
+
+          {/* Right arrow */}
+          <button
+            type="button"
+            aria-label="다음"
+            disabled={audienceTab === AUDIENCE_TABS_M.length - 1}
+            onClick={() => {
+              const next = Math.min(AUDIENCE_TABS_M.length - 1, audienceTab + 1);
+              setAudienceTab(next);
+              const el = audienceTrackRef.current;
+              if (el) el.scrollTo({ left: next * el.clientWidth, behavior: "smooth" });
+            }}
+            style={{
+              position: "absolute",
+              right: -6,
+              top: "50%",
+              transform: "translateY(-50%)",
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              background: "#fff",
+              border: `1px solid ${T.border}`,
+              boxShadow: "0 4px 14px rgba(10,22,40,0.10)",
+              color:
+                audienceTab === AUDIENCE_TABS_M.length - 1 ? T.ink3 : T.navy,
+              opacity: audienceTab === AUDIENCE_TABS_M.length - 1 ? 0.4 : 1,
+              cursor:
+                audienceTab === AUDIENCE_TABS_M.length - 1 ? "default" : "pointer",
+              fontSize: 18,
+              fontWeight: 800,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 0,
+              fontFamily: "inherit",
+              transition: "opacity 0.2s ease, transform 0.2s ease",
+              zIndex: 2,
+            }}
+          >
+            →
+          </button>
         </div>
 
         {/* Dots indicator */}
-        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 14 }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 18 }}>
           {AUDIENCE_TABS_M.map((tab, i) => (
             <button
               key={tab.id}
               type="button"
-              aria-label={`Go to ${tab.label}`}
+              aria-label={`${tab.label} 보기`}
               onClick={() => {
                 setAudienceTab(i);
                 const el = audienceTrackRef.current;
@@ -657,17 +684,6 @@ export default function MobileLandingPage() {
               }}
             />
           ))}
-        </div>
-        <div
-          style={{
-            marginTop: 8,
-            fontSize: 10,
-            color: T.ink3,
-            textAlign: "center",
-            letterSpacing: "-0.01em",
-          }}
-        >
-          👉 좌우로 스와이프하여 다른 사용자 유형도 확인하세요
         </div>
       </div>
 
