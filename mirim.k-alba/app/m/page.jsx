@@ -181,6 +181,14 @@ export default function MobileLandingPage() {
     const id = setInterval(() => setHeroIdx((p) => 1 - p), 8000);
     return () => clearInterval(id);
   }, []);
+
+  // 후기 자동 회전 (4초 간격, 무한 루프)
+  useEffect(() => {
+    const id = setInterval(() => {
+      setTestimonialIdx((i) => (i + 1) % TESTIMONIALS_M.length);
+    }, 4000);
+    return () => clearInterval(id);
+  }, []);
   const isSeeker = heroIdx === 0;
 
   // 로딩 중
@@ -259,7 +267,7 @@ export default function MobileLandingPage() {
               ))}
             </div>
             <div style={{ marginTop: 10, fontSize: 11, color: T.ink3 }}>
-              🌏 외국인 구직자 · 💼 사장님 <span style={{ color: T.mint, fontWeight: 700 }}>모두 무료</span>
+              🌏 외국인 구직자 · 💼 사장님 · 🏫 대학 담당자 <span style={{ color: T.mint, fontWeight: 700 }}>모두 무료</span>
             </div>
           </div>
         ) : userType === "employer" ? (
@@ -692,103 +700,100 @@ export default function MobileLandingPage() {
         </div>
 
         <div
-          ref={testimonialTrackRef}
-          onScroll={(e) => {
-            const w = e.currentTarget.clientWidth;
-            if (!w) return;
-            const idx = Math.round(e.currentTarget.scrollLeft / w);
-            if (idx !== testimonialIdx) setTestimonialIdx(idx);
-          }}
           style={{
-            display: "flex",
-            overflowX: "auto",
-            scrollSnapType: "x mandatory",
-            scrollBehavior: "smooth",
             marginTop: 22,
             padding: "0 20px",
-            gap: 12,
-            WebkitOverflowScrolling: "touch",
-            scrollbarWidth: "none",
+            overflow: "hidden",
           }}
-          className="testimonial-track"
+          className="testimonial-viewport"
         >
-          <style>{`.testimonial-track::-webkit-scrollbar{display:none;}`}</style>
-
-          {TESTIMONIALS_M.map((t) => (
-            <div
-              key={t.name}
-              style={{
-                flex: "0 0 calc(100% - 20px)",
-                maxWidth: 360,
-                scrollSnapAlign: "center",
-              }}
-            >
+          <div
+            ref={testimonialTrackRef}
+            style={{
+              display: "flex",
+              width: `${TESTIMONIALS_M.length * 100}%`,
+              transform: `translateX(-${(testimonialIdx * 100) / TESTIMONIALS_M.length}%)`,
+              transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+          >
+            {TESTIMONIALS_M.map((t) => (
               <div
+                key={t.name}
                 style={{
-                  background: "#fff",
-                  borderRadius: 20,
-                  padding: "26px 22px",
-                  border: `1px solid ${T.border}`,
-                  position: "relative",
-                  boxShadow: "0 6px 24px rgba(10,22,40,0.05)",
+                  width: `${100 / TESTIMONIALS_M.length}%`,
+                  flexShrink: 0,
+                  boxSizing: "border-box",
                 }}
               >
-                {/* Stars */}
                 <div
                   style={{
-                    color: "#FBBF24",
-                    fontSize: 13,
-                    letterSpacing: 2,
-                    marginBottom: 14,
+                    background: "#fff",
+                    borderRadius: 20,
+                    padding: "26px 22px",
+                    border: `1px solid ${T.border}`,
+                    position: "relative",
+                    boxShadow: "0 6px 24px rgba(10,22,40,0.05)",
+                    maxWidth: 360,
+                    margin: "0 auto",
                   }}
                 >
-                  ★★★★★
-                </div>
-
-                {/* Bold short quote (1-2 lines) */}
-                <div
-                  style={{
-                    fontSize: 17,
-                    fontWeight: 800,
-                    color: T.navy,
-                    lineHeight: 1.5,
-                    letterSpacing: "-0.02em",
-                    whiteSpace: "pre-line",
-                    marginBottom: 20,
-                    minHeight: 78,
-                  }}
-                >
-                  {t.quote}
-                </div>
-
-                {/* Author meta */}
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  {/* Stars */}
                   <div
                     style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 12,
-                      background: t.bg,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 18,
+                      color: "#FBBF24",
+                      fontSize: 13,
+                      letterSpacing: 2,
+                      marginBottom: 14,
                     }}
                   >
-                    {t.flag}
+                    ★★★★★
                   </div>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: T.ink2 }}>
-                      {t.name}
+
+                  {/* Bold short quote (1-2 lines) */}
+                  <div
+                    style={{
+                      fontSize: 17,
+                      fontWeight: 800,
+                      color: T.navy,
+                      lineHeight: 1.5,
+                      letterSpacing: "-0.02em",
+                      whiteSpace: "pre-line",
+                      marginBottom: 20,
+                      minHeight: 78,
+                    }}
+                  >
+                    {t.quote}
+                  </div>
+
+                  {/* Author meta */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 12,
+                        background: t.bg,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 18,
+                      }}
+                    >
+                      {t.flag}
                     </div>
-                    <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>
-                      {t.role}
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: T.ink2 }}>
+                        {t.name}
+                      </div>
+                      <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>
+                        {t.role}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Dots */}
@@ -798,11 +803,7 @@ export default function MobileLandingPage() {
               key={t.name}
               type="button"
               aria-label={`후기 ${i + 1} 보기`}
-              onClick={() => {
-                setTestimonialIdx(i);
-                const el = testimonialTrackRef.current;
-                if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
-              }}
+              onClick={() => setTestimonialIdx(i)}
               style={{
                 width: i === testimonialIdx ? 22 : 7,
                 height: 7,
@@ -824,7 +825,7 @@ export default function MobileLandingPage() {
           <div style={{ background: "#fff", borderRadius: 20, padding: "40px 28px", textAlign: "center", border: `1px solid ${T.border}` }}>
             <h2 style={{ fontSize: 22, fontWeight: 900, color: T.navy, marginBottom: 12, letterSpacing: -0.5, lineHeight: 1.35 }}>
               외국인 채용부터 행정 서류까지,<br />
-              이제 K-ALBA로 <span style={{ color: T.coral }}>한 번에 해결하세요.</span>
+              이제 <span style={{ color: T.coral }}>K-ALBA</span>로 한 번에 해결하세요.
             </h2>
             <p style={{ fontSize: 13, color: T.ink3, marginBottom: 24, lineHeight: 1.75 }}>
               더 이상 복잡한 절차로 고민하지 마세요.<br />
