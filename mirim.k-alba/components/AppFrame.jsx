@@ -33,35 +33,26 @@ import { I18nProvider } from "@/lib/i18n";
 const HIDE_NAVBAR_ON = ["/", "/m"];
 // Footer를 숨길 경로 (자체 푸터가 있는 페이지)
 const HIDE_FOOTER_ON = ["/", "/m"];
-// DesktopMobileFrame을 사용하지 않을 경로 (랜딩페이지만 제외)
-const NO_FRAME_ON = ["/", "/m"];
+// DesktopMobileFrame(데스크톱 440px 카드)을 사용하지 않을 경로
+//   - "/", "/m": 풀스크린 랜딩
+//   - "/privacy", "/terms": 본문이 길어 자체적으로 더 넓은 카드 컨테이너를 그림
+const NO_FRAME_ON = ["/", "/m", "/privacy", "/terms"];
+// KakaoFloatingButton 을 숨길 경로 (랜딩만 자체 CTA 가짐)
+const NO_KAKAO_ON = ["/", "/m"];
 
 export default function AppFrame({ children }) {
   const pathname = usePathname();
   const showNavBar = !HIDE_NAVBAR_ON.includes(pathname);
   const showFooter = !HIDE_FOOTER_ON.includes(pathname);
   const useFrame = !NO_FRAME_ON.includes(pathname);
+  const showKakao = !NO_KAKAO_ON.includes(pathname);
 
-  // 루트 `/` 또는 frame 불필요한 경로: 직접 렌더
-  if (!useFrame) {
-    return (
-      <I18nProvider>
-        {children}
-        {showFooter && <Footer />}
-      </I18nProvider>
-    );
-  }
-
-  // 그 외 경로: DesktopMobileFrame 적용 + 필요한 경우 NavBar/Footer 추가
   return (
     <I18nProvider>
       {showNavBar && <NavBar />}
-      <DesktopMobileFrame>
-        {children}
-      </DesktopMobileFrame>
+      {useFrame ? <DesktopMobileFrame>{children}</DesktopMobileFrame> : children}
       {showFooter && <Footer />}
-      {/* 플로팅 카카오톡 버튼 - DesktopMobileFrame 사용하는 모든 페이지에 표시 */}
-      <KakaoFloatingButton />
+      {showKakao && <KakaoFloatingButton />}
     </I18nProvider>
   );
 }

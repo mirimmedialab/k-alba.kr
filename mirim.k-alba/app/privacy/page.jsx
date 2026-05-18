@@ -23,15 +23,25 @@ export default function PrivacyPage() {
   return (
     <div
       style={{
-        maxWidth: 800,
-        margin: "0 auto",
-        padding: "40px 24px 80px",
-        background: T.paper,
-        color: T.ink,
-        lineHeight: 1.7,
-        fontSize: 14,
+        minHeight: "calc(100vh - 56px)",
+        background: T.cream,
+        padding: "32px 20px 64px",
       }}
     >
+      <div
+        style={{
+          maxWidth: 820,
+          margin: "0 auto",
+          padding: "clamp(32px, 5vw, 56px) clamp(24px, 4vw, 48px)",
+          background: T.paper,
+          color: T.ink,
+          lineHeight: 1.7,
+          fontSize: 14,
+          borderRadius: 16,
+          boxShadow:
+            "0 4px 20px rgba(10, 22, 40, 0.08), 0 1px 4px rgba(10, 22, 40, 0.04)",
+        }}
+      >
       {/* 헤더 */}
       <div style={{ marginBottom: 32, borderBottom: `2px solid ${T.gold}`, paddingBottom: 20 }}>
         <h1 style={{ fontSize: 28, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: "-0.02em" }}>
@@ -248,6 +258,7 @@ export default function PrivacyPage() {
           통해 고지합니다. 다만, 이용자 권리에 중요한 변경이 있는 경우에는 30일 전에 고지합니다.
         </p>
       </Section>
+      </div>
     </div>
   );
 }
