@@ -125,30 +125,79 @@ export default function MobileLandingPage() {
   const [user, setUser] = useState(null);
   const [userType, setUserType] = useState(null);
   const [heroIdx, setHeroIdx] = useState(0);
-  const [audienceTab, setAudienceTab] = useState(0);
-  const audienceTouchX = useRef(null);
-  const audienceTouchY = useRef(null);
-  const [testimonialIdx, setTestimonialIdx] = useState(0);
-  const testimonialTrackRef = useRef(null);
-
+  // ───────── Audience 캐러셀: Clone 노드 기반 무한 루프 ─────────
+  // 트랙: [cloneLast, ...AUDIENCE_TABS_M, cloneFirst]  → 길이 N+2
+  // audienceSlide: 1..N (canonical) — 0 / N+1 은 클론을 잠깐 보여주고 점프
   const audienceN = AUDIENCE_TABS_M.length;
-  const goAudiencePrev = () => setAudienceTab((i) => (i - 1 + audienceN) % audienceN);
-  const goAudienceNext = () => setAudienceTab((i) => (i + 1) % audienceN);
-  const handleAudienceTouchStart = (e) => {
-    audienceTouchX.current = e.touches[0].clientX;
-    audienceTouchY.current = e.touches[0].clientY;
-  };
-  const handleAudienceTouchEnd = (e) => {
-    if (audienceTouchX.current == null) return;
-    const dx = e.changedTouches[0].clientX - audienceTouchX.current;
-    const dy = e.changedTouches[0].clientY - audienceTouchY.current;
-    audienceTouchX.current = null;
-    audienceTouchY.current = null;
-    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
-      if (dx < 0) goAudienceNext();
-      else goAudiencePrev();
+  const audienceTrackCount = audienceN + 2;
+  const [audienceSlide, setAudienceSlide] = useState(1);
+  const [audienceTransition, setAudienceTransition] = useState(true);
+  const [audienceDragX, setAudienceDragX] = useState(0);
+  const audienceDragRef = useRef(null);
+  const audienceLogicalIdx = ((audienceSlide - 1) + audienceN) % audienceN;
+
+  const goAudienceNext = () => setAudienceSlide((s) => s + 1);
+  const goAudiencePrev = () => setAudienceSlide((s) => s - 1);
+  const goAudienceTo = (logical) => setAudienceSlide(logical + 1);
+
+  const handleAudienceTransitionEnd = () => {
+    if (audienceSlide === audienceN + 1) {
+      // cloneFirst 보여준 직후 → 진짜 첫 카드로 점프 (transition 끄고)
+      setAudienceTransition(false);
+      setAudienceSlide(1);
+    } else if (audienceSlide === 0) {
+      // cloneLast 보여준 직후 → 진짜 마지막 카드로 점프
+      setAudienceTransition(false);
+      setAudienceSlide(audienceN);
     }
   };
+
+  // 점프 직후 다음 프레임에서 transition 재활성화 (사용자에게는 보이지 않음)
+  useEffect(() => {
+    if (audienceTransition) return;
+    const id = requestAnimationFrame(() =>
+      requestAnimationFrame(() => setAudienceTransition(true))
+    );
+    return () => cancelAnimationFrame(id);
+  }, [audienceTransition]);
+
+  // 라이브 드래그 — 손가락 따라가는 finger-follow
+  const handleAudienceTouchStart = (e) => {
+    audienceDragRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+      direction: null,
+    };
+  };
+  const handleAudienceTouchMove = (e) => {
+    const start = audienceDragRef.current;
+    if (!start) return;
+    const dx = e.touches[0].clientX - start.x;
+    const dy = e.touches[0].clientY - start.y;
+    // 방향이 정해지지 않았으면 5px 이상 움직였을 때 결정
+    if (!start.direction && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+      start.direction = Math.abs(dx) > Math.abs(dy) ? "horizontal" : "vertical";
+      if (start.direction === "horizontal") setAudienceTransition(false);
+    }
+    if (start.direction === "horizontal") setAudienceDragX(dx);
+  };
+  const handleAudienceTouchEnd = (e) => {
+    const start = audienceDragRef.current;
+    if (!start) return;
+    const dx = (e.changedTouches[0]?.clientX || start.x) - start.x;
+    audienceDragRef.current = null;
+    if (start.direction === "horizontal") {
+      setAudienceTransition(true);
+      setAudienceDragX(0);
+      if (Math.abs(dx) > 60) {
+        if (dx < 0) goAudienceNext();
+        else goAudiencePrev();
+      }
+    }
+  };
+
+  const [testimonialIdx, setTestimonialIdx] = useState(0);
+  const testimonialTrackRef = useRef(null);
 
   // 세션 체크
   useEffect(() => {
@@ -198,75 +247,105 @@ export default function MobileLandingPage() {
 
   return (
     <div>
-      {/* heroFade 키프레임 */}
-      <style>{`
-        @keyframes heroFade {
-          0% { opacity: 0; transform: translateY(8px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-
       {/* ── HERO ── */}
       <div style={{ ...S.section, paddingTop: 32, paddingBottom: 32 }}>
         {!user ? (
-          // 비로그인 상태 - 8초 교차 애니메이션 (구직자 ↔ 사장님)
-          <div key={heroIdx} style={{ textAlign: "center", marginBottom: 28, animation: "heroFade 1.4s ease-out" }}>
-            {isSeeker ? (
-              <>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.mintL, color: "#059669", padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
-                  🌏 외국인 구직자를 위한
+          // 비로그인 — 8초마다 구직자/사장님 슬라이드 (좌우 트랙)
+          <div style={{ marginBottom: 28 }}>
+            {/* Hero text slide track */}
+            <div style={{ overflow: "hidden" }}>
+              <div
+                style={{
+                  display: "flex",
+                  width: "200%",
+                  transform: `translate3d(${heroIdx * -50}%, 0, 0)`,
+                  transition: "transform 0.8s cubic-bezier(0.22, 1, 0.36, 1)",
+                  willChange: "transform",
+                }}
+              >
+                {/* Seeker panel */}
+                <div
+                  aria-hidden={!isSeeker}
+                  style={{
+                    width: "50%",
+                    flexShrink: 0,
+                    textAlign: "center",
+                    padding: "0 4px",
+                    opacity: isSeeker ? 1 : 0.35,
+                    transition: "opacity 0.6s ease-in-out",
+                  }}
+                >
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.mintL, color: "#059669", padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
+                    🌏 외국인 구직자를 위한
+                  </div>
+                  <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: T.navy, marginBottom: 16, letterSpacing: -1 }}>
+                    한국에서 일하는 외국인을 위한<br />
+                    <span style={{ background: "linear-gradient(135deg,#0BD8A2,#06B889)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                      맞춤형 알바
+                    </span>
+                  </h1>
+                  <p style={{ fontSize: 14, lineHeight: 1.8, color: T.ink2, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
+                    내 비자 조건에 맞는 알바 공고부터 근로계약서 작성까지, 7개 언어로 더 쉽고 빠르게 도와드립니다.
+                  </p>
+                  <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                    <Button variant="primary" href="/login">{t("landing.seekerCta")}</Button>
+                    <Button variant="secondary" href="/login">{t("landing.haveAccount")}</Button>
+                  </div>
                 </div>
-                <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: T.navy, marginBottom: 16, letterSpacing: -1 }}>
-                  한국에서 일하는 외국인을 위한<br />
-                  <span style={{ background: "linear-gradient(135deg,#0BD8A2,#06B889)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                    맞춤형 알바
-                  </span>
-                </h1>
-                <p style={{ fontSize: 14, lineHeight: 1.8, color: T.ink2, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
-                  내 비자 조건에 맞는 알바 공고부터 근로계약서 작성까지, 7개 언어로 더 쉽고 빠르게 도와드립니다.
-                </p>
-                <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-                  <Button variant="primary" href="/login">{t("landing.seekerCta")}</Button>
-                  <Button variant="secondary" href="/login">{t("landing.haveAccount")}</Button>
+
+                {/* Employer panel */}
+                <div
+                  aria-hidden={isSeeker}
+                  style={{
+                    width: "50%",
+                    flexShrink: 0,
+                    textAlign: "center",
+                    padding: "0 4px",
+                    opacity: !isSeeker ? 1 : 0.35,
+                    transition: "opacity 0.6s ease-in-out",
+                  }}
+                >
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.kakaoYellow, color: "#3C1E1E", padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
+                    💼 사장님을 위한
+                  </div>
+                  <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: T.navy, marginBottom: 16, letterSpacing: -1 }}>
+                    카카오톡 챗봇으로<br />
+                    <span style={{ background: `linear-gradient(135deg,${T.coral},#FF8A7A)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                      3분만에 공고 완성
+                    </span>
+                  </h1>
+                  <p style={{ fontSize: 14, lineHeight: 1.8, color: T.ink2, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
+                    카카오톡 챗봇으로 공고 등록부터 근로계약서 작성까지, 외국인 채용 절차를 더 간편하게 도와드립니다.
+                  </p>
+                  <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                    <Button variant="primary" href="/login" style={{ boxShadow: `0 4px 16px ${T.coral}40` }}>
+                      공고 등록 — 무료 가입
+                    </Button>
+                    <Button variant="secondary" href="/login">{t("landing.haveAccount")}</Button>
+                  </div>
                 </div>
-              </>
-            ) : (
-              <>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.kakaoYellow, color: "#3C1E1E", padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
-                  💼 사장님을 위한
-                </div>
-                <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: T.navy, marginBottom: 16, letterSpacing: -1 }}>
-                  카카오톡 챗봇으로<br />
-                  <span style={{ background: `linear-gradient(135deg,${T.coral},#FF8A7A)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                    3분만에 공고 완성
-                  </span>
-                </h1>
-                <p style={{ fontSize: 14, lineHeight: 1.8, color: T.ink2, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
-                  카카오톡 챗봇으로 공고 등록부터 근로계약서 작성까지, 외국인 채용 절차를 더 간편하게 도와드립니다.
-                </p>
-                <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-                  <Button variant="primary" href="/login" style={{ boxShadow: `0 4px 16px ${T.coral}40` }}>
-                    공고 등록 — 무료 가입
-                  </Button>
-                  <Button variant="secondary" href="/login">{t("landing.haveAccount")}</Button>
-                </div>
-              </>
-            )}
+              </div>
+            </div>
 
             <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 18 }}>
               {[0, 1].map((i) => (
                 <button
                   key={i}
                   onClick={() => setHeroIdx(i)}
+                  aria-label={i === 0 ? "구직자 보기" : "사장님 보기"}
                   style={{
-                    width: i === heroIdx ? 24 : 8, height: 8, borderRadius: 4,
+                    width: i === heroIdx ? 24 : 8,
+                    height: 8,
+                    borderRadius: 4,
                     background: i === heroIdx ? (i === 0 ? T.mint : T.coral) : T.borderStrong,
-                    border: "none", cursor: "pointer", transition: "all 0.3s",
+                    border: "none",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease-in-out",
                   }}
                 />
               ))}
             </div>
-            <div style={{ marginTop: 10, fontSize: 11, color: T.ink3 }}>
+            <div style={{ marginTop: 10, fontSize: 11, color: T.ink3, textAlign: "center" }}>
               🌏 외국인 구직자 · 💼 사장님 · 🏫 대학 담당자 <span style={{ color: T.mint, fontWeight: 700 }}>모두 무료</span>
             </div>
           </div>
@@ -330,140 +409,177 @@ export default function MobileLandingPage() {
           </div>
         )}
 
-        {/* Phone Mockup - 구직자 ↔ 사장님 교차 */}
-        <div key={"phone-" + heroIdx} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20, animation: "heroFade 1.4s ease-out" }}>
-          <div style={{ width: 240, background: isSeeker ? "#fff" : "#B2C7D9", borderRadius: 32, boxShadow: "0 30px 80px rgba(10,22,40,0.14),0 0 0 1px rgba(10,22,40,0.04)", overflow: "hidden", border: "7px solid #1a1a2e", transition: "background 0.4s" }}>
-            <div style={{ width: 80, height: 22, background: "#1a1a2e", borderRadius: "0 0 14px 14px", margin: "0 auto" }} />
-
-            {isSeeker ? (
-              <div style={{ padding: 12, minHeight: 460 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, background: "#fff", padding: "8px 12px", borderRadius: 10, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-                  <KIcon size="xs" style={{ width: 24, height: 24, fontSize: 12, borderRadius: 7 }} />
-                  <div style={{ flex: 1 }}>
-                    <KWordmark size={11} />
-                    <div style={{ fontSize: 8, color: T.ink3 }}>Linh T. · 🇻🇳 D-2 비자</div>
+        {/* Phone Mockup — 8초마다 슬라이드 트랙 (Seeker ↔ Employer) */}
+        <div style={{ overflow: "hidden", marginTop: 18 }}>
+          <div
+            style={{
+              display: "flex",
+              width: "200%",
+              transform: `translate3d(${heroIdx * -50}%, 0, 0)`,
+              transition: "transform 0.8s cubic-bezier(0.22, 1, 0.36, 1)",
+              willChange: "transform",
+            }}
+          >
+            {/* Seeker phone panel */}
+            <div
+              aria-hidden={!isSeeker}
+              style={{
+                width: "50%",
+                flexShrink: 0,
+                display: "flex",
+                justifyContent: "center",
+                padding: "0 4px",
+                opacity: isSeeker ? 1 : 0.4,
+                transition: "opacity 0.6s ease-in-out",
+              }}
+            >
+              <div style={{ width: 240, background: "#fff", borderRadius: 32, boxShadow: "0 30px 80px rgba(10,22,40,0.14),0 0 0 1px rgba(10,22,40,0.04)", overflow: "hidden", border: "7px solid #1a1a2e" }}>
+                <div style={{ width: 80, height: 22, background: "#1a1a2e", borderRadius: "0 0 14px 14px", margin: "0 auto" }} />
+                <div style={{ padding: 12, minHeight: 460 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, background: "#fff", padding: "8px 12px", borderRadius: 10, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                    <KIcon size="xs" style={{ width: 24, height: 24, fontSize: 12, borderRadius: 7 }} />
+                    <div style={{ flex: 1 }}>
+                      <KWordmark size={11} />
+                      <div style={{ fontSize: 8, color: T.ink3 }}>Linh T. · 🇻🇳 D-2 비자</div>
+                    </div>
+                    <div style={{ width: 6, height: 6, borderRadius: 3, background: T.mint }} />
                   </div>
-                  <div style={{ width: 6, height: 6, borderRadius: 3, background: T.mint }} />
-                </div>
-                <div style={{ background: T.cream, borderRadius: 10, padding: "7px 12px", fontSize: 10, color: T.ink3, marginBottom: 8 }}>🔍 알바 검색...</div>
-                <div style={{ display: "flex", gap: 4, marginBottom: 8, flexWrap: "wrap" }}>
-                  {[{ l: "D-2 가능", active: true }, { l: "강남", active: false }, { l: "주 20시간", active: false }, { l: "한국어 초급", active: false }].map((c, i) => (
-                    <span key={i} style={{ fontSize: 8, fontWeight: 700, padding: "3px 8px", borderRadius: 10, background: c.active ? T.mintL : "#fff", color: c.active ? "#059669" : T.ink3, border: `1px solid ${c.active ? T.mint + "40" : T.border}` }}>{c.l}</span>
-                  ))}
-                </div>
-                <div style={{ background: `linear-gradient(135deg,${T.mintL},#D1FAE5)`, borderRadius: 8, padding: "6px 10px", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ fontSize: 11 }}>✨</span>
-                  <span style={{ fontSize: 9, fontWeight: 700, color: "#059669" }}>비자에 맞는 알바 <strong>28건</strong> 찾음!</span>
-                </div>
-                {[
-                  { ic: "☕", t: "카페 바리스타", m: "강남구 · 주 20시간", p: "₩12,000", v: "D-2", bg: "#FFF7ED", match: "95%" },
-                  { ic: "📚", t: "영어 과외", m: "온라인 · 자유시간", p: "₩25,000", v: "F-2", bg: "#EEF2FF", match: "88%" },
-                  { ic: "🏭", t: "공장 생산직", m: "수원 · 주 40시간", p: "₩12,500", v: "E-9", bg: "#ECFDF5", match: "82%" },
-                  { ic: "🏨", t: "호텔 프론트", m: "명동 · 주 30시간", p: "₩13,000", v: "H-1", bg: "#FEF2F2", match: "78%" },
-                ].map((j, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 10, border: `1px solid ${T.border}`, marginBottom: 5, background: "#fff" }}>
-                    <div style={{ width: 30, height: 30, borderRadius: 8, background: j.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}>{j.ic}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: T.navy }}>{j.t}</span>
-                        <span style={{ fontSize: 7, fontWeight: 700, background: T.mintL, color: "#059669", padding: "1px 4px", borderRadius: 3 }}>{j.match}</span>
-                      </div>
-                      <div style={{ fontSize: 8, color: T.ink3, marginTop: 1 }}>{j.m}</div>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: 11, fontWeight: 800, color: T.mint }}>{j.p}</div>
-                      <span style={{ fontSize: 7, fontWeight: 700, background: "#EEF2FF", color: "#4F46E5", padding: "1px 5px", borderRadius: 3 }}>{j.v} ✓</span>
-                    </div>
+                  <div style={{ background: T.cream, borderRadius: 10, padding: "7px 12px", fontSize: 10, color: T.ink3, marginBottom: 8 }}>🔍 알바 검색...</div>
+                  <div style={{ display: "flex", gap: 4, marginBottom: 8, flexWrap: "wrap" }}>
+                    {[{ l: "D-2 가능", active: true }, { l: "강남", active: false }, { l: "주 20시간", active: false }, { l: "한국어 초급", active: false }].map((c, i) => (
+                      <span key={i} style={{ fontSize: 8, fontWeight: 700, padding: "3px 8px", borderRadius: 10, background: c.active ? T.mintL : "#fff", color: c.active ? "#059669" : T.ink3, border: `1px solid ${c.active ? T.mint + "40" : T.border}` }}>{c.l}</span>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div style={{ padding: 12, background: "#B2C7D9", minHeight: 460 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, background: "#fff", padding: "8px 12px", borderRadius: 10 }}>
-                  <KIcon variant="kakao" size="xs" style={{ width: 24, height: 24, fontSize: 12, borderRadius: 7 }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: T.navy }}>K-ALBA 채용 도우미</div>
-                    <div style={{ fontSize: 8, color: T.ink3 }}>알비 챗봇 · 실시간 응답</div>
+                  <div style={{ background: `linear-gradient(135deg,${T.mintL},#D1FAE5)`, borderRadius: 8, padding: "6px 10px", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 11 }}>✨</span>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: "#059669" }}>비자에 맞는 알바 <strong>28건</strong> 찾음!</span>
                   </div>
-                  <div style={{ width: 6, height: 6, borderRadius: 3, background: T.mint }} />
-                </div>
-                <div style={{ display: "flex", gap: 5, marginBottom: 6 }}>
-                  <KIcon variant="kakao" size="xxs" style={{ width: 22, height: 22, fontSize: 10, borderRadius: 7 }} />
-                  <div style={{ background: "#fff", padding: "6px 9px", borderRadius: "3px 10px 10px 10px", fontSize: 9, color: T.navy }}>업종을 선택해 주세요!</div>
-                </div>
-                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 6 }}>
-                  <div style={{ background: T.kakaoYellowMsg, padding: "6px 9px", borderRadius: "10px 3px 10px 10px", fontSize: 9, color: T.navy, fontWeight: 700 }}>농업 🌾</div>
-                </div>
-                <div style={{ display: "flex", gap: 5, marginBottom: 10 }}>
-                  <KIcon variant="kakao" size="xxs" style={{ width: 22, height: 22, fontSize: 10, borderRadius: 7 }} />
-                  <div style={{ background: "#fff", padding: "8px 10px", borderRadius: "3px 10px 10px 10px", maxWidth: "85%", width: "85%" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 5, paddingBottom: 5, borderBottom: `1px solid ${T.cream}` }}>
-                      <span style={{ fontSize: 10 }}>📍</span>
-                      <span style={{ fontSize: 9, fontWeight: 800, color: T.navy }}>평택 농업 공고 시세</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
-                      <span style={{ fontSize: 8, color: T.ink3 }}>평균</span>
-                      <span style={{ fontSize: 10, fontWeight: 800, color: T.coral }}>일급 195,000원</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                      <span style={{ fontSize: 8, color: T.ink3 }}>범위</span>
-                      <span style={{ fontSize: 8, fontWeight: 600, color: T.ink2 }}>15만~25만원</span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "end", gap: 2, height: 18, marginBottom: 3 }}>
-                      {[40, 60, 90, 75, 55, 45, 80, 95, 70, 50].map((h, i) => (
-                        <div key={i} style={{ flex: 1, height: h + "%", background: i === 7 ? T.coral : T.mint, opacity: 0.7, borderRadius: "2px 2px 0 0" }} />
-                      ))}
-                    </div>
-                    <div style={{ fontSize: 7, color: T.ink3, textAlign: "center" }}>📊 최근 32건 분석</div>
-                  </div>
-                </div>
-
-                <div style={{ background: "#fff", borderRadius: 10, padding: "9px 10px", marginBottom: 6 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7, paddingBottom: 5, borderBottom: `1px solid ${T.cream}` }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                      <span style={{ fontSize: 11 }}>📍</span>
-                      <span style={{ fontSize: 9, fontWeight: 800, color: T.navy }}>근처 외국인 매칭</span>
-                    </div>
-                    <span style={{ fontSize: 8, fontWeight: 700, color: "#fff", background: T.coral, padding: "2px 6px", borderRadius: 8 }}>5명</span>
-                  </div>
-                  {[{ flag: "🇻🇳", name: "Linh T.", dist: "2.1km", rating: "4.8", tag: "D-2" }, { flag: "🇺🇿", name: "Olim K.", dist: "3.5km", rating: "4.9", tag: "E-9" }].map((p, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 0", borderTop: i > 0 ? `1px solid ${T.cream}` : "none" }}>
-                      <div style={{ width: 22, height: 22, borderRadius: 6, background: T.cream, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11 }}>{p.flag}</div>
+                  {[
+                    { ic: "☕", t: "카페 바리스타", m: "강남구 · 주 20시간", p: "₩12,000", v: "D-2", bg: "#FFF7ED", match: "95%" },
+                    { ic: "📚", t: "영어 과외", m: "온라인 · 자유시간", p: "₩25,000", v: "F-2", bg: "#EEF2FF", match: "88%" },
+                    { ic: "🏭", t: "공장 생산직", m: "수원 · 주 40시간", p: "₩12,500", v: "E-9", bg: "#ECFDF5", match: "82%" },
+                    { ic: "🏨", t: "호텔 프론트", m: "명동 · 주 30시간", p: "₩13,000", v: "H-1", bg: "#FEF2F2", match: "78%" },
+                  ].map((j, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 10, border: `1px solid ${T.border}`, marginBottom: 5, background: "#fff" }}>
+                      <div style={{ width: 30, height: 30, borderRadius: 8, background: j.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}>{j.ic}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                          <span style={{ fontSize: 9, fontWeight: 700, color: T.navy }}>{p.name}</span>
-                          <span style={{ fontSize: 7, fontWeight: 700, background: "#EEF2FF", color: "#4F46E5", padding: "1px 4px", borderRadius: 3 }}>{p.tag}</span>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: T.navy }}>{j.t}</span>
+                          <span style={{ fontSize: 7, fontWeight: 700, background: T.mintL, color: "#059669", padding: "1px 4px", borderRadius: 3 }}>{j.match}</span>
                         </div>
-                        <div style={{ fontSize: 8, color: T.ink3, marginTop: 1 }}>📍 {p.dist} · ⭐ {p.rating}</div>
+                        <div style={{ fontSize: 8, color: T.ink3, marginTop: 1 }}>{j.m}</div>
                       </div>
-                      <span style={{ fontSize: 8, padding: "3px 7px", borderRadius: 5, background: T.mintL, color: "#059669", fontWeight: 700 }}>매칭</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div style={{ background: "#fff", borderRadius: 10, padding: "9px 10px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7, paddingBottom: 5, borderBottom: `1px solid ${T.cream}` }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                      <span style={{ fontSize: 11 }}>⭐</span>
-                      <span style={{ fontSize: 9, fontWeight: 800, color: T.navy }}>우수 인력 추천</span>
-                    </div>
-                    <span style={{ fontSize: 8, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg,#8B5CF6,#6366F1)", padding: "2px 6px", borderRadius: 8 }}>AI 매칭</span>
-                  </div>
-                  {[{ flag: "🇰🇭", name: "Sokha M.", exp: "농업 6개월", rating: "4.9", badge: "성실" }, { flag: "🇲🇳", name: "Batbold", exp: "딸기수확 3회", rating: "4.8", badge: "경력" }].map((p, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 0", borderTop: i > 0 ? `1px solid ${T.cream}` : "none" }}>
-                      <div style={{ width: 22, height: 22, borderRadius: 6, background: T.mintL, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11 }}>{p.flag}</div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 9, fontWeight: 700, color: T.navy }}>{p.name}</div>
-                        <div style={{ fontSize: 8, color: T.ink3, marginTop: 1 }}>{p.exp} · ⭐ {p.rating}</div>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: 11, fontWeight: 800, color: T.mint }}>{j.p}</div>
+                        <span style={{ fontSize: 7, fontWeight: 700, background: "#EEF2FF", color: "#4F46E5", padding: "1px 5px", borderRadius: 3 }}>{j.v} ✓</span>
                       </div>
-                      <span style={{ fontSize: 8, padding: "3px 7px", borderRadius: 5, background: "#EEF2FF", color: "#4F46E5", fontWeight: 700 }}>{p.badge}</span>
                     </div>
                   ))}
                 </div>
               </div>
-            )}
-          </div>
+            </div>
 
+            {/* Employer phone panel */}
+            <div
+              aria-hidden={isSeeker}
+              style={{
+                width: "50%",
+                flexShrink: 0,
+                display: "flex",
+                justifyContent: "center",
+                padding: "0 4px",
+                opacity: !isSeeker ? 1 : 0.4,
+                transition: "opacity 0.6s ease-in-out",
+              }}
+            >
+              <div style={{ width: 240, background: "#B2C7D9", borderRadius: 32, boxShadow: "0 30px 80px rgba(10,22,40,0.14),0 0 0 1px rgba(10,22,40,0.04)", overflow: "hidden", border: "7px solid #1a1a2e" }}>
+                <div style={{ width: 80, height: 22, background: "#1a1a2e", borderRadius: "0 0 14px 14px", margin: "0 auto" }} />
+                <div style={{ padding: 12, background: "#B2C7D9", minHeight: 460 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, background: "#fff", padding: "8px 12px", borderRadius: 10 }}>
+                    <KIcon variant="kakao" size="xs" style={{ width: 24, height: 24, fontSize: 12, borderRadius: 7 }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: T.navy }}>K-ALBA 채용 도우미</div>
+                      <div style={{ fontSize: 8, color: T.ink3 }}>알비 챗봇 · 실시간 응답</div>
+                    </div>
+                    <div style={{ width: 6, height: 6, borderRadius: 3, background: T.mint }} />
+                  </div>
+                  <div style={{ display: "flex", gap: 5, marginBottom: 6 }}>
+                    <KIcon variant="kakao" size="xxs" style={{ width: 22, height: 22, fontSize: 10, borderRadius: 7 }} />
+                    <div style={{ background: "#fff", padding: "6px 9px", borderRadius: "3px 10px 10px 10px", fontSize: 9, color: T.navy }}>업종을 선택해 주세요!</div>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 6 }}>
+                    <div style={{ background: T.kakaoYellowMsg, padding: "6px 9px", borderRadius: "10px 3px 10px 10px", fontSize: 9, color: T.navy, fontWeight: 700 }}>농업 🌾</div>
+                  </div>
+                  <div style={{ display: "flex", gap: 5, marginBottom: 10 }}>
+                    <KIcon variant="kakao" size="xxs" style={{ width: 22, height: 22, fontSize: 10, borderRadius: 7 }} />
+                    <div style={{ background: "#fff", padding: "8px 10px", borderRadius: "3px 10px 10px 10px", maxWidth: "85%", width: "85%" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 5, paddingBottom: 5, borderBottom: `1px solid ${T.cream}` }}>
+                        <span style={{ fontSize: 10 }}>📍</span>
+                        <span style={{ fontSize: 9, fontWeight: 800, color: T.navy }}>평택 농업 공고 시세</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                        <span style={{ fontSize: 8, color: T.ink3 }}>평균</span>
+                        <span style={{ fontSize: 10, fontWeight: 800, color: T.coral }}>일급 195,000원</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                        <span style={{ fontSize: 8, color: T.ink3 }}>범위</span>
+                        <span style={{ fontSize: 8, fontWeight: 600, color: T.ink2 }}>15만~25만원</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "end", gap: 2, height: 18, marginBottom: 3 }}>
+                        {[40, 60, 90, 75, 55, 45, 80, 95, 70, 50].map((h, i) => (
+                          <div key={i} style={{ flex: 1, height: h + "%", background: i === 7 ? T.coral : T.mint, opacity: 0.7, borderRadius: "2px 2px 0 0" }} />
+                        ))}
+                      </div>
+                      <div style={{ fontSize: 7, color: T.ink3, textAlign: "center" }}>📊 최근 32건 분석</div>
+                    </div>
+                  </div>
+
+                  <div style={{ background: "#fff", borderRadius: 10, padding: "9px 10px", marginBottom: 6 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7, paddingBottom: 5, borderBottom: `1px solid ${T.cream}` }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <span style={{ fontSize: 11 }}>📍</span>
+                        <span style={{ fontSize: 9, fontWeight: 800, color: T.navy }}>근처 외국인 매칭</span>
+                      </div>
+                      <span style={{ fontSize: 8, fontWeight: 700, color: "#fff", background: T.coral, padding: "2px 6px", borderRadius: 8 }}>5명</span>
+                    </div>
+                    {[{ flag: "🇻🇳", name: "Linh T.", dist: "2.1km", rating: "4.8", tag: "D-2" }, { flag: "🇺🇿", name: "Olim K.", dist: "3.5km", rating: "4.9", tag: "E-9" }].map((p, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 0", borderTop: i > 0 ? `1px solid ${T.cream}` : "none" }}>
+                        <div style={{ width: 22, height: 22, borderRadius: 6, background: T.cream, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11 }}>{p.flag}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                            <span style={{ fontSize: 9, fontWeight: 700, color: T.navy }}>{p.name}</span>
+                            <span style={{ fontSize: 7, fontWeight: 700, background: "#EEF2FF", color: "#4F46E5", padding: "1px 4px", borderRadius: 3 }}>{p.tag}</span>
+                          </div>
+                          <div style={{ fontSize: 8, color: T.ink3, marginTop: 1 }}>📍 {p.dist} · ⭐ {p.rating}</div>
+                        </div>
+                        <span style={{ fontSize: 8, padding: "3px 7px", borderRadius: 5, background: T.mintL, color: "#059669", fontWeight: 700 }}>매칭</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div style={{ background: "#fff", borderRadius: 10, padding: "9px 10px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7, paddingBottom: 5, borderBottom: `1px solid ${T.cream}` }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <span style={{ fontSize: 11 }}>⭐</span>
+                        <span style={{ fontSize: 9, fontWeight: 800, color: T.navy }}>우수 인력 추천</span>
+                      </div>
+                      <span style={{ fontSize: 8, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg,#8B5CF6,#6366F1)", padding: "2px 6px", borderRadius: 8 }}>AI 매칭</span>
+                    </div>
+                    {[{ flag: "🇰🇭", name: "Sokha M.", exp: "농업 6개월", rating: "4.9", badge: "성실" }, { flag: "🇲🇳", name: "Batbold", exp: "딸기수확 3회", rating: "4.8", badge: "경력" }].map((p, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 0", borderTop: i > 0 ? `1px solid ${T.cream}` : "none" }}>
+                        <div style={{ width: 22, height: 22, borderRadius: 6, background: T.mintL, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11 }}>{p.flag}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 9, fontWeight: 700, color: T.navy }}>{p.name}</div>
+                          <div style={{ fontSize: 8, color: T.ink3, marginTop: 1 }}>{p.exp} · ⭐ {p.rating}</div>
+                        </div>
+                        <span style={{ fontSize: 8, padding: "3px 7px", borderRadius: 5, background: "#EEF2FF", color: "#4F46E5", fontWeight: 700 }}>{p.badge}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -479,134 +595,164 @@ export default function MobileLandingPage() {
       </div>
 
 
-      {/* ── AUDIENCE CAROUSEL (single-card center · infinite loop) ── */}
+      {/* ── AUDIENCE CAROUSEL (clone-based · 진짜 무한 루프 + drag follow) ── */}
       <div style={{ ...S.section, paddingBottom: 32 }}>
         <div style={{ position: "relative" }}>
-          {/* Viewport — clip to exactly one card */}
+          {/* Viewport — 양쪽 가장자리 부드러운 마스크로 카드 페이드 */}
           <div
-            style={{ overflow: "hidden", borderRadius: 20 }}
+            style={{
+              overflow: "hidden",
+              borderRadius: 20,
+              touchAction: "pan-y",
+            }}
             onTouchStart={handleAudienceTouchStart}
+            onTouchMove={handleAudienceTouchMove}
             onTouchEnd={handleAudienceTouchEnd}
           >
-            {/* Track — flex row, translateX driven by activeTab */}
+            {/* Track — flex row, translateX + drag offset */}
             <div
               style={{
                 display: "flex",
-                width: `${audienceN * 100}%`,
-                transform: `translateX(-${(audienceTab * 100) / audienceN}%)`,
-                transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                width: `${audienceTrackCount * 100}%`,
+                transform: `translate3d(calc(${(-audienceSlide * 100) / audienceTrackCount}% + ${audienceDragX}px), 0, 0)`,
+                transition: audienceTransition
+                  ? "transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)"
+                  : "none",
+                willChange: "transform",
               }}
+              onTransitionEnd={handleAudienceTransitionEnd}
             >
-              {AUDIENCE_TABS_M.map((tab) => (
-                <div
-                  key={tab.id}
-                  style={{
-                    width: `${100 / audienceN}%`,
-                    flexShrink: 0,
-                    boxSizing: "border-box",
-                  }}
-                >
+              {[
+                { ...AUDIENCE_TABS_M[audienceN - 1], _key: "clone-last" },
+                ...AUDIENCE_TABS_M.map((t, i) => ({ ...t, _key: `real-${i}` })),
+                { ...AUDIENCE_TABS_M[0], _key: "clone-first" },
+              ].map((tab, slotIdx) => {
+                const realIdx =
+                  slotIdx === 0
+                    ? audienceN - 1
+                    : slotIdx === audienceTrackCount - 1
+                      ? 0
+                      : slotIdx - 1;
+                const isActive = realIdx === audienceLogicalIdx;
+                return (
                   <div
+                    key={tab._key}
+                    aria-hidden={!isActive}
                     style={{
-                      background: tab.gradient,
-                      borderRadius: 20,
-                      padding: "28px 22px",
-                      border: `1.5px solid ${tab.border}`,
-                      minHeight: 340,
+                      width: `${100 / audienceTrackCount}%`,
+                      flexShrink: 0,
+                      boxSizing: "border-box",
+                      opacity: isActive ? 1 : 0.55,
+                      transition: "opacity 0.3s ease-in-out",
                     }}
                   >
                     <div
                       style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                        background: "#fff",
-                        color: tab.accent,
-                        padding: "5px 12px",
-                        borderRadius: 100,
-                        fontSize: 10,
-                        fontWeight: 800,
-                        marginBottom: 14,
+                        background: tab.gradient,
+                        borderRadius: 20,
+                        padding: "28px 22px",
+                        border: `1.5px solid ${tab.border}`,
+                        minHeight: 340,
+                        transition: "all 0.3s ease-in-out",
                       }}
                     >
-                      {tab.icon} {tab.label}
+                      <div
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
+                          background: "#fff",
+                          color: tab.accent,
+                          padding: "5px 12px",
+                          borderRadius: 100,
+                          fontSize: 10,
+                          fontWeight: 800,
+                          marginBottom: 14,
+                          transition: "all 0.3s ease-in-out",
+                        }}
+                      >
+                        {tab.icon} {tab.label}
+                      </div>
+                      <h3
+                        style={{
+                          fontSize: 18,
+                          fontWeight: 900,
+                          color: T.navy,
+                          marginBottom: 18,
+                          letterSpacing: -0.5,
+                          lineHeight: 1.4,
+                          whiteSpace: "pre-line",
+                          transition: "all 0.3s ease-in-out",
+                        }}
+                      >
+                        {tab.title}
+                      </h3>
+                      <ul
+                        style={{
+                          listStyle: "none",
+                          padding: 0,
+                          margin: 0,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 10,
+                        }}
+                      >
+                        {tab.items.map((item) => (
+                          <li
+                            key={item}
+                            style={{
+                              display: "flex",
+                              alignItems: "flex-start",
+                              gap: 10,
+                              padding: "14px 14px",
+                              background: "#fff",
+                              border: `1px solid ${T.border}`,
+                              borderRadius: 12,
+                              transition: "all 0.3s ease-in-out",
+                            }}
+                          >
+                            <span
+                              aria-hidden="true"
+                              style={{
+                                flexShrink: 0,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: 22,
+                                height: 22,
+                                borderRadius: "50%",
+                                background: tab.accent,
+                                color: "#fff",
+                                fontSize: 11,
+                                fontWeight: 800,
+                                lineHeight: 1,
+                                transition: "background 0.3s ease-in-out",
+                              }}
+                            >
+                              ✓
+                            </span>
+                            <span
+                              style={{
+                                fontSize: 13,
+                                fontWeight: 700,
+                                color: T.navy,
+                                lineHeight: 1.55,
+                                letterSpacing: "-0.01em",
+                              }}
+                            >
+                              {item}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <h3
-                      style={{
-                        fontSize: 18,
-                        fontWeight: 900,
-                        color: T.navy,
-                        marginBottom: 18,
-                        letterSpacing: -0.5,
-                        lineHeight: 1.4,
-                        whiteSpace: "pre-line",
-                      }}
-                    >
-                      {tab.title}
-                    </h3>
-                    <ul
-                      style={{
-                        listStyle: "none",
-                        padding: 0,
-                        margin: 0,
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 10,
-                      }}
-                    >
-                      {tab.items.map((item) => (
-                        <li
-                          key={item}
-                          style={{
-                            display: "flex",
-                            alignItems: "flex-start",
-                            gap: 10,
-                            padding: "14px 14px",
-                            background: "#fff",
-                            border: `1px solid ${T.border}`,
-                            borderRadius: 12,
-                          }}
-                        >
-                          <span
-                            aria-hidden="true"
-                            style={{
-                              flexShrink: 0,
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              width: 22,
-                              height: 22,
-                              borderRadius: "50%",
-                              background: tab.accent,
-                              color: "#fff",
-                              fontSize: 11,
-                              fontWeight: 800,
-                              lineHeight: 1,
-                            }}
-                          >
-                            ✓
-                          </span>
-                          <span
-                            style={{
-                              fontSize: 13,
-                              fontWeight: 700,
-                              color: T.navy,
-                              lineHeight: 1.55,
-                              letterSpacing: "-0.01em",
-                            }}
-                          >
-                            {item}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
-          {/* Left arrow — always enabled (loops) */}
+          {/* Left arrow — always loops */}
           <button
             type="button"
             aria-label="이전"
@@ -632,12 +778,13 @@ export default function MobileLandingPage() {
               fontFamily: "inherit",
               cursor: "pointer",
               zIndex: 2,
+              transition: "all 0.2s ease-in-out",
             }}
           >
             ←
           </button>
 
-          {/* Right arrow — always enabled (loops) */}
+          {/* Right arrow — always loops */}
           <button
             type="button"
             aria-label="다음"
@@ -663,6 +810,7 @@ export default function MobileLandingPage() {
               fontFamily: "inherit",
               cursor: "pointer",
               zIndex: 2,
+              transition: "all 0.2s ease-in-out",
             }}
           >
             →
@@ -676,15 +824,18 @@ export default function MobileLandingPage() {
               key={tab.id}
               type="button"
               aria-label={`${tab.label} 보기`}
-              onClick={() => setAudienceTab(i)}
+              onClick={() => goAudienceTo(i)}
               style={{
-                width: i === audienceTab ? 22 : 7,
+                width: i === audienceLogicalIdx ? 22 : 7,
                 height: 7,
                 borderRadius: 4,
-                background: i === audienceTab ? AUDIENCE_TABS_M[i].accent : T.borderStrong,
+                background:
+                  i === audienceLogicalIdx
+                    ? AUDIENCE_TABS_M[i].accent
+                    : T.borderStrong,
                 border: "none",
                 cursor: "pointer",
-                transition: "all 0.25s ease",
+                transition: "all 0.3s ease-in-out",
                 padding: 0,
               }}
             />
@@ -831,14 +982,54 @@ export default function MobileLandingPage() {
               더 이상 복잡한 절차로 고민하지 마세요.<br />
               구인구직과 필수 서류 작성을 가장 쉽고 빠르게 도와드립니다.
             </p>
-            <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-              <Link href="/login">
-                <button style={{ background: T.mint, color: "#fff", padding: "12px 24px", borderRadius: 12, fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "stretch" }}>
+              <Link href="/login" style={{ width: "100%", display: "block" }}>
+                <button
+                  style={{
+                    width: "100%",
+                    background: T.mint,
+                    color: "#fff",
+                    padding: "18px 24px",
+                    borderRadius: 14,
+                    fontSize: 16,
+                    fontWeight: 800,
+                    border: "none",
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    boxShadow: `0 6px 20px ${T.mint}40`,
+                    transition: "all 0.25s ease-in-out",
+                    letterSpacing: "-0.01em",
+                  }}
+                >
                   🌏 구직자로 시작
                 </button>
               </Link>
-              <Link href="/login">
-                <button style={{ background: T.coral, color: "#fff", padding: "12px 24px", borderRadius: 12, fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}>
+              <Link href="/login" style={{ width: "100%", display: "block" }}>
+                <button
+                  style={{
+                    width: "100%",
+                    background: T.coral,
+                    color: "#fff",
+                    padding: "18px 24px",
+                    borderRadius: 14,
+                    fontSize: 16,
+                    fontWeight: 800,
+                    border: "none",
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    boxShadow: `0 6px 20px ${T.coral}40`,
+                    transition: "all 0.25s ease-in-out",
+                    letterSpacing: "-0.01em",
+                  }}
+                >
                   💼 사장님으로 시작
                 </button>
               </Link>
