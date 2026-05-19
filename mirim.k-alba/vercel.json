@@ -42,5 +42,18 @@
       "permanent": false
     }
   ],
-  "crons": []
+  "functions": {
+    "app/api/cron/sync-worknet/route.js": { "maxDuration": 60 },
+    "app/api/cron/cleanup-expired-jobs/route.js": { "maxDuration": 30 }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/sync-worknet",
+      "schedule": "0 0,6,12,18 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-expired-jobs",
+      "schedule": "0 3 * * *"
+    }
+  ]
 }
