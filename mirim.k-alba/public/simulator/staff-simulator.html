@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K-ALBA 국제처 담당자 시뮬레이터</title>
+<style>
+  /* ═══ 디자인 토큰 ═══ */
+  :root {
+    --bg: #F5F5F0;        /* 화이트 배경 */
+    --bg-card: #FFF;
+    --line: #E4E2DE;
+    --line2: #F0F0EC;
+    --ink: #111;
+    --ink2: #444;
+    --ink3: #666;
+    --ink4: #888;
+    --b: #1E40AF;       --b-bg: #DBEAFE; --b-bd: #BFDBFE;
+    --g: #059669;       --g-bg: #ECFDF5; --g-bd: #A7F3D0;
+    --r: #DC2626;       --r-bg: #FEE2E2; --r-bd: #FECACA;
+    --y: #92400E;       --y-bg: #FEF3C7; --y-bd: #FDE68A;
+    --p: #9333EA;       --p-bg: #F3E8FF; --p-bd: #E9D5FF;
+    --r9: 9px;
+    --r12: 12px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard",
+                 "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", sans-serif;
+    color: var(--ink); font-size: 13px; line-height: 1.5;
+  }
+  button { font-family: inherit; cursor: pointer; }
+  button:disabled { cursor: not-allowed; opacity: 0.5; }
+
+  /* ═══ 헤더 ═══ */
+  .h-bar {
+    background: #FFF; border-bottom: 1px solid var(--line);
+    padding: 12px 16px; position: sticky; top: 0; z-index: 50;
+  }
+  .h-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+  .h-title-1 { font-size: 10px; color: var(--ink4); font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+  .h-title-2 { font-size: 15px; font-weight: 800; color: var(--ink); margin-top: 2px; }
+  .badge-cert {
+    margin-left: 6px; font-size: 9px; padding: 2px 8px;
+    background: var(--g-bg); color: var(--g);
+    border-radius: 999px; font-weight: 700;
+  }
+  .h-info { font-size: 11px; color: var(--ink3); margin-top: 2px; }
+
+  /* ═══ 탭 네비 ═══ */
+  .tabs {
+    background: #FFF; border-bottom: 1px solid var(--line);
+    position: sticky; top: 65px; z-index: 49;
+    overflow-x: auto;
+  }
+  .tabs-inner { max-width: 1100px; margin: 0 auto; display: flex; padding: 0 16px; }
+  .tab {
+    padding: 12px 16px; border: none; background: none;
+    font-size: 12px; font-weight: 700; color: var(--ink3);
+    border-bottom: 2px solid transparent;
+    white-space: nowrap; transition: 0.15s;
+  }
+  .tab.active { color: var(--ink); border-bottom-color: var(--ink); }
+  .tab:hover:not(.active) { color: var(--ink); background: var(--bg); }
+
+  /* ═══ 컨텐츠 ═══ */
+  .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+
+  /* ═══ 통계 카드 ═══ */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .stat {
+    background: #FFF; padding: 14px; border-radius: 10px;
+    border: 1px solid var(--line);
+  }
+  .stat-ic { font-size: 20px; }
+  .stat-c { font-size: 22px; font-weight: 900; margin-top: 4px; }
+  .stat-l { font-size: 11px; color: var(--ink4); font-weight: 700; margin-top: 2px; }
+
+  /* ═══ 평균 처리 시간 ═══ */
+  .avg-box {
+    margin-bottom: 14px; padding: 10px 14px; background: #FFF;
+    border-radius: 8px; font-size: 12px; color: var(--ink2);
+    border: 1px solid var(--line);
+  }
+
+  /* ═══ 필터 칩 ═══ */
+  .filters { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .chip {
+    padding: 6px 12px; border-radius: 999px;
+    background: #FFF; color: var(--ink); border: 1.5px solid var(--ink);
+    font-size: 11px; font-weight: 700;
+  }
+  .chip.active { background: var(--ink); color: #FFF; }
+
+  /* ═══ 검색 ═══ */
+  .search {
+    width: 100%; padding: 10px 14px; box-sizing: border-box;
+    border: 1px solid var(--line); border-radius: 8px;
+    font-size: 13px; font-family: inherit; background: #FFF;
+    margin-bottom: 12px;
+  }
+
+  /* ═══ 기간 필터 ═══ */
+  .date-filter {
+    background: #FFF; border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 12px; margin-bottom: 12px;
+  }
+  .date-quick { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .date-chip {
+    padding: 5px 11px; border-radius: 999px;
+    background: #FFF; color: var(--ink2); border: 1px solid var(--line);
+    font-size: 11px; font-weight: 700; font-family: inherit;
+  }
+  .date-chip.active { background: var(--b); color: #FFF; border-color: var(--b); }
+  .date-range { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .date-input {
+    flex: 1; min-width: 130px; padding: 7px 10px; box-sizing: border-box;
+    border: 1px solid var(--line); border-radius: 6px;
+    font-size: 12px; font-family: inherit; background: #FFF; color: var(--ink);
+  }
+  .date-sep { font-size: 12px; color: var(--ink4); font-weight: 700; }
+  .date-clear {
+    padding: 7px 12px; background: #FFF; color: var(--ink3);
+    border: 1px solid var(--line); border-radius: 6px;
+    font-size: 11px; font-weight: 700; font-family: inherit;
+    flex-shrink: 0;
+  }
+  .date-clear:hover { background: var(--bg); color: var(--ink); }
+
+  /* ═══ 신청 목록 ═══ */
+  .list {
+    background: #FFF; border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; border-bottom: 1px solid var(--line2);
+    cursor: pointer; transition: 0.1s;
+  }
+  .row:last-child { border-bottom: none; }
+  .row:hover { background: var(--bg); }
+  .status {
+    flex-shrink: 0; padding: 4px 10px; border-radius: 999px;
+    font-size: 10px; font-weight: 800; white-space: nowrap;
+  }
+  .row-main { flex: 1; min-width: 0; }
+  .row-name { font-size: 13px; font-weight: 800; color: var(--ink); }
+  .row-meta { font-size: 11px; color: var(--ink3); margin-top: 2px; }
+  .row-time { flex-shrink: 0; font-size: 10px; color: var(--ink4); text-align: right; }
+
+  /* 상태 색상 */
+  .status.submitted        { background: var(--b-bg); color: var(--b); }
+  .status.reviewing        { background: var(--y-bg); color: var(--y); }
+  .status.documents_needed { background: var(--p-bg); color: var(--p); }
+  .status.signed           { background: var(--g-bg); color: var(--g); }
+  .status.approved         { background: var(--g-bg); color: #065F46; }
+  .status.rejected         { background: var(--r-bg); color: #991B1B; }
+
+  /* ═══ 상세 페이지 ═══ */
+  .section {
+    background: #FFF; border-radius: 12px; padding: 16px;
+    margin-bottom: 12px; border: 1px solid var(--line);
+  }
+  .sec-title {
+    font-size: 11px; font-weight: 700; color: var(--ink4);
+    letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 8px;
+  }
+  .info-row {
+    display: flex; padding: 6px 0; border-bottom: 1px solid var(--line2);
+    font-size: 12px;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { width: 110px; color: var(--ink4); font-size: 11px; }
+  .info-value { flex: 1; color: var(--ink); font-weight: 600; }
+
+  /* 첨부 서류 */
+  .doc-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid var(--line2);
+  }
+  .doc-row:last-child { border-bottom: none; }
+  .doc-icon { font-size: 18px; }
+  .doc-info { flex: 1; }
+  .doc-name { font-size: 13px; font-weight: 700; }
+  .doc-req { font-size: 9px; margin-left: 6px; color: var(--r); }
+  .doc-btn {
+    padding: 6px 10px; background: var(--b); color: #FFF;
+    border: none; border-radius: 6px; font-size: 11px; font-weight: 700;
+    text-decoration: none; display: inline-block;
+  }
+  .doc-btn-sec { background: #FFF; color: var(--b); border: 1.5px solid var(--b-bd); }
+  .doc-missing { font-size: 11px; color: var(--ink4); }
+
+  /* 인증대학 라디오 */
+  .radio-grp { display: flex; gap: 14px; padding: 6px 0; }
+  .radio-grp label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; }
+
+  /* 처리 이력 */
+  .log-row {
+    padding: 6px 0; border-bottom: 1px solid var(--line2);
+    font-size: 11px; color: var(--ink3);
+  }
+  .log-row:last-child { border-bottom: none; }
+  .log-act { font-weight: 700; color: var(--ink); }
+
+  /* ═══ 하단 액션 바 ═══ */
+  .action-bar {
+    position: sticky; bottom: 0;
+    background: #FFF; border-top: 1px solid var(--line);
+    padding: 12px; margin: 12px -16px -16px;
+  }
+  .action-inner { display: flex; gap: 8px; }
+  .btn { padding: 12px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1.5px solid; }
+  .btn-primary { flex: 2; background: var(--ink); color: #FFF; border-color: var(--ink); }
+  .btn-r { flex: 1; background: #FFF; color: var(--r); border-color: var(--r); font-size: 12px; font-weight: 700; }
+  .btn-p { flex: 1; background: #FFF; color: var(--p); border-color: var(--p); font-size: 12px; font-weight: 700; }
+  .btn-g { width: 100%; background: var(--g); color: #FFF; border-color: var(--g); font-size: 14px; padding: 14px; }
+
+  /* ═══ 모달 ═══ */
+  .mo-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px; z-index: 100;
+  }
+  .mo {
+    background: #FFF; border-radius: 12px; padding: 20px;
+    max-width: 500px; width: 100%; max-height: 90vh; overflow: auto;
+  }
+  .mo-head { display: flex; align-items: center; margin-bottom: 14px; }
+  .mo-title { flex: 1; font-size: 15px; font-weight: 800; }
+  .mo-x {
+    background: none; border: none; font-size: 20px;
+    color: var(--ink4); padding: 0 4px;
+  }
+
+  /* 서명 캔버스 */
+  .sign-pad {
+    width: 100%; aspect-ratio: 2; background: #FAFAF8;
+    border: 1.5px dashed var(--line);
+    border-radius: 8px; touch-action: none; cursor: crosshair;
+  }
+  .sign-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .sign-clr { flex: 1; padding: 10px; background: #FFF; color: var(--ink); border: 1.5px solid var(--line); border-radius: 6px; font-weight: 700; }
+  .sign-save { flex: 2; padding: 10px; background: var(--ink); color: #FFF; border: none; border-radius: 6px; font-weight: 800; }
+
+  /* 입력 필드 */
+  .field { margin-bottom: 10px; }
+  .field-l { font-size: 11px; font-weight: 700; color: var(--ink2); margin-bottom: 4px; }
+  .field-i, .field-s, .field-t {
+    width: 100%; padding: 9px 12px; box-sizing: border-box;
+    border: 1px solid var(--line); border-radius: 6px;
+    font-size: 13px; font-family: inherit; background: #FFF;
+  }
+  .field-t { resize: vertical; min-height: 80px; }
+  .req { color: var(--r); }
+
+  /* ═══ 빈 상태 ═══ */
+  .empty {
+    background: #FFF; padding: 40px; text-align: center;
+    border-radius: 12px; color: var(--ink4); font-size: 13px;
+  }
+
+  /* ═══ 토스트 ═══ */
+  .toast {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: #FFF; padding: 12px 20px;
+    border-radius: 8px; font-size: 13px; font-weight: 700;
+    z-index: 200; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    opacity: 0; transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ═══ 시뮬레이터 라벨 ═══ */
+  .sim-banner {
+    background: linear-gradient(90deg, #1E40AF, #4F46E5);
+    color: #FFF; padding: 8px 16px; font-size: 11px;
+    text-align: center; font-weight: 700;
+  }
+  .sim-banner a { color: #BFDBFE; }
+
+  /* ═══ 서명 라벨 ═══ */
+  .sig-display {
+    padding: 14px; background: var(--g-bg); border: 1px solid var(--g-bd);
+    border-radius: 8px; text-align: center;
+  }
+  .sig-display img {
+    max-height: 80px; max-width: 100%; background: #FFF; padding: 8px;
+    border-radius: 4px;
+  }
+  .sig-empty {
+    padding: 16px; background: #FFF; color: var(--ink);
+    border: 2px dashed var(--ink4); border-radius: 8px;
+    text-align: center; font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* ═══ 모바일 ═══ */
+  @media (max-width: 600px) {
+    .info-label { width: 80px; }
+    .stat-c { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 시뮬레이터 안내 배너 -->
+<div class="sim-banner">
+  🎭 K-ALBA 국제처 담당자 시뮬레이터 ·
+  실제 시스템: <a href="https://k-alba.kr/staff/partwork" target="_blank">k-alba.kr/staff/partwork</a>
+</div>
+
+<!-- 헤더 -->
+<div class="h-bar">
+  <div class="h-inner">
+    <div style="flex:1;">
+      <div class="h-title-1">STAFF PORTAL · 국제처 담당자 포털</div>
+      <div class="h-title-2">
+        한양대학교
+        <span class="badge-cert">IEQAS 인증대학</span>
+      </div>
+      <div class="h-info">홍길동 · 유학생지원팀장 · 국제처</div>
+    </div>
+  </div>
+</div>
+
+<!-- 탭 네비 -->
+<div class="tabs">
+  <div class="tabs-inner">
+    <button class="tab active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 대시보드</button>
+    <button class="tab" data-tab="profile" onclick="switchTab('profile')">⚙️ 담당자 설정</button>
+    <button class="tab" data-tab="invite" onclick="switchTab('invite')">👥 담당자 초대</button>
+    <button class="tab" data-tab="register" onclick="switchTab('register')">🆕 신규 대학 등록</button>
+  </div>
+</div>
+
+<!-- 탭 1: 대시보드 -->
+<div class="container" id="tab-dashboard">
+
+  <!-- 통계 카드 -->
+  <div class="stats" id="stat-cards"></div>
+
+  <!-- 평균 처리 시간 -->
+  <div class="avg-box">
+    ⚡ 평균 처리 시간: <strong>4.2시간</strong> (24건 기준)
+  </div>
+
+  <!-- 필터 -->
+  <div class="filters" id="filter-chips"></div>
+
+  <!-- 기간 필터 -->
+  <div class="date-filter">
+    <div class="date-quick">
+      <button class="date-chip" data-range="today"   onclick="setDateRange('today')">오늘</button>
+      <button class="date-chip" data-range="week"    onclick="setDateRange('week')">이번 주</button>
+      <button class="date-chip" data-range="month"   onclick="setDateRange('month')">이번 달</button>
+      <button class="date-chip" data-range="3months" onclick="setDateRange('3months')">최근 3개월</button>
+      <button class="date-chip active" data-range="all" onclick="setDateRange('all')">전체</button>
+    </div>
+    <div class="date-range">
+      <input type="date" class="date-input" id="date-from" onchange="setDateRange('custom')">
+      <span class="date-sep">~</span>
+      <input type="date" class="date-input" id="date-to"   onchange="setDateRange('custom')">
+      <button class="date-clear" onclick="setDateRange('all')">초기화</button>
+    </div>
+  </div>
+
+  <!-- 검색 -->
+  <input type="text" class="search" id="search-input"
+         placeholder="🔍 학생명, 근무처, 학과로 검색..." oninput="renderList()">
+
+  <!-- 신청 목록 -->
+  <div id="application-list"></div>
+</div>
+
+<!-- 탭 2 (상세 페이지) — 동적 생성 -->
+<div class="container" id="tab-detail" style="display:none;"></div>
+
+<!-- 탭 3: 담당자 설정 -->
+<div class="container" id="tab-profile" style="display:none;">
+  <div class="section">
+    <div class="sec-title">소속 대학</div>
+    <div style="font-size:14px;font-weight:800;color:var(--ink);">
+      한양대학교 <span class="badge-cert">IEQAS 인증대학</span>
+    </div>
+    <div style="font-size:11px;color:var(--ink3);margin-top:4px;">
+      역할: <strong>관리자(manager)</strong> · 다른 담당자 초대 가능
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">본인 정보 (시간제취업확인서에 표시됨)</div>
+    <div class="field">
+      <div class="field-l">성명 <span class="req">*</span></div>
+      <input type="text" class="field-i" id="prof-name" value="홍길동" oninput="saveProfile()">
+    </div>
+    <div class="field">
+      <div class="field-l">직위</div>
+      <input type="text" class="field-i" id="prof-position" value="유학생지원팀장" oninput="saveProfile()">
+    </div>
+    <div class="field">
+      <div class="field-l">소속</div>
+      <input type="text" class="field-i" id="prof-dept" value="국제처" oninput="saveProfile()">
+    </div>
+    <div class="field">
+      <div class="field-l">연락처</div>
+      <input type="tel" class="field-i" id="prof-phone" value="02-2220-1234" oninput="saveProfile()">
+    </div>
+    <div class="field">
+      <div class="field-l">업무 이메일</div>
+      <input type="email" class="field-i" id="prof-email" value="oia@hanyang.ac.kr" oninput="saveProfile()">
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">기본 서명</div>
+    <div style="font-size:11px;color:var(--ink3);line-height:1.7;margin-bottom:12px;">
+      기본 서명을 등록해 두면 신청서 검토 시 자동으로 불러와 즉시 사용할 수 있습니다.
+      서명은 시간제취업확인서의 <strong>유학생담당자 확인란</strong>에 자동 삽입됩니다.
+    </div>
+    <div id="default-sig-area"></div>
+  </div>
+</div>
+
+<!-- 탭 4: 담당자 초대 -->
+<div class="container" id="tab-invite" style="display:none;">
+  <div class="section">
+    <div class="sec-title">대학</div>
+    <div style="font-size:14px;font-weight:800;">한양대학교</div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">새 담당자 초대</div>
+    <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;padding:10px;margin-bottom:12px;font-size:11px;color:#1E40AF;line-height:1.6;">
+      🔒 <strong>학교 공식 이메일만 초대 가능</strong><br>
+      허용 도메인: <strong>@hanyang.ac.kr, @hanyang.kr</strong>
+    </div>
+    <div class="field">
+      <div class="field-l">이메일 <span class="req">*</span></div>
+      <input type="email" class="field-i" id="inv-email" placeholder="newstaff@hanyang.ac.kr">
+    </div>
+    <div class="field">
+      <div class="field-l">성명 <span class="req">*</span></div>
+      <input type="text" class="field-i" id="inv-name" placeholder="김영희">
+    </div>
+    <div class="field">
+      <div class="field-l">직위</div>
+      <input type="text" class="field-i" id="inv-pos" placeholder="국제교류팀 직원">
+    </div>
+    <div class="field">
+      <div class="field-l">역할</div>
+      <select class="field-s" id="inv-role">
+        <option value="reviewer">검토자 (검토·서명만)</option>
+        <option value="manager">관리자 (담당자 초대 가능)</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" style="width:100%;" onclick="sendInvitation()">
+      📨 초대 이메일 발송
+    </button>
+  </div>
+
+  <div class="section" id="invitation-list-section">
+    <div class="sec-title">발송된 초대</div>
+    <div id="invitation-list"></div>
+  </div>
+</div>
+
+<!-- 탭 5: 신규 대학 등록 신청 -->
+<div class="container" id="tab-register" style="display:none;">
+  <div class="section" style="background:#EFF6FF;border-color:#BFDBFE;">
+    <div style="font-size:13px;font-weight:800;color:#1E40AF;margin-bottom:6px;">
+      📌 이 탭은 누구를 위한 것인가요?
+    </div>
+    <div style="font-size:12px;color:#1E40AF;line-height:1.7;">
+      <strong>대학별 첫 번째 국제처 담당자 등록</strong>을 시뮬레이션합니다.<br>
+      실제 시스템 URL: <code style="background:#FFF;padding:2px 6px;border-radius:4px;">k-alba.kr/staff/register</code>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">① 대학 선택</div>
+    <div class="field">
+      <div class="field-l">대학 검색 <span class="req">*</span></div>
+      <input type="text" class="field-i" id="reg-uni-query"
+             placeholder="예: 한양, 연세, 고려"
+             oninput="searchUniversity()">
+      <div id="reg-uni-results" style="margin-top:6px;"></div>
+      <div id="reg-uni-selected" style="margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">② 신청자 본인 정보</div>
+    <div class="field">
+      <div class="field-l">성명 <span class="req">*</span></div>
+      <input type="text" class="field-i" id="reg-name" placeholder="홍길동">
+    </div>
+    <div class="field">
+      <div class="field-l">직위 <span class="req">*</span></div>
+      <input type="text" class="field-i" id="reg-position" placeholder="국제처장 / 유학생지원팀장">
+    </div>
+    <div class="field">
+      <div class="field-l">소속 부서</div>
+      <input type="text" class="field-i" id="reg-dept" value="국제처">
+    </div>
+    <div class="field">
+      <div class="field-l">학교 공식 이메일 <span class="req">*</span></div>
+      <input type="email" class="field-i" id="reg-email"
+             placeholder="staff@university.ac.kr"
+             oninput="validateRegDomain()">
+      <div id="reg-domain-status" style="margin-top:6px;"></div>
+    </div>
+    <div class="field">
+      <div class="field-l">학교 사무실 전화 (운영팀 통화 검증용) <span class="req">*</span></div>
+      <input type="tel" class="field-i" id="reg-office-phone" placeholder="02-1234-5678">
+      <div style="font-size:10px;color:var(--ink3);margin-top:4px;line-height:1.6;">
+        💡 운영팀이 학교 대표번호 또는 부서 직통번호로 직접 전화하여 본인 확인합니다.
+        학교 홈페이지에서 공개된 번호와 일치해야 합니다.
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-l">휴대전화 (선택)</div>
+      <input type="tel" class="field-i" id="reg-mobile-phone" placeholder="010-1234-5678">
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">③ 검증 자료 첨부</div>
+    <div style="font-size:11px;color:var(--ink3);line-height:1.7;margin-bottom:12px;">
+      운영팀이 신청자의 신원과 권한을 확인하는 데 사용됩니다.
+    </div>
+    <div class="field">
+      <div class="field-l">📄 공문 (필수) <span class="req">*</span></div>
+      <div style="font-size:10px;color:var(--ink4);margin-bottom:4px;">
+        국제처장 / 학장 / 처장 등 학교 책임자 명의로 발급되고, 학교 직인이 찍힌 공문 PDF
+      </div>
+      <button onclick="mockUpload('letter')" id="reg-letter-btn"
+              style="width:100%;padding:10px;background:#FFF;color:var(--ink3);
+                     border:1.5px dashed var(--line);border-radius:6px;
+                     font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">
+        📎 파일 선택
+      </button>
+    </div>
+    <div class="field">
+      <div class="field-l">🪪 직원증 사진 (필수) <span class="req">*</span></div>
+      <div style="font-size:10px;color:var(--ink4);margin-bottom:4px;">
+        이름과 사진이 명확히 보이도록 촬영
+      </div>
+      <button onclick="mockUpload('id_card')" id="reg-id_card-btn"
+              style="width:100%;padding:10px;background:#FFF;color:var(--ink3);
+                     border:1.5px dashed var(--line);border-radius:6px;
+                     font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">
+        📎 파일 선택
+      </button>
+    </div>
+  </div>
+
+  <div class="section" style="background:#F5F5F0;font-size:11px;color:var(--ink2);line-height:1.7;">
+    🔒 첨부하신 개인정보는 신원 확인 목적으로만 사용되며, 승인 후 30일 내 자동 삭제됩니다.<br>
+    이미 등록된 학교의 추가 담당자는 본 페이지가 아닌 기존 담당자의 초대를 통해 가입하셔야 합니다.
+  </div>
+
+  <button class="btn btn-primary" style="width:100%;margin-top:12px;"
+          onclick="submitRegistration()">
+    📨 신청서 제출
+  </button>
+
+  <!-- 운영팀 검증 시뮬레이션 -->
+  <div class="section" style="margin-top:16px;background:#FEF3C7;border-color:#FDE68A;">
+    <div class="sec-title" style="color:#92400E;">🔍 운영팀 검증 절차 (시뮬레이션)</div>
+    <div style="font-size:12px;color:#92400E;line-height:1.8;">
+      신청 제출 후 운영팀이 영업일 1~2일 내 다음 항목을 검증합니다:<br><br>
+      <strong>① 도메인 검증 (자동)</strong>: 학교 공식 이메일 도메인 일치<br>
+      <strong>② 공문 검증</strong>: 첨부 공문 진위 확인 (학교 직인, 발신 부서)<br>
+      <strong>③ 통화 검증</strong>: 학교 대표번호로 본인 통화 확인<br>
+      <strong>④ 홈페이지 검증</strong>: 학교 홈페이지의 담당자 정보 일치<br>
+      <strong>⑤ 직원증 검증</strong>: 첨부 직원증 사진 검토<br><br>
+      모두 통과하면 첫 admin 계정이 활성화됩니다.
+    </div>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// 모의 데이터 — 실제 시스템에서는 Supabase에서 RLS로 자동 필터링됨
+// 이 시뮬레이터는 한양대 담당자가 보는 화면을 재현
+// ═══════════════════════════════════════════════════════════════
+
+var STATUS_INFO = {
+  submitted:        { label: '제출',            icon: '📥', color: 'submitted' },
+  documents_needed: { label: '추가서류요청',    icon: '📄', color: 'documents_needed' },
+  rejected:         { label: '반려',            icon: '❌', color: 'rejected' },
+  approved:         { label: '승인',            icon: '✅', color: 'approved' },
+};
+
+var COURSE_LABEL = {
+  lang: '어학연수', as: '전문학사', ug12: '학부 1~2', ug34: '학부 3~4', grad: '석박사'
+};
+
+// 실제 시스템에서는 Supabase의 partwork_applications 테이블에서 RLS로 가져옴
+var APPLICATIONS = [
+  {
+    id: 1042,
+    worker_name: 'Wang Fang (왕팡)',
+    visa: 'D-2', course: 'ug34', topik_level: 4,
+    university_name: '한양대학교',
+    employer_name: '(주)카페드림 서교점',
+    employer_business_no: '123-45-67890',
+    position: '카페 홀서빙 및 음료 제조',
+    work_address: '서울시 마포구 서교동 000-00',
+    work_days: ['월','수','금'],
+    weekly_hours: 12, hourly_pay: 12000,
+    work_start_time: '14:00', work_end_time: '18:00',
+    contract_start: '2026-04-15', contract_end: '2026-10-14',
+    status: 'submitted', submitted_at: hoursAgo(2),
+    alien_reg_number: '030415-6234567',
+    phone: '010-1234-5678', email: 'wangfang@example.com',
+    contract_pdf_url: '#sample-contract',
+    enrollment_file_url: '#sample-enrollment',
+    grade_file_url: '#sample-grade',
+    topik_cert_file_url: '#sample-topik',
+    passport_file_url: '#sample-passport',
+    arc_file_url: '#sample-arc',
+  },
+  {
+    id: 1041,
+    worker_name: 'Nguyễn Văn Minh (응웬반민)',
+    visa: 'D-2', course: 'grad', topik_level: 5,
+    university_name: '한양대학교',
+    employer_name: '명동 한식당 본가',
+    employer_business_no: '234-56-78901',
+    position: '주방 보조',
+    work_days: ['화','목','토','일'],
+    weekly_hours: 24, hourly_pay: 11500,
+    contract_start: '2026-04-20', contract_end: '2027-04-19',
+    status: 'submitted', submitted_at: hoursAgo(5),
+    alien_reg_number: '951030-5345678',
+    phone: '010-2345-6789', email: 'minh@example.com',
+    enrollment_file_url: '#', grade_file_url: '#',
+    topik_cert_file_url: '#', passport_file_url: '#', arc_file_url: '#',
+  },
+  {
+    id: 1040,
+    worker_name: 'Liu Ming (류밍)',
+    visa: 'D-2', course: 'ug12', topik_level: 3,
+    university_name: '한양대학교',
+    employer_name: 'GS25 왕십리역점',
+    position: '편의점 야간 카운터',
+    work_days: ['금','토','일'],
+    weekly_hours: 18, hourly_pay: 10500,
+    contract_start: '2026-04-10', contract_end: '2026-08-31',
+    status: 'documents_needed', submitted_at: hoursAgo(28),
+    documents_requested: ['transcript', 'attendance'],
+    documents_requested_note: '최근 학기 성적증명서와 출석확인서 추가 제출 부탁드립니다.',
+    alien_reg_number: '040218-7456789',
+    phone: '010-3456-7890', email: 'liu@example.com',
+    enrollment_file_url: '#',
+  },
+  {
+    id: 1039,
+    worker_name: 'Yamada Hanako (야마다 하나코)',
+    visa: 'D-2', course: 'grad', topik_level: 6,
+    university_name: '한양대학교',
+    employer_name: '교보문고 광화문점',
+    position: '도서 분류 및 진열 보조',
+    work_days: ['월','화','수','목','금'],
+    weekly_hours: 25, hourly_pay: 11000,
+    contract_start: '2026-04-01', contract_end: '2026-09-30',
+    status: 'approved', submitted_at: hoursAgo(48), staff_signature_at: hoursAgo(46), approved_at: hoursAgo(46),
+    alien_reg_number: '981212-5567890',
+    phone: '010-4567-8901', email: 'yamada@example.com',
+    enrollment_file_url: '#', grade_file_url: '#',
+    topik_cert_file_url: '#', passport_file_url: '#', arc_file_url: '#',
+    staff_signature: null, // 시뮬레이터에서는 동적으로 설정됨
+  },
+  {
+    id: 1038,
+    worker_name: 'Tran Thi Lan (쩐티란)',
+    visa: 'D-4', course: 'lang', topik_level: 2,
+    university_name: '한양대학교',
+    employer_name: '맛있는 떡볶이 동대문점',
+    position: '주방 보조',
+    work_days: ['월','화','수','목','금'],
+    weekly_hours: 20, hourly_pay: 10030,
+    contract_start: '2026-03-20', contract_end: '2026-09-19',
+    status: 'approved', submitted_at: hoursAgo(120), approved_at: hoursAgo(96),
+    alien_reg_number: '991108-6678901',
+    phone: '010-5678-9012', email: 'lan@example.com',
+    enrollment_file_url: '#', grade_file_url: '#',
+    topik_cert_file_url: '#', passport_file_url: '#', arc_file_url: '#',
+  },
+  {
+    id: 1037,
+    worker_name: 'Kim Daeho (김대호)',
+    visa: 'D-2', course: 'ug34', topik_level: 1,
+    university_name: '한양대학교',
+    employer_name: '스타벅스 한양대점',
+    position: '바리스타',
+    work_days: ['월','화','수','목','금','토','일'],
+    weekly_hours: 30, hourly_pay: 11500,
+    contract_start: '2026-03-15', contract_end: '2026-09-14',
+    status: 'rejected', submitted_at: hoursAgo(168), rejected_at: hoursAgo(150),
+    rejection_reason: 'TOPIK 1급 보유로 D-2 학사 과정의 자격 요건(3급 이상)을 충족하지 못합니다. 또한 주당 30시간은 인증대학 학부생 한도(25시간)도 초과합니다. 한국어 능력 향상 후 근무 시간을 조정해 재신청해 주세요.',
+    alien_reg_number: '021105-3789012',
+    phone: '010-6789-0123', email: 'kim@example.com',
+    enrollment_file_url: '#',
+  },
+  {
+    id: 1036,
+    worker_name: 'Park Soyeon (박소연)',
+    visa: 'D-2', course: 'as', topik_level: 4,
+    university_name: '한양대학교',
+    employer_name: '롯데시네마 왕십리',
+    position: '안내데스크 및 매점',
+    work_days: ['토','일'],
+    weekly_hours: 16, hourly_pay: 11000,
+    contract_start: '2026-04-05', contract_end: '2026-12-31',
+    status: 'submitted', submitted_at: hoursAgo(0.5),
+    alien_reg_number: '050818-4890123',
+    phone: '010-7890-1234', email: 'park@example.com',
+    enrollment_file_url: '#', grade_file_url: '#',
+    topik_cert_file_url: '#', passport_file_url: '#', arc_file_url: '#',
+  },
+  {
+    id: 1035,
+    worker_name: 'Mohamed Ali (모하메드 알리)',
+    visa: 'D-2', course: 'grad', topik_level: 4,
+    university_name: '한양대학교',
+    employer_name: '한양대 도서관',
+    position: '도서관 근로 장학생',
+    work_days: ['월','화','수','목'],
+    weekly_hours: 20, hourly_pay: 10500,
+    contract_start: '2026-03-04', contract_end: '2026-08-31',
+    status: 'submitted', submitted_at: hoursAgo(6),
+    alien_reg_number: '930722-5901234',
+    phone: '010-8901-2345', email: 'ali@example.com',
+    enrollment_file_url: '#', grade_file_url: '#',
+    topik_cert_file_url: '#', passport_file_url: '#', arc_file_url: '#',
+  },
+];
+
+var INVITATIONS = [
+  { id: 'inv-1', email: 'lee@hanyang.ac.kr', staff_name: '이수진',
+    staff_position: '국제교류팀 직원', role: 'reviewer',
+    used: true, used_at: hoursAgo(72), expires_at: hoursAgo(-72) },
+  { id: 'inv-2', email: 'park.j@hanyang.ac.kr', staff_name: '박준호',
+    staff_position: '유학생지원 팀원', role: 'reviewer',
+    used: false, used_at: null, expires_at: hoursAgo(-120) },
+];
+
+// 사용자 프로필 (탭 3에서 수정 가능)
+var STAFF_PROFILE = {
+  staff_name: '홍길동',
+  staff_position: '유학생지원팀장',
+  department: '국제처',
+  staff_phone: '02-2220-1234',
+  staff_email: 'oia@hanyang.ac.kr',
+  default_signature: null, // base64 PNG
+};
+
+// ═══════════════════════════════════════════════════════════════
+// 헬퍼 함수
+// ═══════════════════════════════════════════════════════════════
+
+function hoursAgo(h) {
+  return new Date(Date.now() - h * 3600 * 1000).toISOString();
+}
+function timeAgo(ts) {
+  if (!ts) return '';
+  var now = Date.now();
+  var then = new Date(ts).getTime();
+  var diff = Math.floor((now - then) / 60000);
+  if (diff < 1) return '방금';
+  if (diff < 60) return diff + '분 전';
+  var h = Math.floor(diff / 60);
+  if (h < 24) return h + '시간 전';
+  var d = Math.floor(h / 24);
+  if (d < 7) return d + '일 전';
+  return new Date(ts).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+}
+function statusBadge(status) {
+  var info = STATUS_INFO[status] || STATUS_INFO.submitted;
+  return '<span class="status ' + info.color + '">' + info.icon + ' ' + info.label + '</span>';
+}
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, function(c){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+  });
+}
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 탭 전환
+// ═══════════════════════════════════════════════════════════════
+
+var currentTab = 'dashboard';
+var currentFilter = 'all';
+var currentDetailId = null;
+var currentDateRange = { preset: 'all', from: null, to: null };  // 기간 필터 상태
+
+// 날짜를 YYYY-MM-DD 형식으로 변환
+function dateToStr(d) {
+  return d.getFullYear() + '-'
+    + String(d.getMonth()+1).padStart(2,'0') + '-'
+    + String(d.getDate()).padStart(2,'0');
+}
+
+// 빠른 선택 또는 사용자 지정
+function setDateRange(preset) {
+  var now = new Date();
+  var from, to;
+
+  if (preset === 'today') {
+    from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    to   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+  } else if (preset === 'week') {
+    // 이번 주 (월요일 시작)
+    var day = now.getDay() === 0 ? 6 : now.getDay() - 1;
+    from = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day);
+    to   = new Date(now);
+  } else if (preset === 'month') {
+    from = new Date(now.getFullYear(), now.getMonth(), 1);
+    to   = new Date(now);
+  } else if (preset === '3months') {
+    from = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+    to   = new Date(now);
+  } else if (preset === 'all') {
+    from = null; to = null;
+  } else if (preset === 'custom') {
+    var fromVal = document.getElementById('date-from').value;
+    var toVal   = document.getElementById('date-to').value;
+    from = fromVal ? new Date(fromVal + 'T00:00:00') : null;
+    to   = toVal   ? new Date(toVal   + 'T23:59:59') : null;
+  }
+
+  currentDateRange = { preset: preset, from: from, to: to };
+
+  // 빠른 선택 버튼 활성 표시
+  document.querySelectorAll('.date-chip').forEach(function(c){
+    c.classList.toggle('active', c.dataset.range === preset);
+  });
+
+  // 날짜 입력란 동기화 (custom이 아닐 때만 자동 설정)
+  if (preset !== 'custom') {
+    document.getElementById('date-from').value = from ? dateToStr(from) : '';
+    document.getElementById('date-to').value   = to   ? dateToStr(to)   : '';
+  }
+
+  renderList();
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.classList.toggle('active', t.dataset.tab === tab);
+  });
+  ['dashboard', 'detail', 'profile', 'invite', 'register'].forEach(function(t){
+    var el = document.getElementById('tab-' + t);
+    if (el) el.style.display = (t === tab) ? '' : 'none';
+  });
+  if (tab === 'dashboard') {
+    renderStats();
+    renderFilters();
+    renderList();
+  } else if (tab === 'profile') {
+    renderDefaultSig();
+  } else if (tab === 'invite') {
+    renderInvitations();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 대시보드 — 통계 / 필터 / 목록
+// ═══════════════════════════════════════════════════════════════
+
+function renderStats() {
+  var counts = { all: APPLICATIONS.length };
+  Object.keys(STATUS_INFO).forEach(function(k){ counts[k] = 0; });
+  APPLICATIONS.forEach(function(a){ counts[a.status] = (counts[a.status] || 0) + 1; });
+
+  var weekAgo = Date.now() - 7*24*3600*1000;
+  var weeklyCount = APPLICATIONS.filter(function(a){
+    return new Date(a.submitted_at).getTime() >= weekAgo;
+  }).length;
+
+  var cards = [
+    { ic: '📥', label: '제출',          count: counts.submitted,        color: 'var(--b)' },
+    { ic: '📄', label: '추가서류요청',  count: counts.documents_needed, color: 'var(--p)' },
+    { ic: '❌', label: '반려',          count: counts.rejected,         color: 'var(--r)' },
+    { ic: '✅', label: '승인',          count: counts.approved,         color: 'var(--g)' },
+    { ic: '📊', label: '이번 주',       count: weeklyCount,             color: 'var(--ink)' },
+  ];
+
+  document.getElementById('stat-cards').innerHTML = cards.map(function(c){
+    return '<div class="stat">'
+      + '<div class="stat-ic">' + c.ic + '</div>'
+      + '<div class="stat-c" style="color:' + c.color + ';">' + c.count + '</div>'
+      + '<div class="stat-l">' + c.label + '</div>'
+    + '</div>';
+  }).join('');
+}
+
+function renderFilters() {
+  var counts = { all: APPLICATIONS.length };
+  Object.keys(STATUS_INFO).forEach(function(k){ counts[k] = 0; });
+  APPLICATIONS.forEach(function(a){ counts[a.status] = (counts[a.status] || 0) + 1; });
+
+  var chips = [{ key: 'all', label: '전체 (' + counts.all + ')' }];
+  Object.keys(STATUS_INFO).forEach(function(k){
+    var info = STATUS_INFO[k];
+    chips.push({ key: k, label: info.icon + ' ' + info.label + ' (' + (counts[k] || 0) + ')' });
+  });
+
+  document.getElementById('filter-chips').innerHTML = chips.map(function(c){
+    var active = (currentFilter === c.key) ? 'active' : '';
+    return '<button class="chip ' + active + '" onclick="setFilter(\'' + c.key + '\')">' + c.label + '</button>';
+  }).join('');
+}
+
+function setFilter(key) {
+  currentFilter = key;
+  renderFilters();
+  renderList();
+}
+
+function renderList() {
+  var query = (document.getElementById('search-input') || {}).value || '';
+  query = query.toLowerCase().trim();
+
+  var filtered = APPLICATIONS.filter(function(a){
+    if (currentFilter !== 'all' && a.status !== currentFilter) return false;
+
+    // 기간 필터 (submitted_at 기준)
+    if (currentDateRange.from || currentDateRange.to) {
+      var ts = new Date(a.submitted_at).getTime();
+      if (currentDateRange.from && ts < currentDateRange.from.getTime()) return false;
+      if (currentDateRange.to   && ts > currentDateRange.to.getTime())   return false;
+    }
+
+    if (query) {
+      var hay = [a.worker_name, a.employer_name, a.position, a.university_name]
+        .filter(Boolean).join(' ').toLowerCase();
+      if (hay.indexOf(query) < 0) return false;
+    }
+    return true;
+  });
+  filtered.sort(function(a, b){
+    return new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime();
+  });
+
+  var listEl = document.getElementById('application-list');
+
+  // 결과 카운트 + 기간 표시
+  var rangeText = '';
+  if (currentDateRange.from || currentDateRange.to) {
+    var fromStr = currentDateRange.from ? dateToStr(currentDateRange.from) : '처음';
+    var toStr   = currentDateRange.to   ? dateToStr(currentDateRange.to)   : '오늘';
+    rangeText = ' · 기간: ' + fromStr + ' ~ ' + toStr;
+  }
+  var summary = '<div style="font-size:11px;color:var(--ink3);margin-bottom:8px;">'
+    + '검색 결과: <strong style="color:var(--ink);">' + filtered.length + '건</strong>'
+    + ' (전체 ' + APPLICATIONS.length + '건)'
+    + rangeText
+    + '</div>';
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = summary + '<div class="empty">'
+      + (currentFilter === 'all' && !query && !currentDateRange.from
+          ? '아직 제출된 신청서가 없습니다'
+          : '조건에 맞는 신청서가 없습니다')
+      + '</div>';
+    return;
+  }
+
+  listEl.innerHTML = summary + '<div class="list">' + filtered.map(function(a){
+    return '<div class="row" onclick="openDetail(' + a.id + ')">'
+      + statusBadge(a.status)
+      + '<div class="row-main">'
+      + '<div class="row-name">' + escapeHtml(a.worker_name)
+      + ' <span style="font-weight:500;color:var(--ink3);font-size:11px;">'
+      + '· ' + a.visa + ' · ' + COURSE_LABEL[a.course] + '</span></div>'
+      + '<div class="row-meta">'
+      + escapeHtml(a.employer_name) + ' · ' + a.weekly_hours + 'h/주 · '
+      + escapeHtml(a.position || '직무 미기재')
+      + '</div>'
+      + '</div>'
+      + '<div class="row-time">' + timeAgo(a.submitted_at) + '</div>'
+      + '<span style="flex-shrink:0;color:var(--ink4);">›</span>'
+    + '</div>';
+  }).join('') + '</div>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 상세 페이지
+// ═══════════════════════════════════════════════════════════════
+
+function openDetail(id) {
+  currentDetailId = id;
+  var a = APPLICATIONS.find(function(x){ return x.id === id; });
+  if (!a) return;
+
+  // 검토 시작 로그만 추가 (상태는 그대로 submitted 유지)
+  if (a.status === 'submitted' && !(a.review_log || []).some(function(l){ return l.action === 'opened'; })) {
+    if (!a.review_log) a.review_log = [];
+    a.review_log.push({
+      action: 'opened',
+      note: '담당자가 신청서를 열어봤습니다',
+      created_at: new Date().toISOString(),
+    });
+  }
+
+  // 상세 화면 표시
+  document.getElementById('tab-dashboard').style.display = 'none';
+  document.getElementById('tab-profile').style.display = 'none';
+  document.getElementById('tab-invite').style.display = 'none';
+  var detail = document.getElementById('tab-detail');
+  detail.style.display = '';
+  detail.innerHTML = renderDetailHTML(a);
+
+  // 한양대는 IEQAS 인증대학 (시뮬레이터 가정) — 시간제취업확인서에 자동 표시
+  if (a.staff_certified_check === undefined) a.staff_certified_check = true;
+
+  window.scrollTo(0, 0);
+}
+
+function renderDetailHTML(a) {
+  var info = STATUS_INFO[a.status];
+  var isFinalized = ['approved', 'rejected'].indexOf(a.status) >= 0;
+  var hasAllDocs = !!(a.contract_pdf_url && a.enrollment_file_url && a.grade_file_url
+                     && a.topik_cert_file_url && a.passport_file_url && a.arc_file_url);
+
+  var html = '';
+
+  // 상단 헤더 (뒤로가기 + 상태)
+  html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">'
+    + '<button onclick="closeDetail()" style="background:none;border:none;font-size:18px;color:var(--ink);cursor:pointer;">←</button>'
+    + '<div style="flex:1;">'
+    + '<div style="font-size:11px;color:var(--ink4);">신청서 #' + a.id + '</div>'
+    + '<div style="font-size:14px;font-weight:800;color:var(--ink);">'
+    + escapeHtml(a.worker_name) + ' · ' + escapeHtml(a.employer_name)
+    + '</div>'
+    + '</div>'
+    + statusBadge(a.status)
+    + '</div>';
+
+  // 학생 정보
+  html += '<div class="section"><div class="sec-title">학생 정보</div>'
+    + infoRow('성명', a.worker_name)
+    + infoRow('비자', a.visa + (a.arrival_date ? ' · 입국 ' + a.arrival_date : ''))
+    + infoRow('대학 / 과정', a.university_name + ' · ' + COURSE_LABEL[a.course])
+    + infoRow('TOPIK', a.topik_level === 0 ? '없음' : a.topik_level + '급')
+    + '</div>';
+
+  // 근무 정보
+  html += '<div class="section"><div class="sec-title">근무 정보</div>'
+    + infoRow('근무처', a.employer_name)
+    + infoRow('사업자등록번호', a.employer_business_no || '-')
+    + infoRow('직무', a.position || '-')
+    + infoRow('근무 요일', Array.isArray(a.work_days) ? a.work_days.join('·') : (a.work_days || '-'))
+    + infoRow('주당 시간', a.weekly_hours + '시간')
+    + infoRow('시급', a.hourly_pay ? Number(a.hourly_pay).toLocaleString() + '원' : '-')
+    + infoRow('기간', (a.contract_start || '-') + ' ~ ' + (a.contract_end || '-'))
+    + '</div>';
+
+  // 첨부 서류
+  var docs = [
+    { key: 'contract_pdf_url',    name: '표준근로계약서',     icon: '📄', required: true },
+    { key: 'enrollment_file_url', name: '재학증명서',         icon: '🎓', required: true },
+    { key: 'grade_file_url',      name: '성적증명서',         icon: '📊', required: true },
+    { key: 'topik_cert_file_url', name: '한국어능력증명서',   icon: '🇰🇷', required: true },
+    { key: 'passport_file_url',   name: '여권 사본',          icon: '🛂', required: true },
+    { key: 'arc_file_url',        name: '외국인등록증',       icon: '🪪', required: true },
+  ];
+  html += '<div class="section"><div class="sec-title">첨부 서류</div>';
+  docs.forEach(function(d){
+    var hasFile = !!a[d.key];
+    html += '<div class="doc-row">'
+      + '<span class="doc-icon">' + d.icon + '</span>'
+      + '<div class="doc-info">'
+      + '<div class="doc-name">' + d.name
+      + '<span class="doc-req">필수</span>'
+      + '</div></div>';
+    if (hasFile) {
+      html += '<button class="doc-btn" onclick="previewDoc(\'' + d.key + '\', \'' + d.name + '\')">📄 보기</button>';
+    } else {
+      html += '<span class="doc-missing">미제출</span>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // 허용 가능 시간 vs 신청 시간 비교
+  var hourCheck = computeHourLimits(a);
+  html += '<div class="section"><div class="sec-title">근무 시간 검토</div>'
+    + renderHoursCard(hourCheck)
+    + '</div>';
+
+  // 시간제취업확인서 미리보기
+  html += '<div class="section"><div class="sec-title">시간제취업확인서</div>'
+    + '<button onclick="previewConfirmation(' + a.id + ')" style="width:100%;padding:11px 14px;'
+    + 'background:' + (a.staff_signature ? 'var(--g-bg)' : '#FFF') + ';'
+    + 'color:' + (a.staff_signature ? '#065F46' : 'var(--ink)') + ';'
+    + 'border:1.5px solid ' + (a.staff_signature ? 'var(--g-bd)' : 'var(--line)') + ';'
+    + 'border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">'
+    + (a.staff_signature ? '✍️ 서명 완료된 확인서 미리보기' : '📄 미리보기 (서명 전)')
+    + '</button>'
+    + '</div>';
+
+  // 처리 이력
+  if (a.review_log && a.review_log.length > 0) {
+    html += '<div class="section"><div class="sec-title">처리 이력</div>';
+    a.review_log.forEach(function(log){
+      html += '<div class="log-row">'
+        + '<span class="log-act">' + actionLabel(log.action) + '</span>'
+        + (log.note ? ' · ' + escapeHtml(log.note) : '')
+        + ' · <span style="color:var(--ink4);">' + timeAgo(log.created_at) + '</span>'
+        + '</div>';
+    });
+    html += '</div>';
+  }
+
+  // 반려 사유 표시
+  if (a.status === 'rejected' && a.rejection_reason) {
+    html += '<div class="section" style="background:#FEF2F2;border-color:#FECACA;">'
+      + '<div class="sec-title" style="color:#991B1B;">❌ 반려 사유</div>'
+      + '<div style="font-size:13px;color:#991B1B;line-height:1.7;">' + escapeHtml(a.rejection_reason) + '</div>'
+      + '</div>';
+  }
+
+  // 추가 서류 요청 표시
+  if (a.status === 'documents_needed' && a.documents_requested) {
+    var docNames = { transcript: '성적증명서 (최신)', attendance: '출석확인서',
+                      topik_recent: 'TOPIK 최근 성적표', enrollment_recent: '재학증명서 (재발급)',
+                      other: '기타 서류' };
+    html += '<div class="section" style="background:#F3E8FF;border-color:#E9D5FF;">'
+      + '<div class="sec-title" style="color:#9333EA;">📄 요청한 추가 서류</div>'
+      + '<ul style="margin:0;padding-left:20px;font-size:12px;color:#7C2D92;line-height:1.7;">'
+      + a.documents_requested.map(function(k){ return '<li>' + (docNames[k] || k) + '</li>'; }).join('')
+      + '</ul>'
+      + (a.documents_requested_note ? '<div style="margin-top:8px;font-size:11px;color:#7C2D92;">'
+                                       + '안내: ' + escapeHtml(a.documents_requested_note) + '</div>' : '')
+      + '</div>';
+  }
+
+  // 승인 후: 출입국 통합신청서 자동 작성 안내
+  if (a.status === 'approved') {
+    html += '<div class="section" style="background:#EFF6FF;border-color:#BFDBFE;">'
+      + '<div class="sec-title" style="color:#1E40AF;">🛂 다음 단계: 출입국 통합신청서</div>'
+      + '<div style="font-size:12px;color:#1E40AF;line-height:1.7;margin-bottom:12px;">'
+      + '담당자 승인이 완료되었습니다. 학생은 이제 출입국·외국인청에 제출할 '
+      + '<strong>통합신청서</strong>(별지 제34호)를 자동 작성할 수 있습니다.'
+      + '</div>'
+      + '<button onclick="previewImmigrationForm(' + a.id + ')" '
+      + 'style="width:100%;padding:11px 14px;background:#1E40AF;color:#FFF;'
+      + 'border:none;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;'
+      + 'font-family:inherit;">'
+      + '📄 통합신청서 자동 작성 미리보기 (학생 시점)'
+      + '</button>'
+      + '<div style="font-size:10px;color:#1E40AF;margin-top:8px;line-height:1.6;">'
+      + '💡 자동 채워지는 정보: 성명·외국인등록번호·휴대전화·이메일·학교·근무처·연 소득<br>'
+      + '   사용자 입력 필요: 영문이름·국적·여권번호·여권 발급/유효기간·한국 주소·본국 주소'
+      + '</div>'
+      + '</div>';
+  }
+
+  // 액션 버튼 (하단 고정)
+  if (!isFinalized) {
+    html += '<div class="action-bar"><div class="action-inner">'
+      + '<button class="btn btn-r" onclick="showRejectModal()">❌ 반려</button>'
+      + '<button class="btn btn-p" onclick="showRequestModal()">📄 추가 서류</button>'
+      + '<button class="btn btn-primary" onclick="showSignModal()">✍️ 서명하고 승인</button>'
+      + '</div></div>';
+  }
+
+  return html;
+}
+
+function infoRow(label, value) {
+  return '<div class="info-row">'
+    + '<div class="info-label">' + label + '</div>'
+    + '<div class="info-value">' + escapeHtml(value || '-') + '</div>'
+    + '</div>';
+}
+
+// ═══ 출입국관리법 시행령에 따른 허용 시간 계산 ═══
+// 학기 중 평일 기준
+//   D-2 어학연수(D-4 동일): TOPIK 2급 이상 → 20시간/주, 미달 → 10시간/주
+//   D-2 전문학사:       TOPIK 3급 이상 → 20시간/주, 미달 → 10시간/주
+//   D-2 학부 1~2학년:   TOPIK 3급 이상 → 20시간/주, 미달 → 10시간/주
+//   D-2 학부 3~4학년:   TOPIK 4급 이상 → 20시간/주, 미달 → 10시간/주
+//   D-2 석박사:         TOPIK 4급 이상 → 30시간/주, 미달 → 15시간/주
+// 인증대학(IEQAS) 보너스: TOPIK 충족 학부생은 +5시간 (총 25시간)
+// 학기 중 주말·공휴일 + 방학: D-2 학위 과정 + TOPIK 충족 → 무제한
+function computeHourLimits(a) {
+  var TOPIK_MIN = { lang: 2, as: 3, ug12: 3, ug34: 4, grad: 4 };
+  var BASE      = { lang: 20, as: 20, ug12: 20, ug34: 20, grad: 30 };
+
+  var isCertified = true; // 한양대는 IEQAS 인증대학 (시뮬레이터 가정)
+  var topikMin = TOPIK_MIN[a.course] || 3;
+  var topikOk = (a.topik_level || 0) >= topikMin;
+  var base = BASE[a.course] || 20;
+
+  // 평일 한도 계산
+  var weekdayLimit;
+  if (topikOk) {
+    weekdayLimit = base;
+    // 인증대학 보너스 (학부 과정만)
+    if (isCertified && (a.course === 'as' || a.course === 'ug12' || a.course === 'ug34')) {
+      weekdayLimit += 5;
+    }
+  } else {
+    weekdayLimit = Math.floor(base / 2); // 미달 시 절반
+  }
+
+  // 주말·방학 무제한 자격: D-2 학위 과정 + TOPIK 충족
+  var isDegreeD2 = (a.visa === 'D-2' && a.course !== 'lang');
+  var unlimitedEligible = isDegreeD2 && topikOk;
+
+  // 신청한 근무 시간 분석
+  var workDays = a.work_days || [];
+  var weekday = workDays.filter(function(d){ return ['월','화','수','목','금'].indexOf(d) >= 0; });
+  var weekend = workDays.filter(function(d){ return ['토','일'].indexOf(d) >= 0; });
+
+  var hoursPerDay = 0;
+  if (a.work_start_time && a.work_end_time) {
+    var s = a.work_start_time.split(':'), e = a.work_end_time.split(':');
+    var sH = parseInt(s[0])||0, eH = parseInt(e[0])||0;
+    var sM = parseInt(s[1])||0, eM = parseInt(e[1])||0;
+    if (eH < sH) eH += 24;
+    hoursPerDay = (eH*60 + eM - sH*60 - sM) / 60;
+  } else if (a.weekly_hours && workDays.length > 0) {
+    hoursPerDay = a.weekly_hours / workDays.length;
+  }
+
+  var requestedWeekday = Math.round(weekday.length * hoursPerDay * 10) / 10;
+  var requestedWeekend = Math.round(weekend.length * hoursPerDay * 10) / 10;
+  var requestedTotal   = Math.round(a.weekly_hours * 10) / 10;
+
+  return {
+    course: a.course,
+    courseLabel: COURSE_LABEL[a.course],
+    topikLevel: a.topik_level || 0,
+    topikMin: topikMin,
+    topikOk: topikOk,
+    isCertified: isCertified,
+    isDegreeD2: isDegreeD2,
+    unlimitedEligible: unlimitedEligible,
+    weekdayLimit: weekdayLimit,
+    requestedWeekday: requestedWeekday,
+    requestedWeekend: requestedWeekend,
+    requestedTotal: requestedTotal,
+    weekdayPass: requestedWeekday <= weekdayLimit,
+    weekendPass: unlimitedEligible || requestedWeekend <= weekdayLimit,
+    totalPass: requestedTotal <= weekdayLimit || (unlimitedEligible && requestedWeekday <= weekdayLimit),
+    weekdayDays: weekday,
+    weekendDays: weekend,
+  };
+}
+
+function renderHoursCard(h) {
+  var allPass = h.weekdayPass && h.weekendPass;
+
+  // 상단 요약 배너
+  var headerColor = allPass ? 'var(--g)' : 'var(--r)';
+  var headerBg    = allPass ? 'var(--g-bg)' : 'var(--r-bg)';
+  var headerBd    = allPass ? 'var(--g-bd)' : 'var(--r-bd)';
+  var headerIcon  = allPass ? '✅' : '⚠️';
+  var headerText  = allPass ? '허용 시간 이내' : '허용 시간 초과';
+
+  var html = '<div style="padding:12px;background:' + headerBg + ';border:1px solid ' + headerBd
+    + ';border-radius:8px;margin-bottom:12px;">'
+    + '<div style="font-size:13px;font-weight:800;color:' + headerColor + ';">'
+    + headerIcon + ' ' + headerText + '</div>'
+    + '<div style="font-size:11px;color:var(--ink2);margin-top:4px;line-height:1.6;">'
+    + h.courseLabel + ' · TOPIK ' + (h.topikLevel === 0 ? '없음' : h.topikLevel + '급')
+    + ' (요건: ' + h.topikMin + '급 이상)'
+    + (h.topikOk ? ' <span style="color:var(--g);font-weight:700;">✓ 충족</span>'
+                 : ' <span style="color:var(--r);font-weight:700;">✗ 미달</span>')
+    + (h.isCertified ? ' · IEQAS 인증대학' : '')
+    + '</div></div>';
+
+  // 평일 비교
+  html += renderHourBar({
+    label: '학기 중 평일' + (h.weekdayDays.length > 0 ? ' (' + h.weekdayDays.join('·') + ')' : ''),
+    requested: h.requestedWeekday,
+    limit: h.weekdayLimit,
+    pass: h.weekdayPass,
+    unit: '시간/주',
+  });
+
+  // 주말 비교 (근무하는 경우만)
+  if (h.weekendDays.length > 0) {
+    html += renderHourBar({
+      label: '학기 중 주말·공휴일 (' + h.weekendDays.join('·') + ')',
+      requested: h.requestedWeekend,
+      limit: h.unlimitedEligible ? null : h.weekdayLimit,
+      pass: h.weekendPass,
+      unit: '시간/주',
+      unlimited: h.unlimitedEligible,
+    });
+  }
+
+  // 안내 문구
+  if (!h.topikOk) {
+    html += '<div style="margin-top:10px;padding:10px;background:#FEF2F2;border:1px solid #FECACA;border-radius:6px;font-size:11px;color:#991B1B;line-height:1.6;">'
+      + '⚠️ TOPIK ' + h.topikMin + '급 미달 → 허용 시간이 절반(' + h.weekdayLimit + 'h/주)으로 제한됩니다.'
+      + '</div>';
+  } else if (h.unlimitedEligible) {
+    html += '<div style="margin-top:10px;padding:10px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:6px;font-size:11px;color:#065F46;line-height:1.6;">'
+      + '💡 D-2 학위 과정 + TOPIK ' + h.topikMin + '급 이상 → 학기 중 주말·공휴일 + 방학 기간은 시간 제한 없음'
+      + '</div>';
+  }
+
+  return html;
+}
+
+function renderHourBar(opts) {
+  var pass = opts.pass;
+  var pct = opts.limit ? Math.min(100, (opts.requested / opts.limit) * 100) : 100;
+  var barColor = pass ? '#059669' : '#DC2626';
+  var bgColor = '#F0F0EC';
+
+  var html = '<div style="margin-bottom:10px;">'
+    + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">'
+    + '<div style="font-size:11px;font-weight:700;color:var(--ink2);">' + opts.label + '</div>'
+    + '<div style="font-size:11px;font-weight:700;">'
+    + '<span style="color:' + barColor + ';">' + opts.requested + 'h</span>'
+    + '<span style="color:var(--ink4);"> / ' + (opts.unlimited ? '무제한' : opts.limit + 'h') + ' ' + opts.unit + '</span>'
+    + '</div></div>';
+
+  // 게이지 바
+  if (opts.unlimited) {
+    html += '<div style="height:8px;background:linear-gradient(90deg,#A7F3D0,#059669);border-radius:4px;"></div>'
+      + '<div style="font-size:10px;color:var(--g);margin-top:3px;font-weight:700;">∞ 무제한 — D-2 학위 + TOPIK 충족</div>';
+  } else {
+    html += '<div style="height:8px;background:' + bgColor + ';border-radius:4px;overflow:hidden;position:relative;">'
+      + '<div style="height:100%;width:' + pct + '%;background:' + barColor + ';border-radius:4px;transition:width 0.3s;"></div>'
+      + '</div>';
+    var diff = opts.requested - opts.limit;
+    if (pass) {
+      var remaining = opts.limit - opts.requested;
+      html += '<div style="font-size:10px;color:var(--g);margin-top:3px;font-weight:700;">'
+        + '✓ 한도 내 (여유 ' + remaining.toFixed(1) + 'h)</div>';
+    } else {
+      html += '<div style="font-size:10px;color:var(--r);margin-top:3px;font-weight:700;">'
+        + '✗ ' + diff.toFixed(1) + 'h 초과</div>';
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+function actionLabel(action) {
+  return ({
+    opened:        '👀 검토 시작',
+    requested_docs:'📄 추가 서류 요청',
+    signed:        '✍️ 서명 완료',
+    approved:      '✅ 승인',
+    rejected:      '❌ 반려',
+  })[action] || action;
+}
+
+function closeDetail() {
+  document.getElementById('tab-detail').style.display = 'none';
+  document.getElementById('tab-detail').innerHTML = '';
+  currentDetailId = null;
+  switchTab('dashboard');
+}
+
+function previewDoc(key, name) {
+  var docNames = {
+    contract_pdf_url:    { title: '표준근로계약서', emoji: '📄', desc: '근로기준법 제17조에 따라 작성된 표준근로계약서입니다.' },
+    enrollment_file_url: { title: '재학증명서',     emoji: '🎓', desc: '대학에서 발급한 재학 증명서입니다.' },
+    grade_file_url:      { title: '성적증명서',     emoji: '📊', desc: '학기별 성적과 GPA가 기재된 성적증명서입니다.' },
+    topik_cert_file_url: { title: '한국어능력증명서', emoji: '🇰🇷', desc: 'TOPIK(한국어능력시험) 성적표입니다.' },
+    passport_file_url:   { title: '여권 사본',      emoji: '🛂', desc: '여권 인적사항 페이지입니다.' },
+    arc_file_url:        { title: '외국인등록증',   emoji: '🪪', desc: '외국인등록증 양면 사본입니다.' },
+  };
+  var info = docNames[key] || { title: name, emoji: '📄', desc: '' };
+  var w = window.open('', '_blank', 'width=600,height=800');
+  if (!w) { alert('팝업이 차단되었습니다'); return; }
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + info.title + '</title>'
+    + '<style>body{font-family:"Malgun Gothic",sans-serif;padding:32px;background:#F5F5F0;text-align:center;}'
+    + '.box{background:#FFF;padding:40px;border-radius:12px;border:1px solid #E4E2DE;max-width:500px;margin:40px auto;}'
+    + 'h1{font-size:18px;}p{font-size:13px;color:#666;line-height:1.7;}.emoji{font-size:80px;margin:20px 0;}'
+    + '.notice{background:#FEF3C7;color:#92400E;padding:14px;border-radius:8px;font-size:12px;margin-top:20px;}</style></head><body>'
+    + '<div class="box">'
+    + '<div class="emoji">' + info.emoji + '</div>'
+    + '<h1>' + info.title + '</h1>'
+    + '<p>' + info.desc + '</p>'
+    + '<div class="notice">🎭 시뮬레이터 안내<br>실제 시스템에서는 학생이 업로드한 PDF/이미지가 표시됩니다.</div>'
+    + '</div></body></html>');
+  w.document.close();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 시간제취업확인서 미리보기
+// ═══════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════
+// 통합신청서 미리보기 (출입국 별지 제34호)
+// ═══════════════════════════════════════════════════════════════
+
+function previewImmigrationForm(id) {
+  var a = APPLICATIONS.find(function(x){ return x.id === id; });
+  if (!a) return;
+
+  // 시뮬레이션: K-ALBA에 자동 채워지는 정보 + 학생이 추가로 입력해야 할 정보
+  var imm = autoFillImmigrationForm(a);
+
+  // 입력 폼 HTML 생성 (학생이 보는 화면)
+  var html = generateImmigrationFormPreviewHTML(a, imm);
+  var w = window.open('', '_blank');
+  if (!w) { alert('팝업이 차단되었습니다'); return; }
+  w.document.write(html);
+  w.document.close();
+}
+
+function autoFillImmigrationForm(a) {
+  // 외국인등록번호로 생년월일 + 성별 추출
+  var dob = '', sex = '';
+  if (a.alien_reg_number) {
+    var parts = a.alien_reg_number.replace(/-/g, '');
+    if (parts.length >= 7) {
+      var seventh = parts.charAt(6);
+      var yy = parts.substring(0, 2);
+      var mm = parts.substring(2, 4);
+      var dd = parts.substring(4, 6);
+      if (['1','2','5','6'].indexOf(seventh) >= 0) {
+        dob = '19' + yy + '-' + mm + '-' + dd;
+      } else if (['3','4','7','8'].indexOf(seventh) >= 0) {
+        dob = '20' + yy + '-' + mm + '-' + dd;
+      }
+      if (['1','3','5','7'].indexOf(seventh) >= 0) sex = 'M';
+      else if (['2','4','6','8'].indexOf(seventh) >= 0) sex = 'F';
+    }
+  }
+
+  // 연 소득 추정 (시급 × 주당시간 × 52주 ÷ 10000)
+  var annualIncome = Math.round((a.hourly_pay || 0) * (a.weekly_hours || 0) * 52 / 10000);
+
+  return {
+    application_type: 'permit_other_activity',
+    desired_status: 'D-2-7',
+    // 자동 채움
+    surname_en: '',           // 학생 입력 필요
+    given_names_en: '',       // 학생 입력 필요
+    date_of_birth: dob,       // 자동 (외국인등록번호에서 추출)
+    sex: sex,                  // 자동 (외국인등록번호)
+    nationality: '',          // 학생 입력 필요
+    alien_reg_number: a.alien_reg_number || '',
+    cell_phone: a.phone || '',
+    email: a.email || '',
+    // 학교 / 근무처 (자동)
+    school_name: a.university_name || '',
+    school_status: 'university',
+    school_type: 'accredited',
+    new_workplace_name: a.employer_name || '',
+    new_workplace_business_no: a.employer_business_no || '',
+    occupation: '학생',
+    annual_income_10k: annualIncome,
+    // 학생 입력 필요
+    passport_number: '',
+    passport_issue_date: '',
+    passport_expiry_date: '',
+    address_korea: '',
+    address_home_country: '',
+    phone_home_country: '',
+  };
+}
+
+function generateImmigrationFormPreviewHTML(a, imm) {
+  // 입력 필드 정보 — 자동 채움 / 사용자 입력 필요 표시
+  var fields = [
+    { key: 'application_type',   label: '신청 종류',         value: '체류자격 외 활동허가 (D-2-7 시간제취업)', auto: true,  category: '신청 종류' },
+    // 인적사항
+    { key: 'surname_en',         label: '성 (영문)',          value: '',                           auto: false, category: '인적사항', placeholder: 'HONG' },
+    { key: 'given_names_en',     label: '명 (영문)',          value: '',                           auto: false, category: '인적사항', placeholder: 'GIL DONG' },
+    { key: 'date_of_birth',      label: '생년월일',           value: imm.date_of_birth,             auto: !!imm.date_of_birth, category: '인적사항' },
+    { key: 'sex',                label: '성별',               value: imm.sex === 'M' ? '남 (M)' : (imm.sex === 'F' ? '여 (F)' : ''), auto: !!imm.sex, category: '인적사항' },
+    { key: 'nationality',        label: '국적',               value: '',                           auto: false, category: '인적사항', placeholder: 'China / Vietnam ...' },
+    { key: 'alien_reg_number',   label: '외국인등록번호',     value: imm.alien_reg_number,          auto: true,  category: '인적사항' },
+    // 여권
+    { key: 'passport_number',    label: '여권번호',           value: '',                           auto: false, category: '여권', placeholder: 'M12345678' },
+    { key: 'passport_issue_date',label: '여권 발급일자',      value: '',                           auto: false, category: '여권' },
+    { key: 'passport_expiry_date',label:'여권 유효기간',      value: '',                           auto: false, category: '여권' },
+    // 주소·연락처
+    { key: 'address_korea',      label: '대한민국 내 주소',   value: '',                           auto: false, category: '주소·연락처', placeholder: '서울시 성동구 ...' },
+    { key: 'cell_phone',         label: '휴대전화',           value: imm.cell_phone,                auto: true,  category: '주소·연락처' },
+    { key: 'email',              label: '이메일',             value: imm.email,                     auto: true,  category: '주소·연락처' },
+    { key: 'address_home_country',label:'본국 주소',          value: '',                           auto: false, category: '주소·연락처', placeholder: '본국 주소 (영문)' },
+    { key: 'phone_home_country', label: '본국 전화 (선택)',   value: '',                           auto: false, category: '주소·연락처', optional: true },
+    // 학교
+    { key: 'school_name',        label: '학교 이름',          value: imm.school_name,               auto: true,  category: '학교' },
+    { key: 'school_status',      label: '재학 여부',          value: '대학 (University)',           auto: true,  category: '학교' },
+    { key: 'school_type',        label: '학교 종류',          value: '교육청 인가 (Accredited)',     auto: true,  category: '학교' },
+    // 근무처
+    { key: 'new_workplace_name', label: '예정 근무처 업체명', value: imm.new_workplace_name,        auto: true,  category: '근무처' },
+    { key: 'new_workplace_business_no', label: '사업자등록번호', value: imm.new_workplace_business_no, auto: true, category: '근무처' },
+    // 기타
+    { key: 'occupation',         label: '직업',               value: '학생 (Student)',              auto: true,  category: '기타' },
+    { key: 'annual_income_10k',  label: '연 소득금액',        value: imm.annual_income_10k + '만원', auto: true, category: '기타',
+      hint: '시급 × 주당시간 × 52주 자동 계산' },
+  ];
+
+  // 카테고리별 그룹화
+  var categories = {};
+  fields.forEach(function(f){
+    if (!categories[f.category]) categories[f.category] = [];
+    categories[f.category].push(f);
+  });
+
+  // 자동 채움 / 입력 필요 카운트
+  var autoCount = fields.filter(function(f){ return f.auto; }).length;
+  var inputCount = fields.filter(function(f){ return !f.auto && !f.optional; }).length;
+
+  var renderField = function(f) {
+    var bg = f.auto ? '#F0FDF4' : (f.optional ? '#FFF' : '#FFFBEB');
+    var border = f.auto ? '#A7F3D0' : (f.optional ? '#E4E2DE' : '#FDE68A');
+    var labelColor = f.auto ? '#065F46' : (f.optional ? '#666' : '#92400E');
+    var badge = f.auto
+      ? '<span style="font-size:9px;font-weight:700;color:#059669;background:#ECFDF5;padding:2px 6px;border-radius:999px;">✓ 자동 입력됨</span>'
+      : (f.optional
+        ? '<span style="font-size:9px;font-weight:700;color:#666;background:#F5F5F0;padding:2px 6px;border-radius:999px;">선택</span>'
+        : '<span style="font-size:9px;font-weight:700;color:#B45309;background:#FEF3C7;padding:2px 6px;border-radius:999px;">입력 필요</span>');
+
+    return '<div style="margin-bottom:10px;">'
+      + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">'
+      + '<div style="font-size:11px;font-weight:700;color:' + labelColor + ';flex:1;">'
+      + f.label + (f.optional ? '' : ' <span style="color:#DC2626;">*</span>')
+      + '</div>'
+      + badge
+      + '</div>'
+      + '<input type="text" value="' + (f.value || '').toString().replace(/"/g,'&quot;') + '" '
+      + 'placeholder="' + (f.placeholder || (f.optional ? '(선택)' : '입력해 주세요')) + '" '
+      + 'style="width:100%;padding:8px 10px;box-sizing:border-box;'
+      + 'border:1px solid ' + border + ';border-radius:6px;'
+      + 'font-size:12px;font-family:inherit;background:' + bg + ';">'
+      + (f.hint ? '<div style="font-size:9px;color:#666;margin-top:3px;">💡 ' + f.hint + '</div>' : '')
+      + '</div>';
+  };
+
+  return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>출입국 통합신청서 자동 작성 (시뮬레이션)</title>'
+    + '<style>'
+    + '*{box-sizing:border-box;}'
+    + 'body{font-family:"Malgun Gothic",sans-serif;margin:0;padding:0;background:#F5F5F0;color:#111;}'
+    + '.h{background:#FFF;border-bottom:1px solid #E4E2DE;padding:14px 16px;position:sticky;top:0;z-index:10;}'
+    + '.h-inner{max-width:800px;margin:0 auto;}'
+    + '.h-title-1{font-size:11px;color:#888;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;}'
+    + '.h-title-2{font-size:16px;font-weight:800;margin-top:2px;}'
+    + '.h-sub{font-size:10px;color:#666;margin-top:2px;}'
+    + '.container{max-width:800px;margin:0 auto;padding:16px;padding-bottom:80px;}'
+    + '.summary-box{background:#FEF3C7;border:1px solid #FDE68A;border-radius:12px;padding:14px;margin-bottom:14px;}'
+    + '.summary-row{display:flex;align-items:center;gap:12px;}'
+    + '.section{background:#FFF;border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid #E4E2DE;}'
+    + '.sec-title{font-size:12px;font-weight:800;color:#111;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #F0F0EC;}'
+    + '.btn-bar{position:fixed;bottom:0;left:0;right:0;background:#FFF;border-top:1px solid #E4E2DE;padding:12px;}'
+    + '.btn-bar-inner{max-width:800px;margin:0 auto;}'
+    + '.btn-primary{width:100%;padding:14px;background:#111;color:#FFF;border:none;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;}'
+    + '.print-btn{position:fixed;top:8px;right:8px;padding:8px 14px;background:#00B37E;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;z-index:20;}'
+    + '@media print{.print-btn,.btn-bar,.h{display:none;}}'
+    + '</style></head><body>'
+
+    // 헤더
+    + '<div class="h"><div class="h-inner">'
+    + '<div class="h-title-1">IMMIGRATION APPLICATION · 학생 시점 시뮬레이션</div>'
+    + '<div class="h-title-2">🛂 출입국 통합신청서 자동 작성</div>'
+    + '<div class="h-sub">출입국관리법 시행규칙 [별지 제34호서식]</div>'
+    + '</div></div>'
+
+    // 안내
+    + '<div class="container">'
+    + '<div class="summary-box">'
+    + '<div class="summary-row">'
+    + '<div style="font-size:32px;">📝</div>'
+    + '<div style="flex:1;">'
+    + '<div style="font-size:13px;font-weight:800;color:#92400E;">'
+    + autoCount + '/' + (autoCount + inputCount) + ' 항목 자동 입력됨'
+    + '</div>'
+    + '<div style="font-size:11px;color:#92400E;margin-top:2px;line-height:1.6;">'
+    + '대학 담당자 승인이 완료되어 K-ALBA에 등록된 정보가 자동으로 채워졌습니다.<br>'
+    + '나머지 ' + inputCount + '개 항목 (여권·주소 등 변경 가능 정보)은 직접 입력해 주세요.'
+    + '</div>'
+    + '</div>'
+    + '</div>'
+    + '</div>'
+
+    + '<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:12px;margin-bottom:14px;font-size:11px;color:#1E40AF;line-height:1.7;">'
+    + '<strong>👤 신청자:</strong> ' + escapeHtml(a.worker_name) + ' (' + a.visa + ' · ' + COURSE_LABEL[a.course] + ')<br>'
+    + '<strong>🏢 근무처:</strong> ' + escapeHtml(a.employer_name) + ' (' + a.weekly_hours + '시간/주, ' + Number(a.hourly_pay).toLocaleString() + '원/시)<br>'
+    + '<strong>🏛 승인 대학:</strong> ' + escapeHtml(a.university_name) + ' 국제처 (' + new Date(a.approved_at || a.staff_signature_at).toLocaleDateString('ko-KR') + ')'
+    + '</div>'
+
+    // 카테고리별 섹션
+    + Object.keys(categories).map(function(cat, idx){
+        return '<div class="section">'
+          + '<div class="sec-title">' + (idx + 1) + '. ' + cat + '</div>'
+          + categories[cat].map(renderField).join('')
+          + '</div>';
+      }).join('')
+
+    // 행정정보 동의 + 서명 안내
+    + '<div class="section" style="background:#F5F5F0;">'
+    + '<div class="sec-title">최종 단계</div>'
+    + '<div style="font-size:12px;color:#444;line-height:1.7;">'
+    + '✅ 행정정보 공동이용 동의 (체크박스)<br>'
+    + '✍️ 신청자 서명 (Canvas 직접 서명)<br>'
+    + '📄 PDF 생성 → 인쇄 또는 모바일 저장<br>'
+    + '🛂 여권사진(35×45mm) + 시간제취업확인서 + 표준근로계약서와 함께 출입국·외국인청 제출'
+    + '</div>'
+    + '</div>'
+
+    + '</div>'  // container
+
+    // 액션 버튼
+    + '<div class="btn-bar"><div class="btn-bar-inner">'
+    + '<button class="btn-primary" onclick="alert(\'⏳ 시뮬레이터에서는 PDF 생성을 미리 볼 수 없습니다.\\n실제 시스템에서 자동 생성된 통합신청서 PDF가 출력됩니다.\')">'
+    + '📄 통합신청서 PDF 생성 (실제 시스템)'
+    + '</button>'
+    + '</div></div>'
+
+    + '<button class="print-btn" onclick="window.print()">🖨 인쇄</button>'
+    + '</body></html>';
+}
+
+function previewConfirmation(id) {
+  var a = APPLICATIONS.find(function(x){ return x.id === id; });
+  if (!a) return;
+  var html = generateConfirmationHTML(a);
+  var w = window.open('', '_blank');
+  if (!w) { alert('팝업이 차단되었습니다'); return; }
+  w.document.write(html);
+  w.document.close();
+}
+
+function generateConfirmationHTML(a) {
+  var workDays = a.work_days || [];
+  var hoursPerDay = 0;
+  if (a.work_start_time && a.work_end_time) {
+    var s = a.work_start_time.split(':'), e = a.work_end_time.split(':');
+    var sH = parseInt(s[0])||0, eH = parseInt(e[0])||0;
+    var sM = parseInt(s[1])||0, eM = parseInt(e[1])||0;
+    if (eH < sH) eH += 24;
+    hoursPerDay = (eH*60 + eM - sH*60 - sM) / 60;
+  } else if (a.weekly_hours && workDays.length > 0) {
+    hoursPerDay = a.weekly_hours / workDays.length;
+  }
+  var weekday = workDays.filter(function(d){ return ['월','화','수','목','금'].indexOf(d) >= 0; });
+  var weekend = workDays.filter(function(d){ return ['토','일'].indexOf(d) >= 0; });
+  var totalWeekday = Math.round(weekday.length * hoursPerDay * 10) / 10;
+  var totalWeekend = Math.round(weekend.length * hoursPerDay * 10) / 10;
+  var dayRow = ['월','화','수','목','금','토','일'].map(function(d){
+    return '<td style="text-align:center;padding:6px;border:1px solid #000;">'
+      + (workDays.indexOf(d) >= 0 ? hoursPerDay + 'h' : '') + '</td>';
+  }).join('');
+
+  var today = new Date();
+  var courseLabel = ({lang:'어학연수', as:'전문학사', ug12:'학사 1~2학년', ug34:'학사 3~4학년', grad:'석박사'})[a.course] || '';
+  var sig = a.staff_signature || STAFF_PROFILE.default_signature;
+  var certified = a.staff_certified_check !== false; // 기본 true (한양대는 인증대학)
+
+  return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>외국인 유학생 시간제 취업 확인서</title>'
+    + '<style>'
+    + '@page{size:A4;margin:18mm 16mm;}'
+    + 'body{font-family:"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo",sans-serif;font-size:11px;color:#000;line-height:1.6;}'
+    + 'h1{font-size:16px;text-align:center;margin:10px 0 18px;letter-spacing:1px;}'
+    + '.subtitle{font-size:10px;color:#555;text-align:right;margin-bottom:4px;}'
+    + 'table.form{width:100%;border-collapse:collapse;margin-bottom:12px;}'
+    + 'table.form th,table.form td{border:1px solid #000;padding:6px 8px;vertical-align:middle;}'
+    + 'table.form th{background:#f0f0f0;font-weight:700;text-align:center;width:14%;font-size:10.5px;}'
+    + '.section-label{background:#d9d9d9!important;font-weight:800;text-align:center;}'
+    + '.day-table{width:100%;border-collapse:collapse;margin-top:4px;}'
+    + '.day-table th,.day-table td{border:1px solid #000;padding:4px;text-align:center;font-size:10.5px;}'
+    + '.day-table th{background:#f0f0f0;}'
+    + '.statement{padding:14px 4px;font-size:11.5px;line-height:1.8;margin:16px 0 10px;}'
+    + '.date-line{text-align:center;font-size:12px;margin:24px 0;letter-spacing:4px;}'
+    + '.target{font-weight:700;text-align:center;padding:16px 0 12px;border-bottom:1px solid #000;margin-bottom:12px;font-size:12px;}'
+    + '.officer-table{width:100%;border-collapse:collapse;margin-top:14px;}'
+    + '.officer-table td{border:1px solid #000;padding:8px 10px;font-size:11px;}'
+    + '.officer-table .label{background:#f0f0f0;font-weight:700;width:18%;text-align:center;}'
+    + '.fill{color:#1e40af;font-weight:700;}'
+    + '.empty{color:#999;font-style:italic;}'
+    + '.signature-img{max-height:40px;max-width:120px;vertical-align:middle;margin-left:8px;}'
+    + '.print-btn{position:fixed;top:8px;right:8px;padding:8px 14px;background:#00B37E;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;}'
+    + '@media print{.print-btn{display:none;}}'
+    + '</style></head><body>'
+    + '<button class="print-btn" onclick="window.print()">🖨 인쇄 / PDF로 저장</button>'
+    + '<div class="subtitle">붙임 4-1 외국인 유학생 시간제 취업 확인서(한글) - 대학 작성</div>'
+    + '<h1>외국인 유학생 시간제 취업 확인서</h1>'
+
+    + '<table class="form">'
+    + '<tr><th rowspan="3" class="section-label">대상자</th>'
+    +   '<th>성 명</th><td class="fill">' + escapeHtml(a.worker_name) + '</td>'
+    +   '<th>외국인<br>등록번호</th><td class="fill">' + (a.alien_reg_number || '') + '</td></tr>'
+    + '<tr><th>학과(전공)</th><td class="fill">' + escapeHtml(a.university_name) + '</td>'
+    +   '<th>이수학기</th><td class="fill">' + courseLabel + '</td></tr>'
+    + '<tr><th>전화번호</th><td class="fill">' + (a.phone || '') + '</td>'
+    +   '<th>e-mail</th><td class="fill">' + (a.email || '') + '</td></tr>'
+    + '</table>'
+
+    + '<table class="form">'
+    + '<tr><th rowspan="6" class="section-label">취업<br>예정<br>근무처</th>'
+    +   '<th>업체명</th><td colspan="3" class="fill">' + escapeHtml(a.employer_name) + '</td></tr>'
+    + '<tr><th>사업자<br>등록번호</th><td class="fill">' + (a.employer_business_no || '') + '</td>'
+    +   '<th>업종</th><td class="fill">' + escapeHtml(a.position) + '</td></tr>'
+    + '<tr><th>주 소</th><td colspan="3" class="fill">' + escapeHtml(a.work_address || '') + '</td></tr>'
+    + '<tr><th>고용주</th><td class="fill">' + escapeHtml(a.employer_name) + ' (인 또는 서명)</td>'
+    +   '<th>전화번호</th><td class="empty">(고용주 연락처)</td></tr>'
+    + '<tr><th>취업기간</th><td class="fill">' + a.contract_start + ' ~ ' + a.contract_end + '</td>'
+    +   '<th>급여(시급)</th><td class="fill">' + Number(a.hourly_pay).toLocaleString() + '원</td></tr>'
+    + '<tr><th>근무시간</th><td colspan="3">'
+    +   '<div style="margin-bottom:6px;font-size:10.5px;">평일: 총 <span class="fill">' + totalWeekday + '</span>시간 &nbsp;&nbsp; 주말: 총 <span class="fill">' + totalWeekend + '</span>시간</div>'
+    +   '<table class="day-table">'
+    +     '<tr><th>요일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th><th>일</th></tr>'
+    +     '<tr><th>시간</th>' + dayRow + '</tr></table>'
+    +   '</td></tr>'
+    + '</table>'
+
+    + '<div class="statement">위 유학생은 본교에 재학하고 있는 학생으로서 현재의 학습 및 연구 상황으로 볼 때, 상기 예정된 시간제취업 활동을 통해서는 학업(또는 연구 활동)에 지장이 없을 것으로 판단되므로, 이에 확인합니다.</div>'
+
+    + '<div class="date-line">' + today.getFullYear() + '. &nbsp;&nbsp; ' + (today.getMonth()+1) + '. &nbsp;&nbsp; ' + today.getDate() + '.</div>'
+
+    + '<div class="target">◌ ◌ 출입국 · 외국인청(사무소 · 출장소)장 귀하</div>'
+
+    + '<table class="officer-table">'
+    + '<tr><td class="label" rowspan="3">유학생<br>담당자<br>확인란</td>'
+    +   '<td class="label">소속</td><td class="fill">' + escapeHtml(a.university_name) + '</td>'
+    +   '<td class="label">인증대학<br>여부</td><td>'
+    +     '<span style="display:inline-block;width:14px;height:14px;border:1px solid #000;text-align:center;line-height:12px;font-size:11px;vertical-align:middle;">' + (certified ? '✓' : '') + '</span> 해당 &nbsp;&nbsp;&nbsp; '
+    +     '<span style="display:inline-block;width:14px;height:14px;border:1px solid #000;text-align:center;line-height:12px;font-size:11px;vertical-align:middle;">' + (!certified ? '✓' : '') + '</span> 비해당'
+    +   '</td></tr>'
+    + '<tr><td class="label">성명</td>'
+    +   '<td class="fill">' + escapeHtml(STAFF_PROFILE.staff_name)
+    +     (sig ? ' <img src="' + sig + '" class="signature-img" alt="서명">' : ' (인 또는 서명)')
+    +   '</td>'
+    +   '<td class="label">직위<br>(연락처)</td>'
+    +   '<td class="fill">' + escapeHtml(STAFF_PROFILE.staff_position) + (STAFF_PROFILE.staff_phone ? ' / ' + STAFF_PROFILE.staff_phone : '') + '</td></tr>'
+    + '</table>'
+
+    + '</body></html>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 액션 모달 (서명 / 추가 서류 / 반려)
+// ═══════════════════════════════════════════════════════════════
+
+function showSignModal() {
+  var hasDefault = !!STAFF_PROFILE.default_signature;
+  var html = '<div class="mo-bg" id="mo-sign" onclick="if(event.target.id===\'mo-sign\')closeModal()">'
+    + '<div class="mo">'
+    + '<div class="mo-head">'
+    + '<div class="mo-title">✍️ 담당자 서명</div>'
+    + '<button class="mo-x" onclick="closeModal()">✕</button>'
+    + '</div>'
+    + '<div style="font-size:12px;color:var(--ink3);margin-bottom:10px;line-height:1.6;">'
+    + '아래 박스에 서명해 주세요. 서명은 시간제취업확인서의 <strong>유학생담당자 확인란</strong>에 자동 삽입됩니다.'
+    + '</div>'
+    + '<canvas class="sign-pad" id="sign-pad"></canvas>'
+    + '<div class="sign-actions">'
+    + '<button class="sign-clr" onclick="clearSign()">지우기</button>'
+    + '<button class="sign-save" onclick="saveSign()">저장</button>'
+    + '</div>';
+  if (hasDefault) {
+    html += '<div style="margin-top:8px;font-size:11px;color:var(--g);">'
+      + '💡 이전 서명을 불러왔습니다. 그대로 사용하거나 다시 그릴 수 있습니다.'
+      + '</div>';
+  }
+  html += '</div></div>';
+  document.body.insertAdjacentHTML('beforeend', html);
+
+  setTimeout(function(){
+    initSignPad();
+    if (hasDefault) drawSignFromDataUrl(STAFF_PROFILE.default_signature);
+  }, 50);
+}
+
+function showRequestModal() {
+  var docs = [
+    { key: 'transcript', label: '성적증명서 (최신)' },
+    { key: 'attendance', label: '출석확인서' },
+    { key: 'topik_recent', label: 'TOPIK 최근 성적표' },
+    { key: 'enrollment_recent', label: '재학증명서 (재발급)' },
+    { key: 'other', label: '기타 서류' },
+  ];
+  var html = '<div class="mo-bg" id="mo-req" onclick="if(event.target.id===\'mo-req\')closeModal()">'
+    + '<div class="mo">'
+    + '<div class="mo-head"><div class="mo-title">📄 추가 서류 요청</div>'
+    + '<button class="mo-x" onclick="closeModal()">✕</button></div>'
+    + '<div style="font-size:12px;color:var(--ink3);margin-bottom:12px;">'
+    + '학생에게 요청할 서류를 선택해 주세요.'
+    + '</div>';
+  docs.forEach(function(d){
+    html += '<label style="display:flex;align-items:center;gap:8px;padding:8px 0;cursor:pointer;">'
+      + '<input type="checkbox" data-doc="' + d.key + '">'
+      + '<span style="font-size:13px;">' + d.label + '</span></label>';
+  });
+  html += '<textarea class="field-t" id="req-note" placeholder="추가 안내 (선택)" style="margin-top:10px;"></textarea>'
+    + '<button class="btn btn-primary" style="width:100%;margin-top:12px;" onclick="submitRequest()">'
+    + '요청 발송</button>'
+    + '</div></div>';
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function showRejectModal() {
+  var html = '<div class="mo-bg" id="mo-rej" onclick="if(event.target.id===\'mo-rej\')closeModal()">'
+    + '<div class="mo">'
+    + '<div class="mo-head"><div class="mo-title">❌ 신청 반려</div>'
+    + '<button class="mo-x" onclick="closeModal()">✕</button></div>'
+    + '<div style="font-size:12px;color:var(--ink3);margin-bottom:10px;">'
+    + '반려 사유를 학생에게 명확히 안내해 주세요.'
+    + '</div>'
+    + '<textarea class="field-t" id="rej-reason" placeholder="반려 사유 (예: TOPIK 급수 부족으로 자격 요건 미달)" style="min-height:100px;"></textarea>'
+    + '<button class="btn" style="width:100%;margin-top:12px;background:var(--r);color:#FFF;border-color:var(--r);" onclick="submitReject()">'
+    + '반려 처리</button>'
+    + '</div></div>';
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeModal() {
+  document.querySelectorAll('.mo-bg').forEach(function(m){ m.remove(); });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 서명 패드 (Canvas)
+// ═══════════════════════════════════════════════════════════════
+
+var signCtx = null, isDrawing = false, lastX = 0, lastY = 0;
+
+function initSignPad() {
+  var canvas = document.getElementById('sign-pad');
+  if (!canvas) return;
+  // 캔버스 실제 크기 설정 (high DPI)
+  var rect = canvas.getBoundingClientRect();
+  var dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  signCtx = canvas.getContext('2d');
+  signCtx.scale(dpr, dpr);
+  signCtx.lineWidth = 2.5;
+  signCtx.lineCap = 'round';
+  signCtx.lineJoin = 'round';
+  signCtx.strokeStyle = '#111';
+  signCtx.fillStyle = '#FAFAF8';
+  signCtx.fillRect(0, 0, rect.width, rect.height);
+
+  function getXY(e) {
+    var r = canvas.getBoundingClientRect();
+    var x, y;
+    if (e.touches && e.touches.length) {
+      x = e.touches[0].clientX - r.left;
+      y = e.touches[0].clientY - r.top;
+    } else {
+      x = e.clientX - r.left;
+      y = e.clientY - r.top;
+    }
+    return { x: x, y: y };
+  }
+  function start(e) {
+    e.preventDefault();
+    isDrawing = true;
+    var p = getXY(e);
+    lastX = p.x; lastY = p.y;
+  }
+  function move(e) {
+    if (!isDrawing) return;
+    e.preventDefault();
+    var p = getXY(e);
+    signCtx.beginPath();
+    signCtx.moveTo(lastX, lastY);
+    signCtx.lineTo(p.x, p.y);
+    signCtx.stroke();
+    lastX = p.x; lastY = p.y;
+  }
+  function end(e) {
+    e.preventDefault();
+    isDrawing = false;
+  }
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  canvas.addEventListener('mouseup', end);
+  canvas.addEventListener('mouseleave', end);
+  canvas.addEventListener('touchstart', start);
+  canvas.addEventListener('touchmove', move);
+  canvas.addEventListener('touchend', end);
+}
+
+function clearSign() {
+  var canvas = document.getElementById('sign-pad');
+  if (!canvas || !signCtx) return;
+  var rect = canvas.getBoundingClientRect();
+  signCtx.fillStyle = '#FAFAF8';
+  signCtx.fillRect(0, 0, rect.width, rect.height);
+}
+
+function drawSignFromDataUrl(dataUrl) {
+  var canvas = document.getElementById('sign-pad');
+  if (!canvas || !signCtx) return;
+  var img = new Image();
+  img.onload = function(){
+    var rect = canvas.getBoundingClientRect();
+    signCtx.drawImage(img, 0, 0, rect.width, rect.height);
+  };
+  img.src = dataUrl;
+}
+
+function saveSign() {
+  var canvas = document.getElementById('sign-pad');
+  if (!canvas) return;
+  var dataUrl = canvas.toDataURL('image/png');
+
+  var a = APPLICATIONS.find(function(x){ return x.id === currentDetailId; });
+  if (!a) { closeModal(); return; }
+
+  a.staff_signature = dataUrl;
+  a.staff_signature_at = new Date().toISOString();
+  a.status = 'approved';
+  a.approved_at = new Date().toISOString();
+  if (!a.review_log) a.review_log = [];
+  a.review_log.push({
+    action: 'signed',
+    note: '담당자 서명 완료 — 시간제취업확인서 발급',
+    created_at: new Date().toISOString(),
+  });
+
+  // 기본 서명으로도 저장
+  STAFF_PROFILE.default_signature = dataUrl;
+
+  closeModal();
+  openDetail(a.id);
+  toast('✅ 서명이 완료되었습니다');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 액션 처리
+// ═══════════════════════════════════════════════════════════════
+
+function submitRequest() {
+  var checked = document.querySelectorAll('#mo-req input[type=checkbox]:checked');
+  if (checked.length === 0) { alert('요청할 서류를 선택해 주세요'); return; }
+  var docs = Array.from(checked).map(function(c){ return c.dataset.doc; });
+  var note = (document.getElementById('req-note') || {}).value || '';
+
+  var a = APPLICATIONS.find(function(x){ return x.id === currentDetailId; });
+  if (!a) { closeModal(); return; }
+
+  a.status = 'documents_needed';
+  a.documents_requested = docs;
+  a.documents_requested_at = new Date().toISOString();
+  a.documents_requested_note = note;
+  if (!a.review_log) a.review_log = [];
+  a.review_log.push({
+    action: 'requested_docs',
+    note: '추가 서류 요청: ' + docs.join(', ') + (note ? ' / ' + note : ''),
+    created_at: new Date().toISOString(),
+  });
+
+  closeModal();
+  openDetail(a.id);
+  toast('📄 추가 서류 요청이 발송되었습니다');
+}
+
+function submitReject() {
+  var reason = (document.getElementById('rej-reason') || {}).value.trim();
+  if (!reason) { alert('반려 사유를 입력해 주세요'); return; }
+
+  var a = APPLICATIONS.find(function(x){ return x.id === currentDetailId; });
+  if (!a) { closeModal(); return; }
+
+  a.status = 'rejected';
+  a.rejection_reason = reason;
+  a.rejected_at = new Date().toISOString();
+  if (!a.review_log) a.review_log = [];
+  a.review_log.push({
+    action: 'rejected',
+    note: reason,
+    created_at: new Date().toISOString(),
+  });
+
+  closeModal();
+  openDetail(a.id);
+  toast('❌ 반려 처리되었습니다');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 담당자 설정 — 본인 정보 + 서명
+// ═══════════════════════════════════════════════════════════════
+
+function saveProfile() {
+  STAFF_PROFILE.staff_name     = document.getElementById('prof-name').value;
+  STAFF_PROFILE.staff_position = document.getElementById('prof-position').value;
+  STAFF_PROFILE.department     = document.getElementById('prof-dept').value;
+  STAFF_PROFILE.staff_phone    = document.getElementById('prof-phone').value;
+  STAFF_PROFILE.staff_email    = document.getElementById('prof-email').value;
+}
+
+function renderDefaultSig() {
+  var area = document.getElementById('default-sig-area');
+  if (STAFF_PROFILE.default_signature) {
+    area.innerHTML = '<div class="sig-display">'
+      + '<img src="' + STAFF_PROFILE.default_signature + '" alt="현재 서명">'
+      + '<div style="font-size:10px;color:var(--g);margin-top:8px;font-weight:700;">✓ 기본 서명 등록됨</div>'
+      + '<button onclick="showDefaultSignModal()" style="margin-top:10px;padding:8px 14px;background:#FFF;color:var(--g);border:1.5px solid var(--g);border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">'
+      + '✏️ 다시 그리기</button>'
+      + '</div>';
+  } else {
+    area.innerHTML = '<button class="sig-empty" onclick="showDefaultSignModal()">'
+      + '✍️ 기본 서명 등록하기</button>';
+  }
+}
+
+function showDefaultSignModal() {
+  var html = '<div class="mo-bg" id="mo-defaultsign" onclick="if(event.target.id===\'mo-defaultsign\')closeModal()">'
+    + '<div class="mo">'
+    + '<div class="mo-head">'
+    + '<div class="mo-title">✍️ 기본 서명</div>'
+    + '<button class="mo-x" onclick="closeModal()">✕</button>'
+    + '</div>'
+    + '<canvas class="sign-pad" id="sign-pad"></canvas>'
+    + '<div class="sign-actions">'
+    + '<button class="sign-clr" onclick="clearSign()">지우기</button>'
+    + '<button class="sign-save" onclick="saveDefaultSign()">저장</button>'
+    + '</div>'
+    + '<div style="font-size:10px;color:var(--ink3);margin-top:8px;line-height:1.6;">'
+    + '이 서명은 향후 모든 신청서에 자동으로 사용됩니다.'
+    + '</div>'
+    + '</div></div>';
+  document.body.insertAdjacentHTML('beforeend', html);
+  setTimeout(function(){
+    initSignPad();
+    if (STAFF_PROFILE.default_signature) drawSignFromDataUrl(STAFF_PROFILE.default_signature);
+  }, 50);
+}
+
+function saveDefaultSign() {
+  var canvas = document.getElementById('sign-pad');
+  if (!canvas) return;
+  STAFF_PROFILE.default_signature = canvas.toDataURL('image/png');
+  closeModal();
+  renderDefaultSig();
+  toast('✅ 기본 서명이 저장되었습니다');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 담당자 초대
+// ═══════════════════════════════════════════════════════════════
+
+// 한양대 허용 도메인 (시뮬레이터 가정)
+var CURRENT_UNIVERSITY = {
+  name: '한양대학교',
+  allowed_email_domains: ['hanyang.ac.kr', 'hanyang.kr'],
+  certified: true,
+};
+
+// 신규 대학 등록용 모의 대학 데이터 (실제 시스템에서는 universities 테이블 검색)
+// 한양대는 이미 등록되어 있다고 가정
+var MOCK_UNIVERSITIES = [
+  { id: 1,  name: '한양대학교',           allowed_email_domains: ['hanyang.ac.kr', 'hanyang.kr'],     registered: true,  certified: true },
+  { id: 2,  name: '연세대학교',           allowed_email_domains: ['yonsei.ac.kr'],                    registered: false, certified: true },
+  { id: 3,  name: '고려대학교',           allowed_email_domains: ['korea.ac.kr'],                     registered: false, certified: true },
+  { id: 4,  name: '서울대학교',           allowed_email_domains: ['snu.ac.kr'],                       registered: false, certified: true },
+  { id: 5,  name: '성균관대학교',         allowed_email_domains: ['skku.edu', 'g.skku.edu'],          registered: false, certified: true },
+  { id: 6,  name: '이화여자대학교',       allowed_email_domains: ['ewha.ac.kr', 'ewhain.net'],        registered: false, certified: true },
+  { id: 7,  name: '경희대학교',           allowed_email_domains: ['khu.ac.kr'],                       registered: false, certified: true },
+  { id: 8,  name: '중앙대학교',           allowed_email_domains: ['cau.ac.kr'],                       registered: false, certified: false },
+  { id: 9,  name: '서강대학교',           allowed_email_domains: ['sogang.ac.kr'],                    registered: false, certified: true },
+  { id: 10, name: '한국외국어대학교',     allowed_email_domains: ['hufs.ac.kr'],                      registered: false, certified: true },
+  { id: 11, name: '동국대학교',           allowed_email_domains: ['dongguk.edu'],                     registered: false, certified: false },
+  { id: 12, name: '건국대학교',           allowed_email_domains: ['konkuk.ac.kr'],                    registered: false, certified: true },
+  { id: 13, name: '홍익대학교',           allowed_email_domains: ['hongik.ac.kr'],                    registered: false, certified: true },
+  { id: 14, name: '숙명여자대학교',       allowed_email_domains: ['sookmyung.ac.kr'],                 registered: false, certified: true },
+  { id: 15, name: '아직 도메인 미등록 대학', allowed_email_domains: [],                              registered: false, certified: false },
+];
+
+// 등록 신청 폼 상태
+var REG_STATE = {
+  selectedUni: null,
+  files: { letter: null, id_card: null },
+};
+
+// 모의 등록 신청 목록 (운영팀이 보는 화면 — 시뮬레이터에서 결과 확인용)
+var REGISTRATIONS = [];
+
+function searchUniversity() {
+  var query = document.getElementById('reg-uni-query').value.trim().toLowerCase();
+  var resultsEl = document.getElementById('reg-uni-results');
+
+  if (query.length < 1) {
+    resultsEl.innerHTML = '';
+    return;
+  }
+
+  var matches = MOCK_UNIVERSITIES.filter(function(u){
+    return u.name.toLowerCase().indexOf(query) >= 0;
+  }).slice(0, 8);
+
+  if (matches.length === 0) {
+    resultsEl.innerHTML = '<div style="padding:10px;background:#FEF3C7;border:1px solid #FDE68A;border-radius:6px;font-size:11px;color:#92400E;">'
+      + '검색 결과가 없습니다. 운영팀(support@k-alba.kr)에 학교 등록을 먼저 요청해 주세요.</div>';
+    return;
+  }
+
+  resultsEl.innerHTML = '<div style="background:#FFF;border:1px solid var(--line);border-radius:8px;max-height:240px;overflow:auto;">'
+    + matches.map(function(u){
+      return '<button onclick="selectUniversity(' + u.id + ')" '
+        + 'style="display:block;width:100%;text-align:left;padding:10px 14px;'
+        + 'background:none;border:none;border-bottom:1px solid #F0F0EC;cursor:pointer;font-family:inherit;font-size:13px;">'
+        + '<div style="font-weight:700;color:var(--ink);">' + escapeHtml(u.name)
+        + (u.registered ? ' <span style="margin-left:6px;font-size:9px;padding:2px 6px;background:#FEF3C7;color:#92400E;border-radius:999px;font-weight:700;">⚠️ 이미 등록됨</span>' : '')
+        + (u.certified ? ' <span style="margin-left:4px;font-size:9px;padding:2px 6px;background:#ECFDF5;color:#059669;border-radius:999px;font-weight:700;">IEQAS</span>' : '')
+        + '</div>'
+        + (u.allowed_email_domains.length > 0
+            ? '<div style="font-size:10px;color:var(--ink3);margin-top:2px;">허용 도메인: @' + u.allowed_email_domains.join(', @') + '</div>'
+            : '<div style="font-size:10px;color:var(--y);margin-top:2px;">⚠️ 도메인 미등록 (운영팀 수동 검증)</div>')
+        + '</button>';
+    }).join('')
+    + '</div>';
+}
+
+function selectUniversity(id) {
+  var u = MOCK_UNIVERSITIES.find(function(x){ return x.id === id; });
+  if (!u) return;
+  REG_STATE.selectedUni = u;
+  document.getElementById('reg-uni-query').value = u.name;
+  document.getElementById('reg-uni-results').innerHTML = '';
+
+  var box = document.getElementById('reg-uni-selected');
+  if (u.registered) {
+    box.innerHTML = '<div style="padding:12px;background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;font-size:12px;color:#92400E;line-height:1.7;">'
+      + '⚠️ <strong>' + escapeHtml(u.name) + '</strong>에는 이미 등록된 담당자가 있습니다.<br>'
+      + '새 담당자 추가는 기존 담당자(관리자)의 초대를 통해서만 가능합니다.<br>'
+      + '기존 담당자를 모르시면 운영팀(support@k-alba.kr)에 문의해 주세요.'
+      + '</div>';
+  } else {
+    box.innerHTML = '<div style="padding:10px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;font-size:11px;color:#065F46;font-weight:700;">'
+      + '✅ ' + escapeHtml(u.name) + ' 선택됨'
+      + (u.allowed_email_domains.length > 0
+          ? ' · 허용 도메인: @' + u.allowed_email_domains.join(', @')
+          : ' · 도메인 미등록 (운영팀 검증 필요)')
+      + '</div>';
+  }
+  validateRegDomain();
+}
+
+function validateRegDomain() {
+  var emailEl = document.getElementById('reg-email');
+  var statusEl = document.getElementById('reg-domain-status');
+  var email = (emailEl && emailEl.value || '').trim().toLowerCase();
+  var u = REG_STATE.selectedUni;
+
+  if (!email || !u) { statusEl.innerHTML = ''; return; }
+  var domain = email.split('@')[1];
+  if (!domain) { statusEl.innerHTML = ''; return; }
+
+  var allowed = u.allowed_email_domains || [];
+  if (allowed.length === 0) {
+    statusEl.innerHTML = '<div style="padding:8px 12px;border-radius:6px;font-size:11px;font-weight:700;'
+      + 'background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;">'
+      + '⚠️ 이 대학은 아직 도메인이 등록되지 않았습니다. 운영팀이 수동으로 검증할 예정입니다.</div>';
+    return;
+  }
+
+  var matched = allowed.some(function(d){ return domain === d || domain.endsWith('.' + d); });
+  if (matched) {
+    statusEl.innerHTML = '<div style="padding:8px 12px;border-radius:6px;font-size:11px;font-weight:700;'
+      + 'background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;">'
+      + '✅ 학교 공식 도메인 매칭 (자동 1차 검증 통과)</div>';
+  } else {
+    statusEl.innerHTML = '<div style="padding:8px 12px;border-radius:6px;font-size:11px;font-weight:700;'
+      + 'background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;">'
+      + '❌ 학교 공식 도메인이 아닙니다.<br>'
+      + '<span style="font-weight:500;font-size:10px;">허용 도메인: @' + allowed.join(', @') + '</span></div>';
+  }
+}
+
+function mockUpload(kind) {
+  // 시뮬레이터에서는 실제 파일 업로드 대신 모의 처리
+  var labels = {
+    letter:  { name: '공식공문_2026.pdf',       size: 245 },
+    id_card: { name: '직원증_사진.jpg',         size: 128 },
+  };
+  var info = labels[kind];
+  REG_STATE.files[kind] = info;
+  var btn = document.getElementById('reg-' + kind + '-btn');
+  btn.innerHTML = '✓ ' + info.name + ' (' + info.size + 'KB)';
+  btn.style.background = '#ECFDF5';
+  btn.style.color = '#065F46';
+  btn.style.borderStyle = 'solid';
+  btn.style.borderColor = '#A7F3D0';
+}
+
+function submitRegistration() {
+  var u = REG_STATE.selectedUni;
+  if (!u) { alert('대학을 선택해 주세요'); return; }
+  if (u.registered) { alert('이미 등록된 대학입니다. 기존 담당자에게 초대를 요청해 주세요.'); return; }
+
+  var name        = document.getElementById('reg-name').value.trim();
+  var position    = document.getElementById('reg-position').value.trim();
+  var email       = document.getElementById('reg-email').value.trim().toLowerCase();
+  var officePhone = document.getElementById('reg-office-phone').value.trim();
+  var mobilePhone = document.getElementById('reg-mobile-phone').value.trim();
+
+  if (!name) { alert('성명을 입력해 주세요'); return; }
+  if (!position) { alert('직위를 입력해 주세요'); return; }
+  if (!email) { alert('이메일을 입력해 주세요'); return; }
+  if (!officePhone) { alert('학교 사무실 전화번호를 입력해 주세요'); return; }
+
+  // 도메인 검증
+  var domain = email.split('@')[1];
+  var domainOk = false;
+  if (u.allowed_email_domains.length === 0) {
+    var ok = confirm('⚠️ 이 대학은 도메인이 등록되어 있지 않습니다.\n운영팀이 수동으로 검증할 예정입니다.\n\n계속하시겠습니까?');
+    if (!ok) return;
+  } else {
+    domainOk = u.allowed_email_domains.some(function(d){
+      return domain === d || domain.endsWith('.' + d);
+    });
+    if (!domainOk) {
+      alert('❌ 학교 공식 이메일 도메인이 아닙니다.\n\n허용 도메인: @' + u.allowed_email_domains.join(', @'));
+      return;
+    }
+  }
+
+  // 파일 검증
+  if (!REG_STATE.files.letter)  { alert('공문 파일을 첨부해 주세요'); return; }
+  if (!REG_STATE.files.id_card) { alert('직원증 사진을 첨부해 주세요'); return; }
+
+  // 신청서 저장 (시뮬레이터 메모리)
+  var reg = {
+    id: 'reg-' + Date.now(),
+    university_id: u.id,
+    university_name: u.name,
+    applicant_name: name,
+    applicant_position: position,
+    applicant_email: email,
+    applicant_office_phone: officePhone,
+    applicant_phone: mobilePhone || null,
+    department: document.getElementById('reg-dept').value.trim() || '국제처',
+    status: 'submitted',
+    verified_domain_match: domainOk,
+    files: { letter: REG_STATE.files.letter, id_card: REG_STATE.files.id_card },
+    created_at: new Date().toISOString(),
+  };
+  REGISTRATIONS.unshift(reg);
+
+  // 완료 화면 표시
+  showRegistrationComplete(reg, u, domainOk);
+}
+
+function showRegistrationComplete(reg, u, domainOk) {
+  var html = '<div class="mo-bg" id="mo-reg-complete" onclick="if(event.target.id===\'mo-reg-complete\')closeRegComplete()">'
+    + '<div class="mo" style="max-width:540px;">'
+    + '<div style="text-align:center;padding:8px 0 16px;">'
+    + '<div style="font-size:48px;">✅</div>'
+    + '<div style="font-size:18px;font-weight:800;color:var(--ink);margin-top:8px;">신청이 접수되었습니다</div>'
+    + '<div style="font-size:13px;color:var(--ink3);margin-top:8px;line-height:1.7;">'
+    + 'K-ALBA 운영팀이 영업일 기준 <strong style="color:var(--b);">1~2일 이내</strong>에<br>'
+    + '검증 후 결과를 이메일로 안내드리겠습니다.</div>'
+    + '</div>'
+
+    // 자동 검증 결과
+    + '<div style="background:#F5F5F0;border-radius:10px;padding:14px;margin-bottom:12px;">'
+    + '<div style="font-size:11px;font-weight:700;color:var(--ink3);margin-bottom:8px;">⚡ 자동 검증 결과 (1단계)</div>'
+    + '<div style="font-size:12px;line-height:1.8;">'
+    + '<div>' + (domainOk ? '✅' : '⚠️') + ' 도메인 매칭: '
+    + '<strong>' + (domainOk ? '통과' : '수동 검증 필요') + '</strong></div>'
+    + '<div>✅ 첨부 파일: 공문 + 직원증 정상 업로드</div>'
+    + '</div>'
+    + '</div>'
+
+    // 운영팀 검증 절차
+    + '<div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:10px;padding:14px;margin-bottom:12px;">'
+    + '<div style="font-size:11px;font-weight:700;color:#92400E;margin-bottom:8px;">🔍 운영팀 검증 절차 (2단계)</div>'
+    + '<div style="font-size:12px;color:#92400E;line-height:1.8;">'
+    + '① 첨부 공문 진위 확인 (학교 직인, 발신 부서)<br>'
+    + '② 학교 대표번호로 본인 통화 확인<br>'
+    + '③ 학교 홈페이지 담당자 정보 일치 확인<br>'
+    + '④ 직원증 사진 검토<br>'
+    + '⑤ 첫 admin 계정 활성화 → 안내 이메일'
+    + '</div>'
+    + '</div>'
+
+    // 신청 정보 요약
+    + '<div style="font-size:11px;color:var(--ink3);line-height:1.7;border-top:1px solid var(--line);padding-top:12px;">'
+    + '<strong>대학:</strong> ' + escapeHtml(u.name) + '<br>'
+    + '<strong>신청자:</strong> ' + escapeHtml(reg.applicant_name) + ' (' + escapeHtml(reg.applicant_position) + ')<br>'
+    + '<strong>이메일:</strong> ' + escapeHtml(reg.applicant_email) + '<br>'
+    + '<strong>학교 사무실 전화:</strong> ' + escapeHtml(reg.applicant_office_phone)
+    + (reg.applicant_phone ? '<br><strong>휴대전화:</strong> ' + escapeHtml(reg.applicant_phone) : '')
+    + '</div>'
+
+    + '<button onclick="closeRegComplete()" style="width:100%;padding:12px;margin-top:16px;background:var(--ink);color:#FFF;border:none;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">'
+    + '확인</button>'
+    + '</div></div>';
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeRegComplete() {
+  document.querySelectorAll('#mo-reg-complete').forEach(function(m){ m.remove(); });
+
+  // 폼 초기화
+  ['reg-uni-query','reg-name','reg-position','reg-email','reg-office-phone','reg-mobile-phone'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('reg-dept').value = '국제처';
+  document.getElementById('reg-uni-results').innerHTML = '';
+  document.getElementById('reg-uni-selected').innerHTML = '';
+  document.getElementById('reg-domain-status').innerHTML = '';
+  REG_STATE = { selectedUni: null, files: { letter: null, id_card: null } };
+
+  // 파일 버튼 초기화
+  ['letter','id_card'].forEach(function(k){
+    var btn = document.getElementById('reg-' + k + '-btn');
+    if (btn) {
+      btn.innerHTML = '📎 파일 선택';
+      btn.style.background = '#FFF';
+      btn.style.color = 'var(--ink3)';
+      btn.style.borderStyle = 'dashed';
+      btn.style.borderColor = 'var(--line)';
+    }
+  });
+
+  switchTab('dashboard');
+  toast('✅ 신청 완료 — 운영팀 검증 후 안내 예정');
+}
+
+function sendInvitation() {
+  var email = document.getElementById('inv-email').value.trim().toLowerCase();
+  var name  = document.getElementById('inv-name').value.trim();
+  var pos   = document.getElementById('inv-pos').value.trim();
+  var role  = document.getElementById('inv-role').value;
+
+  if (!email || !name) { alert('이메일과 성명을 입력해 주세요'); return; }
+  if (!email.includes('@')) { alert('올바른 이메일을 입력해 주세요'); return; }
+
+  // 학교 도메인 검증
+  var domain = email.split('@')[1];
+  var allowed = CURRENT_UNIVERSITY.allowed_email_domains;
+  var matched = allowed.some(function(d){ return domain === d || domain.endsWith('.' + d); });
+  if (!matched) {
+    alert(
+      '❌ 학교 공식 이메일 도메인이 아닙니다.\n\n' +
+      '입력한 도메인: @' + domain + '\n' +
+      '허용 도메인: @' + allowed.join(', @') + '\n\n' +
+      '학교 공식 이메일을 사용해야 보안상 안전하게 초대할 수 있습니다.'
+    );
+    return;
+  }
+
+  // 본인 자신 초대 방지 (홍길동의 이메일과 동일 시)
+  if (email === STAFF_PROFILE.staff_email.toLowerCase()) {
+    alert('본인 자신은 초대할 수 없습니다.');
+    return;
+  }
+
+  var inv = {
+    id: 'inv-' + Date.now(),
+    email: email,
+    staff_name: name,
+    staff_position: pos,
+    role: role,
+    used: false,
+    used_at: null,
+    expires_at: hoursAgo(-168), // 7일 후
+    invitation_token: 'sim-token-' + Math.random().toString(36).substring(2, 15),
+    domain_verified: true,  // 검증 통과 표시
+  };
+  INVITATIONS.unshift(inv);
+
+  // 폼 초기화
+  document.getElementById('inv-email').value = '';
+  document.getElementById('inv-name').value = '';
+  document.getElementById('inv-pos').value = '';
+
+  renderInvitations();
+  toast('✅ 도메인 검증 통과 → ' + email + ' 으로 초대 발송');
+}
+
+function revokeInvitation(id) {
+  if (!confirm('이 초대를 철회할까요?')) return;
+  INVITATIONS = INVITATIONS.filter(function(i){ return i.id !== id; });
+  renderInvitations();
+}
+
+function renderInvitations() {
+  var list = document.getElementById('invitation-list');
+  if (INVITATIONS.length === 0) {
+    list.innerHTML = '<div style="font-size:11px;color:var(--ink4);">아직 발송된 초대가 없습니다</div>';
+    return;
+  }
+  var roleLabel = { reviewer: '검토자', manager: '관리자', admin: '대학 관리자' };
+  list.innerHTML = INVITATIONS.map(function(inv){
+    var expired = new Date(inv.expires_at) < new Date();
+    var statusText, statusColor;
+    if (inv.used)      { statusText = '✓ 가입 완료'; statusColor = 'var(--g)'; }
+    else if (expired)  { statusText = '만료됨';      statusColor = 'var(--r)'; }
+    else               { statusText = '대기 중';     statusColor = 'var(--y)'; }
+
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line2);">'
+      + '<div style="flex:1;">'
+      + '<div style="font-size:13px;font-weight:700;">'
+      + escapeHtml(inv.staff_name) + ' <span style="color:var(--ink4);font-weight:500;">(' + escapeHtml(inv.email) + ')</span>'
+      + '</div>'
+      + '<div style="font-size:10px;color:var(--ink3);margin-top:2px;">'
+      + escapeHtml(inv.staff_position || '-') + ' · ' + (roleLabel[inv.role] || inv.role)
+      + ' · <span style="color:' + statusColor + ';">' + statusText + '</span>'
+      + '</div></div>'
+      + (!inv.used ? '<button onclick="revokeInvitation(\'' + inv.id + '\')" style="padding:6px 10px;background:#FFF;color:var(--r);border:1px solid var(--r);border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">철회</button>' : '')
+      + '</div>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 초기화
+// ═══════════════════════════════════════════════════════════════
+
+renderStats();
+renderFilters();
+renderList();
+
+</script>
+</body>
+</html>

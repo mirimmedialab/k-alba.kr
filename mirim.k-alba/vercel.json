@@ -1,0 +1,59 @@
+{
+  "framework": "nextjs",
+  "regions": [
+    "icn1"
+  ],
+  "buildCommand": "next build",
+  "devCommand": "next dev",
+  "installCommand": "npm install",
+  "outputDirectory": ".next",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/staff",
+      "destination": "/staff/partwork",
+      "permanent": false
+    }
+  ],
+  "functions": {
+    "app/api/cron/sync-worknet/route.js": { "maxDuration": 60 },
+    "app/api/cron/cleanup-expired-jobs/route.js": { "maxDuration": 30 }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/sync-worknet",
+      "schedule": "0 0,6,12,18 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-expired-jobs",
+      "schedule": "0 3 * * *"
+    }
+  ]
+}

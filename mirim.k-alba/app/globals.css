@@ -1,0 +1,342 @@
+/* ════════════════════════════════════════════════════════════════
+ * K-ALBA Global Styles (BI v2)
+ *
+ * 폰트 임포트 → Tailwind base → CSS 변수 → 글로벌 스타일 → 애니메이션
+ * ════════════════════════════════════════════════════════════════ */
+
+
+/* ────────── 폰트 임포트 ──────────
+ *
+ * Pretendard Variable (한국어/영어/베트남어/일본어 우수)
+ * + Noto Sans 다국어 폴백 (중국어/몽골어/우즈벡어 키릴)
+ *
+ * 모든 K-ALBA 텍스트는 이 폰트 스택을 사용해 다국어 친화적으로 렌더링.
+ */
+
+/* Pretendard Variable — 가변 가중치 폰트 (400~900) */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
+
+/* Pretendard 정적 폴백 */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+/* Noto Sans 다국어 폴백 (한국어, 베트남어, 중국어, 몽골어 키릴) */
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Sans:ital,wght@0,400;0,700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+Mongolian&display=swap");
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* ════════════════════════════════════════════════════════════════
+ * CSS 변수 (BI v2 마스터 팔레트)
+ * ════════════════════════════════════════════════════════════════
+ *
+ * lib/theme.js의 T 객체와 1:1 매핑.
+ * 컴포넌트에서 var(--coral) 같이 사용 가능.
+ * Tailwind 클래스(bg-coral)를 못 쓰는 환경(인라인 SVG, 동적 스타일 등)에서 활용.
+ */
+
+:root {
+  /* ────────── BI v2 Primary 4종 ────────── */
+  --coral: #FF6B5A;
+  --coral-dark: #E85A4D;
+  --coral-light: #FFE8E4;
+  --mint: #0BD8A2;
+  --mint-light: #E0F8EF;
+  --navy: #0A1628;
+  --navy-light: #1B365D;
+  --gold: #B8944A;
+  --gold-light: #E8D9B5;
+
+  /* ────────── Neutral ────────── */
+  --paper: #FFFFFF;
+  --cream: #FAF8F3;
+  --surface-alt: #F7F5F0;
+  --border: #E8E4DB;
+  --border-strong: #D4D0CA;
+
+  --ink: #0A1628;
+  --ink-2: #3F5273;
+  --ink-3: #6B7A95;
+
+  /* ────────── Semantic ────────── */
+  --success: #0BD8A2;
+  --success-bg: #E0F8EF;
+  --warning: #F59E0B;
+  --warning-bg: #FEF3C7;
+  --error: #DC2626;
+  --error-bg: #FEE2E2;
+  --info: #1E40AF;
+  --info-bg: #DBEAFE;
+
+  /* ────────── Brand Accent (랜딩 페이지) ────────── */
+  --accent: #C2512A;
+  --accent-bg: #F5E8E2;
+
+  /* ────────── Kakao ────────── */
+  --kakao-yellow: #FEE500;
+  --kakao-yellow-msg: #FFEB33;
+  --kakao-chat-bg: #B2C7D9;
+  --kakao-header: #A1B7CB;
+
+  /* ────────── Visa System ────────── */
+  --visa-d2: #0BD8A2;
+  --visa-d4: #4ECDC4;
+  --visa-e9: #FF6B5A;
+  --visa-f2: #B8944A;
+  --visa-f4: #9333EA;
+  --visa-f5: #0A1628;
+  --visa-h2: #F59E0B;
+
+  /* ────────── 폰트 패밀리 (다국어 통합) ────────── */
+  --font-sans: "Pretendard Variable", "Pretendard",
+               -apple-system, BlinkMacSystemFont,
+               "Apple SD Gothic Neo",
+               "Noto Sans KR", "Noto Sans Vietnamese",
+               "Noto Sans SC", "Noto Sans Mongolian",
+               "Segoe UI", "Roboto", sans-serif;
+  --font-mono: "JetBrains Mono", "Consolas", "Monaco", monospace;
+
+  /* ────────── Legacy 호환 (기존 코드 지원) ────────── */
+  --n9: #0A1628;
+  --n7: #1B365D;
+  --p: #FFFFFF;
+  --p2: #F7F5F0;
+  --r: #D9D4C7;
+  --g: #B8944A;
+  --gl: #E8D9B5;
+  --ac: #C2512A;
+  --abg: #F5E8E2;
+  --gn: #2A7A4A;
+  --rd: #A83B2B;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+ * 글로벌 base 스타일
+ * ════════════════════════════════════════════════════════════════ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.7;                /* BI v2 — 다국어 친화 (이전 1.6 → 1.7) */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+button {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 입력요소 일관성 */
+input, textarea, select {
+  font-family: inherit;
+  letter-spacing: -0.01em;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--navy) !important;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+ * 다국어 줄 높이 보정 (BI v2 다국어 친화)
+ * ════════════════════════════════════════════════════════════════
+ *
+ * 베트남어 (ấ ố ý), 우즈벡어 (oʻ gʻ), 몽골어 키릴 등 디아크리틱 충돌 방지.
+ * lang 속성으로 자동 적용.
+ */
+
+[lang="vi"], [lang="uz"], [lang="mn"] {
+  line-height: 1.75;
+}
+
+[lang="zh"] {
+  line-height: 1.65;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+ * 애니메이션 (기존 유지)
+ * ════════════════════════════════════════════════════════════════ */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heroFade {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes kalbaShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.page-enter {
+  animation: fadeIn 0.25s ease-out;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+ * 에디토리얼 클래스 (웹 랜딩 페이지와 공통, 기존 유지)
+ * ════════════════════════════════════════════════════════════════ */
+
+.editorial-title {
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.editorial-title em {
+  font-style: normal;
+  color: var(--gold);
+}
+
+.editorial-title strong {
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.editorial-stat {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+ * BI v2 신규 헬퍼 클래스
+ * ════════════════════════════════════════════════════════════════
+ *
+ * 자주 쓰는 패턴을 클래스로 미리 정의.
+ * 신규 컴포넌트 작성 시 활용.
+ */
+
+/* K 워드마크 — 랜딩, 헤더, 명함 등에 사용 */
+.k-wordmark {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  display: inline-flex;
+  align-items: baseline;
+  line-height: 1;
+}
+
+.k-wordmark .k {
+  color: var(--coral);
+}
+
+.k-wordmark .alba {
+  color: var(--navy);
+}
+
+.k-wordmark.dark .alba {
+  color: var(--paper);
+}
+
+.k-wordmark.mono .k,
+.k-wordmark.mono .alba {
+  color: var(--navy);
+}
+
+/* K 아이콘 — 정사각형 박스 안의 K (앱 아이콘, 챗봇 아바타 등) */
+.k-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  background: var(--navy);
+  color: var(--coral);
+}
+
+.k-icon.kakao {
+  background: var(--kakao-yellow);
+  color: var(--navy);
+}
+
+.k-icon.coral {
+  background: var(--coral);
+  color: var(--paper);
+}
+
+/* 비자 배지 (Badge) */
+.visa-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0;
+}
+
+.visa-badge.d2 { background: var(--visa-d2); color: #04342C; }
+.visa-badge.d4 { background: var(--visa-d4); color: #04342C; }
+.visa-badge.e9 { background: var(--visa-e9); color: #FFFFFF; }
+.visa-badge.f2 { background: var(--visa-f2); color: #FFFFFF; }
+.visa-badge.f4 { background: var(--visa-f4); color: #FFFFFF; }
+.visa-badge.f5 { background: var(--visa-f5); color: #FFFFFF; }
+.visa-badge.h2 { background: var(--visa-h2); color: #412402; }
+
+/* 시급/숫자 강조 (Big Stat) */
+.big-stat {
+  font-family: var(--font-sans);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--coral);
+}
+
+.big-stat.landing {
+  font-size: 32px;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+}
+
+/* 사장님 페이지 전용 골드 액센트 라인 */
+.employer-accent {
+  border-top: 2px solid var(--gold);
+}
