@@ -100,7 +100,10 @@ export default function JobsPage() {
 
   // 실제 DB 공고 조회 (최신순/급여순 + 비로그인 추천 fallback)
   const [fallbackJobs, setFallbackJobs] = useState([]);
+  const [fallbackLoading, setFallbackLoading] = useState(true);
   useEffect(() => {
+    let alive = true;
+    setFallbackLoading(true);
     getJobs().then((data) => {
       const normalized = (data || []).map((j) => ({
         ...j,
@@ -108,9 +111,23 @@ export default function JobsPage() {
         company_name:
           j.employer?.company_name || j.employer_external_name || j.company_name || "",
       }));
+      if (!alive) return;
       setFallbackJobs(normalized);
+      setFallbackLoading(false);
     });
+    return () => {
+      alive = false;
+    };
   }, []);
+
+  // 목록 로딩 상태 — 표시 소스에 맞춰 정확히 판단
+  // (데이터 도착 전에 '공고 없음'이 잠깐 뜨는 깜빡임 방지)
+  const listLoading =
+    sortMode === "nearest"
+      ? nearLoading
+      : sortMode === "recommended" && userProfile
+        ? recLoading
+        : fallbackLoading;
 
   // 표시할 공고 결정
   let displayJobs;
@@ -333,8 +350,8 @@ export default function JobsPage() {
 
       {/* 공고 카드 목록 */}
       <div>
-        {loading ? (
-          // Step 3-B PageLoading 인라인
+        {listLoading ? (
+          // Step 3-B PageLoading 인라인 — 데이터 로딩 중에는 '없음' 대신 로딩 표시
           <PageLoading message={t("jobs.loading")} minHeight={240} />
         ) : displayJobs.length === 0 ? (
           // Step 3-C Empty
@@ -360,7 +377,7 @@ export default function JobsPage() {
       </div>
 
       {/* 페이지네이션 */}
-      {!loading && totalCount > PAGE_SIZE && (
+      {!listLoading && totalCount > PAGE_SIZE && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}

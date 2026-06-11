@@ -124,7 +124,7 @@ export const ko = {
     noResultsRadius: "반경 {radius}km 안에 공고가 없어요. 반경을 늘려보세요.",
     totalJobs: "총 {count}개 공고",
     currentLocationLabel: "📍 현재 위치 기준",
-    loading: "공고를 찾고 있어요...",
+    loading: "맞춤 공고를 찾고 있어요. 잠시만 기다려 주세요...",
     locationCheckingGps: "📡 위치 확인 중...",
     locationGpsActive: "📍 현재 위치에서 가까운 순으로 보여줍니다",
     locationGpsActiveLabel: "현재 위치",
