@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import BrandLogo from "@/components/BrandLogo";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { T } from "@/lib/theme";
@@ -109,17 +110,8 @@ export default function NavBar() {
         }}
       >
         {/* 브랜드 로고 — 타이포 기반 (이모지 X) */}
-        <Link
-          href={logoHref}
-          style={{
-            textDecoration: "none",
-            fontWeight: 800,
-            fontSize: 18,
-            letterSpacing: "-0.02em",
-            color: T.n9,
-          }}
-        >
-          K‑ALBA
+        <Link href={logoHref} style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
+          <BrandLogo size={20} color={T.n9} />
         </Link>
 
         {/* 랜딩 페이지: 심플하게 언어 + CTA 만 */}
