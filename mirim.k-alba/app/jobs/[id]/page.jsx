@@ -234,10 +234,8 @@ export default function JobDetailPage() {
         </div>
         {[
           ["지역", job.area],
-          ["근무시간", [job.time, job.hours].filter(Boolean).join(" · ") || "-"],
-          ["근무요일", Array.isArray(job.days) ? job.days.join(", ") : job.days || ""],
+          ["근무", [job.time, job.hours].filter(Boolean).join(" · ") || "-"],
           ["업종", job.type],
-          ["한국어", { none: "불필요", beginner: "초급", intermediate: "중급", advanced: "고급" }[job.korean] || "-"],
         ].map(([k, v]) => (
           <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: `1px solid ${T.border}` }}>
             <span style={{ fontSize: 13, color: T.ink3 }}>{k}</span>
