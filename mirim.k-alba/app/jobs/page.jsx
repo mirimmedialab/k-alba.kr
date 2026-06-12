@@ -109,6 +109,7 @@ function DesktopJobCard({ job, onSelect, showDistance }) {
     <div
       onClick={() => onSelect(job.id)}
       style={{
+        width: "100%",
         background: D.card,
         border: `1px solid ${D.border}`,
         borderRadius: 14,
@@ -133,18 +134,17 @@ function DesktopJobCard({ job, onSelect, showDistance }) {
         {job.title}
       </div>
 
-      {/* 회사 · 위치(시도+시군구) */}
+      {/* 회사명 (위치 분리) */}
       <div style={{ fontSize: 12.5, color: D.ink2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
         {job.company_name}
-        {loc ? <> · <span style={{ color: D.ink3 }}>📍 {loc}</span></> : null}
-        {showDistance && job.distance_km != null ? ` · ${formatDistance(job.distance_m)}` : ""}
       </div>
 
-      <div style={{ borderTop: `1px solid ${D.border}`, margin: "14px 0 12px" }} />
+      {/* 회사명 다음 구분선 */}
+      <div style={{ borderTop: `1px solid ${D.border}`, margin: "12px 0" }} />
 
       {/* 비자 라벨 — 차분한 파란 라벨 + 의미 병기 */}
       {visas.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
           {visas.map((v) => (
             <span key={v} style={{ fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: 6, background: "#EEF4FF", color: "#1D4ED8", border: "1px solid #DBE5FF", whiteSpace: "nowrap" }}>
               {v}{VISA_MEANING[v] ? `(${VISA_MEANING[v]})` : ""}
@@ -153,19 +153,29 @@ function DesktopJobCard({ job, onSelect, showDistance }) {
         </div>
       )}
 
-      {/* 마감일 — 별도 줄, 이모지 + 검정 글씨 */}
+      {/* 위치 — 마감 위, 이모지 + 검정 글씨 */}
+      {loc && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: D.ink2, marginBottom: 5 }}>
+          <span>📍</span>
+          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {loc}{showDistance && job.distance_km != null ? ` · ${formatDistance(job.distance_m)}` : ""}
+          </span>
+        </div>
+      )}
+
+      {/* 마감일 */}
       {expiry && (
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: D.ink2, marginBottom: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: D.ink2, marginBottom: 5 }}>
           <span>📅</span><span>마감 {expiry}</span>
         </div>
       )}
 
-      {/* 급여 — 같은 형식(이모지 + 검정 글씨), 시급/월급/연봉 자동 */}
+      {/* 급여 — 시급/월급/연봉 자동 */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, fontWeight: 700, color: D.ink }}>
         <span>💰</span><span>{payType} {amount}원</span>
       </div>
 
-      <div style={{ flex: 1, minHeight: 14 }} />
+      <div style={{ flex: 1, minHeight: 12 }} />
       <button
         onClick={(e) => { e.stopPropagation(); onSelect(job.id); }}
         style={{ width: "100%", padding: "11px", borderRadius: 8, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}
