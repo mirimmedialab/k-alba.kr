@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
 import { getJobs } from "@/lib/supabase";
@@ -177,6 +177,7 @@ export default function JobsPage() {
   const [userProfile, setUserProfile] = useState(null);
   const [page, setPage] = useState(1);
   const isDesktop = useIsDesktop();
+  const recRef = useRef(null);
   const [qf, setQf] = useState({});
   const toggleQf = (k) => setQf((prev) => ({ ...prev, [k]: !prev[k] }));
   const [visaSel, setVisaSel] = useState([]);
@@ -572,7 +573,7 @@ export default function JobsPage() {
         {count != null && <span style={{ fontSize: 11, color: D.ink3 }}>{count}</span>}
       </button>
     );
-    const recommended = fallbackJobs.slice(0, 4);
+    const recommended = fallbackJobs.slice(0, 12);
 
     return (
       <div style={{ background: D.bg, minHeight: "100vh" }}>
@@ -659,13 +660,21 @@ export default function JobsPage() {
             </main>
           </div>
 
-          {/* 하단 추천 섹션 */}
+          {/* 하단 추천 섹션 (좌우 화살표 캐러셀; 컨테이너 폭 안에 고정) */}
           {recommended.length > 0 && (
             <div style={{ marginTop: 44, paddingBottom: 56 }}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: D.navy, marginBottom: 16 }}>🔥 이번 주 추천 비자 채용</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <div style={{ fontSize: 18, fontWeight: 800, color: D.navy }}>🔥 이번 주 추천 비자 채용</div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button aria-label="이전" onClick={() => recRef.current && recRef.current.scrollBy({ left: -560, behavior: "smooth" })} style={{ width: 34, height: 34, borderRadius: 999, border: `1px solid ${D.border}`, background: D.card, color: D.navy, fontSize: 16, cursor: "pointer", fontFamily: "inherit" }}>‹</button>
+                  <button aria-label="다음" onClick={() => recRef.current && recRef.current.scrollBy({ left: 560, behavior: "smooth" })} style={{ width: 34, height: 34, borderRadius: 999, border: `1px solid ${D.border}`, background: D.card, color: D.navy, fontSize: 16, cursor: "pointer", fontFamily: "inherit" }}>›</button>
+                </div>
+              </div>
+              <div ref={recRef} style={{ display: "flex", gap: 16, overflowX: "hidden", scrollBehavior: "smooth" }}>
                 {recommended.map((j) => (
-                  <DesktopJobCard key={"rec-" + j.id} job={j} selected={false} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} />
+                  <div key={"rec-" + j.id} style={{ width: 264, flexShrink: 0 }}>
+                    <DesktopJobCard job={j} selected={false} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} />
+                  </div>
                 ))}
               </div>
             </div>
