@@ -230,6 +230,7 @@ export default function JobDetail({ jobId, embedded = false }) {
     const desc = String(job.desc || "").replace(/^\s*담당업무\s*[:：]?\s*/, "").trimEnd();
     const payUnit = ({ 시급: "시간", 일급: "일", 월급: "월", 연봉: "년" })[job.pay_type] || "시간";
     const rows = [
+      ["급여", `${job.pay_type || "시급"} ${Number(job.pay || 0).toLocaleString()}원`],
       ["지역", job.area],
       ["근무", [job.time, job.hours].filter(Boolean).join(" · ") || "-"],
       ["업종", job.type],
@@ -290,7 +291,7 @@ export default function JobDetail({ jobId, embedded = false }) {
               <div style={{ fontSize: 40 }}>{job.icon || "💼"}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <h1 style={{ fontSize: 26, fontWeight: 800, color: D.navy, lineHeight: 1.3, margin: 0, letterSpacing: "-0.02em" }}>{job.title}</h1>
-                <div style={{ fontSize: 14.5, color: D.ink2, marginTop: 8 }}>{job.company} · {job.area}</div>
+                <div style={{ fontSize: 14.5, color: D.ink2, marginTop: 8 }}>{job.company}</div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 14 }}>
                   {(job.visa || []).map((v) => <VisaBadge key={v} code={v} variant="solid" size="md" />)}
                   {koreanLabel && <Chip2>{koreanLabel}</Chip2>}
@@ -335,25 +336,31 @@ export default function JobDetail({ jobId, embedded = false }) {
                   ))}
                 </ul>
               </Section>
-              {job.latitude && job.longitude && (
-                <Section title="근무지 위치">
-                  <KakaoMap center={{ latitude: job.latitude, longitude: job.longitude }} level={4} markers={[{ latitude: job.latitude, longitude: job.longitude, title: job.company, color: D.green }]} height={260} />
-                  <div style={{ marginTop: 12, fontSize: 13.5, fontWeight: 600, color: D.ink }}>📍 {job.address_road || job.address || job.area}</div>
-                </Section>
-              )}
             </main>
 
             <aside style={{ width: 320, flexShrink: 0, position: "sticky", top: 20 }}>
-              <div style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 16, padding: 22 }}>
-                <div style={{ fontSize: 26, fontWeight: 900, color: D.green, letterSpacing: "-0.02em", lineHeight: 1 }}>₩{job.pay?.toLocaleString()}</div>
-                <div style={{ fontSize: 12.5, color: D.ink3, marginTop: 5, marginBottom: 18 }}>{payUnit}당</div>
+              <div style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 16, padding: 16 }}>
+                {job.latitude && job.longitude && (
+                  <div style={{ marginBottom: 14 }}>
+                    <KakaoMap center={{ latitude: job.latitude, longitude: job.longitude }} level={4} markers={[{ latitude: job.latitude, longitude: job.longitude, title: job.company, color: D.green }]} height={170} />
+                    <div style={{ marginTop: 12, fontSize: 13, fontWeight: 600, color: D.ink, lineHeight: 1.5 }}>📍 {job.address_road || job.address || job.area}</div>
+                    {job.nearest_station && (
+                      <div style={{ marginTop: 6, fontSize: 12, color: D.ink2 }}>🚇 {job.nearest_station}{job.walk_to_station_min ? ` · 걸어서 ${job.walk_to_station_min}분` : ""}</div>
+                    )}
+                  </div>
+                )}
                 {applied ? (
-                  <div style={{ textAlign: "center", padding: "16px 0", color: D.green, fontWeight: 800, fontSize: 15 }}>🎉 {t("jobs.applied")}</div>
+                  <div style={{ textAlign: "center", padding: "14px 0", color: D.green, fontWeight: 800, fontSize: 15 }}>🎉 {t("jobs.applied")}</div>
                 ) : (
                   <>
-                    <button onClick={handleApply} style={{ width: "100%", padding: "14px", borderRadius: 10, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: "inherit", marginBottom: 10 }}>지원하기</button>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button onClick={() => router.push("/login")} style={{ flex: 1, padding: "13px 8px", borderRadius: 10, background: "#fff", color: D.ink, border: `1px solid ${D.border}`, fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, whiteSpace: "nowrap" }}>
+                        <span style={{ fontSize: 15 }}>♡</span> 관심 공고
+                      </button>
+                      <button onClick={handleApply} style={{ flex: 1.3, padding: "13px", borderRadius: 10, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>지원하기</button>
+                    </div>
                     {hasForeignerInfo && (
-                      <button onClick={() => { if (typeof document === "undefined") return; const el = document.getElementById("foreigner-info"); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: "smooth" }); }} style={{ width: "100%", padding: "14px", borderRadius: 10, background: D.greenBg, color: D.green, border: `1px solid ${D.greenBorder}`, fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: "inherit" }}>비자 가능 여부 확인하기</button>
+                      <button onClick={() => { if (typeof document === "undefined") return; const el = document.getElementById("foreigner-info"); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: "smooth" }); }} style={{ width: "100%", marginTop: 8, padding: "12px", borderRadius: 10, background: D.greenBg, color: D.green, border: `1px solid ${D.greenBorder}`, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit" }}>비자 가능 여부 확인하기</button>
                     )}
                   </>
                 )}
