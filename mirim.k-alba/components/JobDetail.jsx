@@ -11,6 +11,7 @@ import KakaoMap from "@/components/KakaoMap";
 import RouteCard from "@/components/RouteCard";
 import LastTransitCard from "@/components/LastTransitCard";
 import { formatDistance, calculateDistanceMeters } from "@/lib/geolocation";
+import { formatPay } from "@/lib/format";
 import {
   Button,
   Card,
@@ -236,7 +237,7 @@ export default function JobDetail({ jobId, embedded = false }) {
     const desc = String(job.desc || "").replace(/^\s*담당업무\s*[:：]?\s*/, "").trimEnd();
     const payUnit = ({ 시급: "시간", 일급: "일", 월급: "월", 연봉: "년" })[job.pay_type] || "시간";
     const rows = [
-      ["급여", `${job.pay_type || "시급"} ${Number(job.pay || 0).toLocaleString()}원`],
+      ["급여", `${job.pay_type || "시급"} ${formatPay(job.pay, job.pay_type)}`],
       ["지역", job.area],
       ["근무", [job.time, job.hours].filter(Boolean).join(" · ") || "-"],
       ["업종", job.type],
@@ -383,7 +384,7 @@ export default function JobDetail({ jobId, embedded = false }) {
   const koreanLabel = D_KOREAN[job.korean];
   const desc = String(job.desc || "").replace(/^\s*담당업무\s*[:：]?\s*/, "").trimEnd();
   const rows = [
-    ["급여", `${job.pay_type || "시급"} ${Number(job.pay || 0).toLocaleString()}원`],
+    ["급여", `${job.pay_type || "시급"} ${formatPay(job.pay, job.pay_type)}`],
     ["지역", job.area],
     ["근무", [job.time, job.hours].filter(Boolean).join(" · ") || "-"],
     ["업종", job.type],

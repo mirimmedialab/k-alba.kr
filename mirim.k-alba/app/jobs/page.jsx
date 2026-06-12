@@ -7,6 +7,7 @@ import { useT } from "@/lib/i18n";
 import { useNearbyJobs } from "@/lib/useNearbyJobs";
 import { useRecommendedJobs } from "@/lib/useRecommendedJobs";
 import { formatDistance } from "@/lib/geolocation";
+import { formatPay, shortWorkTime } from "@/lib/format";
 import { getCurrentUser, getProfile } from "@/lib/supabase";
 import { Input, VisaBadge, PageLoading, Empty } from "@/components/ui";
 import { useIsDesktop } from "@/lib/useIsDesktop";
@@ -105,6 +106,7 @@ function DesktopJobCard({ job, onSelect, showDistance }) {
   const expiry = job.expires_at ? String(job.expires_at).slice(0, 10) : null;
   const visas = (job.visa_types || []).slice(0, 4);
   const loc = [shortSido(job.sido), job.sigungu].filter(Boolean).join(" ") || job.address || "";
+  const workTime = shortWorkTime(job);
   return (
     <div
       onClick={() => onSelect(job.id)}
@@ -163,6 +165,13 @@ function DesktopJobCard({ job, onSelect, showDistance }) {
         </div>
       )}
 
+      {workTime && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: D.ink2, marginBottom: 5 }}>
+          <span>🕐</span>
+          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{workTime}</span>
+        </div>
+      )}
+
       {/* 마감일 */}
       {expiry && (
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: D.ink2, marginBottom: 5 }}>
@@ -172,7 +181,7 @@ function DesktopJobCard({ job, onSelect, showDistance }) {
 
       {/* 급여 — 시급/월급/연봉 자동 */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, fontWeight: 700, color: D.ink }}>
-        <span>💰</span><span>{payType} {amount}원</span>
+        <span>💰</span><span>{payType} {formatPay(job.pay_amount, payType)}</span>
       </div>
 
       <div style={{ flex: 1, minHeight: 12 }} />
@@ -190,12 +199,15 @@ function DesktopJobCard({ job, onSelect, showDistance }) {
 function MobileListItem({ job, last, onClick }) {
   const visas = (job.visa_types || []).slice(0, 3);
   const loc = [shortSido(job.sido), job.sigungu].filter(Boolean).join(" ") || job.address || "";
-  const amount = Number(job.pay_amount || 0).toLocaleString();
+  const workTime = shortWorkTime(job);
   return (
     <div onClick={onClick} style={{ display: "flex", gap: 12, padding: "14px", borderBottom: last ? "none" : `1px solid ${D.border}`, cursor: "pointer" }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: D.navy, lineHeight: 1.3, marginBottom: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{job.title}</div>
-        <div style={{ fontSize: 12, color: D.ink2, marginBottom: 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{job.company_name}{loc ? ` · ${loc}` : ""}</div>
+        <div style={{ fontSize: 12, color: D.ink2, marginBottom: workTime ? 3 : 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{job.company_name}{loc ? ` · ${loc}` : ""}</div>
+        {workTime && (
+          <div style={{ fontSize: 11.5, color: D.ink3, marginBottom: 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>🕐 {workTime}</div>
+        )}
         <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
           {visas.map((v) => (
             <span key={v} style={{ fontSize: 10.5, fontWeight: 600, padding: "2px 6px", borderRadius: 5, background: "#EEF4FF", color: "#1D4ED8" }}>{v}</span>
@@ -203,7 +215,7 @@ function MobileListItem({ job, last, onClick }) {
         </div>
       </div>
       <div style={{ textAlign: "right", flexShrink: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 800, color: D.navy, letterSpacing: "-0.01em" }}>{amount}</div>
+        <div style={{ fontSize: 14, fontWeight: 800, color: D.navy, letterSpacing: "-0.01em" }}>{formatPay(job.pay_amount, job.pay_type)}</div>
         <div style={{ fontSize: 11, color: D.ink3, marginTop: 2 }}>{job.pay_type || "시급"}</div>
       </div>
     </div>
