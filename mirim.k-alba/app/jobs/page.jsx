@@ -194,7 +194,7 @@ export default function JobsPage() {
       {/* 챗봇 체험 배너 제거됨 */}
 
       {/* 정렬 탭 */}
-      <div style={{ display: "flex", gap: 4, marginBottom: 12, borderBottom: `1px solid ${T.border}`, overflowX: "auto" }}>
+      <div style={{ display: "flex", gap: 4, marginBottom: 12, borderBottom: `1px solid ${T.border}`, flexWrap: "wrap" }}>
         {[
           ["recommended", t("jobs.sortRecommended")],
           ["nearest", t("jobs.sortNearest")],
@@ -288,31 +288,7 @@ export default function JobsPage() {
         />
       </div>
 
-      {/* 한국어 수준 필터 */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 24, flexWrap: "wrap" }}>
-        {[
-          ["", t("jobs.koreanAll")],
-          ["none", t("jobs.koreanNone")],
-          ["beginner", t("jobs.koreanBeginner")],
-          ["intermediate", t("jobs.koreanIntermediate")],
-          ["advanced", t("jobs.koreanAdvanced")],
-        ].map(([v, l]) => (
-          <button
-            key={l}
-            onClick={() => setKoreanFilter(v)}
-            style={{
-              padding: "6px 12px", borderRadius: 4,
-              border: `1px solid ${koreanFilter === v ? T.accent : T.border}`,
-              background: koreanFilter === v ? T.accentBg : T.paper,
-              color: koreanFilter === v ? T.accent : T.ink2,
-              fontSize: 12, fontWeight: 600, cursor: "pointer",
-              fontFamily: "inherit", letterSpacing: "-0.01em",
-            }}
-          >
-            {l}
-          </button>
-        ))}
-      </div>
+      {/* 한국어 수준 필터 제거됨 */}
 
       {/* 결과 개수 */}
       <div style={{
