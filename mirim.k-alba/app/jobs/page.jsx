@@ -371,231 +371,71 @@ export default function JobsPage() {
     currentPage * PAGE_SIZE
   );
 
-  const listColumn = isDesktop ? null : (
-    <div style={{ padding: isDesktop ? "28px 4px" : "32px 20px", maxWidth: isDesktop ? "none" : 820, margin: isDesktop ? 0 : "0 auto" }}>
-      {/* Editorial 헤더 (모바일 전용; PC는 PcHero 사용) */}
-      {!isDesktop && (
-        <>
-          <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 18 }} />
-          <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
-            {t("jobs.pageLabel")}
-          </div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.25 }}>
-            {t("jobs.title")}
-          </h1>
-          <p style={{ color: T.ink2, fontSize: 14, marginBottom: 20, lineHeight: 1.6 }}>
-            {t("jobs.subtitle")}
-          </p>
-        </>
-      )}
+  const recommended = fallbackJobs.slice(0, 12);
 
-      {/* 위치 상태 배너 */}
-      {sortMode === "nearest" && (
-        <LocationBanner
-          source={locationSource}
-          location={userLocation}
-          onRequestLocation={requestLocation}
-          loading={loading}
-        />
-      )}
-
-      {/* 챗봇 체험 배너 제거됨 */}
-
-      {/* 정렬 탭 */}
-      <div style={{ display: "flex", gap: 4, marginBottom: 12, borderBottom: `1px solid ${T.border}`, flexWrap: "wrap" }}>
-        {[
-          ["recommended", t("jobs.sortRecommended")],
-          ["nearest", t("jobs.sortNearest")],
-          ["latest", t("jobs.sortLatest")],
-          ["pay", t("jobs.sortPay")],
-        ].map(([v, l]) => {
-          const active = sortMode === v;
-          return (
-            <button
-              key={v}
-              onClick={() => setSortMode(v)}
-              style={{
-                padding: "10px 14px",
-                background: "transparent",
-                border: "none",
-                fontSize: 13,
-                fontWeight: active ? 700 : 500,
-                color: active ? T.ink : T.ink3,
-                borderBottom: active ? `2px solid ${T.accent}` : "2px solid transparent",
-                marginBottom: -1,
-                cursor: "pointer",
-                fontFamily: "inherit",
-                letterSpacing: "-0.01em",
-              }}
-            >
-              {l}
-            </button>
-          );
-        })}
+  // 모바일(친근형): 히어로 + 검색 + 빠른필터 칩 + 추천 peek 캐러셀 + 1열 리스트
+  const mobileLayout = (
+    <div style={{ background: D.bg, minHeight: "100vh", paddingBottom: 28 }}>
+      <div style={{ background: D.navy, color: "#fff", padding: "20px 18px 18px" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: D.greenBorder, letterSpacing: "0.04em", marginBottom: 7 }}>외국인 합법 알바</div>
+        <div style={{ fontSize: 19, fontWeight: 800, lineHeight: 1.35 }}>내 비자로 가능한<br />알바를 찾아보세요</div>
       </div>
 
-      {/* 외국인용 빠른 필터 (PC 전용) */}
-      {isDesktop && (
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+      <div style={{ padding: "14px 16px 0" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, background: D.card, border: `1px solid ${D.border}`, borderRadius: 12, padding: "11px 14px", marginBottom: 12 }}>
+          <span style={{ fontSize: 15, color: D.ink3 }}>🔍</span>
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="직무, 지역, 회사 검색" style={{ flex: 1, border: "none", outline: "none", fontSize: 14, color: D.ink, background: "transparent", fontFamily: "inherit" }} />
+        </div>
+        <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 12 }}>
           {QUICK_FILTERS.filter((f) => !f.needsVisa || userProfile?.visa).map((f) => {
             const on = !!qf[f.key];
             return (
-              <button
-                key={f.key}
-                onClick={() => toggleQf(f.key)}
-                style={{
-                  padding: "7px 13px",
-                  borderRadius: 999,
-                  border: `1px solid ${on ? D.greenBorder : D.border}`,
-                  background: on ? D.greenBg : D.card,
-                  color: on ? D.green : D.ink2,
-                  fontSize: 12.5,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                }}
-              >
+              <button key={f.key} onClick={() => toggleQf(f.key)} style={{ flexShrink: 0, padding: "7px 13px", borderRadius: 999, border: `1px solid ${on ? D.greenBorder : D.border}`, background: on ? D.greenBg : D.card, color: on ? D.green : D.ink2, fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
                 {on ? "✓ " : ""}{f.label}
               </button>
             );
           })}
         </div>
-      )}
-
-      {/* 비로그인 추천순 안내 배너 */}
-      {sortMode === "recommended" && !userProfile && (
-        <div
-          onClick={() => router.push("/login")}
-          style={{
-            background: T.goldL,
-            color: T.ink,
-            padding: "12px 16px",
-            borderRadius: 4,
-            borderLeft: `3px solid ${T.gold}`,
-            marginBottom: 16,
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            cursor: "pointer",
-          }}
-        >
-          <div style={{ fontSize: 18 }}>🔑</div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, fontSize: 13, letterSpacing: "-0.01em" }}>
-              로그인하고 내 비자, 위치에 맞는 맞춤 추천을 받아보세요
-            </div>
-          </div>
-          <div style={{ fontSize: 16, color: T.gold, fontWeight: 700 }}>→</div>
-        </div>
-      )}
-
-      {/* 반경 조절 (가까운 순일 때만) */}
-      {sortMode === "nearest" && (
-        <div style={{ marginBottom: 12, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-          <span style={{ fontSize: 12, color: T.ink3, marginRight: 4 }}>{t("jobs.radiusLabel")}</span>
-          {[3, 5, 10, 20, 50].map((r) => (
-            <button
-              key={r}
-              onClick={() => setRadius(r)}
-              style={{
-                padding: "4px 10px", borderRadius: 4,
-                border: `1px solid ${radius === r ? T.n9 : T.border}`,
-                background: radius === r ? T.n9 : T.paper,
-                color: radius === r ? T.gold : T.ink2,
-                fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-              }}
-            >
-              {r}km
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* 검색 — Step 3-B Input variant="search" */}
-      <div style={{ marginBottom: 12 }}>
-        <Input
-          variant="search"
-          placeholder={isDesktop ? "직무, 회사, 지역 검색" : t("jobs.searchPlaceholder")}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          iconLeft={<span style={{ fontSize: 14 }}>🔍</span>}
-          clearable
-          onClear={() => setSearch("")}
-        />
       </div>
 
-      {/* 한국어 수준 필터 제거됨 */}
-
-      {/* 결과 개수 */}
-      <div style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        marginBottom: 14, paddingTop: 12, borderTop: `2px solid ${T.n9}`,
-      }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>
-          {t("jobs.totalJobs").replace("{count}", displayJobs.length)}
-        </div>
-        {sortMode === "nearest" && locationSource === "gps" && (
-          <div style={{ fontSize: 11, color: T.green, fontWeight: 600 }}>
-            {t("jobs.currentLocationLabel")}
+      {recommended.length > 0 && (
+        <div style={{ marginTop: 4, marginBottom: 6 }}>
+          <div style={{ padding: "4px 16px 10px", fontSize: 15, fontWeight: 800, color: D.navy }}>🔥 오늘의 추천</div>
+          <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "0 16px 8px", scrollSnapType: "x mandatory" }}>
+            {recommended.map((j) => (
+              <div key={"rec-" + j.id} style={{ flex: "0 0 84%", scrollSnapAlign: "start", display: "flex" }}>
+                <DesktopJobCard job={j} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} />
+              </div>
+            ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* 공고 카드 목록 */}
-      <div
-        style={
-          isDesktop && !listLoading && displayJobs.length > 0
-            ? { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14, alignItems: "start" }
-            : undefined
-        }
-      >
+      <div style={{ padding: "10px 16px 0" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: D.navy }}>{t("jobs.totalJobs").replace("{count}", displayJobs.length)}</div>
+          <select value={sortMode} onChange={(e) => setSortMode(e.target.value)} style={{ border: `1px solid ${D.border}`, borderRadius: 8, padding: "6px 8px", fontSize: 12.5, color: D.ink2, fontFamily: "inherit", background: D.card }}>
+            <option value="recommended">추천순</option>
+            <option value="nearest">가까운 순</option>
+            <option value="latest">최신순</option>
+            <option value="pay">급여 높은순</option>
+          </select>
+        </div>
         {listLoading ? (
-          // Step 3-B PageLoading 인라인 — 데이터 로딩 중에는 '없음' 대신 로딩 표시
-          <PageLoading message={t("jobs.loading")} minHeight={240} />
+          <PageLoading message={t("jobs.loading")} minHeight={200} />
         ) : displayJobs.length === 0 ? (
-          // Step 3-C Empty
-          <Empty
-            variant="no-results"
-            description={
-              sortMode === "nearest"
-                ? t("jobs.noResultsRadius").replace("{radius}", radius)
-                : t("jobs.noResults")
-            }
-          />
+          <Empty variant="no-results" description={t("jobs.noResults")} />
         ) : (
-          pageJobs.map((j, idx) =>
-            isDesktop ? (
-              <DesktopJobCard
-                key={j.id}
-                job={j}
-                selected={false}
-                onSelect={(id) => router.push(`/jobs/${id}`)}
-                showDistance={sortMode === "nearest" || sortMode === "recommended"}
-              />
-            ) : (
-              <JobListItem
-                key={j.id}
-                job={j}
-                index={(currentPage - 1) * PAGE_SIZE + idx}
-                showDistance={sortMode === "nearest" || sortMode === "recommended"}
-                showReason={sortMode === "recommended"}
-              />
-            )
-          )
+          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
+            {pageJobs.map((j) => (
+              <DesktopJobCard key={j.id} job={j} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={sortMode === "nearest" || sortMode === "recommended"} />
+            ))}
+          </div>
+        )}
+        {!listLoading && totalCount > PAGE_SIZE && (
+          <Pagination currentPage={currentPage} totalPages={totalPages} onChange={(pg) => { setPage(pg); if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" }); }} />
         )}
       </div>
-
-      {/* 페이지네이션 */}
-      {!listLoading && totalCount > PAGE_SIZE && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onChange={(p) => {
-            setPage(p);
-            if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-        />
-      )}
     </div>
   );
 
@@ -613,7 +453,6 @@ export default function JobsPage() {
         {count != null && <span style={{ fontSize: 11, color: D.ink3 }}>{count}</span>}
       </button>
     );
-    const recommended = fallbackJobs.slice(0, 12);
 
     return (
       <div style={{ background: D.bg, minHeight: "100vh" }}>
@@ -724,7 +563,7 @@ export default function JobsPage() {
     );
   }
 
-  return listColumn;
+  return mobileLayout;
 }
 
 /**

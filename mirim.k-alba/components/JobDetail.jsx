@@ -27,6 +27,12 @@ const D = {
   green: "#16A34A", greenBg: "#ECFDF5", greenBorder: "#86EFAC",
 };
 const D_KOREAN = { none: "한국어 무관", beginner: "한국어 초급", intermediate: "한국어 중급", advanced: "한국어 고급" };
+const VISA_MEANING = {
+  "D-2": "유학", "D-4": "어학연수", "D-10": "구직", "D-8": "투자",
+  "E-7": "특정활동", "E-8": "계절근로", "E-9": "비전문취업",
+  "F-2": "거주", "F-4": "재외동포", "F-5": "영주", "F-6": "결혼이민",
+  "H-2": "방문취업", "G-1": "기타", "C-4": "단기취업",
+};
 
 function Chip2({ children, green }) {
   return (
@@ -342,7 +348,7 @@ export default function JobDetail({ jobId, embedded = false }) {
               <div style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 16, padding: 16 }}>
                 {job.latitude && job.longitude && (
                   <div style={{ marginBottom: 14 }}>
-                    <KakaoMap center={{ latitude: job.latitude, longitude: job.longitude }} level={4} markers={[{ latitude: job.latitude, longitude: job.longitude, title: job.company, color: D.green }]} height={170} />
+                    <KakaoMap center={{ latitude: job.latitude, longitude: job.longitude }} level={4} markers={[{ latitude: job.latitude, longitude: job.longitude, title: job.company, color: D.navy }]} height={170} />
                     <div style={{ marginTop: 12, fontSize: 13, fontWeight: 600, color: D.ink, lineHeight: 1.5 }}>📍 {job.address_road || job.address || job.area}</div>
                     {job.nearest_station && (
                       <div style={{ marginTop: 6, fontSize: 12, color: D.ink2 }}>🚇 {job.nearest_station}{job.walk_to_station_min ? ` · 걸어서 ${job.walk_to_station_min}분` : ""}</div>
@@ -374,370 +380,128 @@ export default function JobDetail({ jobId, embedded = false }) {
     );
   }
 
+  const koreanLabel = D_KOREAN[job.korean];
+  const desc = String(job.desc || "").replace(/^\s*담당업무\s*[:：]?\s*/, "").trimEnd();
+  const rows = [
+    ["급여", `${job.pay_type || "시급"} ${Number(job.pay || 0).toLocaleString()}원`],
+    ["지역", job.area],
+    ["근무", [job.time, job.hours].filter(Boolean).join(" · ") || "-"],
+    ["업종", job.type],
+    job.headcount && String(job.headcount) !== "1" ? ["모집인원", /^\d+$/.test(String(job.headcount)) ? `${job.headcount}명` : job.headcount] : null,
+    job.benefits ? ["복리후생", job.benefits] : null,
+    job.expires_at ? ["마감", String(job.expires_at).slice(0, 10)] : null,
+  ].filter(Boolean);
+  const foreignerRows = [
+    ["가능 비자", (job.visa || []).join(", ") || "별도 명시 없음"],
+    ["한국어 수준", koreanLabel || "별도 명시 없음"],
+    ["숙소 제공", job.provides_housing ? "제공" : "미제공"],
+    ["통근버스", job.provides_shuttle ? "제공" : "미제공"],
+    job.nearest_station ? ["가까운 역", `${job.nearest_station}${job.walk_to_station_min ? ` (도보 ${job.walk_to_station_min}분)` : ""}`] : null,
+  ].filter(Boolean);
+  const hasForeignerInfo = (job.visa || []).length > 0 || !!koreanLabel || !!job.provides_housing || !!job.provides_shuttle || !!job.nearest_station;
+  const companyRows = [
+    ["회사명", job.company || "-"],
+    job.type ? ["업종", job.type] : null,
+    ["공고 출처", job.source_type === "worknet" ? "고용24(워크넷)" : "K-ALBA 직접등록"],
+  ].filter(Boolean);
+  const checklist = [
+    "비자 만료일이 근무 종료일보다 늦은지 확인하세요.",
+    "주당 근무 시간이 비자 허용 범위 내인지 확인하세요.",
+    "근무 시작 전 표준근로계약서를 작성하세요.",
+    "급여가 최저임금 이상인지 확인하세요.",
+  ];
+  const Section = ({ title, children }) => (
+    <div style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 16, padding: 18, marginBottom: 14 }}>
+      <div style={{ fontSize: 14.5, fontWeight: 700, color: D.navy, marginBottom: 14 }}>{title}</div>
+      {children}
+    </div>
+  );
+  const Row = ({ k, v, isWork }) => (
+    <div style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "11px 0", borderBottom: "1px solid #F1F5F9" }}>
+      <span style={{ fontSize: 13, color: D.ink3, flexShrink: 0 }}>{k}</span>
+      <span style={{ fontSize: 13, fontWeight: 600, color: D.ink, textAlign: "right", lineHeight: 1.6 }}>
+        {isWork ? String(v).split(/\s*\n\s*|\s{2,}|\s*,\s*/).map((x) => x.trim()).filter(Boolean).map((line, i) => (<span key={i} style={{ display: "block" }}>{line}</span>)) : v}
+      </span>
+    </div>
+  );
+
   return (
-    <div style={{ padding: embedded ? 0 : 20, maxWidth: embedded ? "100%" : 600, margin: embedded ? 0 : "0 auto" }}>
-      {!embedded && (
-        <Link href="/jobs" style={{ color: T.ink3, fontSize: 14, marginBottom: 16, display: "inline-block" }}>
-          ← {t("jobs.jobList")}
-        </Link>
-      )}
+    <div style={{ background: D.bg, minHeight: "100vh", paddingBottom: 86 }}>
+      <div style={{ padding: "14px 16px 20px" }}>
+        <Link href="/jobs" style={{ color: D.ink2, fontSize: 14, marginBottom: 12, display: "inline-block" }}>← 공고 목록</Link>
 
-      {/* 공고 헤더 카드 */}
-      <Card style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
-          <div style={{ fontSize: 40 }}>{job.icon || "💼"}</div>
-          <div>
-            <CardTitle style={{ fontSize: 20, marginBottom: 2 }}>{job.title}</CardTitle>
-            <CardSubtitle>{job.company}</CardSubtitle>
-          </div>
+        <div style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 16, padding: 18, marginBottom: 14 }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>{job.icon || "💼"}</div>
+          <h1 style={{ fontSize: 20, fontWeight: 800, color: D.navy, lineHeight: 1.3, margin: 0, letterSpacing: "-0.01em" }}>{job.title}</h1>
+          <div style={{ fontSize: 13.5, color: D.ink2, marginTop: 6 }}>{job.company}</div>
+          {(job.visa || []).length > 0 && (
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 12 }}>
+              {(job.visa || []).map((v) => (
+                <span key={v} style={{ fontSize: 12, fontWeight: 600, padding: "3px 9px", borderRadius: 6, background: "#EEF4FF", color: "#1D4ED8", border: "1px solid #DBE5FF", whiteSpace: "nowrap" }}>{v}{VISA_MEANING[v] ? `(${VISA_MEANING[v]})` : ""}</span>
+              ))}
+            </div>
+          )}
         </div>
-        {/* 비자 배지 — Step 3-A VisaBadge ⭐ BI v2 핵심 변경
-            (이전: 모든 비자가 민트색 동일 → 비자별 자동 색상 7종) */}
-        {(job.visa || []).length > 0 && (
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
-            {(job.visa || []).map((v) => (
-              <VisaBadge key={v} code={v} variant="solid" size="md" />
-            ))}
-          </div>
+
+        <Section title="근무 조건">
+          {rows.map(([k, v]) => <Row key={k} k={k} v={v} isWork={k === "근무"} />)}
+        </Section>
+
+        {hasForeignerInfo && (
+          <Section title="외국인 지원 정보">
+            {foreignerRows.map(([k, v]) => <Row key={k} k={k} v={v} />)}
+            <div style={{ marginTop: 12, padding: "11px 13px", background: D.greenBg, border: `1px solid ${D.greenBorder}`, borderRadius: 10, fontSize: 12, color: D.green, fontWeight: 600, lineHeight: 1.6 }}>
+              ✓ K-ALBA는 비자에 맞는 합법 알바만 안내합니다.
+            </div>
+          </Section>
         )}
-        <div style={{ fontSize: 24, fontWeight: 900, color: T.mint, textAlign: "right" }}>
-          ₩{job.pay?.toLocaleString()} / {{ 시급: "시간", 일급: "일", 월급: "월", 연봉: "년" }[job.pay_type] || "시간"}
-        </div>
-      </Card>
 
-      {/* 근무 조건 카드 */}
-      <Card style={{ marginBottom: 16 }}>
-        <div style={{ fontWeight: 700, fontSize: 14, color: T.navy, marginBottom: 10 }}>
-          {t("jobs.workConditions")}
-        </div>
-        {[
-          ["지역", job.area],
-          ["근무", [job.time, job.hours].filter(Boolean).join(" · ") || "-"],
-          ["업종", job.type],
-          job.headcount && String(job.headcount) !== "1"
-            ? ["모집인원", /^\d+$/.test(String(job.headcount)) ? `${job.headcount}명` : job.headcount]
-            : null,
-          job.benefits ? ["복리후생", job.benefits] : null,
-          job.expires_at ? ["마감", String(job.expires_at).slice(0, 10)] : null,
-        ]
-          .filter(Boolean)
-          .map(([k, v]) => (
-          <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "9px 0", borderBottom: `1px solid ${T.border}` }}>
-            <span style={{ fontSize: 13, color: T.ink3, flexShrink: 0 }}>{k}</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: T.navy, textAlign: "right", lineHeight: 1.5 }}>
-              {k === "근무"
-                ? String(v)
-                    .split(/\s*\n\s*|\s{2,}|\s*,\s*/)
-                    .map((seg) => seg.trim())
-                    .filter(Boolean)
-                    .map((line, i) => (
-                      <span key={i} style={{ display: "block" }}>{line}</span>
-                    ))
-                : v}
-            </span>
-          </div>
-        ))}
-      </Card>
+        {desc && (
+          <Section title="상세 설명">
+            <p style={{ margin: 0, fontSize: 13.5, color: D.ink2, lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{desc}</p>
+          </Section>
+        )}
 
-      {/* 공고 설명 카드 */}
-      <Card style={{ marginBottom: 16 }}>
-        <div style={{ fontWeight: 700, fontSize: 14, color: T.navy, marginBottom: 10 }}>
-          상세정보
-        </div>
-        <p style={{ margin: 0, fontSize: 13, color: T.ink2, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
-          {String(job.desc || "").replace(/^\s*담당업무\s*[:：]?\s*/, "").trimEnd()}
-        </p>
-      </Card>
+        <Section title="회사 정보">
+          {companyRows.map(([k, v]) => <Row key={k} k={k} v={v} />)}
+        </Section>
 
-      {/* 원문(워크넷) 보기 */}
-      {job.apply_url && (
-        <a
-          href={job.apply_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: "block",
-            textAlign: "center",
-            padding: "11px 16px",
-            marginBottom: 16,
-            background: T.cream,
-            border: `1px solid ${T.border}`,
-            borderRadius: 8,
-            color: T.ink2,
-            fontSize: 13,
-            fontWeight: 600,
-            textDecoration: "none",
-          }}
-        >
-          🔗 고용24 원문 보기
-        </a>
-      )}
+        {job.apply_url && (
+          <a href={job.apply_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "12px", marginBottom: 14, background: D.card, border: `1px solid ${D.border}`, borderRadius: 10, color: D.ink2, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>🔗 고용24 원문 보기</a>
+        )}
 
-      {/* 위치 + 경로 카드 (공고에 좌표 있을 때만) */}
-      {job.latitude && job.longitude && (
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 14 }} />
-          <div style={{
-            fontSize: 11,
-            fontWeight: 700,
-            color: T.ink3,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            marginBottom: 10,
-          }}>
-            Location · 근무지 위치
-          </div>
+        <Section title="지원 전 확인사항">
+          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
+            {checklist.map((c, i) => (
+              <li key={i} style={{ display: "flex", gap: 8, fontSize: 13, color: D.ink2, lineHeight: 1.6 }}>
+                <span style={{ color: D.green, fontWeight: 800, flexShrink: 0 }}>✓</span>
+                <span>{c}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
 
-          {/* 지도 */}
-          <KakaoMap
-            center={{ latitude: job.latitude, longitude: job.longitude }}
-            level={4}
-            markers={[{
-              latitude: job.latitude,
-              longitude: job.longitude,
-              title: job.company,
-              color: T.accent,
-            }]}
-            userLocation={
-              userProfile?.home_latitude && userProfile?.home_longitude
-                ? { latitude: userProfile.home_latitude, longitude: userProfile.home_longitude }
-                : null
-            }
-            height={220}
-          />
+        {job.latitude && job.longitude && (
+          <Section title="근무지 위치">
+            <KakaoMap center={{ latitude: job.latitude, longitude: job.longitude }} level={4} markers={[{ latitude: job.latitude, longitude: job.longitude, title: job.company, color: D.navy }]} height={200} />
+            <div style={{ marginTop: 10, fontSize: 13, fontWeight: 600, color: D.ink }}>📍 {job.address_road || job.address || job.area}</div>
+          </Section>
+        )}
+      </div>
 
-          {/* 주소 + 거리 요약 */}
-          <div style={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            gap: 6,
-            padding: "12px 14px",
-            background: T.cream,
-            border: `1px solid ${T.border}`,
-            borderRadius: 6,
-            marginTop: 10,
-            marginBottom: 10,
-          }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>
-              📍 {job.address_road || job.address || job.area}
-            </div>
-            {userProfile?.home_latitude && userProfile?.home_longitude && (
-              <div style={{ fontSize: 12, color: T.ink2 }}>
-                우리 집에서 직선 거리{" "}
-                <strong style={{ color: T.accent }}>
-                  {formatDistance(calculateDistanceMeters(
-                    userProfile.home_latitude, userProfile.home_longitude,
-                    job.latitude, job.longitude
-                  ))}
-                </strong>
-              </div>
-            )}
-            {job.nearest_station && (
-              <div style={{ fontSize: 12, color: T.ink2 }}>
-                🚇 가장 가까운 역: {job.nearest_station}
-                {job.walk_to_station_min ? ` (도보 ${job.walk_to_station_min}분)` : ""}
-              </div>
-            )}
-            {(job.provides_housing || job.provides_shuttle) && (
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {job.provides_housing && (
-                <span style={{
-                  padding: "2px 8px",
-                  borderRadius: 2,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  background: "#E8F5EC",
-                  color: T.green,
-                  letterSpacing: "-0.01em",
-                }}>
-                  🏠 숙식 제공
-                </span>
-              )}
-              {job.provides_shuttle && (
-                <span style={{
-                  padding: "2px 8px",
-                  borderRadius: 2,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  background: "#E8F5EC",
-                  color: T.green,
-                  letterSpacing: "-0.01em",
-                }}>
-                  🚐 통근버스 제공
-                </span>
-              )}
-            </div>
-            )}
-          </div>
+      <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: D.card, borderTop: `1px solid ${D.border}`, padding: "10px 16px", display: "flex", gap: 10, zIndex: 50 }}>
+        <button onClick={() => router.push("/login")} aria-label="관심 공고 등록" style={{ flexShrink: 0, width: 52, borderRadius: 10, background: "#fff", border: `1px solid ${D.border}`, color: D.ink2, fontSize: 18, cursor: "pointer", fontFamily: "inherit" }}>♡</button>
+        {applied ? (
+          <div style={{ flex: 1, textAlign: "center", padding: "13px", color: D.green, fontWeight: 800, fontSize: 15 }}>🎉 {t("jobs.applied")}</div>
+        ) : (
+          <button onClick={handleApply} style={{ flex: 1, padding: "14px", borderRadius: 10, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: "inherit" }}>지원하기</button>
+        )}
+      </div>
 
-          {/* 이동수단별 경로 카드 */}
-          {userProfile?.home_latitude && userProfile?.home_longitude && (
-            <>
-              <RouteCard
-                origin={{ latitude: userProfile.home_latitude, longitude: userProfile.home_longitude }}
-                destination={{ latitude: job.latitude, longitude: job.longitude }}
-              />
-              {/* 막차 경고 (야간 근무시에만 자동 표시) */}
-              {job.time && (() => {
-                const endMatch = job.time.match(/~\s*(\d{1,2}:\d{2})/);
-                const workEnd = endMatch?.[1];
-                if (!workEnd) return null;
-                return (
-                  <LastTransitCard
-                    from={{ latitude: job.latitude, longitude: job.longitude }}
-                    to={{ latitude: userProfile.home_latitude, longitude: userProfile.home_longitude }}
-                    workEndAt={workEnd}
-                  />
-                );
-              })()}
-            </>
-          )}
-
-          {!userProfile?.home_latitude && user && (
-            <div style={{
-              padding: "10px 14px",
-              background: T.accentBg,
-              border: `1px solid ${T.accent}30`,
-              borderLeft: `3px solid ${T.accent}`,
-              borderRadius: 4,
-              fontSize: 12,
-              color: T.ink2,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 8,
-              flexWrap: "wrap",
-            }}>
-              <span>💡 거주지를 등록하면 이동 시간을 계산해 드려요</span>
-              <Link href="/profile" style={{
-                background: T.accent,
-                color: T.paper,
-                padding: "4px 10px",
-                borderRadius: 4,
-                fontSize: 11,
-                fontWeight: 600,
-                textDecoration: "none",
-              }}>
-                거주지 등록 →
-              </Link>
-            </div>
-          )}
-        </div>
-      )}
-
-      {!applied ? (
-        // 카카오톡 챗봇 진입 — 카카오 노란 배경 (특수 디자인 보존)
-        <Card style={{
-          background: "#1A1A2E",
-          border: "none",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-            <div style={{ fontSize: 28 }}>💬</div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: 15, color: "#FFFFFF" }}>
-                카카오톡 챗봇으로 지원하기
-              </div>
-              <div style={{ fontSize: 11, color: "#C7CBDB" }}>
-                5가지 질문에 답하면 1분 안에 완료!
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={handleApply}
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding: 14,
-              borderRadius: 12,
-              background: "#FEE500",
-              color: "#1A1A2E",
-              border: "none",
-              fontWeight: 800,
-              fontSize: 15,
-              cursor: "pointer",
-              fontFamily: "inherit",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-            }}
-          >
-            <span style={{ fontSize: 18 }}>💬</span> 챗봇으로 지원하기
-          </button>
-          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 12, fontSize: 11, color: "#9FA3B8" }}>
-            <span>✓ 비자 자동 확인</span>
-            <span>✓ 한국어 수준 매칭</span>
-            <span>✓ 24시간 내 응답</span>
-          </div>
-        </Card>
-      ) : (
-        // 지원 완료 후
-        <>
-          <div style={{ textAlign: "center", padding: 24, background: T.mintL, borderRadius: 14, border: `2px solid ${T.mint}40`, marginBottom: 14 }}>
-            <div style={{ fontSize: 40, marginBottom: 8 }}>🎉</div>
-            <div style={{ fontWeight: 800, color: "#059669", marginBottom: 4, fontSize: 16 }}>
-              {t("jobs.applied")}
-            </div>
-            <div style={{ fontSize: 12, color: T.ink3, marginBottom: 14 }}>
-              {t("jobs.appliedDesc")}
-            </div>
-            {/* Step 3-A Button 컴포넌트 */}
-            <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-              <Button variant="secondary" href="/my/applications" size="sm">
-                지원 내역 보기
-              </Button>
-              <Button variant="primary" href="/chat" size="sm">
-                💬 채팅 열기
-              </Button>
-            </div>
-          </div>
-
-          {/* 시뮬레이터 - 합격 후 계약서 챗봇 체험 */}
-          <Card
-            style={{
-              background: `linear-gradient(135deg, #FFF0EE, #FFE4E0)`,
-              border: `2px solid ${T.coral}40`,
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-              <div style={{ fontSize: 28 }}>📝</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 800, fontSize: 14, color: T.navy }}>
-                  합격 후 계약서 챗봇 체험하기
-                </div>
-                <div style={{ fontSize: 11, color: T.ink3 }}>
-                  사장님이 합격시키면 카톡 챗봇으로 계약서 작성까지 진행
-                </div>
-              </div>
-            </div>
-            <Button
-              variant="primary"
-              href={`/simulator?mode=worker&job=${getSimulatorJobId(job)}&autostart=1`}
-              fullWidth
-            >
-              💬 알바생 계약 챗봇 시작 →
-            </Button>
-            <div style={{ fontSize: 10, color: T.ink3, textAlign: "center", marginTop: 8 }}>
-              근무조건 확인 → 이름 입력 → 서명 → 사장님 서명 → 계약 완료
-            </div>
-          </Card>
-        </>
-      )}
-
-      {/* 카톡 챗봇 모달 — botAvatar fallback: 🤖 → 💬 (BI v2) */}
-      <KakaoChatModal
-        open={chatOpen}
-        onClose={() => setChatOpen(false)}
-        title={`K-ALBA × ${job.company}`}
-        botAvatar={job.icon || "💬"}
-        steps={applySteps}
-        onComplete={handleChatComplete}
-      />
+      <KakaoChatModal open={chatOpen} onClose={() => setChatOpen(false)} title={`K-ALBA × ${job.company}`} botAvatar={job.icon || "💬"} steps={applySteps} onComplete={handleChatComplete} />
     </div>
   );
 }
-
 // K-ALBA 공고 → 시뮬레이터 공고 ID 매핑
 function getSimulatorJobId(job) {
   if (!job) return "k1";
