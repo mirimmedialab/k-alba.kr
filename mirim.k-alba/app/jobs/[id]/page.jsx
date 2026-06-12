@@ -53,7 +53,8 @@ export default function JobDetailPage() {
   const params = useParams();
   const router = useRouter();
   const t = useT();
-  const [job, setJob] = useState(DEMO_JOBS[params.id] || DEMO_JOBS["1"]);
+  const [job, setJob] = useState(null);
+  const [loaded, setLoaded] = useState(false);
   const [applied, setApplied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -80,6 +81,7 @@ export default function JobDetailPage() {
           visa: data.visa || data.visa_types || [],
         });
       }
+      setLoaded(true);
     });
     getCurrentUser().then(async (u) => {
       setUser(u);
@@ -94,7 +96,7 @@ export default function JobDetailPage() {
   const applySteps = [
     {
       type: "bot",
-      text: `안녕하세요! ${user?.user_metadata?.name || "지원자"}님 👋\n${job.company} ${job.title} 공고에 지원하시는군요!`,
+      text: `안녕하세요! ${user?.user_metadata?.name || "지원자"}님 👋\n${job?.company || ""} ${job?.title || ""} 공고에 지원하시는군요!`,
     },
     {
       type: "bot",
@@ -168,7 +170,13 @@ export default function JobDetailPage() {
   };
 
   // Step 3-B PageLoading 컴포넌트
-  if (!job) return <PageLoading message="잠시만 기다려주세요" minHeight={400} />;
+  if (!loaded) return <PageLoading message="잠시만 기다려주세요" minHeight={400} />;
+  if (!job)
+    return (
+      <div style={{ padding: 40, textAlign: "center", color: T.ink3, fontSize: 14 }}>
+        공고를 찾을 수 없습니다.
+      </div>
+    );
 
   return (
     <div style={{ padding: 20, maxWidth: 600, margin: "0 auto" }}>
