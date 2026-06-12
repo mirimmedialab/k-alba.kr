@@ -146,7 +146,7 @@ export const ko = {
     applied: "지원 완료!",
     appliedDesc: "사장님이 확인 후 연락드릴 예정입니다",
     applyHint: "사장님께 한 마디 (선택)",
-    jobList: "알바 목록",
+    jobList: "공고 목록",
     company: "업체명",
     area: "지역",
     hours: "근무시간",

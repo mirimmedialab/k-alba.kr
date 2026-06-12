@@ -218,7 +218,7 @@ export default function JobDetailPage() {
             <CardSubtitle>{job.company}</CardSubtitle>
           </div>
         </div>
-        <div style={{ fontSize: 24, fontWeight: 900, color: T.mint, marginBottom: 16 }}>
+        <div style={{ fontSize: 24, fontWeight: 900, color: T.mint, marginBottom: 16, textAlign: "right" }}>
           ₩{job.pay?.toLocaleString()} / {{ 시급: "시간", 일급: "일", 월급: "월", 연봉: "년" }[job.pay_type] || "시간"}
         </div>
         {/* 비자 배지 — Step 3-A VisaBadge ⭐ BI v2 핵심 변경
@@ -249,7 +249,11 @@ export default function JobDetailPage() {
           .map(([k, v]) => (
           <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "9px 0", borderBottom: `1px solid ${T.border}` }}>
             <span style={{ fontSize: 13, color: T.ink3, flexShrink: 0 }}>{k}</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: T.navy, textAlign: "right", lineHeight: 1.5 }}>{v}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: T.navy, textAlign: "right", lineHeight: 1.5 }}>
+              {String(v).split(/,\s*/).map((line, i) => (
+                <span key={i} style={{ display: "block" }}>{line}</span>
+              ))}
+            </span>
           </div>
         ))}
       </Card>
@@ -257,10 +261,10 @@ export default function JobDetailPage() {
       {/* 공고 설명 카드 */}
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontWeight: 700, fontSize: 14, color: T.navy, marginBottom: 10 }}>
-          {t("jobs.description")}
+          담당업무
         </div>
-        <p style={{ fontSize: 13, color: T.ink2, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
-          {job.desc}
+        <p style={{ margin: 0, fontSize: 13, color: T.ink2, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
+          {String(job.desc || "").replace(/^\s*담당업무\s*[:：]?\s*/, "").trimEnd()}
         </p>
       </Card>
 
@@ -284,7 +288,7 @@ export default function JobDetailPage() {
             textDecoration: "none",
           }}
         >
-          🔗 워크넷에서 원문 보기
+          🔗 고용24 원문 보기
         </a>
       )}
 
@@ -323,6 +327,10 @@ export default function JobDetailPage() {
 
           {/* 주소 + 거리 요약 */}
           <div style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            gap: 6,
             padding: "12px 14px",
             background: T.cream,
             border: `1px solid ${T.border}`,
@@ -330,7 +338,7 @@ export default function JobDetailPage() {
             marginTop: 10,
             marginBottom: 10,
           }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 4, letterSpacing: "-0.01em" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>
               📍 {job.address_road || job.address || job.area}
             </div>
             {userProfile?.home_latitude && userProfile?.home_longitude && (
@@ -345,12 +353,13 @@ export default function JobDetailPage() {
               </div>
             )}
             {job.nearest_station && (
-              <div style={{ fontSize: 12, color: T.ink2, marginTop: 4 }}>
+              <div style={{ fontSize: 12, color: T.ink2 }}>
                 🚇 가장 가까운 역: {job.nearest_station}
                 {job.walk_to_station_min ? ` (도보 ${job.walk_to_station_min}분)` : ""}
               </div>
             )}
-            <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+            {(job.provides_housing || job.provides_shuttle) && (
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {job.provides_housing && (
                 <span style={{
                   padding: "2px 8px",
@@ -378,6 +387,7 @@ export default function JobDetailPage() {
                 </span>
               )}
             </div>
+            )}
           </div>
 
           {/* 이동수단별 경로 카드 */}
