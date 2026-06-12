@@ -80,6 +80,8 @@ export default function JobDetailPage() {
           korean: data.korean || data.korean_level || "",
           visa: data.visa || data.visa_types || [],
           desc: data.desc || data.description || "",
+          benefits: data.benefits || "",
+          headcount: data.headcount || "",
         });
         // 워크넷 공고: 목록 API 제목이 30자로 잘리고 상세설명이 없음
         // → 상세조회 API로 전체 제목·상세설명·근무시간 보강
@@ -97,6 +99,7 @@ export default function JobDetailPage() {
                   desc: d.description || prev.desc,
                   hours: d.work_hours || prev.hours,
                   benefits: d.welfare || prev.benefits,
+                  headcount: d.headcount || prev.headcount,
                 }));
               }
             })
@@ -236,13 +239,54 @@ export default function JobDetailPage() {
           ["지역", job.area],
           ["근무", [job.time, job.hours].filter(Boolean).join(" · ") || "-"],
           ["업종", job.type],
-        ].map(([k, v]) => (
-          <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: `1px solid ${T.border}` }}>
-            <span style={{ fontSize: 13, color: T.ink3 }}>{k}</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: T.navy }}>{v}</span>
+          job.headcount && String(job.headcount) !== "1"
+            ? ["모집인원", /^\d+$/.test(String(job.headcount)) ? `${job.headcount}명` : job.headcount]
+            : null,
+          job.benefits ? ["복리후생", job.benefits] : null,
+          job.expires_at ? ["마감", String(job.expires_at).slice(0, 10)] : null,
+        ]
+          .filter(Boolean)
+          .map(([k, v]) => (
+          <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "9px 0", borderBottom: `1px solid ${T.border}` }}>
+            <span style={{ fontSize: 13, color: T.ink3, flexShrink: 0 }}>{k}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: T.navy, textAlign: "right", lineHeight: 1.5 }}>{v}</span>
           </div>
         ))}
       </Card>
+
+      {/* 공고 설명 카드 */}
+      <Card style={{ marginBottom: 16 }}>
+        <div style={{ fontWeight: 700, fontSize: 14, color: T.navy, marginBottom: 10 }}>
+          {t("jobs.description")}
+        </div>
+        <p style={{ fontSize: 13, color: T.ink2, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
+          {job.desc}
+        </p>
+      </Card>
+
+      {/* 원문(워크넷) 보기 */}
+      {job.apply_url && (
+        <a
+          href={job.apply_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "block",
+            textAlign: "center",
+            padding: "11px 16px",
+            marginBottom: 16,
+            background: T.cream,
+            border: `1px solid ${T.border}`,
+            borderRadius: 8,
+            color: T.ink2,
+            fontSize: 13,
+            fontWeight: 600,
+            textDecoration: "none",
+          }}
+        >
+          🔗 워크넷에서 원문 보기
+        </a>
+      )}
 
       {/* 위치 + 경로 카드 (공고에 좌표 있을 때만) */}
       {job.latitude && job.longitude && (
@@ -390,16 +434,6 @@ export default function JobDetailPage() {
           )}
         </div>
       )}
-
-      {/* 공고 설명 카드 */}
-      <Card style={{ marginBottom: 16 }}>
-        <div style={{ fontWeight: 700, fontSize: 14, color: T.navy, marginBottom: 10 }}>
-          {t("jobs.description")}
-        </div>
-        <p style={{ fontSize: 13, color: T.ink2, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
-          {job.desc}
-        </p>
-      </Card>
 
       {!applied ? (
         // 카카오톡 챗봇 진입 — 카카오 노란 배경 (특수 디자인 보존)
