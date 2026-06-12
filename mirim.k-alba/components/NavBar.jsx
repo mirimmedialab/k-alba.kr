@@ -110,7 +110,7 @@ export default function NavBar() {
       >
         {/* 브랜드 로고 — 타이포 기반 (이모지 X) */}
         <Link href={logoHref} style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
-          <img src="/img/k-alba_logo.svg" alt="K-ALBA" style={{ height: 30, width: "auto", display: "block" }} />
+          <img src="/img/k-alba_logo.svg" alt="K-ALBA" style={{ height: 50, width: "auto", display: "block" }} />
         </Link>
 
         {/* 랜딩 페이지: 심플하게 언어 + CTA 만 */}

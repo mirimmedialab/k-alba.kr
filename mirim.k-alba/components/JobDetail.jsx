@@ -246,6 +246,9 @@ export default function JobDetail({ jobId, embedded = false }) {
       ["통근버스", job.provides_shuttle ? "제공" : "미제공"],
       job.nearest_station ? ["가까운 역", `${job.nearest_station}${job.walk_to_station_min ? ` (도보 ${job.walk_to_station_min}분)` : ""}`] : null,
     ].filter(Boolean);
+    const hasForeignerInfo =
+      (job.visa || []).length > 0 || !!koreanLabel ||
+      !!job.provides_housing || !!job.provides_shuttle || !!job.nearest_station;
     const companyRows = [
       ["회사명", job.company || "-"],
       job.type ? ["업종", job.type] : null,
@@ -303,12 +306,14 @@ export default function JobDetail({ jobId, embedded = false }) {
               <Section title="근무 조건">
                 {rows.map(([k, v]) => <Row key={k} k={k} v={v} isWork={k === "근무"} />)}
               </Section>
-              <Section title="외국인 지원 정보" id="foreigner-info">
-                {foreignerRows.map(([k, v]) => <Row key={k} k={k} v={v} />)}
-                <div style={{ marginTop: 14, padding: "12px 14px", background: D.greenBg, border: `1px solid ${D.greenBorder}`, borderRadius: 10, fontSize: 12.5, color: D.green, fontWeight: 600, lineHeight: 1.6 }}>
-                  ✓ K-ALBA는 비자에 맞는 합법 알바만 안내합니다. 위 비자 뱃지로 지원 가능 여부를 먼저 확인하세요.
-                </div>
-              </Section>
+              {hasForeignerInfo && (
+                <Section title="외국인 지원 정보" id="foreigner-info">
+                  {foreignerRows.map(([k, v]) => <Row key={k} k={k} v={v} />)}
+                  <div style={{ marginTop: 14, padding: "12px 14px", background: D.greenBg, border: `1px solid ${D.greenBorder}`, borderRadius: 10, fontSize: 12.5, color: D.green, fontWeight: 600, lineHeight: 1.6 }}>
+                    ✓ K-ALBA는 비자에 맞는 합법 알바만 안내합니다. 위 비자 뱃지로 지원 가능 여부를 먼저 확인하세요.
+                  </div>
+                </Section>
+              )}
               {desc && (
                 <Section title="상세 설명">
                   <p style={{ margin: 0, fontSize: 13.5, color: D.ink2, lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{desc}</p>
@@ -317,6 +322,9 @@ export default function JobDetail({ jobId, embedded = false }) {
               <Section title="회사 정보">
                 {companyRows.map(([k, v]) => <Row key={k} k={k} v={v} />)}
               </Section>
+              {job.apply_url && (
+                <a href={job.apply_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "12px", marginBottom: 16, background: D.card, border: `1px solid ${D.border}`, borderRadius: 10, color: D.ink2, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>🔗 고용24 원문 보기</a>
+              )}
               <Section title="지원 전 확인사항">
                 <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
                   {checklist.map((c, i) => (
@@ -327,9 +335,6 @@ export default function JobDetail({ jobId, embedded = false }) {
                   ))}
                 </ul>
               </Section>
-              {job.apply_url && (
-                <a href={job.apply_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "12px", marginBottom: 16, background: D.card, border: `1px solid ${D.border}`, borderRadius: 10, color: D.ink2, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>🔗 고용24 원문 보기</a>
-              )}
               {job.latitude && job.longitude && (
                 <Section title="근무지 위치">
                   <KakaoMap center={{ latitude: job.latitude, longitude: job.longitude }} level={4} markers={[{ latitude: job.latitude, longitude: job.longitude, title: job.company, color: D.green }]} height={260} />
@@ -347,17 +352,11 @@ export default function JobDetail({ jobId, embedded = false }) {
                 ) : (
                   <>
                     <button onClick={handleApply} style={{ width: "100%", padding: "14px", borderRadius: 10, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: "inherit", marginBottom: 10 }}>지원하기</button>
-                    <button onClick={() => (typeof document !== "undefined") && document.getElementById("foreigner-info")?.scrollIntoView({ behavior: "smooth", block: "start" })} style={{ width: "100%", padding: "14px", borderRadius: 10, background: D.greenBg, color: D.green, border: `1px solid ${D.greenBorder}`, fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: "inherit" }}>비자 가능 여부 확인하기</button>
+                    {hasForeignerInfo && (
+                      <button onClick={() => { if (typeof document === "undefined") return; const el = document.getElementById("foreigner-info"); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: "smooth" }); }} style={{ width: "100%", padding: "14px", borderRadius: 10, background: D.greenBg, color: D.green, border: `1px solid ${D.greenBorder}`, fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: "inherit" }}>비자 가능 여부 확인하기</button>
+                    )}
                   </>
                 )}
-                <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${D.border}`, display: "flex", flexDirection: "column", gap: 10 }}>
-                  {[["지역", job.area], ["근무", (job.time || job.hours || "-")], job.headcount ? ["모집", /^\d+$/.test(String(job.headcount)) ? `${job.headcount}명` : job.headcount] : null].filter(Boolean).map(([k, v]) => (
-                    <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 12.5 }}>
-                      <span style={{ color: D.ink3, flexShrink: 0 }}>{k}</span>
-                      <span style={{ color: D.ink, fontWeight: 600, textAlign: "right", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
             </aside>
           </div>

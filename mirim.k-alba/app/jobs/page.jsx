@@ -710,9 +710,9 @@ export default function JobsPage() {
                   <button aria-label="다음" onClick={() => recRef.current && recRef.current.scrollBy({ left: recRef.current.clientWidth, behavior: "smooth" })} style={{ width: 34, height: 34, borderRadius: 999, border: `1px solid ${D.border}`, background: D.card, color: D.navy, fontSize: 16, cursor: "pointer", fontFamily: "inherit" }}>›</button>
                 </div>
               </div>
-              <div ref={recRef} style={{ display: "flex", gap: 16, overflowX: "hidden", scrollBehavior: "smooth" }}>
+              <div ref={recRef} style={{ display: "flex", gap: 16, overflowX: "hidden", scrollBehavior: "smooth", scrollSnapType: "x mandatory" }}>
                 {recommended.map((j) => (
-                  <div key={"rec-" + j.id} style={{ width: "calc((100% - 48px) / 4)", height: 322, flexShrink: 0, display: "flex" }}>
+                  <div key={"rec-" + j.id} style={{ width: "calc((100% - 48px) / 4)", height: 322, flexShrink: 0, display: "flex", scrollSnapAlign: "start" }}>
                     <DesktopJobCard job={j} selected={false} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} />
                   </div>
                 ))}
