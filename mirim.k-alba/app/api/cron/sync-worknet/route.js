@@ -149,6 +149,13 @@ export async function GET(req) {
             job.latitude = coords.lat;
             job.longitude = coords.lng;
           }
+          // 상세 API로 전체 제목·상세설명 보강 (목록 API 제목은 30자로 잘림)
+          const detail = await fetchWorknetDetail(job.source_id);
+          if (detail) {
+            if (detail.title) job.title = detail.title;
+            if (detail.description) job.description = detail.description;
+            if (detail.work_hours) job.work_hours = detail.work_hours;
+          }
           const { error: insErr } = await supabase.from("jobs").insert(job);
           if (insErr) throw insErr;
           itemsNew++;
@@ -261,6 +268,45 @@ function unescapeXml(s) {
  *   wantedInfoUrl 채용정보 상세 URL (절대주소)
  *   jobsCd        직종코드
  */
+/**
+ * 고용24 상세조회 API(callTp=D)로 전체 제목·상세설명을 가져온다.
+ * 목록 API는 제목을 30자로 자르므로 신규 공고 등록 시 보강용.
+ * 실패/만료 공고면 null.
+ */
+async function fetchWorknetDetail(authNo) {
+  const key = process.env.WORKNET_API_KEY;
+  if (!key || !authNo) return null;
+  try {
+    const p = new URLSearchParams({
+      authKey: key,
+      callTp: "D",
+      returnType: "XML",
+      infoSvc: "VALIDATION",
+      wantedAuthNo: authNo,
+    });
+    const res = await fetch(
+      `https://www.work24.go.kr/cm/openApi/call/wk/callOpenApiSvcInfo210D01.do?${p.toString()}`,
+      { cache: "no-store" }
+    );
+    const xml = await res.text();
+    if (!xml.includes("<wantedDtl>") || xml.includes("정보가 존재하지 않습니다")) {
+      return null;
+    }
+    const f = (tag) => {
+      const m = new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`).exec(xml);
+      if (!m) return "";
+      return unescapeXml(m[1].trim()).replace(/&#xd;/gi, "\n").replace(/&#xa;/gi, "\n").trim();
+    };
+    return {
+      title: f("wantedTitle"),
+      description: f("jobCont"),
+      work_hours: f("workdayWorkhrCont"),
+    };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * 주소 → 좌표 (Kakao Local API). 가까운 순 정렬용.
  * 실패 시 null — 좌표 없이 등록되며 backfill-geocodes.js 로 추후 보완 가능.
