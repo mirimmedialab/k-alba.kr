@@ -186,6 +186,30 @@ function DesktopJobCard({ job, onSelect, showDistance }) {
   );
 }
 
+// 모바일 컴팩트 리스트 행 (674개를 빠르게 훑기 위한 리스트형)
+function MobileListItem({ job, last, onClick }) {
+  const visas = (job.visa_types || []).slice(0, 3);
+  const loc = [shortSido(job.sido), job.sigungu].filter(Boolean).join(" ") || job.address || "";
+  const amount = Number(job.pay_amount || 0).toLocaleString();
+  return (
+    <div onClick={onClick} style={{ display: "flex", gap: 12, padding: "14px", borderBottom: last ? "none" : `1px solid ${D.border}`, cursor: "pointer" }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: D.navy, lineHeight: 1.3, marginBottom: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{job.title}</div>
+        <div style={{ fontSize: 12, color: D.ink2, marginBottom: 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{job.company_name}{loc ? ` · ${loc}` : ""}</div>
+        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+          {visas.map((v) => (
+            <span key={v} style={{ fontSize: 10.5, fontWeight: 600, padding: "2px 6px", borderRadius: 5, background: "#EEF4FF", color: "#1D4ED8" }}>{v}</span>
+          ))}
+        </div>
+      </div>
+      <div style={{ textAlign: "right", flexShrink: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: D.navy, letterSpacing: "-0.01em" }}>{amount}</div>
+        <div style={{ fontSize: 11, color: D.ink3, marginTop: 2 }}>{job.pay_type || "시급"}</div>
+      </div>
+    </div>
+  );
+}
+
 // 데스크톱(PC) 목록 히어로 — "외국인 합법 알바" 메시지
 function PcHero() {
   return (
@@ -386,16 +410,6 @@ export default function JobsPage() {
           <span style={{ fontSize: 15, color: D.ink3 }}>🔍</span>
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="직무, 지역, 회사 검색" style={{ flex: 1, border: "none", outline: "none", fontSize: 14, color: D.ink, background: "transparent", fontFamily: "inherit" }} />
         </div>
-        <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 12 }}>
-          {QUICK_FILTERS.filter((f) => !f.needsVisa || userProfile?.visa).map((f) => {
-            const on = !!qf[f.key];
-            return (
-              <button key={f.key} onClick={() => toggleQf(f.key)} style={{ flexShrink: 0, padding: "7px 13px", borderRadius: 999, border: `1px solid ${on ? D.greenBorder : D.border}`, background: on ? D.greenBg : D.card, color: on ? D.green : D.ink2, fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
-                {on ? "✓ " : ""}{f.label}
-              </button>
-            );
-          })}
-        </div>
       </div>
 
       {recommended.length > 0 && (
@@ -426,9 +440,9 @@ export default function JobsPage() {
         ) : displayJobs.length === 0 ? (
           <Empty variant="no-results" description={t("jobs.noResults")} />
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
-            {pageJobs.map((j) => (
-              <DesktopJobCard key={j.id} job={j} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={sortMode === "nearest" || sortMode === "recommended"} />
+          <div style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 14, overflow: "hidden" }}>
+            {pageJobs.map((j, idx) => (
+              <MobileListItem key={j.id} job={j} last={idx === pageJobs.length - 1} onClick={() => router.push(`/jobs/${j.id}`)} />
             ))}
           </div>
         )}
