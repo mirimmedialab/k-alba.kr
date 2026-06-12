@@ -79,7 +79,29 @@ export default function JobDetailPage() {
           days: data.days || data.work_days || "",
           korean: data.korean || data.korean_level || "",
           visa: data.visa || data.visa_types || [],
+          desc: data.desc || data.description || "",
         });
+        // 워크넷 공고: 목록 API 제목이 30자로 잘리고 상세설명이 없음
+        // → 상세조회 API로 전체 제목·상세설명·근무시간 보강
+        if (data.source_type === "worknet" && data.source_id) {
+          const infoSvc = data.raw?.infoSvc || "VALIDATION";
+          fetch(
+            `/api/jobs/worknet-detail?authNo=${encodeURIComponent(data.source_id)}&infoSvc=${encodeURIComponent(infoSvc)}`
+          )
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => {
+              if (d && d.ok) {
+                setJob((prev) => ({
+                  ...prev,
+                  title: d.title || prev.title,
+                  desc: d.description || prev.desc,
+                  hours: d.work_hours || prev.hours,
+                  benefits: d.welfare || prev.benefits,
+                }));
+              }
+            })
+            .catch(() => {});
+        }
       }
       setLoaded(true);
     });

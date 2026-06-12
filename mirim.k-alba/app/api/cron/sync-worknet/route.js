@@ -143,6 +143,12 @@ export async function GET(req) {
           if (updErr) throw updErr;
           itemsUpdated++;
         } else {
+          // 신규 공고: 주소 → 좌표 (가까운 순 정렬용). 실패해도 등록은 진행.
+          const coords = await geocodeAddress(job.address);
+          if (coords) {
+            job.latitude = coords.lat;
+            job.longitude = coords.lng;
+          }
           const { error: insErr } = await supabase.from("jobs").insert(job);
           if (insErr) throw insErr;
           itemsNew++;
@@ -255,6 +261,28 @@ function unescapeXml(s) {
  *   wantedInfoUrl 채용정보 상세 URL (절대주소)
  *   jobsCd        직종코드
  */
+/**
+ * 주소 → 좌표 (Kakao Local API). 가까운 순 정렬용.
+ * 실패 시 null — 좌표 없이 등록되며 backfill-geocodes.js 로 추후 보완 가능.
+ * 환경변수: KAKAO_REST_API_KEY (Vercel 에 등록 필요)
+ */
+async function geocodeAddress(address) {
+  const key = process.env.KAKAO_REST_API_KEY;
+  if (!key || !address) return null;
+  for (const path of ["address", "keyword"]) {
+    try {
+      const res = await fetch(
+        `https://dapi.kakao.com/v2/local/search/${path}.json?query=${encodeURIComponent(address)}&size=1`,
+        { headers: { Authorization: `KakaoAK ${key}` }, cache: "no-store" }
+      );
+      const j = await res.json();
+      const d = (j.documents || [])[0];
+      if (d && d.y && d.x) return { lat: parseFloat(d.y), lng: parseFloat(d.x) };
+    } catch {}
+  }
+  return null;
+}
+
 function transformWorknetItem(item) {
   const regionParts = String(item.region || "").trim().split(/\s+/);
   const isPartTime = item.empTpCd === "11" || item.empTpCd === "21";
