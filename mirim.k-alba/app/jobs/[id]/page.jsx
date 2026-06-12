@@ -218,15 +218,17 @@ export default function JobDetailPage() {
             <CardSubtitle>{job.company}</CardSubtitle>
           </div>
         </div>
-        <div style={{ fontSize: 24, fontWeight: 900, color: T.mint, marginBottom: 16, textAlign: "right" }}>
-          ₩{job.pay?.toLocaleString()} / {{ 시급: "시간", 일급: "일", 월급: "월", 연봉: "년" }[job.pay_type] || "시간"}
-        </div>
         {/* 비자 배지 — Step 3-A VisaBadge ⭐ BI v2 핵심 변경
             (이전: 모든 비자가 민트색 동일 → 비자별 자동 색상 7종) */}
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {(job.visa || []).map((v) => (
-            <VisaBadge key={v} code={v} variant="solid" size="md" />
-          ))}
+        {(job.visa || []).length > 0 && (
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+            {(job.visa || []).map((v) => (
+              <VisaBadge key={v} code={v} variant="solid" size="md" />
+            ))}
+          </div>
+        )}
+        <div style={{ fontSize: 24, fontWeight: 900, color: T.mint, textAlign: "right" }}>
+          ₩{job.pay?.toLocaleString()} / {{ 시급: "시간", 일급: "일", 월급: "월", 연봉: "년" }[job.pay_type] || "시간"}
         </div>
       </Card>
 
@@ -250,9 +252,15 @@ export default function JobDetailPage() {
           <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "9px 0", borderBottom: `1px solid ${T.border}` }}>
             <span style={{ fontSize: 13, color: T.ink3, flexShrink: 0 }}>{k}</span>
             <span style={{ fontSize: 13, fontWeight: 600, color: T.navy, textAlign: "right", lineHeight: 1.5 }}>
-              {String(v).split(/,\s*/).map((line, i) => (
-                <span key={i} style={{ display: "block" }}>{line}</span>
-              ))}
+              {k === "근무"
+                ? String(v)
+                    .split(/\s*\n\s*|\s{2,}|\s*,\s*/)
+                    .map((seg) => seg.trim())
+                    .filter(Boolean)
+                    .map((line, i) => (
+                      <span key={i} style={{ display: "block" }}>{line}</span>
+                    ))
+                : v}
             </span>
           </div>
         ))}
@@ -261,7 +269,7 @@ export default function JobDetailPage() {
       {/* 공고 설명 카드 */}
       <Card style={{ marginBottom: 16 }}>
         <div style={{ fontWeight: 700, fontSize: 14, color: T.navy, marginBottom: 10 }}>
-          담당업무
+          상세정보
         </div>
         <p style={{ margin: 0, fontSize: 13, color: T.ink2, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
           {String(job.desc || "").replace(/^\s*담당업무\s*[:：]?\s*/, "").trimEnd()}
