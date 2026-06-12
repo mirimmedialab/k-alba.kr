@@ -41,7 +41,6 @@ import { useIsDesktop } from "@/lib/useIsDesktop";
 
 const DEFAULT_TRANSPORT = ["transit", "walk"];
 
-const PAGE_SIZE = 10;
 
 // 데스크톱(PC) 전용 팔레트 — 모바일 테마(T)는 건드리지 않음
 const D = {
@@ -54,6 +53,24 @@ const KOREAN_LABEL = {
   none: "한국어 무관", beginner: "한국어 초급",
   intermediate: "한국어 중급", advanced: "한국어 고급",
 };
+
+// 비자 코드 -> 의미 (라벨에 괄호로 병기)
+const VISA_MEANING = {
+  "D-2": "유학", "D-4": "어학연수", "D-10": "구직", "D-8": "투자",
+  "E-7": "특정활동", "E-8": "계절근로", "E-9": "비전문취업",
+  "F-2": "거주", "F-4": "재외동포", "F-5": "영주", "F-6": "결혼이민",
+  "H-2": "방문취업", "G-1": "기타", "C-4": "단기취업",
+};
+
+// 시도 약칭 (지역 모호성 해결: 시도 + 시군구)
+const SIDO_SHORT = {
+  "서울특별시": "서울", "부산광역시": "부산", "대구광역시": "대구", "인천광역시": "인천",
+  "광주광역시": "광주", "대전광역시": "대전", "울산광역시": "울산", "세종특별자치시": "세종",
+  "경기도": "경기", "강원도": "강원", "강원특별자치도": "강원", "충청북도": "충북",
+  "충청남도": "충남", "전라북도": "전북", "전북특별자치도": "전북", "전라남도": "전남",
+  "경상북도": "경북", "경상남도": "경남", "제주특별자치도": "제주",
+};
+const shortSido = (s) => SIDO_SHORT[s] || s || "";
 
 // 외국인 구직자용 빠른 필터 (PC 전용)
 const QUICK_FILTERS = [
@@ -87,7 +104,7 @@ function DesktopJobCard({ job, onSelect, showDistance }) {
   const amount = Number(job.pay_amount || 0).toLocaleString();
   const expiry = job.expires_at ? String(job.expires_at).slice(0, 10) : null;
   const visas = (job.visa_types || []).slice(0, 4);
-  const loc = job.sigungu || job.address || "";
+  const loc = [shortSido(job.sido), job.sigungu].filter(Boolean).join(" ") || job.address || "";
   return (
     <div
       onClick={() => onSelect(job.id)}
@@ -102,52 +119,56 @@ function DesktopJobCard({ job, onSelect, showDistance }) {
         display: "flex",
         flexDirection: "column",
         boxSizing: "border-box",
+        overflow: "hidden",
       }}
       onMouseEnter={(e) => { e.currentTarget.style.borderColor = D.green; }}
       onMouseLeave={(e) => { e.currentTarget.style.borderColor = D.border; }}
     >
-      {/* 아이콘 */}
-      <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 12 }}>
+      <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 12, flexShrink: 0 }}>
         {job.icon || "💼"}
       </div>
 
-      {/* 1. 제목 */}
+      {/* 제목 (2줄 고정) */}
       <div style={{ fontWeight: 700, fontSize: 15.5, color: D.navy, lineHeight: 1.35, letterSpacing: "-0.01em", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", minHeight: 42, marginBottom: 6 }}>
         {job.title}
       </div>
 
-      {/* 2. 회사 · 위치 */}
+      {/* 회사 · 위치(시도+시군구) */}
       <div style={{ fontSize: 12.5, color: D.ink2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
         {job.company_name}
         {loc ? <> · <span style={{ color: D.ink3 }}>📍 {loc}</span></> : null}
         {showDistance && job.distance_km != null ? ` · ${formatDistance(job.distance_m)}` : ""}
       </div>
 
-      {/* 구분선 */}
-      <div style={{ borderTop: `1px solid ${D.border}`, margin: "14px 0" }} />
+      <div style={{ borderTop: `1px solid ${D.border}`, margin: "14px 0 12px" }} />
 
-      {/* 3. 비자 라벨 + 마감일 */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-        {visas.map((v) => (
-          <VisaBadge key={v} code={v} />
-        ))}
-        {expiry && (
-          <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 6, background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA", whiteSpace: "nowrap" }}>
-            마감 {expiry}
-          </span>
-        )}
-      </div>
+      {/* 비자 라벨 — 차분한 파란 라벨 + 의미 병기 */}
+      {visas.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+          {visas.map((v) => (
+            <span key={v} style={{ fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: 6, background: "#EEF4FF", color: "#1D4ED8", border: "1px solid #DBE5FF", whiteSpace: "nowrap" }}>
+              {v}{VISA_MEANING[v] ? `(${VISA_MEANING[v]})` : ""}
+            </span>
+          ))}
+        </div>
+      )}
 
-      {/* 4. 급여 (시급/월급/연봉) */}
-      <div style={{ fontSize: 16, fontWeight: 800, color: D.green, letterSpacing: "-0.01em" }}>
-        <span style={{ fontSize: 12, color: D.ink3, fontWeight: 600, marginRight: 6 }}>{payType}</span>
-        {amount}원
+      {/* 마감일 — 별도 줄, 이모지 + 검정 글씨 */}
+      {expiry && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: D.ink2, marginBottom: 6 }}>
+          <span>📅</span><span>마감 {expiry}</span>
+        </div>
+      )}
+
+      {/* 급여 — 같은 형식(이모지 + 검정 글씨), 시급/월급/연봉 자동 */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, fontWeight: 700, color: D.ink }}>
+        <span>💰</span><span>{payType} {amount}원</span>
       </div>
 
       <div style={{ flex: 1, minHeight: 14 }} />
       <button
         onClick={(e) => { e.stopPropagation(); onSelect(job.id); }}
-        style={{ width: "100%", padding: "11px", borderRadius: 8, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit" }}
+        style={{ width: "100%", padding: "11px", borderRadius: 8, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}
       >
         지원하기
       </button>
@@ -186,6 +207,7 @@ export default function JobsPage() {
   const [page, setPage] = useState(1);
   const isDesktop = useIsDesktop();
   const recRef = useRef(null);
+  const PAGE_SIZE = isDesktop ? 12 : 10;
   const [qf, setQf] = useState({});
   const toggleQf = (k) => setQf((prev) => ({ ...prev, [k]: !prev[k] }));
   const [visaSel, setVisaSel] = useState([]);
@@ -680,7 +702,7 @@ export default function JobsPage() {
               </div>
               <div ref={recRef} style={{ display: "flex", gap: 16, overflowX: "hidden", scrollBehavior: "smooth" }}>
                 {recommended.map((j) => (
-                  <div key={"rec-" + j.id} style={{ width: "calc((100% - 48px) / 4)", flexShrink: 0, display: "flex" }}>
+                  <div key={"rec-" + j.id} style={{ width: "calc((100% - 48px) / 4)", height: 322, flexShrink: 0, display: "flex" }}>
                     <DesktopJobCard job={j} selected={false} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} />
                   </div>
                 ))}
