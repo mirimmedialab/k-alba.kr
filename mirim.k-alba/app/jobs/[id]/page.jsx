@@ -96,6 +96,7 @@ export default function JobDetailPage() {
                 setJob((prev) => ({
                   ...prev,
                   title: d.title || prev.title,
+                  company: d.company || prev.company,
                   desc: d.description || prev.desc,
                   hours: d.work_hours || prev.hours,
                   benefits: d.welfare || prev.benefits,
@@ -456,16 +457,16 @@ export default function JobDetailPage() {
       {!applied ? (
         // 카카오톡 챗봇 진입 — 카카오 노란 배경 (특수 디자인 보존)
         <Card style={{
-          background: `linear-gradient(135deg, #FFF9E6, #FEE500)`,
+          background: "#1A1A2E",
           border: "none",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
             <div style={{ fontSize: 28 }}>💬</div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 15, color: "#1A1A2E" }}>
+              <div style={{ fontWeight: 800, fontSize: 15, color: "#FFFFFF" }}>
                 카카오톡 챗봇으로 지원하기
               </div>
-              <div style={{ fontSize: 11, color: "#1A1A2E", opacity: 0.7 }}>
+              <div style={{ fontSize: 11, color: "#C7CBDB" }}>
                 5가지 질문에 답하면 1분 안에 완료!
               </div>
             </div>
@@ -477,8 +478,8 @@ export default function JobDetailPage() {
               width: "100%",
               padding: 14,
               borderRadius: 12,
-              background: "#1A1A2E",
-              color: "#FEE500",
+              background: "#FEE500",
+              color: "#1A1A2E",
               border: "none",
               fontWeight: 800,
               fontSize: 15,
@@ -492,7 +493,7 @@ export default function JobDetailPage() {
           >
             <span style={{ fontSize: 18 }}>💬</span> 챗봇으로 지원하기
           </button>
-          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 12, fontSize: 11, color: "#1A1A2E", opacity: 0.7 }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 12, fontSize: 11, color: "#9FA3B8" }}>
             <span>✓ 비자 자동 확인</span>
             <span>✓ 한국어 수준 매칭</span>
             <span>✓ 24시간 내 응답</span>
