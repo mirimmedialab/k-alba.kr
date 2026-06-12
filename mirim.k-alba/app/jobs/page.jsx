@@ -44,6 +44,103 @@ const DEFAULT_TRANSPORT = ["transit", "walk"];
 
 const PAGE_SIZE = 10;
 
+// 데스크톱(PC) 전용 팔레트 — 모바일 테마(T)는 건드리지 않음
+const D = {
+  bg: "#F8FAFC", card: "#FFFFFF", border: "#E5E7EB",
+  navy: "#1A1A2E", ink: "#1E293B", ink2: "#64748B", ink3: "#94A3B8",
+  green: "#16A34A", greenBg: "#ECFDF5", greenBorder: "#86EFAC",
+};
+
+const KOREAN_LABEL = {
+  none: "한국어 무관", beginner: "한국어 초급",
+  intermediate: "한국어 중급", advanced: "한국어 고급",
+};
+
+// 외국인 구직자용 빠른 필터 (PC 전용)
+const QUICK_FILTERS = [
+  { key: "myVisa", label: "내 비자에 맞는 공고", needsVisa: true },
+  { key: "housing", label: "숙소 제공" },
+  { key: "koreanEasy", label: "한국어 초급 가능" },
+  { key: "weekend", label: "주말 근무" },
+];
+
+// 데스크톱 카드용 작은 칩
+function Chip({ children, green }) {
+  return (
+    <span style={{
+      fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 6,
+      background: green ? D.greenBg : "#F1F5F9",
+      color: green ? D.green : D.ink2,
+      border: `1px solid ${green ? D.greenBorder : D.border}`,
+      whiteSpace: "nowrap",
+    }}>
+      {children}
+    </span>
+  );
+}
+
+/**
+ * 데스크톱(PC) 좌측 리스트 카드 — 외국인 구직자용 정보 밀도
+ * (모바일은 기존 JobListItem 을 그대로 사용; 이 컴포넌트는 PC 마스터-디테일에서만 렌더)
+ */
+function DesktopJobCard({ job, selected, onSelect, showDistance }) {
+  const koreanLabel = KOREAN_LABEL[job.korean_level];
+  const wh = String(job.work_hours || "").split(/\s{2,}|\n|,/)[0].trim();
+  const meta = [job.headcount ? `모집 ${job.headcount}명` : null, wh || null]
+    .filter(Boolean)
+    .join("  ·  ");
+  return (
+    <div
+      onClick={() => onSelect(job.id)}
+      style={{
+        background: selected ? D.greenBg : D.card,
+        border: `1px solid ${selected ? D.greenBorder : D.border}`,
+        borderLeft: `3px solid ${selected ? D.green : "transparent"}`,
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 12,
+        cursor: "pointer",
+        transition: "border-color .15s, background .15s",
+      }}
+      onMouseEnter={(e) => { if (!selected) e.currentTarget.style.borderColor = D.green; }}
+      onMouseLeave={(e) => { if (!selected) e.currentTarget.style.borderColor = D.border; }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 6 }}>
+        <div style={{ fontWeight: 700, fontSize: 15, color: D.navy, lineHeight: 1.35, letterSpacing: "-0.01em" }}>
+          {job.title}
+        </div>
+        {showDistance && job.distance_km != null && (
+          <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color: D.green }}>
+            📍 {formatDistance(job.distance_m)}
+          </span>
+        )}
+      </div>
+      <div style={{ fontSize: 12.5, color: D.ink2, marginBottom: 10 }}>
+        {job.company_name} · {job.sigungu || job.address}
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+        {(job.visa_types || []).slice(0, 3).map((v) => (
+          <VisaBadge key={v} code={v} />
+        ))}
+        {koreanLabel && <Chip>{koreanLabel}</Chip>}
+        {job.provides_housing && <Chip green>🏠 숙소제공</Chip>}
+        {job.provides_shuttle && <Chip green>🚐 통근버스</Chip>}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 10 }}>
+        <div style={{ fontSize: 11.5, color: D.ink3, lineHeight: 1.4, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {meta}
+        </div>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <div style={{ fontSize: 16, fontWeight: 800, color: D.green, letterSpacing: "-0.02em", lineHeight: 1 }}>
+            ₩{Number(job.pay_amount).toLocaleString()}
+          </div>
+          <div style={{ fontSize: 11, color: D.ink3, marginTop: 3 }}>{job.pay_type || "시급"}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function JobsPage() {
   const t = useT();
   const router = useRouter();
@@ -56,11 +153,13 @@ export default function JobsPage() {
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState(null);
   const isDesktop = useIsDesktop();
+  const [qf, setQf] = useState({});
+  const toggleQf = (k) => setQf((prev) => ({ ...prev, [k]: !prev[k] }));
 
   // 정렬·검색·필터가 바뀌면 1페이지로 리셋
   useEffect(() => {
     setPage(1);
-  }, [sortMode, search, koreanFilter, visaFilter, radius]);
+  }, [sortMode, search, koreanFilter, visaFilter, radius, JSON.stringify(qf)]);
 
   // 사용자 프로필 로드 (추천용)
   useEffect(() => {
@@ -157,8 +256,22 @@ export default function JobsPage() {
 
   // 텍스트 검색 + 한국어 수준 필터 (로컬)
   displayJobs = displayJobs.filter((j) => {
-    if (search && !(j.title?.includes(search) || j.company_name?.includes(search))) return false;
+    if (
+      search &&
+      !(
+        j.title?.includes(search) ||
+        j.company_name?.includes(search) ||
+        (isDesktop && (j.sigungu?.includes(search) || j.address?.includes(search)))
+      )
+    )
+      return false;
     if (koreanFilter && j.korean_level !== koreanFilter) return false;
+    // 빠른 필터 (PC 전용; 모바일은 qf가 비어 있어 영향 없음)
+    if (qf.housing && !j.provides_housing) return false;
+    if (qf.koreanEasy && !["none", "beginner"].includes(j.korean_level)) return false;
+    if (qf.weekend && !/토|일|주말|매일/.test(String(j.work_days || ""))) return false;
+    if (qf.myVisa && userProfile?.visa && !(j.visa_types || []).includes(userProfile.visa))
+      return false;
     return true;
   });
 
@@ -241,6 +354,34 @@ export default function JobsPage() {
         })}
       </div>
 
+      {/* 외국인용 빠른 필터 (PC 전용) */}
+      {isDesktop && (
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+          {QUICK_FILTERS.filter((f) => !f.needsVisa || userProfile?.visa).map((f) => {
+            const on = !!qf[f.key];
+            return (
+              <button
+                key={f.key}
+                onClick={() => toggleQf(f.key)}
+                style={{
+                  padding: "7px 13px",
+                  borderRadius: 999,
+                  border: `1px solid ${on ? D.greenBorder : D.border}`,
+                  background: on ? D.greenBg : D.card,
+                  color: on ? D.green : D.ink2,
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                }}
+              >
+                {on ? "✓ " : ""}{f.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* 비로그인 추천순 안내 배너 */}
       {sortMode === "recommended" && !userProfile && (
         <div
@@ -294,7 +435,7 @@ export default function JobsPage() {
       <div style={{ marginBottom: 12 }}>
         <Input
           variant="search"
-          placeholder={t("jobs.searchPlaceholder")}
+          placeholder={isDesktop ? "직무, 회사, 지역 검색" : t("jobs.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           iconLeft={<span style={{ fontSize: 14 }}>🔍</span>}
@@ -336,17 +477,25 @@ export default function JobsPage() {
             }
           />
         ) : (
-          pageJobs.map((j, idx) => (
-            <JobListItem
-              key={j.id}
-              job={j}
-              index={(currentPage - 1) * PAGE_SIZE + idx}
-              showDistance={sortMode === "nearest" || sortMode === "recommended"}
-              showReason={sortMode === "recommended"}
-              onSelect={isDesktop ? setSelectedId : undefined}
-              selected={isDesktop && selectedId === j.id}
-            />
-          ))
+          pageJobs.map((j, idx) =>
+            isDesktop ? (
+              <DesktopJobCard
+                key={j.id}
+                job={j}
+                selected={selectedId === j.id}
+                onSelect={setSelectedId}
+                showDistance={sortMode === "nearest" || sortMode === "recommended"}
+              />
+            ) : (
+              <JobListItem
+                key={j.id}
+                job={j}
+                index={(currentPage - 1) * PAGE_SIZE + idx}
+                showDistance={sortMode === "nearest" || sortMode === "recommended"}
+                showReason={sortMode === "recommended"}
+              />
+            )
+          )
         )}
       </div>
 
@@ -366,6 +515,7 @@ export default function JobsPage() {
 
   if (isDesktop) {
     return (
+      <div style={{ background: D.bg, minHeight: "100vh" }}>
       <div style={{ display: "flex", gap: 28, maxWidth: 1320, margin: "0 auto", padding: "24px 28px", alignItems: "flex-start" }}>
         <div style={{ width: 440, flexShrink: 0, position: "sticky", top: 24, maxHeight: "calc(100vh - 48px)", overflowY: "auto" }}>
           {listColumn}
@@ -379,6 +529,7 @@ export default function JobsPage() {
             </div>
           )}
         </div>
+      </div>
       </div>
     );
   }

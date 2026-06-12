@@ -19,6 +19,26 @@ import {
   PageLoading,
 } from "@/components/ui";
 
+// 데스크톱(PC) 전용 팔레트 — 모바일 테마(T)는 건드리지 않음 (embedded 모드에서만 사용)
+const D = {
+  bg: "#F8FAFC", card: "#FFFFFF", border: "#E5E7EB",
+  navy: "#1A1A2E", ink: "#1E293B", ink2: "#64748B", ink3: "#94A3B8",
+  green: "#16A34A", greenBg: "#ECFDF5", greenBorder: "#86EFAC",
+};
+const D_KOREAN = { none: "한국어 무관", beginner: "한국어 초급", intermediate: "한국어 중급", advanced: "한국어 고급" };
+
+function Chip2({ children, green }) {
+  return (
+    <span style={{
+      fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 8,
+      background: green ? D.greenBg : "#F1F5F9",
+      color: green ? D.green : D.ink2,
+      border: `1px solid ${green ? D.greenBorder : D.border}`,
+      whiteSpace: "nowrap",
+    }}>{children}</span>
+  );
+}
+
 /**
  * /jobs/[id] 알바 상세 페이지 (BI v2)
  *
@@ -202,6 +222,107 @@ export default function JobDetail({ jobId, embedded = false }) {
         공고를 찾을 수 없습니다.
       </div>
     );
+
+  if (embedded) {
+    const koreanLabel = D_KOREAN[job.korean];
+    const desc = String(job.desc || "").replace(/^\s*담당업무\s*[:：]?\s*/, "").trimEnd();
+    const rows = [
+      ["지역", job.area],
+      ["근무", [job.time, job.hours].filter(Boolean).join(" · ") || "-"],
+      ["업종", job.type],
+      job.headcount && String(job.headcount) !== "1"
+        ? ["모집인원", /^\d+$/.test(String(job.headcount)) ? `${job.headcount}명` : job.headcount]
+        : null,
+      job.benefits ? ["복리후생", job.benefits] : null,
+      job.expires_at ? ["마감", String(job.expires_at).slice(0, 10)] : null,
+    ].filter(Boolean);
+
+    const Section = ({ title, id, children }) => (
+      <div id={id} style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 16, padding: 24, marginBottom: 16 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: D.navy, marginBottom: 16, letterSpacing: "-0.01em" }}>{title}</div>
+        {children}
+      </div>
+    );
+    const Row = ({ k, v, isWork }) => (
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 20, padding: "12px 0", borderBottom: "1px solid #F1F5F9" }}>
+        <span style={{ fontSize: 13.5, color: D.ink3, flexShrink: 0 }}>{k}</span>
+        <span style={{ fontSize: 13.5, fontWeight: 600, color: D.ink, textAlign: "right", lineHeight: 1.6 }}>
+          {isWork
+            ? String(v).split(/\s*\n\s*|\s{2,}|\s*,\s*/).map((x) => x.trim()).filter(Boolean).map((line, i) => (
+                <span key={i} style={{ display: "block" }}>{line}</span>
+              ))
+            : v}
+        </span>
+      </div>
+    );
+
+    return (
+      <div>
+        {/* 상단 요약 */}
+        <div style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 16, padding: 24, marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 16 }}>
+            <div style={{ fontSize: 36 }}>{job.icon || "💼"}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h1 style={{ fontSize: 22, fontWeight: 800, color: D.navy, lineHeight: 1.3, margin: 0, letterSpacing: "-0.02em" }}>{job.title}</h1>
+              <div style={{ fontSize: 14, color: D.ink2, marginTop: 6 }}>{job.company} · {job.area}</div>
+            </div>
+            <div style={{ textAlign: "right", flexShrink: 0 }}>
+              <div style={{ fontSize: 22, fontWeight: 900, color: D.green, letterSpacing: "-0.02em", lineHeight: 1 }}>₩{job.pay?.toLocaleString()}</div>
+              <div style={{ fontSize: 12, color: D.ink3, marginTop: 4 }}>{({ 시급: "시간", 일급: "일", 월급: "월", 연봉: "년" })[job.pay_type] || "시간"}</div>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 18 }}>
+            {(job.visa || []).map((v) => <VisaBadge key={v} code={v} variant="solid" size="md" />)}
+            {koreanLabel && <Chip2>{koreanLabel}</Chip2>}
+            {job.provides_housing && <Chip2 green>🏠 숙소제공</Chip2>}
+            {job.provides_shuttle && <Chip2 green>🚐 통근버스</Chip2>}
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={handleApply} style={{ flex: 1, padding: "13px", borderRadius: 10, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>지원하기</button>
+            <button onClick={() => (typeof document !== "undefined") && document.getElementById("foreigner-info")?.scrollIntoView({ behavior: "smooth", block: "start" })} style={{ flex: 1, padding: "13px", borderRadius: 10, background: D.greenBg, color: D.green, border: `1px solid ${D.greenBorder}`, fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>비자 가능 여부 확인하기</button>
+          </div>
+        </div>
+
+        <Section title="근무 조건">
+          {rows.map(([k, v]) => <Row key={k} k={k} v={v} isWork={k === "근무"} />)}
+        </Section>
+
+        <Section title="외국인 지원 정보" id="foreigner-info">
+          <Row k="가능 비자" v={(job.visa || []).join(", ") || "별도 명시 없음"} />
+          <Row k="한국어 수준" v={koreanLabel || "별도 명시 없음"} />
+          <Row k="숙소 제공" v={job.provides_housing ? "제공" : "미제공"} />
+          <Row k="통근버스" v={job.provides_shuttle ? "제공" : "미제공"} />
+          {job.nearest_station && <Row k="가까운 역" v={`${job.nearest_station}${job.walk_to_station_min ? ` (도보 ${job.walk_to_station_min}분)` : ""}`} />}
+        </Section>
+
+        {desc && (
+          <Section title="상세 정보">
+            <p style={{ margin: 0, fontSize: 13.5, color: D.ink2, lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{desc}</p>
+          </Section>
+        )}
+
+        {job.apply_url && (
+          <a href={job.apply_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "12px", marginBottom: 16, background: D.card, border: `1px solid ${D.border}`, borderRadius: 10, color: D.ink2, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>🔗 고용24 원문 보기</a>
+        )}
+
+        {job.latitude && job.longitude && (
+          <Section title="근무지 위치">
+            <KakaoMap center={{ latitude: job.latitude, longitude: job.longitude }} level={4} markers={[{ latitude: job.latitude, longitude: job.longitude, title: job.company, color: D.green }]} height={260} />
+            <div style={{ marginTop: 12, fontSize: 13.5, fontWeight: 600, color: D.ink }}>📍 {job.address_road || job.address || job.area}</div>
+          </Section>
+        )}
+
+        {applied && (
+          <div style={{ textAlign: "center", padding: 24, background: D.greenBg, borderRadius: 14, border: `1px solid ${D.greenBorder}`, marginBottom: 16 }}>
+            <div style={{ fontSize: 36, marginBottom: 8 }}>🎉</div>
+            <div style={{ fontWeight: 800, color: D.green, fontSize: 16 }}>{t("jobs.applied")}</div>
+          </div>
+        )}
+
+        <KakaoChatModal open={chatOpen} onClose={() => setChatOpen(false)} title={`K-ALBA × ${job.company}`} botAvatar={job.icon || "💬"} steps={applySteps} onComplete={handleChatComplete} />
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: embedded ? 0 : 20, maxWidth: embedded ? "100%" : 600, margin: embedded ? 0 : "0 auto" }}>
