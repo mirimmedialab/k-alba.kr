@@ -82,64 +82,72 @@ function Chip({ children, green }) {
  * 데스크톱(PC) 좌측 리스트 카드 — 외국인 구직자용 정보 밀도
  * (모바일은 기존 JobListItem 을 그대로 사용; 이 컴포넌트는 PC 마스터-디테일에서만 렌더)
  */
-function DesktopJobCard({ job, selected, onSelect, showDistance }) {
-  const koreanLabel = KOREAN_LABEL[job.korean_level];
-  const wh = String(job.work_hours || "").split(/\s{2,}|\n|,/)[0].trim();
-  const meta = [job.headcount ? `모집 ${job.headcount}명` : null, wh || null]
-    .filter(Boolean)
-    .join("  ·  ");
+function DesktopJobCard({ job, onSelect, showDistance }) {
+  const payType = job.pay_type || "시급";
+  const amount = Number(job.pay_amount || 0).toLocaleString();
+  const expiry = job.expires_at ? String(job.expires_at).slice(0, 10) : null;
+  const visas = (job.visa_types || []).slice(0, 4);
+  const loc = job.sigungu || job.address || "";
   return (
     <div
       onClick={() => onSelect(job.id)}
       style={{
-        background: selected ? D.greenBg : D.card,
-        border: `1px solid ${selected ? D.greenBorder : D.border}`,
-        borderLeft: `3px solid ${selected ? D.green : "transparent"}`,
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 12,
+        background: D.card,
+        border: `1px solid ${D.border}`,
+        borderRadius: 14,
+        padding: 18,
         cursor: "pointer",
-        transition: "border-color .15s, background .15s",
+        transition: "border-color .15s",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        boxSizing: "border-box",
       }}
-      onMouseEnter={(e) => { if (!selected) e.currentTarget.style.borderColor = D.green; }}
-      onMouseLeave={(e) => { if (!selected) e.currentTarget.style.borderColor = D.border; }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = D.green; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = D.border; }}
     >
-      <div style={{ fontSize: 22, marginBottom: 8 }}>{job.icon || "💼"}</div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 6 }}>
-        <div style={{ fontWeight: 700, fontSize: 15, color: D.navy, lineHeight: 1.35, letterSpacing: "-0.01em" }}>
-          {job.title}
-        </div>
-        {showDistance && job.distance_km != null && (
-          <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color: D.green }}>
-            📍 {formatDistance(job.distance_m)}
+      {/* 아이콘 */}
+      <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 12 }}>
+        {job.icon || "💼"}
+      </div>
+
+      {/* 1. 제목 */}
+      <div style={{ fontWeight: 700, fontSize: 15.5, color: D.navy, lineHeight: 1.35, letterSpacing: "-0.01em", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", minHeight: 42, marginBottom: 6 }}>
+        {job.title}
+      </div>
+
+      {/* 2. 회사 · 위치 */}
+      <div style={{ fontSize: 12.5, color: D.ink2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {job.company_name}
+        {loc ? <> · <span style={{ color: D.ink3 }}>📍 {loc}</span></> : null}
+        {showDistance && job.distance_km != null ? ` · ${formatDistance(job.distance_m)}` : ""}
+      </div>
+
+      {/* 구분선 */}
+      <div style={{ borderTop: `1px solid ${D.border}`, margin: "14px 0" }} />
+
+      {/* 3. 비자 라벨 + 마감일 */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+        {visas.map((v) => (
+          <VisaBadge key={v} code={v} />
+        ))}
+        {expiry && (
+          <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 6, background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA", whiteSpace: "nowrap" }}>
+            마감 {expiry}
           </span>
         )}
       </div>
-      <div style={{ fontSize: 12.5, color: D.ink2, marginBottom: 10 }}>
-        {job.company_name} · {job.sigungu || job.address}
+
+      {/* 4. 급여 (시급/월급/연봉) */}
+      <div style={{ fontSize: 16, fontWeight: 800, color: D.green, letterSpacing: "-0.01em" }}>
+        <span style={{ fontSize: 12, color: D.ink3, fontWeight: 600, marginRight: 6 }}>{payType}</span>
+        {amount}원
       </div>
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
-        {(job.visa_types || []).slice(0, 3).map((v) => (
-          <VisaBadge key={v} code={v} />
-        ))}
-        {koreanLabel && <Chip>{koreanLabel}</Chip>}
-        {job.provides_housing && <Chip green>🏠 숙소제공</Chip>}
-        {job.provides_shuttle && <Chip green>🚐 통근버스</Chip>}
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 10 }}>
-        <div style={{ fontSize: 11.5, color: D.ink3, lineHeight: 1.4, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {meta}
-        </div>
-        <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <div style={{ fontSize: 16, fontWeight: 800, color: D.green, letterSpacing: "-0.02em", lineHeight: 1 }}>
-            ₩{Number(job.pay_amount).toLocaleString()}
-          </div>
-          <div style={{ fontSize: 11, color: D.ink3, marginTop: 3 }}>{job.pay_type || "시급"}</div>
-        </div>
-      </div>
+
+      <div style={{ flex: 1, minHeight: 14 }} />
       <button
         onClick={(e) => { e.stopPropagation(); onSelect(job.id); }}
-        style={{ width: "100%", marginTop: 14, padding: "10px", borderRadius: 8, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+        style={{ width: "100%", padding: "11px", borderRadius: 8, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit" }}
       >
         지원하기
       </button>
@@ -562,7 +570,7 @@ export default function JobsPage() {
   if (isDesktop) {
     const FilterGroup = ({ title, children }) => (
       <div style={{ padding: "16px 0", borderBottom: `1px solid ${D.border}` }}>
-        <div style={{ fontSize: 12, fontWeight: 800, color: D.navy, letterSpacing: "0.03em", marginBottom: 10 }}>{title}</div>
+        <div style={{ fontSize: 14, fontWeight: 800, color: D.navy, letterSpacing: "0.02em", marginBottom: 10 }}>{title}</div>
         {children}
       </div>
     );
@@ -624,7 +632,7 @@ export default function JobsPage() {
                   </div>
                 </FilterGroup>
                 <div style={{ paddingTop: 16 }}>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: D.navy, letterSpacing: "0.03em", marginBottom: 10 }}>추가 조건</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: D.navy, letterSpacing: "0.02em", marginBottom: 10 }}>추가 조건</div>
                   {QUICK_FILTERS.filter((f) => !f.needsVisa || userProfile?.visa).map((f) => (
                     <CheckRow key={f.key} label={f.label} checked={!!qf[f.key]} onClick={() => toggleQf(f.key)} />
                   ))}
@@ -644,7 +652,7 @@ export default function JobsPage() {
               ) : displayJobs.length === 0 ? (
                 <Empty variant="no-results" description={t("jobs.noResults")} />
               ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 16, alignItems: "start" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 16, alignItems: "stretch" }}>
                   {pageJobs.map((j) => (
                     <DesktopJobCard key={j.id} job={j} selected={false} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={sortMode === "nearest" || sortMode === "recommended"} />
                   ))}
@@ -666,13 +674,13 @@ export default function JobsPage() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                 <div style={{ fontSize: 18, fontWeight: 800, color: D.navy }}>🔥 이번 주 추천 비자 채용</div>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button aria-label="이전" onClick={() => recRef.current && recRef.current.scrollBy({ left: -560, behavior: "smooth" })} style={{ width: 34, height: 34, borderRadius: 999, border: `1px solid ${D.border}`, background: D.card, color: D.navy, fontSize: 16, cursor: "pointer", fontFamily: "inherit" }}>‹</button>
-                  <button aria-label="다음" onClick={() => recRef.current && recRef.current.scrollBy({ left: 560, behavior: "smooth" })} style={{ width: 34, height: 34, borderRadius: 999, border: `1px solid ${D.border}`, background: D.card, color: D.navy, fontSize: 16, cursor: "pointer", fontFamily: "inherit" }}>›</button>
+                  <button aria-label="이전" onClick={() => recRef.current && recRef.current.scrollBy({ left: -recRef.current.clientWidth, behavior: "smooth" })} style={{ width: 34, height: 34, borderRadius: 999, border: `1px solid ${D.border}`, background: D.card, color: D.navy, fontSize: 16, cursor: "pointer", fontFamily: "inherit" }}>‹</button>
+                  <button aria-label="다음" onClick={() => recRef.current && recRef.current.scrollBy({ left: recRef.current.clientWidth, behavior: "smooth" })} style={{ width: 34, height: 34, borderRadius: 999, border: `1px solid ${D.border}`, background: D.card, color: D.navy, fontSize: 16, cursor: "pointer", fontFamily: "inherit" }}>›</button>
                 </div>
               </div>
               <div ref={recRef} style={{ display: "flex", gap: 16, overflowX: "hidden", scrollBehavior: "smooth" }}>
                 {recommended.map((j) => (
-                  <div key={"rec-" + j.id} style={{ width: 264, flexShrink: 0 }}>
+                  <div key={"rec-" + j.id} style={{ width: "calc((100% - 48px) / 4)", flexShrink: 0, display: "flex" }}>
                     <DesktopJobCard job={j} selected={false} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} />
                   </div>
                 ))}
