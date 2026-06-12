@@ -10,7 +10,6 @@ import { formatDistance } from "@/lib/geolocation";
 import { getCurrentUser, getProfile } from "@/lib/supabase";
 import { Input, VisaBadge, PageLoading, Empty } from "@/components/ui";
 import { useIsDesktop } from "@/lib/useIsDesktop";
-import JobDetail from "@/components/JobDetail";
 
 /**
  * /jobs 알바 목록 (BI v2)
@@ -141,6 +140,25 @@ function DesktopJobCard({ job, selected, onSelect, showDistance }) {
   );
 }
 
+// 데스크톱(PC) 목록 히어로 — "외국인 합법 알바" 메시지
+function PcHero() {
+  return (
+    <div style={{ background: D.navy, color: "#fff" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 28px" }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: D.greenBorder, letterSpacing: "0.08em", marginBottom: 12 }}>
+          K-ALBA · 외국인 합법 알바
+        </div>
+        <h1 style={{ fontSize: 32, fontWeight: 800, margin: 0, lineHeight: 1.25, letterSpacing: "-0.02em" }}>
+          내 비자로 일할 수 있는<br />합법 알바를 찾아보세요
+        </h1>
+        <p style={{ fontSize: 15, color: "#C7CBDB", marginTop: 14, lineHeight: 1.6, maxWidth: 580 }}>
+          비자·한국어 조건에 맞는 공고만 모았어요. 카드의 비자 뱃지로 합법 가능 여부를 바로 확인하세요.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function JobsPage() {
   const t = useT();
   const router = useRouter();
@@ -151,7 +169,6 @@ export default function JobsPage() {
   const [search, setSearch] = useState("");
   const [userProfile, setUserProfile] = useState(null);
   const [page, setPage] = useState(1);
-  const [selectedId, setSelectedId] = useState(null);
   const isDesktop = useIsDesktop();
   const [qf, setQf] = useState({});
   const toggleQf = (k) => setQf((prev) => ({ ...prev, [k]: !prev[k] }));
@@ -284,30 +301,23 @@ export default function JobsPage() {
     currentPage * PAGE_SIZE
   );
 
-  // 데스크톱 마스터-디테일: 현재 페이지의 첫 공고를 자동 선택
-  const pageJobIds = pageJobs.map((j) => j.id).join(",");
-  useEffect(() => {
-    if (!isDesktop) return;
-    if (pageJobs.length === 0) { setSelectedId(null); return; }
-    setSelectedId((prev) =>
-      pageJobs.some((j) => j.id === prev) ? prev : pageJobs[0].id
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDesktop, pageJobIds]);
-
   const listColumn = (
     <div style={{ padding: isDesktop ? "28px 4px" : "32px 20px", maxWidth: isDesktop ? "none" : 820, margin: isDesktop ? 0 : "0 auto" }}>
-      {/* Editorial 헤더 */}
-      <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 18 }} />
-      <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
-        {t("jobs.pageLabel")}
-      </div>
-      <h1 style={{ fontSize: 28, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.25 }}>
-        {t("jobs.title")}
-      </h1>
-      <p style={{ color: T.ink2, fontSize: 14, marginBottom: 20, lineHeight: 1.6 }}>
-        {t("jobs.subtitle")}
-      </p>
+      {/* Editorial 헤더 (모바일 전용; PC는 PcHero 사용) */}
+      {!isDesktop && (
+        <>
+          <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 18 }} />
+          <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
+            {t("jobs.pageLabel")}
+          </div>
+          <h1 style={{ fontSize: 28, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.25 }}>
+            {t("jobs.title")}
+          </h1>
+          <p style={{ color: T.ink2, fontSize: 14, marginBottom: 20, lineHeight: 1.6 }}>
+            {t("jobs.subtitle")}
+          </p>
+        </>
+      )}
 
       {/* 위치 상태 배너 */}
       {sortMode === "nearest" && (
@@ -462,7 +472,13 @@ export default function JobsPage() {
       </div>
 
       {/* 공고 카드 목록 */}
-      <div>
+      <div
+        style={
+          isDesktop && !listLoading && displayJobs.length > 0
+            ? { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14, alignItems: "start" }
+            : undefined
+        }
+      >
         {listLoading ? (
           // Step 3-B PageLoading 인라인 — 데이터 로딩 중에는 '없음' 대신 로딩 표시
           <PageLoading message={t("jobs.loading")} minHeight={240} />
@@ -482,8 +498,8 @@ export default function JobsPage() {
               <DesktopJobCard
                 key={j.id}
                 job={j}
-                selected={selectedId === j.id}
-                onSelect={setSelectedId}
+                selected={false}
+                onSelect={(id) => router.push(`/jobs/${id}`)}
                 showDistance={sortMode === "nearest" || sortMode === "recommended"}
               />
             ) : (
@@ -516,20 +532,10 @@ export default function JobsPage() {
   if (isDesktop) {
     return (
       <div style={{ background: D.bg, minHeight: "100vh" }}>
-      <div style={{ display: "flex", gap: 28, maxWidth: 1320, margin: "0 auto", padding: "24px 28px", alignItems: "flex-start" }}>
-        <div style={{ width: 440, flexShrink: 0, position: "sticky", top: 24, maxHeight: "calc(100vh - 48px)", overflowY: "auto" }}>
+        <PcHero />
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 28px 56px" }}>
           {listColumn}
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {selectedId ? (
-            <JobDetail key={selectedId} jobId={selectedId} embedded />
-          ) : (
-            <div style={{ padding: "80px 20px", textAlign: "center", color: T.ink3, fontSize: 14 }}>
-              왼쪽 목록에서 공고를 선택하세요.
-            </div>
-          )}
-        </div>
-      </div>
       </div>
     );
   }
