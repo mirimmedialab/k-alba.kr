@@ -159,7 +159,7 @@ function DesktopJobCard({ job, onSelect, showDistance }) {
       {loc && (
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: D.ink2, marginBottom: 5 }}>
           <span>📍</span>
-          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {loc}{showDistance && job.distance_km != null ? ` · ${formatDistance(job.distance_m)}` : ""}
           </span>
         </div>
@@ -168,7 +168,7 @@ function DesktopJobCard({ job, onSelect, showDistance }) {
       {workTime && (
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: D.ink2, marginBottom: 5 }}>
           <span>🕐</span>
-          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{workTime}</span>
+          <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{workTime}</span>
         </div>
       )}
 
