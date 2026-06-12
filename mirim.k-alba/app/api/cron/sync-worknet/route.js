@@ -156,6 +156,8 @@ export async function GET(req) {
             if (detail.description) job.description = detail.description;
             if (detail.work_hours) job.work_hours = detail.work_hours;
           }
+          // 비자: 보강된 전체 제목+상세설명에서 명시 코드만 재추출
+          job.visa_types = extractVisaCodes(`${job.title} ${job.description || ""}`);
           const { error: insErr } = await supabase.from("jobs").insert(job);
           if (insErr) throw insErr;
           itemsNew++;
@@ -307,6 +309,19 @@ async function fetchWorknetDetail(authNo) {
   }
 }
 
+// 공고 본문에서 명시된 비자코드만 추출 (D-2/E-9/F-4/H-2 등). 없으면 [].
+const VALID_VISA = new Set(["D-1","D-2","D-3","D-4","D-7","D-8","D-9","D-10","E-1","E-2","E-3","E-4","E-5","E-6","E-7","E-8","E-9","E-10","F-1","F-2","F-3","F-4","F-5","F-6","G-1","H-1","H-2"]);
+function extractVisaCodes(text) {
+  const set = new Set();
+  const re = /(?<![A-Za-z])([DEFGH])[\s-]?(\d{1,2})(?![0-9])/g;
+  let m;
+  while ((m = re.exec(String(text || ""))) !== null) {
+    const code = `${m[1]}-${parseInt(m[2], 10)}`;
+    if (VALID_VISA.has(code)) set.add(code);
+  }
+  return [...set];
+}
+
 /**
  * 주소 → 좌표 (Kakao Local API). 가까운 순 정렬용.
  * 실패 시 null — 좌표 없이 등록되며 backfill-geocodes.js 로 추후 보완 가능.
@@ -360,9 +375,8 @@ function transformWorknetItem(item) {
     pay_amount: parseInt(item.minSal, 10) || 0,
     work_type: isPartTime ? "시간제" : "전일제",
     work_hours: item.holidayTpNm || "",
-    // 고용24 응답에는 비자 명시가 없음 — 외국인 가능한 비자 보수적으로 모두 표기.
-    // 실제 비자 적합성은 사용자가 공고 상세에서 재확인.
-    visa_types: ["E-9", "F-2", "F-4", "F-5", "F-6", "H-2"],
+    // 비자는 공고 본문(제목+상세설명)에 명시된 코드만 추출. 신규 공고는 상세보강 후 재계산.
+    visa_types: extractVisaCodes(item.title || ""),
     headcount: "1", // 목록 API 응답에 모집인원 필드 없음 → 기본 1 (컬럼 타입 text)
     apply_url: item.wantedInfoUrl || null,
     expires_at: parseWorknetDate(item.closeDt),
