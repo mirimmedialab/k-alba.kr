@@ -9,6 +9,8 @@ import { useRecommendedJobs } from "@/lib/useRecommendedJobs";
 import { formatDistance } from "@/lib/geolocation";
 import { getCurrentUser, getProfile } from "@/lib/supabase";
 import { Input, VisaBadge, PageLoading, Empty } from "@/components/ui";
+import { useIsDesktop } from "@/lib/useIsDesktop";
+import JobDetail from "@/components/JobDetail";
 
 /**
  * /jobs 알바 목록 (BI v2)
@@ -52,6 +54,8 @@ export default function JobsPage() {
   const [search, setSearch] = useState("");
   const [userProfile, setUserProfile] = useState(null);
   const [page, setPage] = useState(1);
+  const [selectedId, setSelectedId] = useState(null);
+  const isDesktop = useIsDesktop();
 
   // 정렬·검색·필터가 바뀌면 1페이지로 리셋
   useEffect(() => {
@@ -167,8 +171,19 @@ export default function JobsPage() {
     currentPage * PAGE_SIZE
   );
 
-  return (
-    <div style={{ padding: "32px 20px", maxWidth: 820, margin: "0 auto" }}>
+  // 데스크톱 마스터-디테일: 현재 페이지의 첫 공고를 자동 선택
+  const pageJobIds = pageJobs.map((j) => j.id).join(",");
+  useEffect(() => {
+    if (!isDesktop) return;
+    if (pageJobs.length === 0) { setSelectedId(null); return; }
+    setSelectedId((prev) =>
+      pageJobs.some((j) => j.id === prev) ? prev : pageJobs[0].id
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDesktop, pageJobIds]);
+
+  const listColumn = (
+    <div style={{ padding: isDesktop ? "28px 4px" : "32px 20px", maxWidth: isDesktop ? "none" : 820, margin: isDesktop ? 0 : "0 auto" }}>
       {/* Editorial 헤더 */}
       <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 18 }} />
       <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
@@ -328,6 +343,8 @@ export default function JobsPage() {
               index={(currentPage - 1) * PAGE_SIZE + idx}
               showDistance={sortMode === "nearest" || sortMode === "recommended"}
               showReason={sortMode === "recommended"}
+              onSelect={isDesktop ? setSelectedId : undefined}
+              selected={isDesktop && selectedId === j.id}
             />
           ))
         )}
@@ -346,6 +363,27 @@ export default function JobsPage() {
       )}
     </div>
   );
+
+  if (isDesktop) {
+    return (
+      <div style={{ display: "flex", gap: 28, maxWidth: 1320, margin: "0 auto", padding: "24px 28px", alignItems: "flex-start" }}>
+        <div style={{ width: 440, flexShrink: 0, position: "sticky", top: 24, maxHeight: "calc(100vh - 48px)", overflowY: "auto" }}>
+          {listColumn}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {selectedId ? (
+            <JobDetail key={selectedId} jobId={selectedId} embedded />
+          ) : (
+            <div style={{ padding: "80px 20px", textAlign: "center", color: T.ink3, fontSize: 14 }}>
+              왼쪽 목록에서 공고를 선택하세요.
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return listColumn;
 }
 
 /**
@@ -496,20 +534,23 @@ function LocationBanner({ source, location, onRequestLocation, loading }) {
  *
  * 변경: 비자 배지 (인라인 span 균일 색상) → VisaBadge (자동 색상)
  */
-function JobListItem({ job, index, showDistance, showReason }) {
+function JobListItem({ job, index, showDistance, showReason, onSelect, selected }) {
   const t = useT();
   const router = useRouter();
   return (
     <div
-      onClick={() => router.push(`/jobs/${job.id}`)}
+      onClick={() => (onSelect ? onSelect(job.id) : router.push(`/jobs/${job.id}`))}
       style={{
         padding: "18px 0",
+        paddingLeft: selected ? 12 : 0,
         borderBottom: `1px solid ${T.border}`,
+        borderLeft: selected ? `3px solid ${T.accent}` : "none",
+        background: selected ? T.cream : "transparent",
         display: "flex", alignItems: "flex-start", gap: 16,
         transition: "background 0.15s", cursor: "pointer",
       }}
       onMouseEnter={(e) => (e.currentTarget.style.background = T.cream)}
-      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+      onMouseLeave={(e) => (e.currentTarget.style.background = selected ? T.cream : "transparent")}
     >
         {/* 인덱스 번호 — 화면에는 숨김 (index prop 유지) */}
 

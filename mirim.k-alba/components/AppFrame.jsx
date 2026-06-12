@@ -44,7 +44,14 @@ export default function AppFrame({ children }) {
   const pathname = usePathname();
   const showNavBar = !HIDE_NAVBAR_ON.includes(pathname);
   const showFooter = !HIDE_FOOTER_ON.includes(pathname);
-  const useFrame = !NO_FRAME_ON.includes(pathname);
+  // /jobs(목록)과 /jobs/[id](상세)는 PC 전용 와이드 레이아웃을 자체적으로 그리므로
+  // 440px 프레임을 적용하지 않는다. (/jobs/post, /jobs/map 폼·지도는 프레임 유지)
+  const isJobsBrowse =
+    pathname === "/jobs" ||
+    (/^\/jobs\/[^/]+$/.test(pathname) &&
+      pathname !== "/jobs/post" &&
+      pathname !== "/jobs/map");
+  const useFrame = !NO_FRAME_ON.includes(pathname) && !isJobsBrowse;
   const showKakao = !NO_KAKAO_ON.includes(pathname);
 
   return (
