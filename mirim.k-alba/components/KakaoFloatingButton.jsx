@@ -122,8 +122,8 @@ export function KakaoFloatingButton() {
             position: "absolute",
             right: -18,
             bottom: -18,
-            width: 84,
-            height: 84,
+            width: 64,
+            height: 64,
             borderRadius: "50%",
             background: "#FEE500",
             display: "flex",
@@ -143,7 +143,7 @@ export function KakaoFloatingButton() {
           <img
             src="/img/k-alba-logo.png"
             alt="K-ALBA"
-            style={{ width: 72, height: 72, marginTop: 10 }}
+            style={{ width: 52, height: 52, marginTop: 8 }}
           />
         </a>
       </div>

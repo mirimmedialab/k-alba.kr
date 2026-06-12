@@ -288,7 +288,7 @@ export default function MobileLandingPage() {
                     </span>
                   </h1>
                   <p style={{ fontSize: 14, lineHeight: 1.8, color: T.ink2, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
-                    내 비자 조건에 맞는 알바 공고부터 근로계약서 작성까지, 7개 언어로 더 쉽고 빠르게 도와드립니다.
+                    내 비자 조건에 맞는 알바 공고부터 근로계약서 작성까지,<br />7개 언어로 더 쉽고 빠르게 도와드립니다.
                   </p>
                   <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                     <Button variant="primary" href="/login">{t("landing.seekerCta")}</Button>
@@ -318,7 +318,7 @@ export default function MobileLandingPage() {
                     </span>
                   </h1>
                   <p style={{ fontSize: 14, lineHeight: 1.8, color: T.ink2, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
-                    카카오톡 챗봇으로 공고 등록부터 근로계약서 작성까지, 외국인 채용 절차를 더 간편하게 도와드립니다.
+                    카카오톡 챗봇으로 공고 등록부터 근로계약서 작성까지,<br />외국인 채용 절차를 더 간편하게 도와드립니다.
                   </p>
                   <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                     <Button variant="primary" href="/login" style={{ boxShadow: `0 4px 16px ${T.coral}40` }}>
@@ -353,7 +353,7 @@ export default function MobileLandingPage() {
                     </span>
                   </h1>
                   <p style={{ fontSize: 14, lineHeight: 1.8, color: T.ink2, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
-                    시간제취업 확인서 발급부터 승인까지, 카카오톡으로 유학생 행정을 더 간편하게 운영하세요.
+                    시간제취업 확인서 발급부터 승인까지,<br />카카오톡으로 유학생 행정을 더 간편하게 운영하세요.
                   </p>
                   <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                     <Button variant="primary" disabled style={{ boxShadow: `0 4px 16px ${T.coral}40` }}>
