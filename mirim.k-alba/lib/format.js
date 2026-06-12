@@ -19,14 +19,22 @@ export function formatPay(amount, payType) {
   return s + "원";
 }
 
-// "(오전) 8시 00분" / "8시" / "08:00" -> "(오전) 8:00"
+// "(오전) 8시 00분" / "8시" / "08:00" / "17:00" -> "(오전) 8:00" / "(오후) 5:00"
+// 오전/오후 표기가 없으면 24시간제로 보고 오전·오후 + 12시간제로 변환
 function normalizeTime(t) {
-  const ampm = (t.match(/\((오전|오후)\)/) || [])[0] || "";
+  const ampm = (t.match(/\((오전|오후)\)/) || [])[1] || "";
   const hm = t.match(/(\d{1,2})\s*(?::|시)\s*(\d{0,2})/);
   if (!hm) return "";
-  const h = String(parseInt(hm[1], 10));
+  let h = parseInt(hm[1], 10);
   const mm = (hm[2] || "0").padStart(2, "0");
-  return (ampm ? ampm + " " : "") + h + ":" + mm;
+  let label = ampm;
+  if (!label) {
+    if (h === 0) { label = "오전"; h = 12; }
+    else if (h < 12) { label = "오전"; }
+    else if (h === 12) { label = "오후"; }
+    else { label = "오후"; h = h - 12; }
+  }
+  return `(${label}) ${h}:${mm}`;
 }
 
 // 자유 텍스트에서 "시간 ~ 시간" (또는 "시간 - 시간") 구간만 추출.
