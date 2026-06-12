@@ -119,7 +119,7 @@ export const en = {
     sortLatest: "🕒 Latest",
     sortPay: "💰 Highest Pay",
     radiusLabel: "Radius:",
-    searchPlaceholder: "🔍 Search...",
+    searchPlaceholder: "Search...",
     noResults: "No jobs match your criteria.",
     noResultsRadius: "No jobs within {radius}km. Try expanding the radius.",
     totalJobs: "Total {count} jobs",

@@ -71,7 +71,7 @@ export const mn = {
     sortLatest: "🕒 Хамгийн шинэ",
     sortPay: "💰 Хамгийн өндөр цалин",
     radiusLabel: "Радиус:",
-    searchPlaceholder: "🔍 Хайх...", noResults: "Нөхцөлд тохирох ажил байхгүй.",
+    searchPlaceholder: "Хайх...", noResults: "Нөхцөлд тохирох ажил байхгүй.",
     noResultsRadius: "{radius}km-ийн радиуст зар байхгүй. Радиусыг нэмэгдүүлээрэй.",
     totalJobs: "Нийт {count} зар",
     currentLocationLabel: "📍 Одоогийн байршил дээр үндэслэсэн",

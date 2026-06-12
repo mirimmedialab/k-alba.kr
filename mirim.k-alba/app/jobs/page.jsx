@@ -191,26 +191,7 @@ export default function JobsPage() {
         />
       )}
 
-      {/* 챗봇 체험 배너 */}
-      <div
-        onClick={() => router.push("/simulator?mode=worker&job=k1&autostart=1")}
-        style={{
-          background: T.n9, color: T.paper, padding: "14px 16px", borderRadius: 4,
-          borderLeft: `3px solid ${T.gold}`, marginBottom: 20,
-          display: "flex", alignItems: "center", gap: 12, cursor: "pointer",
-        }}
-      >
-        <div style={{ fontSize: 22 }}>💬</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: 14, letterSpacing: "-0.01em", marginBottom: 2 }}>
-            {t("jobs.chatbotBannerTitle")}
-          </div>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)" }}>
-            {t("jobs.chatbotBannerDesc")}
-          </div>
-        </div>
-        <div style={{ fontSize: 18, color: T.gold }}>→</div>
-      </div>
+      {/* 챗봇 체험 배너 제거됨 */}
 
       {/* 정렬 탭 */}
       <div style={{ display: "flex", gap: 4, marginBottom: 12, borderBottom: `1px solid ${T.border}`, overflowX: "auto" }}>
@@ -554,13 +535,7 @@ function JobListItem({ job, index, showDistance, showReason }) {
       onMouseEnter={(e) => (e.currentTarget.style.background = T.cream)}
       onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
     >
-        {/* 인덱스 */}
-        <div style={{
-          minWidth: 24, fontSize: 12, fontWeight: 700,
-          color: T.ink3, letterSpacing: "-0.01em", paddingTop: 3,
-        }}>
-          {String(index + 1).padStart(2, "0")}
-        </div>
+        {/* 인덱스 번호 — 화면에는 숨김 (index prop 유지) */}
 
         {/* 본문 */}
         <div style={{ flex: 1, minWidth: 0 }}>

@@ -73,7 +73,7 @@ export const ja = {
     sortLatest: "🕒 最新順",
     sortPay: "💰 給与が高い順",
     radiusLabel: "半径：",
-    searchPlaceholder: "🔍 検索...", noResults: "条件に合うアルバイトがありません。",
+    searchPlaceholder: "検索...", noResults: "条件に合うアルバイトがありません。",
     noResultsRadius: "半径{radius}km以内に求人がありません。半径を広げてください。",
     totalJobs: "全{count}件の求人",
     currentLocationLabel: "📍 現在地基準",

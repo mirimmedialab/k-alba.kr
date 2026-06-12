@@ -119,7 +119,7 @@ export const ko = {
     sortLatest: "🕒 최신순",
     sortPay: "💰 급여 높은 순",
     radiusLabel: "반경:",
-    searchPlaceholder: "🔍 검색...",
+    searchPlaceholder: "검색어를 입력하세요",
     noResults: "조건에 맞는 알바가 없습니다.",
     noResultsRadius: "반경 {radius}km 안에 공고가 없어요. 반경을 늘려보세요.",
     totalJobs: "총 {count}개 공고",

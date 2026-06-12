@@ -70,6 +70,14 @@ export default function JobDetailPage() {
           company: data.company || data.employer?.company_name || data.employer?.name || "",
           company_name: data.company_name || data.employer?.company_name || "",
           area: data.area || data.sigungu || data.address || "",
+          // DB 컬럼(pay_amount/work_hours/job_type 등)을 화면이 쓰는 필드명으로 매핑
+          pay: data.pay ?? data.pay_amount ?? 0,
+          pay_type: data.pay_type || "시급",
+          type: data.type || data.job_type || "",
+          hours: data.hours || data.work_hours || "",
+          days: data.days || data.work_days || "",
+          korean: data.korean || data.korean_level || "",
+          visa: data.visa || data.visa_types || [],
         });
       }
     });
@@ -178,7 +186,7 @@ export default function JobDetailPage() {
           </div>
         </div>
         <div style={{ fontSize: 24, fontWeight: 900, color: T.mint, marginBottom: 16 }}>
-          ₩{job.pay?.toLocaleString()} / {job.type === "농업" ? "일" : "시간"}
+          ₩{job.pay?.toLocaleString()} / {{ 시급: "시간", 일급: "일", 월급: "월", 연봉: "년" }[job.pay_type] || "시간"}
         </div>
         {/* 비자 배지 — Step 3-A VisaBadge ⭐ BI v2 핵심 변경
             (이전: 모든 비자가 민트색 동일 → 비자별 자동 색상 7종) */}
@@ -196,7 +204,7 @@ export default function JobDetailPage() {
         </div>
         {[
           ["지역", job.area],
-          ["근무시간", `${job.time || ""} · ${job.hours || ""}`],
+          ["근무시간", [job.time, job.hours].filter(Boolean).join(" · ") || "-"],
           ["근무요일", Array.isArray(job.days) ? job.days.join(", ") : job.days || ""],
           ["업종", job.type],
           ["한국어", { none: "불필요", beginner: "초급", intermediate: "중급", advanced: "고급" }[job.korean] || "-"],

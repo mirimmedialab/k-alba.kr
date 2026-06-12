@@ -71,7 +71,7 @@ export const zh = {
     sortLatest: "🕒 最新顺序",
     sortPay: "💰 薪资最高",
     radiusLabel: "半径：",
-    searchPlaceholder: "🔍 搜索...", noResults: "没有符合条件的兼职。",
+    searchPlaceholder: "搜索...", noResults: "没有符合条件的兼职。",
     noResultsRadius: "半径 {radius}km 内没有招聘信息。请扩大半径。",
     totalJobs: "共 {count} 个招聘",
     currentLocationLabel: "📍 基于当前位置",

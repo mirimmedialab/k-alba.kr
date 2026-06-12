@@ -73,7 +73,7 @@ export const vi = {
     sortLatest: "🕒 Mới nhất",
     sortPay: "💰 Lương cao nhất",
     radiusLabel: "Bán kính:",
-    searchPlaceholder: "🔍 Tìm kiếm...", noResults: "Không có công việc nào phù hợp.",
+    searchPlaceholder: "Tìm kiếm...", noResults: "Không có công việc nào phù hợp.",
     noResultsRadius: "Không có tin tuyển dụng trong bán kính {radius}km. Hãy mở rộng bán kính.",
     totalJobs: "Tổng {count} tin tuyển dụng",
     currentLocationLabel: "📍 Dựa trên vị trí hiện tại",

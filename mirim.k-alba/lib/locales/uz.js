@@ -73,7 +73,7 @@ export const uz = {
     sortLatest: "🕒 Eng yangi",
     sortPay: "💰 Eng yuqori maosh",
     radiusLabel: "Radius:",
-    searchPlaceholder: "🔍 Qidirish...", noResults: "Sizning mezonlaringizga mos ish topilmadi.",
+    searchPlaceholder: "Qidirish...", noResults: "Sizning mezonlaringizga mos ish topilmadi.",
     noResultsRadius: "{radius}km radiusda e'lonlar yo'q. Radiusni kengaytiring.",
     totalJobs: "Jami {count} ta e'lon",
     currentLocationLabel: "📍 Hozirgi joylashuv asosida",
