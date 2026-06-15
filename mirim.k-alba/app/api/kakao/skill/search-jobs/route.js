@@ -36,12 +36,14 @@ export async function POST(request) {
   } catch (_) {}
 
   const action = body?.action || {};
-  const visa =
-    action?.clientExtra?.visa ||
-    action?.params?.visa ||
-    body?.userRequest?.utterance ||
-    "";
-  const visaCode = String(visa).trim().toUpperCase();
+  // 비자는 버튼이 넘긴 값(clientExtra/params)을 우선 사용.
+  // 발화(utterance)는 비자 코드처럼 보일 때만 사용 ("알바 찾기" 같은 진입어는 무시).
+  const fromBtn = action?.clientExtra?.visa || action?.params?.visa || "";
+  const utter = String(body?.userRequest?.utterance || "");
+  const utterIsVisa =
+    /^[A-Za-z]\s*-?\s*\d{1,2}$/.test(utter.trim()) || /무관|불문|전체|상관/.test(utter);
+  const visa = fromBtn || (utterIsVisa ? utter : "");
+  const visaCode = String(visa).trim().toUpperCase().replace(/\s+/g, "");
   const anyVisa = !visaCode || /무관|불문|전체|상관/.test(String(visa));
 
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
