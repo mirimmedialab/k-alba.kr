@@ -5,8 +5,9 @@ import { formatPay } from "@/lib/format";
  * 카카오 오픈빌더 스킬: 알바 찾기 (비자 맞춤 공고 검색)
  *
  * 1) 비자 미선택(진입) -> "비자 골라주세요" + 비자 선택 quickReplies
- *    (각 quickReply는 block 액션으로 같은 "공고 결과" 블록을 extra.visa와 함께 재호출)
- * 2) 비자 선택됨(clientExtra.visa) -> 해당 비자 가능 공고를 listCard로 반환
+ *    (각 quickReply는 '메시지 전송' 방식: 라벨이 발화로 전송되어
+ *     "공고 결과" 블록에 매칭되고 스킬이 utterance에서 비자 코드를 추출)
+ * 2) 비자 선택됨 -> 해당 비자 가능 공고를 listCard로 반환
  *
  * 환경변수: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (RLS 우회)
  */
@@ -14,7 +15,6 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const SITE = "https://www.k-alba.kr";
-const RESULT_BLOCK_ID = "6a2facb9799b003b3a903181";
 
 const VISA_CHOICES = [
   ["비자 무관", "비자무관"],
@@ -26,17 +26,19 @@ const VISA_CHOICES = [
   ["H-2 방문취업", "H-2"],
 ];
 
+// 비자 선택 버튼: '메시지 전송' 방식.
+// 라벨이 그대로 발화로 전송되어 "공고 결과" 블록 패턴에 매칭되고,
+// 스킬이 utterance에서 비자 코드를 추출한다. (봇테스트/실카톡 모두 동일 동작)
 function visaQuickReplies() {
-  return VISA_CHOICES.map(([label, code]) => ({
+  return VISA_CHOICES.map(([label]) => ({
     label,
-    action: "block",
-    blockId: RESULT_BLOCK_ID,
-    extra: { visa: code },
+    action: "message",
+    messageText: label,
   }));
 }
 
 const AFTER_QRS = [
-  { label: "🔄 다른 비자로", action: "block", blockId: RESULT_BLOCK_ID },
+  { label: "🔄 다른 비자로", action: "message", messageText: "알바 찾기" },
   { label: "🏠 처음으로", action: "message", messageText: "메뉴" },
 ];
 
