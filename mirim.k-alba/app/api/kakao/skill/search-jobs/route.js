@@ -4,11 +4,9 @@ import { formatPay } from "@/lib/format";
 /**
  * 카카오 오픈빌더 스킬: 알바 찾기 (비자 맞춤 공고 검색)
  *
- * POST /api/kakao/skill/search-jobs
- *
- * 카카오가 보내는 요청에서 비자 코드를 읽어(버튼 추가정보 clientExtra.visa
- * 또는 파라미터 params.visa), 해당 비자로 지원 가능한 active 공고를 조회해
- * 카카오 listCard 형식으로 돌려준다.
+ * 1) 비자 미선택(진입) -> "비자 골라주세요" + 비자 선택 quickReplies
+ *    (각 quickReply는 block 액션으로 같은 "공고 결과" 블록을 extra.visa와 함께 재호출)
+ * 2) 비자 선택됨(clientExtra.visa) -> 해당 비자 가능 공고를 listCard로 반환
  *
  * 환경변수: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (RLS 우회)
  */
@@ -16,16 +14,29 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const SITE = "https://www.k-alba.kr";
+const RESULT_BLOCK_ID = "6a2facb9799b003b3a903181";
 
-function textCard(text, quickReplies) {
-  return Response.json({
-    version: "2.0",
-    template: { outputs: [{ simpleText: { text } }], quickReplies },
-  });
+const VISA_CHOICES = [
+  ["비자 무관", "비자무관"],
+  ["D-2 유학", "D-2"],
+  ["D-4 어학연수", "D-4"],
+  ["E-9 비전문취업", "E-9"],
+  ["F-2 거주", "F-2"],
+  ["F-4 재외동포", "F-4"],
+  ["H-2 방문취업", "H-2"],
+];
+
+function visaQuickReplies() {
+  return VISA_CHOICES.map(([label, code]) => ({
+    label,
+    action: "block",
+    blockId: RESULT_BLOCK_ID,
+    extra: { visa: code },
+  }));
 }
 
-const RESTART_QRS = [
-  { label: "🔄 다른 비자로", action: "message", messageText: "알바 찾기" },
+const AFTER_QRS = [
+  { label: "🔄 다른 비자로", action: "block", blockId: RESULT_BLOCK_ID },
   { label: "🏠 처음으로", action: "message", messageText: "메뉴" },
 ];
 
@@ -36,24 +47,45 @@ export async function POST(request) {
   } catch (_) {}
 
   const action = body?.action || {};
-  // 비자는 버튼이 넘긴 값(clientExtra/params)을 우선 사용.
-  // 발화(utterance)는 비자 코드처럼 보일 때만 사용 ("알바 찾기" 같은 진입어는 무시).
   const fromBtn = action?.clientExtra?.visa || action?.params?.visa || "";
   const utter = String(body?.userRequest?.utterance || "");
   const utterIsVisa =
     /^[A-Za-z]\s*-?\s*\d{1,2}$/.test(utter.trim()) || /무관|불문|전체|상관/.test(utter);
   const visa = fromBtn || (utterIsVisa ? utter : "");
+  const hasInput = !!String(visa).trim();
+
+  if (!hasInput) {
+    return Response.json({
+      version: "2.0",
+      template: {
+        outputs: [
+          {
+            simpleText: {
+              text: "어떤 비자로 일하실 수 있나요? 🛂\n비자에 맞는 합법 알바만 보여드릴게요.\n아래에서 선택해 주세요.",
+            },
+          },
+        ],
+        quickReplies: visaQuickReplies(),
+      },
+    });
+  }
+
   const visaCode = String(visa).trim().toUpperCase().replace(/\s+/g, "");
-  const anyVisa = !visaCode || /무관|불문|전체|상관/.test(String(visa));
+  const anyVisa = /무관|불문|전체|상관/.test(String(visa));
 
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
-    return textCard("앗, 잠시 후 다시 시도해 주세요. (서버 설정 오류)", RESTART_QRS);
+    return Response.json({
+      version: "2.0",
+      template: {
+        outputs: [{ simpleText: { text: "앗, 잠시 후 다시 시도해 주세요. (서버 설정 오류)" } }],
+        quickReplies: AFTER_QRS,
+      },
+    });
   }
 
   const supabase = createClient(url, key);
-
   let q = supabase
     .from("jobs")
     .select(
@@ -62,20 +94,24 @@ export async function POST(request) {
     .eq("status", "active")
     .order("created_at", { ascending: false })
     .limit(5);
-
   if (!anyVisa) q = q.contains("visa_types", [visaCode]);
 
   const { data, error } = await q;
 
-  if (error) {
-    return textCard("공고를 불러오지 못했어요. 잠시 후 다시 시도해 주세요. 🙏", RESTART_QRS);
-  }
-
-  if (!data || data.length === 0) {
-    return textCard(
-      `${anyVisa ? "" : visaCode + " "}조건에 맞는 공고를 찾지 못했어요. 😢\n다른 비자로 다시 찾아볼까요?`,
-      RESTART_QRS
-    );
+  if (error || !data || data.length === 0) {
+    return Response.json({
+      version: "2.0",
+      template: {
+        outputs: [
+          {
+            simpleText: {
+              text: `${anyVisa ? "" : visaCode + " "}조건에 맞는 공고를 찾지 못했어요. 😢\n다른 비자로 다시 찾아볼까요?`,
+            },
+          },
+        ],
+        quickReplies: AFTER_QRS,
+      },
+    });
   }
 
   const items = data.map((j) => {
@@ -90,9 +126,7 @@ export async function POST(request) {
     };
   });
 
-  const header = anyVisa
-    ? "🔍 추천 알바 공고"
-    : `🔍 ${visaCode} 비자로 가능한 알바`;
+  const header = anyVisa ? "🔍 추천 알바 공고" : `🔍 ${visaCode} 비자로 가능한 알바`;
 
   return Response.json({
     version: "2.0",
@@ -102,13 +136,11 @@ export async function POST(request) {
           listCard: {
             header: { title: header.slice(0, 36) },
             items,
-            buttons: [
-              { label: "웹에서 더 보기", action: "webLink", webLinkUrl: `${SITE}/jobs` },
-            ],
+            buttons: [{ label: "웹에서 더 보기", action: "webLink", webLinkUrl: `${SITE}/jobs` }],
           },
         },
       ],
-      quickReplies: RESTART_QRS,
+      quickReplies: AFTER_QRS,
     },
   });
 }
