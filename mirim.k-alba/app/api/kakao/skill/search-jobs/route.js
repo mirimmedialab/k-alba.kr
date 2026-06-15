@@ -40,6 +40,14 @@ const AFTER_QRS = [
   { label: "🏠 처음으로", action: "message", messageText: "메뉴" },
 ];
 
+// 발화/라벨에서 비자 코드 추출 ("H-2 방문취업" -> "H-2", "비자 무관" -> "비자무관")
+function extractVisa(t) {
+  if (!t) return "";
+  if (/무관|불문|전체|상관/.test(t)) return "비자무관";
+  const m = t.match(/([A-Ha-h])\s*-?\s*(\d{1,2})/);
+  return m ? `${m[1].toUpperCase()}-${m[2]}` : "";
+}
+
 export async function POST(request) {
   let body = {};
   try {
@@ -49,9 +57,7 @@ export async function POST(request) {
   const action = body?.action || {};
   const fromBtn = action?.clientExtra?.visa || action?.params?.visa || "";
   const utter = String(body?.userRequest?.utterance || "");
-  const utterIsVisa =
-    /^[A-Za-z]\s*-?\s*\d{1,2}$/.test(utter.trim()) || /무관|불문|전체|상관/.test(utter);
-  const visa = fromBtn || (utterIsVisa ? utter : "");
+  const visa = fromBtn || extractVisa(utter);
   const hasInput = !!String(visa).trim();
 
   if (!hasInput) {
