@@ -62,13 +62,13 @@ function NewContractContent() {
     setLoading(false);
 
     if (!error && data) {
-      router.push(`/contract/${data.id}`);
+      router.push(`/contracts/${data.id}`);
     } else if (error) {
       const demoId = "demo-" + Date.now();
       if (typeof window !== "undefined") {
         localStorage.setItem(`contract-${demoId}`, JSON.stringify({ ...contractData, id: demoId }));
       }
-      router.push(`/contract/${demoId}`);
+      router.push(`/contracts/${demoId}`);
     }
   };
 
