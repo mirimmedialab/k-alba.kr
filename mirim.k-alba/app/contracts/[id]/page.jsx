@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { T } from "@/lib/theme";
 import { getContract, updateContract, signContract, getCurrentUser, supabase } from "@/lib/supabase";
-import { formatKoreanDate, MIN_WAGE } from "@/lib/contractUtils";
+import { formatKoreanDate, MIN_WAGE, buildContractFromJob } from "@/lib/contractUtils";
 import { generateContractPDF, buildContractFilename } from "@/lib/pdfGenerator";
 import { useT } from "@/lib/i18n";
 import { ContractDetailSkel } from "@/components/Wireframe";
@@ -62,8 +62,30 @@ export default function ContractDetailPage() {
 
   // ─── 계약서 데이터 로드 ───
   useEffect(() => {
+    const isPreview =
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("preview") === "kalba2026";
+
+    // (임시) 캡처용 샘플 계약서 — 캡처 후 삭제
+    if (isPreview && params.id === "sample") {
+      const job = { id: "sample", icon: "☕", title: "카페 바리스타", company_name: "블루보틀 강남점", job_type: "카페", pay_type: "시급", pay_amount: 12000, address: "서울 강남구 테헤란로 152", work_hours: "14:00~20:00", work_days: "평일 (월~금)", description: "커피 음료 제조, 매장 청소, 재고 관리" };
+      const profile = { name: "김민준", company_name: "블루보틀코리아 (주)", business_number: "123-45-67890", phone: "02-1234-5678", business_address: "서울 강남구 테헤란로 152" };
+      const c = buildContractFromJob(job, profile);
+      c.id = "sample";
+      c.worker_name = "Linh T.";
+      c.worker_phone = "010-1234-5678";
+      c.worker_birth = "1998-03-12";
+      c.status = "worker_signing";
+      c.created_at = new Date().toISOString();
+      setContract(c);
+      setUser({ id: "preview", user_metadata: { user_type: "worker", name: "Linh T." } });
+      setLoading(false);
+      return;
+    }
+
     getCurrentUser().then(async (u) => {
       if (!u) {
+        if (isPreview) { setLoading(false); return; }
         router.push("/login");
         return;
       }

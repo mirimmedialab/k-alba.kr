@@ -83,6 +83,14 @@ export async function middleware(request) {
     return NextResponse.next();
   }
 
+  // ─── (임시) 캡처용 프리뷰 우회 — 캡처 후 반드시 제거 ───
+  if (
+    (path.startsWith("/jobs/post") || path.startsWith("/contracts/")) &&
+    request.nextUrl.searchParams.get("preview") === "kalba2026"
+  ) {
+    return NextResponse.next();
+  }
+
   // ─── 3) 로그인 필요 여부 ───
   const requiresAuth = AUTH_REQUIRED_ROUTES.some((r) => path.startsWith(r));
   if (!requiresAuth) return NextResponse.next();
