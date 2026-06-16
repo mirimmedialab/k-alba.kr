@@ -51,11 +51,16 @@ export default function AuthCallbackPage() {
         }
 
         const user = session.user;
-        const kakaoBotKey = new URLSearchParams(window.location.search).get("kakaojoin");
+        let kakaoBotKey = "";
+        try { kakaoBotKey = localStorage.getItem("kalba_bot_key") || ""; } catch (_) {}
+        if (!kakaoBotKey) {
+          kakaoBotKey = new URLSearchParams(window.location.search).get("kakaojoin") || "";
+        }
 
         // ── 카카오 챗봇 공고등록 연결 흐름 ──
         if (kakaoBotKey) {
           let ok = false;
+          let detail = "";
           try {
             const res = await fetch("/api/employer/link-kakao", {
               method: "POST",
@@ -66,10 +71,12 @@ export default function AuthCallbackPage() {
               body: JSON.stringify({ botUserKey: kakaoBotKey }),
             });
             ok = res.ok;
+            if (!ok) { try { detail = (await res.json())?.error || ""; } catch (_) {} }
           } catch (_) {}
+          try { localStorage.removeItem("kalba_bot_key"); } catch (_) {}
           if (!ok) {
             setStatus("error");
-            setErrorMsg("연결 처리에 실패했어요. 잠시 후 다시 시도해주세요.");
+            setErrorMsg("연결 처리에 실패했어요. 잠시 후 다시 시도해주세요." + (detail ? ` (${detail})` : ""));
             return;
           }
           router.replace("/employer/kakao-join/done");

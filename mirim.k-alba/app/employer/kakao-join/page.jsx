@@ -8,7 +8,9 @@ import { supabase } from "@/lib/supabase";
  *
  * 카카오톡 챗봇에서 '공고 등록'을 누른 사장님 간편가입 랜딩.
  * - 보안: 항상 실제 카카오 로그인(OAuth)을 거친다. (세션이 있어도 생략하지 않음)
- * - botUserKey(b)는 OAuth redirectTo의 쿼리(kakaojoin=)로 안전하게 전달된다.
+ * - botUserKey(b)는 localStorage(kalba_bot_key)에 저장해 전달한다.
+ *   (redirectTo 쿼리는 Supabase 허용목록에서 잘릴 수 있어 사용하지 않음. 같은 도메인이라
+ *    OAuth 왕복 후에도 localStorage 값은 유지된다.)
  * - 로그인 완료 후 /auth/callback 에서 서버 API(/api/employer/link-kakao)로 연결한다.
  */
 function JoinInner() {
@@ -20,10 +22,10 @@ function JoinInner() {
     if (!b || !supabase) return;
     setBusy(true);
     const origin = window.location.origin;
-    const redirectTo = `${origin}/auth/callback?kakaojoin=${encodeURIComponent(b)}`;
+    try { localStorage.setItem("kalba_bot_key", b); } catch (_) {}
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "kakao",
-      options: { redirectTo },
+      options: { redirectTo: `${origin}/auth/callback` },
     });
     if (error) setBusy(false);
   };
@@ -55,7 +57,7 @@ function JoinInner() {
 
         {!b && (
           <p style={{ fontSize: 12, color: "#94A3B8", marginTop: 14, lineHeight: 1.6 }}>
-            이 화면은 카카오톡 챗봇에서 ‘공고 등록’을 누르면 자동으로 열려요.
+            이 화면은 카카오톡 챗봇에서 '공고 등록'을 누르면 자동으로 열려요.
           </p>
         )}
       </div>
