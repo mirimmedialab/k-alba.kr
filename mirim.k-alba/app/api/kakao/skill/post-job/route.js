@@ -161,7 +161,7 @@ function needJoin(key) {
       basicCard: {
         title: "공고 등록은 회원가입이 필요해요 🙌",
         description:
-          "카카오로 30초면 가입할 수 있어요. 가입을 마치면 아래 '📝 공고 등록' 버튼을 눌러주세요!",
+          "카카오로 30초면 가입돼요. 가입하면 올린 공고의 지원 현황을 이메일로 받아보실 수 있어요. 가입 후 카카오톡으로 돌아와 아래 '📝 공고 등록' 버튼을 눌러주세요!",
         buttons: [{ action: "webLink", label: "카카오로 가입하기", webLinkUrl: url }],
       },
     }],
@@ -209,8 +209,9 @@ export async function POST(request) {
   const { data: draftRow } = await db
     .from("kakao_job_drafts").select("step, data").eq("bot_user_key", key).maybeSingle();
 
-  // 신규 진입(드래프트 없음 또는 '공고 등록' 트리거)
-  if (!draftRow || /^(공고\s*등록|공고\s*올리기|직원\s*구함|채용)/.test(utter)) {
+  // 신규 진입/재시작은 '공고 등록' 류 발화일 때만
+  const isEntry = /^(공고\s*등록|공고\s*올리기|직원\s*구함|채용)/.test(utter);
+  if (isEntry) {
     const data = {};
     let start = 0;
     if (profile.company_name) { data.company = profile.company_name; start = 1; }
@@ -220,6 +221,14 @@ export async function POST(request) {
     const note = start === 1 ? `'${profile.company_name}' 사장님, 공고를 만들어 드릴게요! ✍️` :
       "공고를 만들어 드릴게요! 몇 가지만 여쭤볼게요 ✍️";
     return askStep(start, note);
+  }
+
+  // 진행 중인 등록이 없는데 들어옴(완료 후 컨텍스트 잔류 등) → 재시작 말고 안내
+  if (!draftRow) {
+    return reply({
+      outputs: [{ simpleText: { text: "공고 등록을 시작하려면 아래 '📝 공고 등록' 버튼을 눌러주세요." } }],
+      quickReplies: [qrMsg("📝 공고 등록", "공고 등록"), qrMsg("🏠 메뉴", "사장님")],
+    }, false);
   }
 
   // 진행 중: 현재 단계의 답을 기록
