@@ -91,13 +91,13 @@ function botKey(body) {
   return u.id || u.properties?.botUserKey || u.properties?.plusfriendUserKey || "";
 }
 
-function ctx(lifeSpan = 15) {
+function ctx(lifeSpan = 10) {
   return { values: [{ name: CTX_NAME, lifeSpan, params: {} }] };
 }
 
 function reply(template, withCtx = true) {
   const out = { version: "2.0", template };
-  if (withCtx) out.context = ctx(15);
+  if (withCtx) out.context = ctx(10);
   else out.context = ctx(0); // 컨텍스트 종료
   return Response.json(out);
 }
@@ -142,9 +142,7 @@ async function geocode(address) {
 // 질문 단계 -> 카카오 응답 템플릿
 function askStep(stepIndex, note) {
   const s = STEPS[stepIndex];
-  const total = STEPS.length;
-  const head = `[${stepIndex + 1}/${total}]\n`;
-  const text = (note ? note + "\n\n" : "") + head + s.q;
+  const text = (note ? note + "\n\n" : "") + s.q;
   const qrs = [];
   if (s.type === "buttons") for (const o of s.options) qrs.push(qrMsg(o));
   if (s.type === "visa") for (const [label] of VISA_OPTIONS) qrs.push(qrMsg(label));
