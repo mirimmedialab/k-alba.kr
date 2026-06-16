@@ -4,14 +4,12 @@ import { formatPay } from "@/lib/format";
 /**
  * 카카오 오픈빌더 스킬: 사장님 공고 등록 (챗봇 대화형, 상태머신)
  *
- * 흐름:
- *  1) botUserKey(userRequest.user.id)로 회원 조회
- *     - 미가입 -> 카카오 간편가입 webLink 안내 (가입 후 botUserKey 연결)
- *     - 가입   -> 단계별 질문 진행
- *  2) 14단계(핵심 8 필수 + 나머지 건너뛰기) 수집
- *     - 상태는 kakao_job_drafts 테이블(botUserKey 키)에 저장
- *     - 카카오 컨텍스트(JOB_POSTING)로 매 발화를 이 블록으로 라우팅
- *  3) 완료 시 jobs 테이블에 회원과 연결된 공고로 저장 (status=active, source_type=chatbot)
+ * 라우팅 원칙(컨텍스트 의존 X, DB 드래프트 = 단일 진실 소스):
+ *  - 진입: '공고 등록' 블록(발화) -> 이 스킬 -> 회원확인 후 드래프트 생성
+ *  - 버튼 답변: 블록연결(action:block)로 '공고 등록 진행' 블록에 강제 라우팅 + extra로 답 전달
+ *    (action:message 는 카카오 의도매칭이 다른 블록으로 가로채므로 사용하지 않음)
+ *  - 자유 입력 답변: 폴백 블록 -> 이 스킬 -> 진행 중 드래프트가 있으면 답으로 기록
+ *  - 진행 중이 아니면(폴백 유휴): 페르소나 선택 안내
  *
  * 환경변수: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, KAKAO_REST_API_KEY
  */
@@ -21,6 +19,7 @@ export const dynamic = "force-dynamic";
 const SITE = "https://www.k-alba.kr";
 const JOIN_PATH = "/employer/kakao-join";
 const CTX_NAME = "JOB_POSTING";
+const PROGRESS_BLOCK = "6a30e78d821f981024003ae8"; // '공고 등록 진행' 블록 ID
 
 const CANCEL_RE = /^(취소|그만|중단|메인|메뉴|처음|나가기|x)$/i;
 const SKIP_RE = /^(건너뛰기|스킵|skip|넘기기|패스)$/i;
@@ -106,6 +105,24 @@ function qrMsg(label, text) {
   return { label, action: "message", messageText: text ?? label };
 }
 
+// 버튼 답변: 블록연결(action:block)로 '공고 등록 진행' 블록에 강제 라우팅 + extra로 답 전달.
+function qrAnswer(label, value) {
+  return { action: "block", label, blockId: PROGRESS_BLOCK, extra: { kalbaAnswer: value ?? label } };
+}
+
+// 진행 중이 아닐 때(폴백 유휴) 페르소나 선택 안내
+function welcomeFallback() {
+  return reply({
+    outputs: [{ simpleText: { text: "무엇을 원하는지 잘 모르겠어요. 아래에서 골라주세요 🙂" } }],
+    quickReplies: [
+      { action: "message", label: "🌏 외국인 알바생", messageText: "외국인 알바생" },
+      { action: "message", label: "💼 사장님", messageText: "사장님" },
+      { action: "message", label: "🎓 유학생", messageText: "유학생" },
+      { action: "message", label: "🏫 학교 담당자", messageText: "학교 담당자" },
+    ],
+  }, false);
+}
+
 async function geocode(address) {
   const KEY = process.env.KAKAO_REST_API_KEY;
   if (!KEY) return null;
@@ -144,10 +161,10 @@ function askStep(stepIndex, note) {
   const s = STEPS[stepIndex];
   const text = (note ? note + "\n\n" : "") + s.q;
   const qrs = [];
-  if (s.type === "buttons") for (const o of s.options) qrs.push(qrMsg(o));
-  if (s.type === "visa") for (const [label] of VISA_OPTIONS) qrs.push(qrMsg(label));
-  if (!s.core) qrs.push(qrMsg("⏭ 건너뛰기", "건너뛰기"));
-  qrs.push(qrMsg("✖ 취소", "취소"));
+  if (s.type === "buttons") for (const o of s.options) qrs.push(qrAnswer(o, o));
+  if (s.type === "visa") for (const [label] of VISA_OPTIONS) qrs.push(qrAnswer(label, label));
+  if (!s.core) qrs.push(qrAnswer("⏭ 건너뛰기", "건너뛰기"));
+  qrs.push(qrAnswer("✖ 취소", "취소"));
   return reply({ outputs: [{ simpleText: { text } }], quickReplies: qrs.slice(0, 10) }, true);
 }
 
@@ -176,14 +193,20 @@ export async function POST(request) {
 
   const key = botKey(body);
   const utter = String(body?.userRequest?.utterance || "").trim();
+  const extra = body?.action?.clientExtra || {};
+  const btnAnswer = typeof extra.kalbaAnswer === "string" ? extra.kalbaAnswer.trim() : "";
   const db = supa();
 
   if (!key || !db) {
     return reply({ outputs: [{ simpleText: { text: "앗, 잠시 후 다시 시도해 주세요. 🙏" } }] }, false);
   }
 
-  // 취소 → 컨텍스트/드래프트 정리 후 메인으로
-  if (CANCEL_RE.test(utter)) {
+  // 진행 상태(드래프트) = 단일 진실 소스
+  const { data: draftRow } = await db
+    .from("kakao_job_drafts").select("step, data").eq("bot_user_key", key).maybeSingle();
+
+  // 취소 (버튼 또는 발화)
+  if (CANCEL_RE.test(btnAnswer) || CANCEL_RE.test(utter)) {
     await db.from("kakao_job_drafts").delete().eq("bot_user_key", key);
     return reply({
       outputs: [{ simpleText: { text: "공고 등록을 취소했어요. 언제든 다시 시작할 수 있어요!" } }],
@@ -191,25 +214,15 @@ export async function POST(request) {
     }, false);
   }
 
-  // 회원 조회
-  const { data: profile } = await db
-    .from("profiles")
-    .select("id, company_name, phone, user_type")
-    .eq("kakao_bot_user_key", key)
-    .maybeSingle();
-
-  if (!profile) {
-    await db.from("kakao_job_drafts").delete().eq("bot_user_key", key);
-    return needJoin(key);
-  }
-
-  // 드래프트 로드
-  const { data: draftRow } = await db
-    .from("kakao_job_drafts").select("step, data").eq("bot_user_key", key).maybeSingle();
-
-  // 신규 진입/재시작은 '공고 등록' 류 발화일 때만
+  // 신규 진입: '공고 등록' 류 발화일 때만 (회원 확인은 여기서만)
   const isEntry = /^(공고\s*등록|공고\s*올리기|직원\s*구함|채용)/.test(utter);
   if (isEntry) {
+    const { data: profile } = await db
+      .from("profiles").select("id, company_name").eq("kakao_bot_user_key", key).maybeSingle();
+    if (!profile) {
+      await db.from("kakao_job_drafts").delete().eq("bot_user_key", key);
+      return needJoin(key);
+    }
     const data = {};
     let start = 0;
     if (profile.company_name) { data.company = profile.company_name; start = 1; }
@@ -221,47 +234,46 @@ export async function POST(request) {
     return askStep(start, note);
   }
 
-  // 진행 중인 등록이 없는데 들어옴(완료 후 컨텍스트 잔류 등) → 재시작 말고 안내
+  // 진행 중이 아니면(폴백 유휴) → 페르소나 안내
   if (!draftRow) {
-    return reply({
-      outputs: [{ simpleText: { text: "공고 등록을 시작하려면 아래 '📝 공고 등록' 버튼을 눌러주세요." } }],
-      quickReplies: [qrMsg("📝 공고 등록", "공고 등록"), qrMsg("🏠 메뉴", "사장님")],
-    }, false);
+    return welcomeFallback();
   }
 
-  // 진행 중: 현재 단계의 답을 기록
+  // ── 진행 중: 현재 단계의 답을 기록 (버튼답 extra 우선, 없으면 자유입력) ──
+  const { data: profile } = await db
+    .from("profiles").select("id, company_name, phone").eq("kakao_bot_user_key", key).maybeSingle();
+  if (!profile) {
+    await db.from("kakao_job_drafts").delete().eq("bot_user_key", key);
+    return needJoin(key);
+  }
+
   let step = draftRow.step;
   const data = { ...(draftRow.data || {}) };
   const s = STEPS[step];
+  const input = btnAnswer || utter;
 
-  // 건너뛰기(선택 단계만)
-  if (SKIP_RE.test(utter)) {
-    if (s.core) {
-      return askStep(step, "이 항목은 필수예요. 입력해 주세요 🙏");
-    }
+  if (SKIP_RE.test(input)) {
+    if (s.core) return askStep(step, "이 항목은 필수예요. 입력해 주세요 🙏");
     // skip → 다음
   } else {
-    // 값 검증/기록
-    if (s.type === "text" && !utter) {
-      return askStep(step, "내용을 입력해 주세요 🙏");
-    }
+    if (s.type === "text" && !input) return askStep(step, "내용을 입력해 주세요 🙏");
     if (s.key === "pay_amount") {
-      const n = Number(utter.replace(/[^0-9]/g, ""));
+      const n = Number(input.replace(/[^0-9]/g, ""));
       if (!n) return askStep(step, "급여 금액을 숫자로 입력해 주세요. 예: 11000");
       data.pay_amount = n;
     } else if (s.key === "address") {
-      const geo = await geocode(utter);
+      const geo = await geocode(input);
       if (!geo) return askStep(step, "주소를 찾지 못했어요. 도로명/지번 주소로 다시 입력해 주세요 🙏");
       data.address = geo.address; data.sido = geo.sido; data.sigungu = geo.sigungu;
       data.dong = geo.dong; data.latitude = geo.latitude; data.longitude = geo.longitude;
     } else if (s.key === "visa") {
-      const match = VISA_OPTIONS.find(([label]) => label === utter)
-        || VISA_OPTIONS.find(([label, code]) => utter.toUpperCase().includes(code) && code !== "ANY")
-        || (/무관|상관|불문/.test(utter) ? ["비자 무관", "ANY"] : null);
+      const match = VISA_OPTIONS.find(([label]) => label === input)
+        || VISA_OPTIONS.find(([label, code]) => input.toUpperCase().includes(code) && code !== "ANY")
+        || (/무관|상관|불문/.test(input) ? ["비자 무관", "ANY"] : null);
       if (!match) return askStep(step, "아래 버튼에서 비자를 골라주세요 🙏");
       data.visa_types = match[1] === "ANY" ? ANY_VISA_CODES.slice() : [match[1]];
     } else {
-      data[s.key] = utter;
+      data[s.key] = input;
     }
   }
 
@@ -311,13 +323,11 @@ export async function POST(request) {
     }, false);
   }
 
-  // 프로필 보강(업체명/연락처 비어있으면 채움)
   const patch = {};
   if (!profile.company_name && data.company) patch.company_name = data.company;
   if (!profile.phone && data.contact) patch.phone = data.contact;
   if (Object.keys(patch).length) await db.from("profiles").update(patch).eq("id", profile.id);
 
-  // 드래프트 정리
   await db.from("kakao_job_drafts").delete().eq("bot_user_key", key);
 
   const payStr = `${data.pay_type || "시급"} ${formatPay(Number(data.pay_amount) || 0, data.pay_type)}`;
