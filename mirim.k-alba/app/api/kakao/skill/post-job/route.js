@@ -158,7 +158,7 @@ function needJoin(key) {
   const url = `${SITE}${JOIN_PATH}?b=${encodeURIComponent(key)}`;
   return reply({
     outputs: [{
-      basicCard: {
+      textCard: {
         title: "공고 등록은 회원가입이 필요해요 🙌",
         description:
           "카카오로 30초면 가입돼요. 가입하면 올린 공고의 지원 현황을 이메일로 받아보실 수 있어요. 가입 후 카카오톡으로 돌아와 아래 '📝 공고 등록' 버튼을 눌러주세요!",
@@ -326,7 +326,7 @@ export async function POST(request) {
   const region = data.sigungu || data.sido || "";
   return reply({
     outputs: [{
-      basicCard: {
+      textCard: {
         title: "🎉 공고 등록 완료!",
         description: [
           `📋 ${String(data.title || "공고").slice(0, 40)}`,
