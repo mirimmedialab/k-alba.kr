@@ -12,15 +12,10 @@ import { supabase } from "@/lib/supabase";
  * 1. signup 또는 login 페이지에서 OAuth 버튼 클릭 직전 sessionStorage에 정보 저장
  *    - "k-alba-oauth-intent": "signup" | "login"
  *    - "k-alba-oauth-role"  : "worker" | "employer"  (signup 시에만)
+ *    - "k-alba-kakao-botkey": 카카오 챗봇 botUserKey (챗봇 공고등록 연결 시에만)
  * 2. OAuth 완료 후 이 페이지로 진입
- * 3. 세션이 있으면:
- *    - signup 흐름: user_metadata.user_type 업데이트 + profiles 테이블 UPDATE
- *    - login 흐름:  user_metadata에서 user_type 읽기 (없으면 profiles에서 fallback)
- * 4. user_type에 따라 /my/jobs (employer) 또는 /jobs (worker)로 분기
- *
- * 에러 처리:
- * - URL에 error 파라미터(server_error 등) 있으면 메시지 표시 + 재시도 링크
- * - 세션 없으면 /login으로
+ * 3. 세션이 있으면 user_type 처리 + (있으면) botUserKey ↔ 회원 매핑
+ * 4. botUserKey 연결 흐름이면 안내 페이지로, 아니면 user_type에 따라 분기
  */
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -40,7 +35,6 @@ export default function AuthCallbackPage() {
       const search = window.location.search || "";
       const combined = hash + search;
       if (combined.includes("error=")) {
-        // error_description 추출
         const m = combined.match(/error_description=([^&]+)/);
         const desc = m ? decodeURIComponent(m[1].replace(/\+/g, " ")) : "OAuth 인증에 실패했습니다";
         setStatus("error");
@@ -49,17 +43,12 @@ export default function AuthCallbackPage() {
       }
     }
 
-    // 세션 확보 + user_type 처리
     (async () => {
       try {
-        // OAuth 직후엔 onAuthStateChange가 더 안정적일 수 있어, 1차 시도 후 짧게 재시도
         let session = null;
         for (let i = 0; i < 8; i++) {
           const { data } = await supabase.auth.getSession();
-          if (data?.session) {
-            session = data.session;
-            break;
-          }
+          if (data?.session) { session = data.session; break; }
           await new Promise((r) => setTimeout(r, 250));
         }
 
@@ -72,20 +61,16 @@ export default function AuthCallbackPage() {
         const user = session.user;
         const intent = sessionStorage.getItem("k-alba-oauth-intent") || "login";
         const intendedRole = sessionStorage.getItem("k-alba-oauth-role"); // worker | employer | null
+        const kakaoBotKey = sessionStorage.getItem("k-alba-kakao-botkey"); // 챗봇 연결용 botUserKey
 
         let userType = user.user_metadata?.user_type;
 
         if (intent === "signup" && intendedRole && (intendedRole === "worker" || intendedRole === "employer")) {
-          // 신규 가입: user_metadata + profiles 둘 다 업데이트
           if (userType !== intendedRole) {
-            await supabase.auth.updateUser({
-              data: { user_type: intendedRole },
-            });
+            await supabase.auth.updateUser({ data: { user_type: intendedRole } });
             userType = intendedRole;
           }
 
-          // profiles 테이블 동기화 (handle_new_user trigger가 'worker' 기본값으로 만들어놨을 것)
-          // 이메일이 누락된 경우 보강 + user_type 강제 업데이트
           const { error: upErr } = await supabase
             .from("profiles")
             .update({
@@ -96,7 +81,6 @@ export default function AuthCallbackPage() {
             .eq("id", user.id);
 
           if (upErr) {
-            // UPDATE 실패 (행 없음) → INSERT 시도
             await supabase.from("profiles").upsert({
               id: user.id,
               email: user.email,
@@ -105,7 +89,6 @@ export default function AuthCallbackPage() {
             });
           }
         } else {
-          // 로그인: user_type이 metadata에 없으면 profiles에서 가져옴
           if (!userType) {
             const { data: prof } = await supabase
               .from("profiles")
@@ -116,11 +99,26 @@ export default function AuthCallbackPage() {
           }
         }
 
+        // 카카오 챗봇 공고등록 연결: botUserKey ↔ 회원 매핑
+        if (kakaoBotKey) {
+          try {
+            await supabase
+              .from("profiles")
+              .update({ kakao_bot_user_key: kakaoBotKey })
+              .eq("id", user.id);
+          } catch (_) {}
+          sessionStorage.removeItem("k-alba-kakao-botkey");
+        }
+
         // 정리
         sessionStorage.removeItem("k-alba-oauth-intent");
         sessionStorage.removeItem("k-alba-oauth-role");
 
-        // 분기 라우팅
+        // 분기 라우팅 (챗봇 연결 흐름이면 안내 페이지로)
+        if (kakaoBotKey) {
+          router.replace("/employer/kakao-join/done");
+          return;
+        }
         const dest = userType === "employer" ? "/my/jobs" : "/jobs";
         router.replace(dest);
       } catch (e) {
@@ -133,17 +131,7 @@ export default function AuthCallbackPage() {
 
   if (status === "error") {
     return (
-      <div
-        style={{
-          minHeight: "60vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "40px 20px",
-          textAlign: "center",
-        }}
-      >
+      <div style={{ minHeight: "60vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px", textAlign: "center" }}>
         <div style={{ fontSize: 40, marginBottom: 16 }}>⚠️</div>
         <h1 style={{ fontSize: 18, fontWeight: 800, color: "#1A1F3D", marginBottom: 12 }}>
           로그인을 완료할 수 없어요
@@ -155,34 +143,10 @@ export default function AuthCallbackPage() {
           이전에 가입을 시도하다가 중단된 적이 있다면, 같은 이메일로 다시 가입할 때 일시적으로 차단될 수 있어요. 잠시 후 다시 시도하거나 다른 로그인 방법을 사용해주세요.
         </p>
         <div style={{ display: "flex", gap: 10 }}>
-          <button
-            onClick={() => router.push("/login")}
-            style={{
-              padding: "10px 20px",
-              background: "#FF6B5A",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              fontWeight: 700,
-              fontSize: 13,
-              cursor: "pointer",
-            }}
-          >
+          <button onClick={() => router.push("/login")} style={{ padding: "10px 20px", background: "#FF6B5A", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
             로그인 다시 시도
           </button>
-          <button
-            onClick={() => router.push("/")}
-            style={{
-              padding: "10px 20px",
-              background: "#fff",
-              color: "#1A1F3D",
-              border: "1px solid #EDEAE6",
-              borderRadius: 8,
-              fontWeight: 600,
-              fontSize: 13,
-              cursor: "pointer",
-            }}
-          >
+          <button onClick={() => router.push("/")} style={{ padding: "10px 20px", background: "#fff", color: "#1A1F3D", border: "1px solid #EDEAE6", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
             홈으로
           </button>
         </div>
@@ -191,27 +155,8 @@ export default function AuthCallbackPage() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: "60vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "40px 20px",
-      }}
-    >
-      <div
-        style={{
-          width: 36,
-          height: 36,
-          border: "3px solid #EDEAE6",
-          borderTopColor: "#FF6B5A",
-          borderRadius: "50%",
-          animation: "spin 0.8s linear infinite",
-          marginBottom: 20,
-        }}
-      />
+    <div style={{ minHeight: "60vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
+      <div style={{ width: 36, height: 36, border: "3px solid #EDEAE6", borderTopColor: "#FF6B5A", borderRadius: "50%", animation: "spin 0.8s linear infinite", marginBottom: 20 }} />
       <p style={{ fontSize: 14, color: "#4A4640" }}>로그인 처리 중...</p>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
