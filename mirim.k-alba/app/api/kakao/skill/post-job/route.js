@@ -214,9 +214,10 @@ export async function POST(request) {
     }, false);
   }
 
-  // 신규 진입: '공고 등록' 류 발화일 때만 (회원 확인은 여기서만)
+  // 진입/시작: '공고 등록' 류 발화이거나, 진행 중 드래프트가 없으면 시작으로 처리한다.
+  // (사장님 메뉴의 '공고 등록' 버튼은 블록연결이라 빈 발화가 오므로 발화에만 의존하면 안 됨)
   const isEntry = /^(공고\s*등록|공고\s*올리기|직원\s*구함|채용)/.test(utter);
-  if (isEntry) {
+  if (isEntry || !draftRow) {
     const { data: profile } = await db
       .from("profiles").select("id, company_name").eq("kakao_bot_user_key", key).maybeSingle();
     if (!profile) {
@@ -232,11 +233,6 @@ export async function POST(request) {
     const note = start === 1 ? `'${profile.company_name}' 사장님, 공고를 만들어 드릴게요! ✍️` :
       "공고를 만들어 드릴게요! 몇 가지만 여쭤볼게요 ✍️";
     return askStep(start, note);
-  }
-
-  // 진행 중이 아니면(폴백 유휴) → 페르소나 안내
-  if (!draftRow) {
-    return welcomeFallback();
   }
 
   // ── 진행 중: 현재 단계의 답을 기록 (버튼답 extra 우선, 없으면 자유입력) ──
