@@ -6,20 +6,16 @@ import { supabase } from "@/lib/supabase";
 /**
  * /auth/callback
  *
- * OAuth (Google / Kakao) 인증 후 리다이렉트되는 페이지.
+ * OAuth(Google/Kakao) 인증 후 리다이렉트되는 페이지.
  *
- * 흐름:
- * 1. signup 또는 login 페이지에서 OAuth 버튼 클릭 직전 sessionStorage에 정보 저장
- *    - "k-alba-oauth-intent": "signup" | "login"
- *    - "k-alba-oauth-role"  : "worker" | "employer"  (signup 시에만)
- *    - "k-alba-kakao-botkey": 카카오 챗봇 botUserKey (챗봇 공고등록 연결 시에만)
- * 2. OAuth 완료 후 이 페이지로 진입
- * 3. 세션이 있으면 user_type 처리 + (있으면) botUserKey ↔ 회원 매핑
- * 4. botUserKey 연결 흐름이면 안내 페이지로, 아니면 user_type에 따라 분기
+ * 1) 일반 로그인/가입: sessionStorage의 intent/role 기반 처리 + user_type 분기
+ * 2) 카카오 챗봇 공고등록 연결: URL 쿼리 kakaojoin=<botUserKey> 가 있으면,
+ *    인증된 사용자 토큰으로 서버 API(/api/employer/link-kakao)를 호출해 안전하게 연결한 뒤
+ *    /employer/kakao-join/done 으로 이동한다. (sessionStorage 의존 X, 인증 우회 X)
  */
 export default function AuthCallbackPage() {
   const router = useRouter();
-  const [status, setStatus] = useState("processing"); // processing | error
+  const [status, setStatus] = useState("processing");
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
@@ -29,11 +25,8 @@ export default function AuthCallbackPage() {
       return;
     }
 
-    // URL 해시/쿼리에 error가 있으면 즉시 에러 처리
     if (typeof window !== "undefined") {
-      const hash = window.location.hash || "";
-      const search = window.location.search || "";
-      const combined = hash + search;
+      const combined = (window.location.hash || "") + (window.location.search || "");
       if (combined.includes("error=")) {
         const m = combined.match(/error_description=([^&]+)/);
         const desc = m ? decodeURIComponent(m[1].replace(/\+/g, " ")) : "OAuth 인증에 실패했습니다";
@@ -51,7 +44,6 @@ export default function AuthCallbackPage() {
           if (data?.session) { session = data.session; break; }
           await new Promise((r) => setTimeout(r, 250));
         }
-
         if (!session?.user) {
           setStatus("error");
           setErrorMsg("로그인 세션을 확인할 수 없습니다. 다시 시도해주세요.");
@@ -59,18 +51,41 @@ export default function AuthCallbackPage() {
         }
 
         const user = session.user;
-        const intent = sessionStorage.getItem("k-alba-oauth-intent") || "login";
-        const intendedRole = sessionStorage.getItem("k-alba-oauth-role"); // worker | employer | null
-        const kakaoBotKey = sessionStorage.getItem("k-alba-kakao-botkey"); // 챗봇 연결용 botUserKey
+        const kakaoBotKey = new URLSearchParams(window.location.search).get("kakaojoin");
 
+        // ── 카카오 챗봇 공고등록 연결 흐름 ──
+        if (kakaoBotKey) {
+          let ok = false;
+          try {
+            const res = await fetch("/api/employer/link-kakao", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${session.access_token}`,
+              },
+              body: JSON.stringify({ botUserKey: kakaoBotKey }),
+            });
+            ok = res.ok;
+          } catch (_) {}
+          if (!ok) {
+            setStatus("error");
+            setErrorMsg("연결 처리에 실패했어요. 잠시 후 다시 시도해주세요.");
+            return;
+          }
+          router.replace("/employer/kakao-join/done");
+          return;
+        }
+
+        // ── 일반 로그인/가입 흐름 ──
+        const intent = sessionStorage.getItem("k-alba-oauth-intent") || "login";
+        const intendedRole = sessionStorage.getItem("k-alba-oauth-role");
         let userType = user.user_metadata?.user_type;
 
-        if (intent === "signup" && intendedRole && (intendedRole === "worker" || intendedRole === "employer")) {
+        if (intent === "signup" && (intendedRole === "worker" || intendedRole === "employer")) {
           if (userType !== intendedRole) {
             await supabase.auth.updateUser({ data: { user_type: intendedRole } });
             userType = intendedRole;
           }
-
           const { error: upErr } = await supabase
             .from("profiles")
             .update({
@@ -79,7 +94,6 @@ export default function AuthCallbackPage() {
               name: user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split("@")[0],
             })
             .eq("id", user.id);
-
           if (upErr) {
             await supabase.from("profiles").upsert({
               id: user.id,
@@ -88,39 +102,16 @@ export default function AuthCallbackPage() {
               user_type: intendedRole,
             });
           }
-        } else {
-          if (!userType) {
-            const { data: prof } = await supabase
-              .from("profiles")
-              .select("user_type")
-              .eq("id", user.id)
-              .maybeSingle();
-            userType = prof?.user_type || "worker";
-          }
+        } else if (!userType) {
+          const { data: prof } = await supabase
+            .from("profiles").select("user_type").eq("id", user.id).maybeSingle();
+          userType = prof?.user_type || "worker";
         }
 
-        // 카카오 챗봇 공고등록 연결: botUserKey ↔ 회원 매핑
-        if (kakaoBotKey) {
-          try {
-            await supabase
-              .from("profiles")
-              .update({ kakao_bot_user_key: kakaoBotKey })
-              .eq("id", user.id);
-          } catch (_) {}
-          sessionStorage.removeItem("k-alba-kakao-botkey");
-        }
-
-        // 정리
         sessionStorage.removeItem("k-alba-oauth-intent");
         sessionStorage.removeItem("k-alba-oauth-role");
 
-        // 분기 라우팅 (챗봇 연결 흐름이면 안내 페이지로)
-        if (kakaoBotKey) {
-          router.replace("/employer/kakao-join/done");
-          return;
-        }
-        const dest = userType === "employer" ? "/my/jobs" : "/jobs";
-        router.replace(dest);
+        router.replace(userType === "employer" ? "/my/jobs" : "/jobs");
       } catch (e) {
         console.error("[auth/callback]", e);
         setStatus("error");
@@ -133,22 +124,11 @@ export default function AuthCallbackPage() {
     return (
       <div style={{ minHeight: "60vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px", textAlign: "center" }}>
         <div style={{ fontSize: 40, marginBottom: 16 }}>⚠️</div>
-        <h1 style={{ fontSize: 18, fontWeight: 800, color: "#1A1F3D", marginBottom: 12 }}>
-          로그인을 완료할 수 없어요
-        </h1>
-        <p style={{ fontSize: 14, color: "#4A4640", lineHeight: 1.7, maxWidth: 420, marginBottom: 24 }}>
-          {errorMsg}
-        </p>
-        <p style={{ fontSize: 12, color: "#8A8580", lineHeight: 1.6, maxWidth: 380, marginBottom: 24 }}>
-          이전에 가입을 시도하다가 중단된 적이 있다면, 같은 이메일로 다시 가입할 때 일시적으로 차단될 수 있어요. 잠시 후 다시 시도하거나 다른 로그인 방법을 사용해주세요.
-        </p>
+        <h1 style={{ fontSize: 18, fontWeight: 800, color: "#1A1F3D", marginBottom: 12 }}>로그인을 완료할 수 없어요</h1>
+        <p style={{ fontSize: 14, color: "#4A4640", lineHeight: 1.7, maxWidth: 420, marginBottom: 24 }}>{errorMsg}</p>
         <div style={{ display: "flex", gap: 10 }}>
-          <button onClick={() => router.push("/login")} style={{ padding: "10px 20px", background: "#FF6B5A", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-            로그인 다시 시도
-          </button>
-          <button onClick={() => router.push("/")} style={{ padding: "10px 20px", background: "#fff", color: "#1A1F3D", border: "1px solid #EDEAE6", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
-            홈으로
-          </button>
+          <button onClick={() => router.push("/login")} style={{ padding: "10px 20px", background: "#FF6B5A", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>다시 시도</button>
+          <button onClick={() => router.push("/")} style={{ padding: "10px 20px", background: "#fff", color: "#1A1F3D", border: "1px solid #EDEAE6", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>홈으로</button>
         </div>
       </div>
     );
