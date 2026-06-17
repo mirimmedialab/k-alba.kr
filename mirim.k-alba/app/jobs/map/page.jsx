@@ -5,6 +5,7 @@ import { T } from "@/lib/theme";
 import KakaoMap from "@/components/KakaoMap";
 import { useNearbyJobs } from "@/lib/useNearbyJobs";
 import { formatDistance } from "@/lib/geolocation";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 
 /**
  * 지도 탐색 뷰 — 반경 내 공고들을 지도에 마커로 표시
@@ -21,6 +22,7 @@ export default function JobsMapPage() {
   const [radius, setRadius] = useState(10);
   const [visaFilter, setVisaFilter] = useState(null);
   const [selectedJob, setSelectedJob] = useState(null);
+  const isDesktop = useIsDesktop();
 
   const {
     jobs,
@@ -61,6 +63,109 @@ export default function JobsMapPage() {
   );
 
   const VISA_OPTIONS = ["D-2", "D-4", "E-9", "H-2", "F-2", "F-4", "F-6"];
+
+  // ───────── 데스크탑(웹) 전용 레이아웃: 좌측 공고 리스트 + 우측 큰 지도 ─────────
+  if (isDesktop) {
+    const chip = (on) => ({ padding: "5px 12px", borderRadius: 4, border: `1px solid ${on ? T.n9 : T.border}`, background: on ? T.n9 : T.paper, color: on ? T.gold : T.ink2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" });
+    const chipA = (on) => ({ padding: "5px 12px", borderRadius: 4, border: `1px solid ${on ? T.accent : T.border}`, background: on ? T.accentBg : T.paper, color: on ? T.accent : T.ink2, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" });
+
+    return (
+      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "24px 28px 28px" }}>
+        {/* 헤더 */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 14 }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>
+              Map · 지도 탐색
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>
+              내 주변 공고 <span style={{ color: T.accent }}>{jobsWithCoords.length}</span>개
+            </div>
+          </div>
+          <Link href="/jobs" style={{ textDecoration: "none" }}>
+            <span style={{ display: "inline-block", padding: "8px 14px", fontSize: 13, fontWeight: 600, color: T.ink2, border: `1px solid ${T.border}`, borderRadius: 6 }}>
+              📋 리스트 보기
+            </span>
+          </Link>
+        </div>
+
+        {/* 필터 */}
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginBottom: 16 }}>
+          <span style={{ fontSize: 12, color: T.ink3, marginRight: 2 }}>반경</span>
+          {[3, 5, 10, 20, 50].map((r) => (
+            <button key={r} onClick={() => setRadius(r)} style={chip(radius === r)}>{r}km</button>
+          ))}
+          <span style={{ width: 1, height: 18, background: T.border, margin: "0 8px" }} />
+          <span style={{ fontSize: 12, color: T.ink3, marginRight: 2 }}>비자</span>
+          <button onClick={() => setVisaFilter(null)} style={chipA(!visaFilter)}>전체</button>
+          {VISA_OPTIONS.map((v) => {
+            const active = visaFilter?.includes(v);
+            return (
+              <button key={v} onClick={() => setVisaFilter(active ? null : [v])} style={chipA(active)}>{v}</button>
+            );
+          })}
+        </div>
+
+        {/* 본문: 좌 리스트 + 우 지도 */}
+        <div style={{ display: "flex", gap: 20, height: "calc(100vh - 240px)", minHeight: 480 }}>
+          <aside style={{ width: 380, flexShrink: 0, border: `1px solid ${T.border}`, borderRadius: 12, overflowY: "auto", background: T.paper }}>
+            {loading ? (
+              <div style={{ padding: 24, fontSize: 13, color: T.ink3 }}>🗺️ 주변 공고 찾는 중...</div>
+            ) : jobsWithCoords.length === 0 ? (
+              <div style={{ padding: 24, fontSize: 13, color: T.ink3, lineHeight: 1.7 }}>
+                이 반경에 표시할 공고가 없어요.<br />반경을 넓혀보세요.
+              </div>
+            ) : (
+              jobsWithCoords.map((j) => {
+                const sel = selectedJob?.id === j.id;
+                return (
+                  <div
+                    key={j.id}
+                    onClick={() => setSelectedJob(j)}
+                    style={{ padding: "14px 16px", borderBottom: `1px solid ${T.border}`, cursor: "pointer", background: sel ? T.cream : "transparent", borderLeft: `3px solid ${sel ? T.accent : "transparent"}` }}
+                  >
+                    <div style={{ fontSize: 14, fontWeight: 700, color: T.ink, marginBottom: 4, letterSpacing: "-0.01em" }}>{j.title}</div>
+                    <div style={{ fontSize: 12, color: T.ink2, marginBottom: 6 }}>{j.company_name || ""}{j.company_name ? " · " : ""}{j.sigungu || j.address || ""}</div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: T.accent }}>{j.pay_type || "시급"} ₩{Number(j.pay_amount || 0).toLocaleString()}</span>
+                      <span style={{ fontSize: 12, color: T.ink3 }}>📍 {formatDistance(j.distance_m)}</span>
+                    </div>
+                    {sel && (
+                      <Link href={`/jobs/${j.id}`} style={{ textDecoration: "none" }}>
+                        <div style={{ marginTop: 10, padding: "8px", textAlign: "center", background: T.n9, color: T.paper, borderRadius: 6, fontSize: 12, fontWeight: 700 }}>자세히 보기 →</div>
+                      </Link>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </aside>
+
+          <main style={{ flex: 1, position: "relative", borderRadius: 12, overflow: "hidden", border: `1px solid ${T.border}` }}>
+            {userLocation && (
+              <KakaoMap
+                center={userLocation}
+                level={radius <= 3 ? 4 : radius <= 10 ? 6 : 8}
+                markers={markers}
+                userLocation={locationSource === "gps" ? userLocation : null}
+                cluster={true}
+                height="100%"
+              />
+            )}
+            {locationSource !== "default" && (
+              <div style={{ position: "absolute", top: 12, right: 12, background: T.paper, border: `1px solid ${T.border}`, borderRadius: 4, padding: "6px 10px", fontSize: 11, fontWeight: 600, color: locationSource === "gps" ? T.green : T.accent, boxShadow: "0 2px 8px rgba(0,0,0,0.1)", zIndex: 5 }}>
+                {locationSource === "gps" ? "📍 현재 위치" : "🏠 등록 거주지"}
+              </div>
+            )}
+            {locationSource === "default" && !loading && (
+              <button onClick={requestLocation} style={{ position: "absolute", bottom: 16, left: "50%", transform: "translateX(-50%)", padding: "12px 22px", background: T.n9, color: T.paper, border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 12px rgba(10,22,40,0.25)", zIndex: 5, whiteSpace: "nowrap" }}>
+                📍 내 위치 허용하고 주변 공고 보기
+              </button>
+            )}
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{
