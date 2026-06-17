@@ -25,6 +25,7 @@ export default function JobsMapPage() {
   const isDesktop = useIsDesktop();
   const listRef = useRef(null);
   const itemRefs = useRef({});
+  const [centerJob, setCenterJob] = useState(null);
 
   const {
     jobs,
@@ -75,6 +76,12 @@ export default function JobsMapPage() {
     const delta = (elRect.top - cRect.top) - 12;
     container.scrollTo({ top: container.scrollTop + delta, behavior: "smooth" });
   }, [selectedJob]);
+
+  // 반경/비자 변경 시 선택 초기화 → 지도는 사용자 위치 기준으로 줌만 변경되어 확대/축소 모션이 보임
+  useEffect(() => {
+    setSelectedJob(null);
+    setCenterJob(null);
+  }, [radius, visaFilter]);
 
   const VISA_OPTIONS = ["D-2", "D-4", "E-9", "H-2", "F-2", "F-4", "F-6"];
 
@@ -135,7 +142,7 @@ export default function JobsMapPage() {
                   <div
                     key={j.id}
                     ref={(el) => { if (el) itemRefs.current[j.id] = el; }}
-                    onClick={() => setSelectedJob(j)}
+                    onClick={() => { setSelectedJob(j); setCenterJob(j); }}
                     style={{ padding: "14px 16px", borderBottom: `1px solid ${T.border}`, cursor: "pointer", background: sel ? T.cream : "transparent", borderLeft: `3px solid ${sel ? T.accent : "transparent"}` }}
                   >
                     <div style={{ fontSize: 14, fontWeight: 700, color: T.ink, marginBottom: 4, letterSpacing: "-0.01em" }}>{j.title}</div>
@@ -158,11 +165,12 @@ export default function JobsMapPage() {
           <main style={{ flex: 1, position: "relative", borderRadius: 12, overflow: "hidden", border: `1px solid ${T.border}` }}>
             {userLocation && (
               <KakaoMap
-                center={selectedJob && selectedJob.latitude && selectedJob.longitude ? { latitude: selectedJob.latitude, longitude: selectedJob.longitude } : userLocation}
+                center={centerJob && centerJob.latitude && centerJob.longitude ? { latitude: centerJob.latitude, longitude: centerJob.longitude } : userLocation}
                 level={radius <= 3 ? 4 : radius <= 10 ? 6 : 8}
                 markers={markers}
                 userLocation={locationSource === "gps" ? userLocation : null}
                 cluster={true}
+                reactiveLevel={true}
                 height="100%"
               />
             )}

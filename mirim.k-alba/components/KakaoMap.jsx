@@ -69,6 +69,7 @@ export default function KakaoMap({
   onMarkerDragEnd = null,
   draggableMarker = null,
   cluster = false,
+  reactiveLevel = false,
   height = 300,
 }) {
   const mapRef = useRef(null);
@@ -149,6 +150,16 @@ export default function KakaoMap({
       new kakao.maps.LatLng(center.latitude, center.longitude)
     );
   }, [center?.latitude, center?.longitude]);
+
+  // ═══ 3-b. 줌 레벨 업데이트 (reactiveLevel일 때만; 미사용 시 기존 동작 유지) ═══
+  useEffect(() => {
+    if (!reactiveLevel || !mapInstanceRef.current) return;
+    try {
+      mapInstanceRef.current.setLevel(level, { animate: { duration: 300 } });
+    } catch (_) {
+      try { mapInstanceRef.current.setLevel(level); } catch (__) {}
+    }
+  }, [level, reactiveLevel]);
 
   // ═══ 4. 마커 업데이트 ═══
   useEffect(() => {
