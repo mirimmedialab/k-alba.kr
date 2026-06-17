@@ -25,13 +25,13 @@ const SKIP_RE = /^(건너뛰기|스킵|skip|넘기기|패스)$/i;
 const ENTRY_RE = /^(공고\s*등록|공고\s*올리기|직원\s*구함|채용)/;
 
 const VISA_OPTIONS = [
+  ["비자 무관", "ANY"],
   ["D-2 유학", "D-2"],
   ["D-4 어학연수", "D-4"],
   ["E-9 비전문취업", "E-9"],
   ["F-2 거주", "F-2"],
   ["F-4 재외동포", "F-4"],
   ["H-2 방문취업", "H-2"],
-  ["비자 무관", "ANY"],
 ];
 const ANY_VISA_CODES = ["D-2", "D-4", "E-9", "F-2", "F-4", "H-2"];
 
@@ -153,9 +153,10 @@ function askStep(stepIndex, note) {
   const s = STEPS[stepIndex];
   const text = (note ? note + "\n\n" : "") + s.q;
   const qrs = [];
+  // 선택 항목은 '추후 협의'(=건너뛰기)를 맨 앞에 배치
+  if (!s.core) qrs.push(qrAnswer("🤝 추후 협의", "건너뛰기"));
   if (s.type === "buttons") for (const o of s.options) qrs.push(qrAnswer(o, o));
   if (s.type === "visa") for (const [label] of VISA_OPTIONS) qrs.push(qrAnswer(label, label));
-  if (!s.core) qrs.push(qrAnswer("⏭ 건너뛰기", "건너뛰기"));
   qrs.push(qrAnswer("✖ 취소", "취소"));
   return reply({ outputs: [{ simpleText: { text } }], quickReplies: qrs.slice(0, 10) }, true);
 }
