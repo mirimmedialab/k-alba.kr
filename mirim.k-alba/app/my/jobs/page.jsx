@@ -5,7 +5,6 @@ import Link from "next/link";
 import { T } from "@/lib/theme";
 import { getCurrentUser, getMyJobs } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
-import { KakaoChatModal } from "@/components/KakaoChatModal";
 import { ListPageSkel } from "@/components/Wireframe";
 import { Button, Badge, Empty } from "@/components/ui";
 
@@ -23,8 +22,6 @@ import { Button, Badge, Empty } from "@/components/ui";
  *   - 상태 배지(active/closed) → <Badge variant="success/neutral">
  *
  * 보존:
- *   - 새 지원자 알림 (네이비 + 골드 보더) — KakaoChatModal 진입
- *   - 계약서 챗봇 배너 (cream + accent 보더)
  *   - 에디토리얼 인덱스 (01, 02, 03...) + 호버 효과
  *   - ListPageSkel 로딩 (스켈레톤)
  *   - DEMO_JOBS fallback
@@ -42,7 +39,6 @@ export default function MyJobsPage() {
   const t = useT();
   const [jobs, setJobs] = useState(DEMO_JOBS);
   const [loading, setLoading] = useState(true);
-  const [notifChatOpen, setNotifChatOpen] = useState(false);
 
   useEffect(() => {
     getCurrentUser().then(async (u) => {
@@ -53,48 +49,8 @@ export default function MyJobsPage() {
       const data = await getMyJobs(u.id);
       if (data && data.length > 0) setJobs(data);
       setLoading(false);
-
-      if (typeof window !== "undefined") {
-        const shown = sessionStorage.getItem("k-alba-applicant-notified");
-        if (!shown) {
-          setTimeout(() => {
-            setNotifChatOpen(true);
-            sessionStorage.setItem("k-alba-applicant-notified", "1");
-          }, 1500);
-        }
-      }
     });
   }, [router]);
-
-  const notificationSteps = [
-    {
-      type: "bot",
-      text: "🔔 새로운 지원자 알림!\n\n방금 카페 바리스타 공고에 새로운 지원이 있어요!",
-    },
-    {
-      type: "bot",
-      text: "👤 Linh T. (베트남, D-2 비자)\n🎓 서울대학교 어학당\n🗣️ 한국어: 중급\n⭐ K-ALBA 평점: 4.8/5.0\n\n💬 \"성실하게 일하겠습니다! 카페 알바 6개월 경험 있습니다.\"",
-    },
-    {
-      type: "bot",
-      text: "어떻게 진행하시겠어요?",
-      quickReplies: ["지금 검토하기", "나중에 보기", "자동 면접 안내"],
-      key: "action",
-    },
-    {
-      type: "bot",
-      text: (a) => {
-        if (a.action === "지금 검토하기") {
-          return "✅ 지원자 페이지로 이동합니다.\n채팅창 닫고 → 공고의 \"지원자 보기\" 클릭!";
-        }
-        if (a.action === "자동 면접 안내") {
-          return "🤖 AI가 자동으로 면접 일정을 조율해드립니다.\n오늘 오후 5시까지 응답을 받아 알려드릴게요!";
-        }
-        return "👍 알겠습니다. 24시간 내에 응답하시는 것을 권장드려요!";
-      },
-      delay: 800,
-    },
-  ];
 
   if (loading) return <ListPageSkel maxWidth={820} showAction rows={3} />;
 
@@ -114,83 +70,6 @@ export default function MyJobsPage() {
       >
         {t("myJobs.header")}
       </div>
-
-      {/* 새 지원자 알림 (네이비 + 골드 — 사장님 페이지 신뢰감 강조) */}
-      <div
-        onClick={() => setNotifChatOpen(true)}
-        style={{
-          background: T.n9,
-          color: T.paper,
-          padding: "14px 16px",
-          borderRadius: 4,
-          borderLeft: `3px solid ${T.gold}`,
-          marginTop: 20,
-          marginBottom: 10,
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          cursor: "pointer",
-        }}
-      >
-        <div style={{ fontSize: 22 }}>🔔</div>
-        <div style={{ flex: 1 }}>
-          <div
-            style={{
-              fontWeight: 700,
-              fontSize: 14,
-              letterSpacing: "-0.01em",
-              marginBottom: 2,
-            }}
-          >
-            {t("myJobs.newApplicantNotif")}{" "}
-            <span style={{ color: T.gold }}>{t("myJobs.newApplicantCount").replace("{count}", 3)}</span>
-          </div>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)" }}>
-            {t("myJobs.tapToViewChat")}
-          </div>
-        </div>
-        <div style={{ fontSize: 18, color: T.gold }}>→</div>
-      </div>
-
-      {/* 계약서 챗봇 배너 (보조: outlined) */}
-      <Link
-        href="/simulator?mode=boss&job=k1&autostart=1"
-        style={{ textDecoration: "none" }}
-      >
-        <div
-          style={{
-            background: T.cream,
-            border: `1px solid ${T.border}`,
-            borderLeft: `3px solid ${T.accent}`,
-            color: T.ink,
-            padding: "14px 16px",
-            borderRadius: 4,
-            marginBottom: 24,
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            cursor: "pointer",
-          }}
-        >
-          <div style={{ fontSize: 22 }}>📝</div>
-          <div style={{ flex: 1 }}>
-            <div
-              style={{
-                fontWeight: 700,
-                fontSize: 14,
-                letterSpacing: "-0.01em",
-                marginBottom: 2,
-              }}
-            >
-              {t("myJobs.contractChatBanner")}
-            </div>
-            <div style={{ fontSize: 12, color: T.ink2 }}>
-              {t("myJobs.contractChatDesc")}
-            </div>
-          </div>
-          <div style={{ fontSize: 18, color: T.accent }}>→</div>
-        </div>
-      </Link>
 
       {/* 타이틀 + 신규 버튼 — Button variant="primaryDark" (사장님 차분 코랄) */}
       <div
@@ -356,16 +235,6 @@ export default function MyJobsPage() {
           ))}
         </div>
       )}
-
-      {/* 새 지원자 알림 챗봇 — botAvatar 알림 아이콘 (🤖 아님, BI v2 결정과 호환) */}
-      <KakaoChatModal
-        open={notifChatOpen}
-        onClose={() => setNotifChatOpen(false)}
-        title="K-ALBA 알림봇"
-        botAvatar="🔔"
-        steps={notificationSteps}
-        onComplete={() => {}}
-      />
     </div>
   );
 }
