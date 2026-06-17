@@ -187,27 +187,36 @@ export async function getCurrentLocation(options) {
   }
 
   return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(
-      (p) => resolve({
-        latitude: p.coords.latitude,
-        longitude: p.coords.longitude,
-        accuracy: p.coords.accuracy,
-        timestamp: p.timestamp,
-      }),
-      (err) => {
-        switch (err.code) {
-          case err.PERMISSION_DENIED: reject(new Error("PERMISSION_DENIED")); break;
-          case err.POSITION_UNAVAILABLE: reject(new Error("POSITION_UNAVAILABLE")); break;
-          case err.TIMEOUT: reject(new Error("TIMEOUT")); break;
-          default: reject(new Error("UNKNOWN"));
-        }
-      },
-      {
-        enableHighAccuracy: highAccuracy,
-        timeout: timeoutMs,
-        maximumAge: 60000, // 1분 캐시
+    const ok = (p) => resolve({
+      latitude: p.coords.latitude,
+      longitude: p.coords.longitude,
+      accuracy: p.coords.accuracy,
+      timestamp: p.timestamp,
+    });
+    const mapErr = (err) => {
+      switch (err.code) {
+        case err.PERMISSION_DENIED: return new Error("PERMISSION_DENIED");
+        case err.POSITION_UNAVAILABLE: return new Error("POSITION_UNAVAILABLE");
+        case err.TIMEOUT: return new Error("TIMEOUT");
+        default: return new Error("UNKNOWN");
       }
-    );
+    };
+    // 고정밀(GPS) 시도 → 실패(타임아웃/위치불가) 시 저정밀(WiFi/IP 네트워크)로 1회 재시도.
+    // 데스크탑/실내 등 GPS가 약한 환경에서 위치를 못 잡고 기본값으로 떨어지는 문제를 줄인다.
+    const tryGet = (high, t, isRetry) => {
+      navigator.geolocation.getCurrentPosition(
+        ok,
+        (err) => {
+          if (!isRetry && err.code !== err.PERMISSION_DENIED) {
+            tryGet(false, Math.max(t, 12000), true);
+          } else {
+            reject(mapErr(err));
+          }
+        },
+        { enableHighAccuracy: high, timeout: t, maximumAge: 60000 }
+      );
+    };
+    tryGet(highAccuracy, timeoutMs, false);
   });
 }
 

@@ -42,7 +42,7 @@ export function useNearbyJobs(options = {}) {
     try {
       const perm = await checkLocationPermission();
       if (forceGps || perm?.status === "granted") {
-        const loc = await getCurrentLocation({ timeoutMs: 8000 });
+        const loc = await getCurrentLocation({ timeoutMs: 10000 });
         if (loc?.latitude && loc?.longitude) {
           setLocationSource("gps");
           return { latitude: loc.latitude, longitude: loc.longitude };
@@ -99,22 +99,35 @@ export function useNearbyJobs(options = {}) {
     }
   }, [radius, visaFilter, limit]);
 
-  // 초기 로드 + 반경/비자 변경 시 재조회 (위치는 한 번 정한 뒤 유지)
+  // 최초 진입 시: 바로 GPS 요청(권한 팝업)해서 위치 결정 + 조회
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
       setError(null);
-      const loc = userLocation || (await determineUserLocation(false));
+      const loc = await determineUserLocation(true); // 들어가자마자 GPS 요청
       if (cancelled) return;
-      if (!userLocation) setUserLocation(loc);
+      setUserLocation(loc);
       const list = await fetchNearby(loc);
       if (cancelled) return;
       setJobs(list);
       setLoading(false);
     })();
     return () => { cancelled = true; };
-    // userLocation은 의도적으로 deps 제외(위치 고정, 필터만 재조회)
+    // 최초 1회만 실행
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 반경/비자 필터 변경 시: 위치는 유지하고 재조회만
+  useEffect(() => {
+    if (!userLocation) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const list = await fetchNearby(userLocation);
+      if (!cancelled) { setJobs(list); setLoading(false); }
+    })();
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [radius, visaFilter]);
 
