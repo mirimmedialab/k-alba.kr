@@ -64,7 +64,6 @@ export default function NavBar() {
     { href: "/my/applications", label: t("nav.myApplications") },
     { href: "/my/contracts", label: t("nav.contracts") },
     { href: "/partwork", label: "🎓 시간제취업" },
-    { href: "/chat", label: t("nav.chat") },
     { href: "/profile", label: t("nav.profile") },
   ];
 
@@ -72,7 +71,6 @@ export default function NavBar() {
     { href: "/jobs/post", label: t("nav.postJob") },
     { href: "/my/jobs", label: t("nav.myJobs") },
     { href: "/my/contracts", label: t("nav.contracts") },
-    { href: "/chat", label: t("nav.chat") },
     { href: "/profile", label: t("nav.employerProfile") },
   ];
 

@@ -51,7 +51,6 @@ const AUTH_REQUIRED_ROUTES = [
   "/profile",
   "/applicants",
   "/contracts/",
-  "/chat",
   "/jobs/post",
   "/staff/",
   "/admin",
@@ -79,14 +78,6 @@ export async function middleware(request) {
     path.startsWith("/api/") ||
     path.startsWith("/static/") ||
     path.match(/\.(ico|png|jpg|jpeg|svg|webp|css|js|woff2?)$/)
-  ) {
-    return NextResponse.next();
-  }
-
-  // ─── (임시) 캡처용 프리뷰 우회 — 캡처 후 반드시 제거 ───
-  if (
-    (path.startsWith("/jobs/post") || path.startsWith("/contracts/")) &&
-    request.nextUrl.searchParams.get("preview") === "kalba2026"
   ) {
     return NextResponse.next();
   }

@@ -65,6 +65,12 @@ export default function JobsMapPage() {
     [jobsWithCoords]
   );
 
+  // 데스크탑 마커는 상세페이지 지도와 동일한 네이비 색
+  const desktopMarkers = useMemo(
+    () => markers.map((m) => ({ ...m, color: T.navy })),
+    [markers]
+  );
+
   // 데스크탑: 선택된 공고(마커/리스트 클릭)를 좌측 리스트 안에서 보이게 자동 스크롤
   useEffect(() => {
     if (!selectedJob) return;
@@ -104,7 +110,7 @@ export default function JobsMapPage() {
           </div>
           <Link href="/jobs" style={{ textDecoration: "none" }}>
             <span style={{ display: "inline-block", padding: "8px 14px", fontSize: 13, fontWeight: 600, color: T.ink2, border: `1px solid ${T.border}`, borderRadius: 6 }}>
-              📋 리스트 보기
+              📋 전체 공고 목록 보기
             </span>
           </Link>
         </div>
@@ -167,10 +173,13 @@ export default function JobsMapPage() {
               <KakaoMap
                 center={centerJob && centerJob.latitude && centerJob.longitude ? { latitude: centerJob.latitude, longitude: centerJob.longitude } : userLocation}
                 level={radius <= 3 ? 4 : radius <= 10 ? 6 : 8}
-                markers={markers}
+                markers={desktopMarkers}
                 userLocation={locationSource === "gps" ? userLocation : null}
                 cluster={true}
                 reactiveLevel={true}
+                clusterColor={T.accent}
+                highlight={centerJob && centerJob.latitude && centerJob.longitude ? { latitude: centerJob.latitude, longitude: centerJob.longitude } : null}
+                highlightColor={T.accent}
                 height="100%"
               />
             )}
