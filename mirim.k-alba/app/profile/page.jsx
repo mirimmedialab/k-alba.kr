@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
 import { Inp, ChipSelect } from "@/components/UI";
 import { AddressSearchField } from "@/components/AddressSearch";
-import { getCurrentUser, getProfile, updateProfile, getWorkHistory } from "@/lib/supabase";
+import { getCurrentUser, getProfile, updateProfile, getWorkHistory, signOut, supabase } from "@/lib/supabase";
 import { VISA_OPTIONS, COUNTRIES, KOREAN_LEVELS, WORK_TYPES, JOB_TYPES, REGIONS, BENEFITS } from "@/data/marketData";
 import { FormPageSkel } from "@/components/Wireframe";
 import LocationPicker from "@/components/LocationPicker";
@@ -178,6 +178,8 @@ export default function ProfilePage() {
             </div>
           </div>
         </Card>
+
+        <DangerZone />
       </div>
     );
   }
@@ -409,6 +411,133 @@ export default function ProfilePage() {
           ))
         )}
       </Card>
+
+      <DangerZone />
+    </div>
+  );
+}
+
+function DangerZone() {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [reasonCode, setReasonCode] = useState("");
+  const [reasonText, setReasonText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const REASONS = [
+    ["not_found", "원하는 일자리/지원자를 찾지 못해서"],
+    ["no_longer_needed", "더 이상 필요하지 않아서"],
+    ["too_hard", "사용법이 어려워서"],
+    ["privacy", "개인정보가 걱정돼서"],
+    ["etc", "기타"],
+  ];
+  const DANGER = "#DC2626";
+
+  const handleLogout = async () => {
+    await signOut();
+    router.replace("/");
+  };
+
+  const handleDeactivate = async () => {
+    if (!reasonCode) { setErr("탈퇴 사유를 선택해 주세요."); return; }
+    setBusy(true); setErr("");
+    try {
+      const { data } = await supabase.auth.getSession();
+      const token = data?.session?.access_token || "";
+      const res = await fetch("/api/account/deactivate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reasonCode, reasonText: reasonText.trim() || null }),
+      });
+      if (res.ok) {
+        await signOut();
+        router.replace("/account/goodbye");
+      } else {
+        setBusy(false);
+        setErr("탈퇴 처리에 실패했어요. 잠시 후 다시 시도해 주세요.");
+      }
+    } catch (_) {
+      setBusy(false);
+      setErr("오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
+    }
+  };
+
+  return (
+    <div style={{ marginTop: 28, paddingTop: 20, borderTop: `1px solid ${T.border}` }}>
+      <button
+        type="button"
+        onClick={handleLogout}
+        style={{
+          width: "100%", padding: "12px", marginBottom: 10,
+          background: T.paper, color: T.ink2, border: `1px solid ${T.border}`,
+          borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+        }}
+      >
+        로그아웃
+      </button>
+
+      {!open ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          style={{
+            width: "100%", padding: "12px",
+            background: "transparent", color: T.ink3, border: "none",
+            fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+            textDecoration: "underline", textUnderlineOffset: "3px",
+          }}
+        >
+          회원 탈퇴
+        </button>
+      ) : (
+        <div style={{ border: `1px solid ${DANGER}33`, background: "#FEF2F2", borderRadius: 10, padding: 16 }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: DANGER, marginBottom: 6 }}>회원 탈퇴</div>
+          <p style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.6, marginBottom: 14 }}>
+            탈퇴하면 계정이 비활성화되어 로그인할 수 없어요. 작성하신 정보는 보관되며, 다시 이용하시려면 고객센터를 통해 복구할 수 있어요.
+          </p>
+
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.ink, marginBottom: 8 }}>탈퇴 사유를 알려주세요</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
+            {REASONS.map(([code, label]) => (
+              <label key={code} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: T.ink, cursor: "pointer" }}>
+                <input type="radio" name="deactivate-reason" checked={reasonCode === code} onChange={() => setReasonCode(code)} />
+                {label}
+              </label>
+            ))}
+          </div>
+
+          {reasonCode === "etc" && (
+            <textarea
+              value={reasonText}
+              onChange={(e) => setReasonText(e.target.value)}
+              placeholder="자세히 알려주시면 개선에 큰 도움이 돼요 (선택)"
+              style={{ width: "100%", padding: 10, borderRadius: 8, border: `1px solid ${T.border}`, fontSize: 13, minHeight: 64, resize: "vertical", fontFamily: "inherit", outline: "none", boxSizing: "border-box", marginBottom: 10 }}
+            />
+          )}
+
+          {err && <div style={{ fontSize: 12, color: DANGER, marginBottom: 10 }}>{err}</div>}
+
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              type="button"
+              onClick={() => { setOpen(false); setErr(""); }}
+              disabled={busy}
+              style={{ flex: 1, padding: "11px", background: T.paper, color: T.ink2, border: `1px solid ${T.border}`, borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={handleDeactivate}
+              disabled={busy}
+              style={{ flex: 1, padding: "11px", background: DANGER, color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: busy ? "default" : "pointer", fontFamily: "inherit", opacity: busy ? 0.7 : 1 }}
+            >
+              {busy ? "처리 중..." : "탈퇴하기"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -65,10 +65,27 @@ export async function getSession() {
   return data?.session || null;
 }
 
+export async function isAccountDeactivated(userId) {
+  if (!supabase || !userId) return false;
+  try {
+    const { data } = await supabase.from("profiles").select("deactivated_at").eq("id", userId).maybeSingle();
+    return !!data?.deactivated_at;
+  } catch (_) {
+    return false;
+  }
+}
+
 export async function getCurrentUser() {
   if (!supabase) return null;
   const { data } = await supabase.auth.getUser();
-  return data?.user || null;
+  const user = data?.user || null;
+  if (!user) return null;
+  // 탈퇴(비활성화)된 계정이면 즉시 로그아웃 처리하여 접근 차단
+  if (await isAccountDeactivated(user.id)) {
+    try { await supabase.auth.signOut(); } catch (_) {}
+    return null;
+  }
+  return user;
 }
 
 // ────────────────────────────────

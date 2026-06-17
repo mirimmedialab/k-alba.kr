@@ -51,6 +51,18 @@ export default function AuthCallbackPage() {
         }
 
         const user = session.user;
+
+        // 탈퇴(비활성화)된 계정이면 차단하고 로그인으로 (없는 계정 안내)
+        try {
+          const { data: prof } = await supabase
+            .from("profiles").select("deactivated_at").eq("id", user.id).maybeSingle();
+          if (prof?.deactivated_at) {
+            await supabase.auth.signOut();
+            router.replace("/login?reason=deactivated");
+            return;
+          }
+        } catch (_) {}
+
         let kakaoBotKey = "";
         try { kakaoBotKey = localStorage.getItem("kalba_bot_key") || ""; } catch (_) {}
         if (!kakaoBotKey) {

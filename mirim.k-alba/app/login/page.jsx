@@ -1,10 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
 import { Btn, Inp } from "@/components/UI";
-import { signIn, signInWithOAuth } from "@/lib/supabase";
+import { signIn, signInWithOAuth, isAccountDeactivated, signOut } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 
 /**
@@ -26,14 +26,31 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     const { data, error } = await signIn(form.email, form.password);
-    setLoading(false);
     if (error) {
+      setLoading(false);
       setError(error.message);
-    } else {
-      const userType = data?.user?.user_metadata?.user_type || "worker";
-      router.push(userType === "employer" ? "/my/jobs" : "/jobs");
+      return;
     }
+    // 탈퇴(비활성화)된 계정 차단
+    if (data?.user && (await isAccountDeactivated(data.user.id))) {
+      await signOut();
+      setLoading(false);
+      setError("탈퇴했거나 존재하지 않는 계정이에요. 새로 가입해 주세요.");
+      return;
+    }
+    setLoading(false);
+    const userType = data?.user?.user_metadata?.user_type || "worker";
+    router.push(userType === "employer" ? "/my/jobs" : "/jobs");
   };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("reason") === "deactivated") {
+        setError("탈퇴했거나 존재하지 않는 계정이에요. 새로 가입해 주세요.");
+      }
+    }
+  }, []);
 
   const handleSocial = async (provider) => {
     // 로그인 흐름임을 콜백에 알림
