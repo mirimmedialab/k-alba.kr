@@ -6,12 +6,11 @@ import { T } from "@/lib/theme";
 import { getJob, applyJob, getCurrentUser, getProfile } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 import { useIsDesktop } from "@/lib/useIsDesktop";
-import { KakaoChatModal } from "@/components/KakaoChatModal";
 import KakaoMap from "@/components/KakaoMap";
 import RouteCard from "@/components/RouteCard";
 import LastTransitCard from "@/components/LastTransitCard";
 import { formatDistance, calculateDistanceMeters } from "@/lib/geolocation";
-import { formatPay } from "@/lib/format";
+import { formatPay, formatWorkHours } from "@/lib/format";
 import {
   Button,
   Card,
@@ -86,7 +85,6 @@ export default function JobDetail({ jobId, embedded = false }) {
   const [applied, setApplied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [chatOpen, setChatOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
 
@@ -146,77 +144,20 @@ export default function JobDetail({ jobId, embedded = false }) {
     });
   }, [jobId]);
 
-  // 카톡 챗봇 단계 정의
-  const applySteps = [
-    {
-      type: "bot",
-      text: `안녕하세요! ${user?.user_metadata?.name || "지원자"}님 👋\n${job?.company || ""} ${job?.title || ""} 공고에 지원하시는군요!`,
-    },
-    {
-      type: "bot",
-      text: "📋 먼저 몇 가지만 빠르게 확인할게요.\n한국어 수준이 어떻게 되시나요?",
-      quickReplies: ["불필요/초급", "초급", "중급", "고급"],
-      key: "korean_level",
-    },
-    {
-      type: "bot",
-      text: "🛂 비자 종류를 알려주세요.",
-      quickReplies: ["D-2 (유학)", "D-4 (어학연수)", "F-2/F-4/F-6", "E-9", "H-2", "기타"],
-      key: "visa_type",
-    },
-    {
-      type: "bot",
-      text: "📅 비자 만료일이 언제인가요?\n(근무 기간보다 길어야 합니다)",
-      input: { type: "date", placeholder: "YYYY-MM-DD" },
-      key: "visa_expiry",
-    },
-    {
-      type: "bot",
-      text: "🚀 근무 가능한 시작일은 언제인가요?",
-      input: { type: "date", placeholder: "YYYY-MM-DD" },
-      key: "start_date",
-    },
-    {
-      type: "bot",
-      text: "💪 관련 경험이 있으신가요?\n(예: 카페 알바 6개월, 농장 경험 등)",
-      input: { type: "text", placeholder: "없으면 '없음'", optional: true },
-      key: "experience",
-    },
-    {
-      type: "bot",
-      text: "💬 사장님께 전하고 싶은 한 마디 (선택)",
-      input: { type: "text", placeholder: "지원 동기, 자기소개 등", optional: true },
-      key: "message",
-    },
-    {
-      type: "bot",
-      text: (a) =>
-        `🎉 지원이 완료되었어요!\n\n✓ ${job.company}에 알림이 발송됩니다\n✓ 사장님이 24시간 내에 K-ALBA 채팅으로 연락드릴 거예요\n\n💡 합격 시 카카오톡 + 이메일로 알림을 받으실 수 있어요!`,
-      delay: 1000,
-    },
-  ];
-
   const handleApply = async () => {
+    // 원문 공고 링크가 있으면 그쪽으로 이동(외부 새 탭). 없으면(직접등록 공고) 내부 원클릭 지원.
+    if (job?.apply_url) {
+      if (typeof window !== "undefined") window.open(job.apply_url, "_blank", "noopener,noreferrer");
+      return;
+    }
     const u = await getCurrentUser();
     if (!u) {
       router.push("/login");
       return;
     }
     setUser(u);
-    setChatOpen(true);
-  };
-
-  const handleChatComplete = async (answers) => {
     setLoading(true);
-    const fullMessage = [
-      `한국어: ${answers.korean_level || "-"}`,
-      `비자: ${answers.visa_type || "-"} (만료: ${answers.visa_expiry || "-"})`,
-      `시작 가능일: ${answers.start_date || "-"}`,
-      `경험: ${answers.experience || "없음"}`,
-      answers.message ? `\n💬 ${answers.message}` : "",
-    ].join("\n");
-
-    const { error } = await applyJob(jobId, user.id, fullMessage);
+    const { error } = await applyJob(jobId, u.id, "지원합니다.");
     setLoading(false);
     if (!error || String(error.message || "").includes("not configured")) {
       setApplied(true);
@@ -239,7 +180,7 @@ export default function JobDetail({ jobId, embedded = false }) {
     const rows = [
       ["급여", `${job.pay_type || "시급"} ${formatPay(job.pay, job.pay_type)}`],
       ["지역", job.area],
-      ["근무", [job.time, job.hours].filter(Boolean).join(" · ") || "-"],
+      ["근무", String(job.hours || job.time || "").trim() || "-"],
       ["업종", job.type],
       job.headcount && String(job.headcount) !== "1"
         ? ["모집인원", /^\d+$/.test(String(job.headcount)) ? `${job.headcount}명` : job.headcount]
@@ -280,7 +221,7 @@ export default function JobDetail({ jobId, embedded = false }) {
         <span style={{ fontSize: 13.5, color: D.ink3, flexShrink: 0 }}>{k}</span>
         <span style={{ fontSize: 13.5, fontWeight: 600, color: D.ink, textAlign: "right", lineHeight: 1.6 }}>
           {isWork
-            ? String(v).split(/\s*\n\s*|\s{2,}|\s*,\s*/).map((x) => x.trim()).filter(Boolean).map((line, i) => (
+            ? formatWorkHours(v).map((line, i) => (
                 <span key={i} style={{ display: "block" }}>{line}</span>
               ))
             : v}
@@ -376,7 +317,6 @@ export default function JobDetail({ jobId, embedded = false }) {
           </div>
         </div>
 
-        <KakaoChatModal open={chatOpen} onClose={() => setChatOpen(false)} title={`K-ALBA × ${job.company}`} botAvatar={job.icon || "💬"} steps={applySteps} onComplete={handleChatComplete} />
       </div>
     );
   }
@@ -386,7 +326,7 @@ export default function JobDetail({ jobId, embedded = false }) {
   const rows = [
     ["급여", `${job.pay_type || "시급"} ${formatPay(job.pay, job.pay_type)}`],
     ["지역", job.area],
-    ["근무", [job.time, job.hours].filter(Boolean).join(" · ") || "-"],
+    ["근무", String(job.hours || job.time || "").trim() || "-"],
     ["업종", job.type],
     job.headcount && String(job.headcount) !== "1" ? ["모집인원", /^\d+$/.test(String(job.headcount)) ? `${job.headcount}명` : job.headcount] : null,
     job.benefits ? ["복리후생", job.benefits] : null,
@@ -421,7 +361,7 @@ export default function JobDetail({ jobId, embedded = false }) {
     <div style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "11px 0", borderBottom: "1px solid #F1F5F9" }}>
       <span style={{ fontSize: 13, color: D.ink3, flexShrink: 0 }}>{k}</span>
       <span style={{ fontSize: 13, fontWeight: 600, color: D.ink, textAlign: "right", lineHeight: 1.6 }}>
-        {isWork ? String(v).split(/\s*\n\s*|\s{2,}|\s*,\s*/).map((x) => x.trim()).filter(Boolean).map((line, i) => (<span key={i} style={{ display: "block" }}>{line}</span>)) : v}
+        {isWork ? formatWorkHours(v).map((line, i) => (<span key={i} style={{ display: "block" }}>{line}</span>)) : v}
       </span>
     </div>
   );
@@ -499,7 +439,6 @@ export default function JobDetail({ jobId, embedded = false }) {
         )}
       </div>
 
-      <KakaoChatModal open={chatOpen} onClose={() => setChatOpen(false)} title={`K-ALBA × ${job.company}`} botAvatar={job.icon || "💬"} steps={applySteps} onComplete={handleChatComplete} />
     </div>
   );
 }
