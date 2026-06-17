@@ -40,7 +40,7 @@ const NO_FRAME_ON = ["/", "/m", "/privacy", "/terms"];
 // KakaoFloatingButton 을 숨길 경로 (랜딩만 자체 CTA 가짐)
 const NO_KAKAO_ON = ["/", "/m"];
 // 데스크탑 웹 레이아웃을 자체 구현해 440px 폰 프레임을 적용하지 않을 페이지(점진 추가)
-const WIDE_PAGES = ["/my/applications", "/my/contracts", "/partwork", "/profile", "/my/jobs"];
+const WIDE_PAGES = ["/my/applications", "/my/contracts", "/partwork", "/profile", "/my/jobs", "/jobs/post"];
 
 export default function AppFrame({ children }) {
   const pathname = usePathname();

@@ -6,6 +6,7 @@ import { AddressSearchModal } from "@/components/AddressSearch";
 import { JOB_PRESETS, getMarketPay } from "@/data/marketData";
 import { createJob, getCurrentUser } from "@/lib/supabase";
 import { Button, KIcon } from "@/components/ui";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 
 /**
  * /jobs/post 공고 등록 (BI v2)
@@ -45,6 +46,11 @@ export default function PostJobPage() {
   const [addrModal, setAddrModal] = useState(false);
   const scrollRef = useRef(null);
   const initRef = useRef(false);
+  const isDesktop = useIsDesktop();
+  const [form, setForm] = useState({ jobType: "", title: "", workType: [], address: "", addressDetail: "", payType: "시급", payAmount: "", workHours: "", workDays: "", korean: "", visa: [], headcount: "", benefits: [], description: "" });
+  const [webAddrOpen, setWebAddrOpen] = useState(false);
+  const [webErr, setWebErr] = useState("");
+  const [webBusy, setWebBusy] = useState(false);
 
   // 스텝: 1=업종, 2=제목, 3=근무형태, 4=주소, 5=상세주소, 6=급여형태, 7=금액, 8=시간, 9=요일, 10=한국어, 11=비자, 12=인원, 13=복리후생, 14=설명
   const TOTAL_STEPS = 14;
@@ -200,8 +206,8 @@ export default function PostJobPage() {
     setMultiSel([]);
   };
 
-  const handlePost = async () => {
-    const a = answers;
+  const handlePost = async (overrideAnswers) => {
+    const a = overrideAnswers || answers;
     const user = await getCurrentUser();
     if (!user) {
       router.push("/login");
@@ -274,6 +280,39 @@ export default function PostJobPage() {
     setPosted(true);
   };
 
+  // 웹 폼 제출: 동일한 handlePost 재사용
+  const submitWebForm = async () => {
+    if (!form.jobType) return setWebErr("업종을 선택해 주세요.");
+    if (!form.title.trim()) return setWebErr("공고 제목을 입력해 주세요.");
+    if (form.workType.length === 0) return setWebErr("근무형태를 1개 이상 선택해 주세요.");
+    if (!form.address) return setWebErr("근무지 주소를 입력해 주세요.");
+    if (!form.payType) return setWebErr("급여 형태를 선택해 주세요.");
+    if (!String(form.payAmount).trim()) return setWebErr("급여 금액을 입력해 주세요.");
+    if (form.visa.length === 0) return setWebErr("지원 가능 비자를 1개 이상 선택해 주세요.");
+    setWebErr("");
+    setWebBusy(true);
+    try {
+      await handlePost({
+        jobType: form.jobType,
+        title: form.title.trim(),
+        workType: form.workType.join(", "),
+        address: form.address,
+        addressDetail: form.addressDetail,
+        payType: form.payType,
+        payAmount: form.payAmount,
+        workHours: form.workHours,
+        workDays: form.workDays,
+        korean: form.korean,
+        visa: form.visa.join(", "),
+        headcount: form.headcount,
+        benefits: form.benefits.join(", "),
+        description: form.description,
+      });
+    } finally {
+      setWebBusy(false);
+    }
+  };
+
   const resetChat = () => {
     setMessages([]);
     setStep(0);
@@ -322,6 +361,109 @@ export default function PostJobPage() {
             추가 등록
           </Button>
         </div>
+      </div>
+    );
+  }
+
+  // ───────── 데스크탑(웹) 전용: 카톡 채팅형 대신 일반 폼 UI ─────────
+  if (isDesktop) {
+    const SEL = T.accent;
+    const chip = (on) => ({ padding: "8px 14px", borderRadius: 8, border: `1.5px solid ${on ? SEL : T.border}`, background: on ? SEL : "#fff", color: on ? "#fff" : T.ink2, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" });
+    const lab = { display: "block", fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 9 };
+    const inp = { width: "100%", padding: "11px 13px", borderRadius: 8, border: `1.5px solid ${T.border}`, fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box" };
+    const field = { marginBottom: 22 };
+    const rowS = { display: "flex", gap: 8, flexWrap: "wrap" };
+    const req = <span style={{ color: T.accent }}>*</span>;
+    const setF = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+    const toggle = (k, v) => setForm((f) => ({ ...f, [k]: f[k].includes(v) ? f[k].filter((x) => x !== v) : [...f[k], v] }));
+    const preset = JOB_PRESETS[form.jobType] || JOB_PRESETS["기타"];
+
+    return (
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "40px 28px 80px" }}>
+        <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 18 }} />
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>사장님 공고 등록</div>
+        <h1 style={{ fontSize: 30, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.2 }}>공고 등록</h1>
+        <p style={{ color: T.ink2, fontSize: 14, marginBottom: 30, lineHeight: 1.6 }}>필요한 정보를 입력하면 공고가 바로 등록돼요. {req} 표시는 필수입니다.</p>
+
+        <div style={field}>
+          <label style={lab}>업종 {req}</label>
+          <div style={rowS}>{getStepOptions(1).map((o) => <button key={o} type="button" onClick={() => setF("jobType", o)} style={chip(form.jobType === o)}>{o}</button>)}</div>
+        </div>
+
+        <div style={field}>
+          <label style={lab}>공고 제목 {req}</label>
+          <input value={form.title} onChange={(e) => setF("title", e.target.value)} placeholder={preset.title} style={inp} />
+        </div>
+
+        <div style={field}>
+          <label style={lab}>근무형태 {req} <span style={{ color: T.ink3, fontWeight: 500 }}>(여러 개 가능)</span></label>
+          <div style={rowS}>{getStepOptions(3).map((o) => <button key={o} type="button" onClick={() => toggle("workType", o)} style={chip(form.workType.includes(o))}>{o}</button>)}</div>
+        </div>
+
+        <div style={field}>
+          <label style={lab}>근무지 주소 {req}</label>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
+            <input value={form.address} readOnly placeholder="주소 검색을 눌러주세요" style={{ ...inp, flex: 1, background: T.cream }} />
+            <button type="button" onClick={() => setWebAddrOpen(true)} style={{ padding: "11px 16px", borderRadius: 8, background: "#FEE500", color: "#3C1E1E", border: "none", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>🔍 주소 검색</button>
+          </div>
+          <input value={form.addressDetail} onChange={(e) => setF("addressDetail", e.target.value)} placeholder="상세주소 (건물명·층·호수 등 — 선택)" style={inp} />
+        </div>
+
+        <div style={field}>
+          <label style={lab}>급여 {req}</label>
+          <div style={{ ...rowS, marginBottom: 8 }}>{getStepOptions(6).map((o) => <button key={o} type="button" onClick={() => setF("payType", o)} style={chip(form.payType === o)}>{o}</button>)}</div>
+          <input value={form.payAmount} onChange={(e) => setF("payAmount", e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="금액 (숫자만, 예: 11000)" style={inp} />
+          <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 6 }}>⚠️ 2026년 최저시급 ₩10,030</div>
+        </div>
+
+        <div style={field}>
+          <label style={lab}>근무 시간대</label>
+          <div style={{ ...rowS, marginBottom: 8 }}>{getStepOptions(8).map((o) => <button key={o} type="button" onClick={() => setF("workHours", o)} style={chip(form.workHours === o)}>{o}</button>)}</div>
+          <input value={form.workHours} onChange={(e) => setF("workHours", e.target.value)} placeholder="직접 입력 가능 (예: 09:00~18:00)" style={inp} />
+        </div>
+
+        <div style={field}>
+          <label style={lab}>근무 요일</label>
+          <div style={rowS}>{getStepOptions(9).map((o) => <button key={o} type="button" onClick={() => setF("workDays", o)} style={chip(form.workDays === o)}>{o}</button>)}</div>
+        </div>
+
+        <div style={field}>
+          <label style={lab}>필요한 한국어 수준</label>
+          <div style={rowS}>{getStepOptions(10).map((o) => <button key={o} type="button" onClick={() => setF("korean", o)} style={chip(form.korean === o)}>{o}</button>)}</div>
+        </div>
+
+        <div style={field}>
+          <label style={lab}>지원 가능 비자 {req} <span style={{ color: T.ink3, fontWeight: 500 }}>(여러 개 가능)</span></label>
+          <div style={rowS}>{getStepOptions(11).map((o) => <button key={o} type="button" onClick={() => toggle("visa", o)} style={chip(form.visa.includes(o))}>{o}</button>)}</div>
+        </div>
+
+        <div style={field}>
+          <label style={lab}>모집 인원</label>
+          <div style={{ ...rowS, marginBottom: 8 }}>{getStepOptions(12).map((o) => <button key={o} type="button" onClick={() => setF("headcount", o)} style={chip(form.headcount === o)}>{o}</button>)}</div>
+          <input value={form.headcount} onChange={(e) => setF("headcount", e.target.value)} placeholder="직접 입력 가능" style={inp} />
+        </div>
+
+        <div style={field}>
+          <label style={lab}>복리후생 <span style={{ color: T.ink3, fontWeight: 500 }}>(여러 개 가능)</span></label>
+          <div style={rowS}>{getStepOptions(13).map((o) => <button key={o} type="button" onClick={() => toggle("benefits", o)} style={chip(form.benefits.includes(o))}>{o}</button>)}</div>
+        </div>
+
+        <div style={field}>
+          <label style={lab}>상세 설명</label>
+          <textarea value={form.description} onChange={(e) => setF("description", e.target.value)} placeholder="담당 업무, 우대 조건 등을 자유롭게 적어주세요." style={{ ...inp, minHeight: 110, resize: "vertical" }} />
+        </div>
+
+        {webErr && <div style={{ color: "#DC2626", fontSize: 13, marginBottom: 14, fontWeight: 600 }}>{webErr}</div>}
+
+        <Button variant="primaryDark" fullWidth onClick={submitWebForm} disabled={webBusy}>
+          {webBusy ? "등록 중..." : "공고 등록하기"}
+        </Button>
+
+        <AddressSearchModal
+          open={webAddrOpen}
+          onClose={() => setWebAddrOpen(false)}
+          onSelect={(addr) => { setForm((f) => ({ ...f, address: addr })); setWebAddrOpen(false); }}
+        />
       </div>
     );
   }
