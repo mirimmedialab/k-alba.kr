@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { T } from "@/lib/theme";
 import KakaoMap from "@/components/KakaoMap";
@@ -23,6 +23,8 @@ export default function JobsMapPage() {
   const [visaFilter, setVisaFilter] = useState(null);
   const [selectedJob, setSelectedJob] = useState(null);
   const isDesktop = useIsDesktop();
+  const listRef = useRef(null);
+  const itemRefs = useRef({});
 
   const {
     jobs,
@@ -61,6 +63,18 @@ export default function JobsMapPage() {
       })),
     [jobsWithCoords]
   );
+
+  // 데스크탑: 선택된 공고(마커/리스트 클릭)를 좌측 리스트 안에서 보이게 자동 스크롤
+  useEffect(() => {
+    if (!selectedJob) return;
+    const el = itemRefs.current[selectedJob.id];
+    const container = listRef.current;
+    if (!el || !container) return;
+    const elRect = el.getBoundingClientRect();
+    const cRect = container.getBoundingClientRect();
+    const delta = (elRect.top - cRect.top) - 12;
+    container.scrollTo({ top: container.scrollTop + delta, behavior: "smooth" });
+  }, [selectedJob]);
 
   const VISA_OPTIONS = ["D-2", "D-4", "E-9", "H-2", "F-2", "F-4", "F-6"];
 
@@ -107,7 +121,7 @@ export default function JobsMapPage() {
 
         {/* 본문: 좌 리스트 + 우 지도 */}
         <div style={{ display: "flex", gap: 20, height: "calc(100vh - 240px)", minHeight: 480 }}>
-          <aside style={{ width: 380, flexShrink: 0, border: `1px solid ${T.border}`, borderRadius: 12, overflowY: "auto", background: T.paper }}>
+          <aside ref={listRef} style={{ width: 380, flexShrink: 0, border: `1px solid ${T.border}`, borderRadius: 12, overflowY: "auto", background: T.paper }}>
             {loading ? (
               <div style={{ padding: 24, fontSize: 13, color: T.ink3 }}>🗺️ 주변 공고 찾는 중...</div>
             ) : jobsWithCoords.length === 0 ? (
@@ -120,6 +134,7 @@ export default function JobsMapPage() {
                 return (
                   <div
                     key={j.id}
+                    ref={(el) => { if (el) itemRefs.current[j.id] = el; }}
                     onClick={() => setSelectedJob(j)}
                     style={{ padding: "14px 16px", borderBottom: `1px solid ${T.border}`, cursor: "pointer", background: sel ? T.cream : "transparent", borderLeft: `3px solid ${sel ? T.accent : "transparent"}` }}
                   >
@@ -143,7 +158,7 @@ export default function JobsMapPage() {
           <main style={{ flex: 1, position: "relative", borderRadius: 12, overflow: "hidden", border: `1px solid ${T.border}` }}>
             {userLocation && (
               <KakaoMap
-                center={userLocation}
+                center={selectedJob && selectedJob.latitude && selectedJob.longitude ? { latitude: selectedJob.latitude, longitude: selectedJob.longitude } : userLocation}
                 level={radius <= 3 ? 4 : radius <= 10 ? 6 : 8}
                 markers={markers}
                 userLocation={locationSource === "gps" ? userLocation : null}
