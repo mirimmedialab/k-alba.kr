@@ -18,7 +18,6 @@ export default function robots() {
           "/my/jobs",
           "/my/applications",
           "/my/contracts",
-          "/chat",
           "/applicants",
           "/jobs/post",
           "/contract/",

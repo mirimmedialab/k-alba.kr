@@ -303,13 +303,6 @@ function ApplicantsContent() {
                   >
                     거절
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    href="/chat"
-                  >
-                    💬 채팅
-                  </Button>
                 </div>
               )}
             </div>
