@@ -28,12 +28,10 @@ function normalizeTime(t) {
   let h = parseInt(hm[1], 10);
   const mm = (hm[2] || "0").padStart(2, "0");
   let label = ampm;
-  if (!label) {
-    if (h === 0) { label = "오전"; h = 12; }
-    else if (h < 12) { label = "오전"; }
-    else if (h === 12) { label = "오후"; }
-    else { label = "오후"; h = h - 12; }
-  }
+  if (h === 0) { label = "오전"; h = 12; }
+  else if (h > 12) { label = "오후"; h -= 12; }
+  else if (h === 12) { label = label || "오후"; }
+  else if (!label) { label = "오전"; }
   return `(${label}) ${h}:${mm}`;
 }
 
@@ -57,13 +55,29 @@ function extractTimeRange(raw) {
  */
 export function shortWorkTime(job) {
   if (!job) return "";
-  const raw = String(job.work_hours || "");
+  const raw = String(job.work_hours || job.hours || "");
   const days =
     (raw.match(/주\s*\d\s*일|매일/) || [])[0] ||
-    String(job.work_days || "").trim();
+    String(job.work_days || job.days || "").trim();
   const time = extractTimeRange(raw);
   const parts = [days, time].filter(Boolean);
   if (parts.length) return parts.join(" · ");
   const first = raw.split(/\s*\n\s*|\s{2,}/)[0].trim();
   return first && first.length <= 16 ? first : "";
+}
+
+/**
+ * 상세 페이지용 근무시간 포맷.
+ * 공백을 정리하고, 절(시간대/휴게시간/요일) 경계에서만 줄바꿈해 배열로 반환.
+ * 괄호 안 내용(점심시간/석식시간 등)은 한 줄에 유지.
+ */
+export function formatWorkHours(raw) {
+  let s = String(raw || "").replace(/\s+/g, " ").trim();
+  if (!s) return [];
+  s = s
+    .replace(/\s*(휴게시간\s*[:：])/g, "\n$1")
+    .replace(/\s*(주\s*\d\s*일\s*근무|매일)/g, "\n$1")
+    .replace(/\s*(평일|월요일|화요일|수요일|목요일|금요일|토요일|일요일|주말)/g, "\n$1")
+    .replace(/(?<!~)(?<!~ )(\(오전\)|\(오후\))/g, "\n$1");
+  return s.split("\n").map((x) => x.trim()).filter(Boolean);
 }
