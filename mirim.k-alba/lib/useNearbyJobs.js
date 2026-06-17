@@ -1,54 +1,133 @@
 "use client";
-import { useState, useEffect } from "react";
-import { getJobs } from "./supabase";
+import { useState, useEffect, useCallback } from "react";
+import { supabase, getJobs } from "@/lib/supabase";
+import {
+  getCurrentLocation,
+  checkLocationPermission,
+  calculateDistanceMeters,
+} from "@/lib/geolocation";
 
-export function useNearbyJobs({ latitude, longitude, radius = 10, limit = 20, enabled = true }) {
+/**
+ * 위치 기반 주변 공고 조회 훅 (지도/주변 탐색용)
+ *
+ * 위치 결정 우선순위:
+ *   1. GPS (이미 권한 허용된 경우에만 자동 사용 — 초기엔 권한 팝업 강제 안 함)
+ *   2. 프로필의 home_latitude/home_longitude
+ *   3. 기본값(서울시청) + locationSource="default" → 페이지에서 '내 위치 허용' 버튼 노출
+ *
+ * 거리 계산은 클라이언트에서 수행(별도 RPC 불필요). 좌표 있는 공고만 대상.
+ *
+ * 반환: { jobs, loading, error, userLocation, locationSource, requestLocation }
+ *   - jobs[i].distance_m 포함(가까운 순 정렬)
+ */
+const DEFAULT_LOCATION = { latitude: 37.5663, longitude: 126.9779 }; // 서울시청
+
+export function useNearbyJobs(options = {}) {
+  const {
+    radius = 10,            // km
+    visaFilter = null,      // ['D-2', ...]
+    limit = 50,
+    useProfileFallback = true,
+  } = options;
+
   const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
+  const [locationSource, setLocationSource] = useState("default");
 
-  useEffect(() => {
-    if (!enabled || !latitude || !longitude) {
-      setJobs([]);
-      return;
+  // 위치 결정. forceGps=true 면 권한 팝업을 띄워서라도 GPS 시도(버튼 클릭 시).
+  const determineUserLocation = useCallback(async (forceGps = false) => {
+    // 1) GPS
+    try {
+      const perm = await checkLocationPermission();
+      if (forceGps || perm?.status === "granted") {
+        const loc = await getCurrentLocation({ timeoutMs: 8000 });
+        if (loc?.latitude && loc?.longitude) {
+          setLocationSource("gps");
+          return { latitude: loc.latitude, longitude: loc.longitude };
+        }
+      }
+    } catch (_) { /* GPS 실패 → 다음 단계 */ }
+
+    // 2) 프로필 거주지
+    if (useProfileFallback && supabase) {
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        if (authData?.user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("home_latitude, home_longitude")
+            .eq("id", authData.user.id)
+            .maybeSingle();
+          if (profile?.home_latitude && profile?.home_longitude) {
+            setLocationSource("profile");
+            return { latitude: profile.home_latitude, longitude: profile.home_longitude };
+          }
+        }
+      } catch (_) { /* 무시 */ }
     }
 
+    // 3) 기본값
+    setLocationSource("default");
+    return { ...DEFAULT_LOCATION };
+  }, [useProfileFallback]);
+
+  // 공고 조회 + 거리 계산/필터(클라이언트)
+  const fetchNearby = useCallback(async (loc) => {
+    try {
+      const all = await getJobs();
+      const list = (all || [])
+        .filter((j) => j.latitude && j.longitude)
+        .map((j) => ({
+          ...j,
+          company_name: j.employer?.company_name || j.employer_external_name || j.company_name || "",
+          distance_m: calculateDistanceMeters(loc.latitude, loc.longitude, j.latitude, j.longitude),
+        }))
+        .filter((j) => j.distance_m <= radius * 1000)
+        .filter((j) => {
+          if (!visaFilter || visaFilter.length === 0) return true;
+          const vts = j.visa_types || [];
+          return visaFilter.some((v) => vts.includes(v));
+        })
+        .sort((a, b) => a.distance_m - b.distance_m)
+        .slice(0, limit);
+      return list;
+    } catch (e) {
+      setError(e?.message || "공고를 불러오지 못했어요.");
+      return [];
+    }
+  }, [radius, visaFilter, limit]);
+
+  // 초기 로드 + 반경/비자 변경 시 재조회 (위치는 한 번 정한 뒤 유지)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError(null);
+      const loc = userLocation || (await determineUserLocation(false));
+      if (cancelled) return;
+      if (!userLocation) setUserLocation(loc);
+      const list = await fetchNearby(loc);
+      if (cancelled) return;
+      setJobs(list);
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+    // userLocation은 의도적으로 deps 제외(위치 고정, 필터만 재조회)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [radius, visaFilter]);
+
+  // '내 위치 허용' 버튼 → GPS 강제 시도 후 재조회
+  const requestLocation = useCallback(async () => {
     setLoading(true);
     setError(null);
+    const loc = await determineUserLocation(true);
+    setUserLocation(loc);
+    const list = await fetchNearby(loc);
+    setJobs(list);
+    setLoading(false);
+  }, [determineUserLocation, fetchNearby]);
 
-    getJobs()
-      .then((allJobs) => {
-        const nearby = allJobs.filter((job) => {
-          if (!job.latitude || !job.longitude) return false;
-          const distance = calculateDistance(latitude, longitude, job.latitude, job.longitude);
-          return distance <= radius;
-        });
-
-        setJobs(nearby.slice(0, limit));
-      })
-      .catch((err) => {
-        setError(err);
-        setJobs([]);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [latitude, longitude, radius, limit, enabled]);
-
-  return { jobs, loading, error };
-}
-
-function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-function toRad(degrees) {
-  return degrees * (Math.PI / 180);
+  return { jobs, loading, error, userLocation, locationSource, requestLocation };
 }
