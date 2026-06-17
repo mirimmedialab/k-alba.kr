@@ -7,6 +7,7 @@ import { getCurrentUser, getMyApplications } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 import { ListPageSkel } from "@/components/Wireframe";
 import { Badge, Empty, Button } from "@/components/ui";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 
 /**
  * /my/applications 지원 추적 (BI v2)
@@ -36,6 +37,7 @@ export default function MyApplicationsPage() {
   const t = useT();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const isDesktop = useIsDesktop();
 
   useEffect(() => {
     getCurrentUser().then(async (u) => {
@@ -60,6 +62,64 @@ export default function MyApplicationsPage() {
     accepted: "success",  // 합격 — 민트 (성공)
     rejected: "error",    // 거절 — 빨강
   };
+
+  // ───────── 데스크탑(웹) 전용 레이아웃: 넓은 컨테이너 + 2열 카드 그리드 ─────────
+  if (isDesktop) {
+    return (
+      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "40px 28px 64px" }}>
+        <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 18 }} />
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
+          {t("myApplications.header")}
+        </div>
+        <h1 style={{ fontSize: 30, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.2 }}>
+          {t("myApplications.title").replace("{count}", applications.length)}
+        </h1>
+        <p style={{ color: T.ink2, fontSize: 14, marginBottom: 28, lineHeight: 1.6 }}>
+          {pendingCount > 0 && t("myApplications.reviewingCount").replace("{count}", pendingCount)}
+          {pendingCount > 0 && acceptedCount > 0 && " · "}
+          {acceptedCount > 0 && t("myApplications.acceptedCount").replace("{count}", acceptedCount)}
+          {pendingCount === 0 && acceptedCount === 0 && t("myApplications.statusOverview")}
+        </p>
+
+        {applications.length === 0 ? (
+          <Empty
+            variant="no-data"
+            icon="📋"
+            title={t("myApplications.noApplications")}
+            description={t("myApplications.noApplicationsDesc")}
+            action={<Button variant="primary" href="/jobs">{t("myApplications.findJobsBtn")}</Button>}
+          />
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            {applications.map((app) => (
+              <Link key={app.id} href={`/jobs/${app.job_id}`} style={{ textDecoration: "none" }}>
+                <div
+                  style={{ border: `1px solid ${T.border}`, borderRadius: 12, padding: "18px 20px", background: T.paper, transition: "box-shadow 0.15s, border-color 0.15s", height: "100%", boxSizing: "border-box" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(10,22,40,0.08)"; e.currentTarget.style.borderColor = T.ink3; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = T.border; }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+                    <span style={{ fontSize: 15.5, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {app.job?.title || t("jobs.title")}
+                    </span>
+                    <Badge variant={statusVariant[app.status] || "neutral"} size="sm">
+                      {t(`myApplications.status.${app.status}`)}
+                    </Badge>
+                  </div>
+                  <div style={{ fontSize: 13, color: T.ink2, marginBottom: 6 }}>
+                    {app.job?.company_name || t("myApplications.companyUnknown")}
+                  </div>
+                  <div style={{ fontSize: 11.5, color: T.ink3 }}>
+                    {t("myApplications.appliedDate")}: {new Date(app.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: "32px 20px", maxWidth: 820, margin: "0 auto" }}>

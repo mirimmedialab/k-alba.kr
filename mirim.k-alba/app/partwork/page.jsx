@@ -6,6 +6,7 @@ import { T } from "@/lib/theme";
 import { supabase, getCurrentUser } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 import { Badge, Empty, Button, PageLoading } from "@/components/ui";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 
 /**
  * /partwork — 내 시간제취업 신청 내역 (BI v2 + i18n)
@@ -45,6 +46,7 @@ export default function PartWorkIndexPage() {
   const t = useT();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const isDesktop = useIsDesktop();
 
   useEffect(() => {
     getCurrentUser().then(async (u) => {
@@ -66,6 +68,80 @@ export default function PartWorkIndexPage() {
 
   if (loading) {
     return <PageLoading message={t("partwork.loading")} minHeight={400} />;
+  }
+
+  // ───────── 데스크탑(웹) 전용 레이아웃 ─────────
+  if (isDesktop) {
+    return (
+      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "40px 28px 64px" }}>
+        <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 18 }} />
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
+          {t("partwork.title")}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24, gap: 16, flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <h1 style={{ fontSize: 30, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.2 }}>
+              {fmt(t("partwork.myApplicationsHeading"), { count: applications.length })}
+            </h1>
+            <p style={{ color: T.ink2, fontSize: 14, lineHeight: 1.6 }}>{t("partwork.myApplicationsSub")}</p>
+          </div>
+          <Button variant="primary" href="/partwork/apply" size="md">{t("partwork.newApplication")}</Button>
+        </div>
+
+        <div style={{ padding: 18, background: "#DBEAFE", borderLeft: "3px solid #1A56F0", borderRadius: "0 6px 6px 0", marginBottom: 28 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#1E40AF", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
+            {t("partwork.importantTitle")}
+          </div>
+          <div style={{ fontSize: 12.5, color: "#1E40AF", lineHeight: 1.8 }}>
+            • {t("partwork.importantBullet1")}<br />
+            • <span dangerouslySetInnerHTML={{ __html: t("partwork.importantBullet2_html") }} /><br />
+            • <span dangerouslySetInnerHTML={{ __html: t("partwork.importantBullet3_html") }} /><br />
+            • <span dangerouslySetInnerHTML={{ __html: t("partwork.importantBullet4_html") }} />
+          </div>
+        </div>
+
+        {applications.length === 0 ? (
+          <Empty
+            variant="no-data"
+            icon="📝"
+            title={t("partwork.emptyTitle")}
+            description={t("partwork.emptyDescription")}
+            action={<Button variant="primary" href="/partwork/apply">{t("partwork.newApplicationLong")}</Button>}
+          />
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            {applications.map((app) => {
+              const meta = STATUS_META[app.status] || STATUS_META.submitted;
+              const statusLabel = t(`partwork.status.${app.status}`) || t("partwork.status.submitted");
+              return (
+                <Link key={app.id} href={`/partwork/${app.id}`} style={{ textDecoration: "none" }}>
+                  <div
+                    style={{ border: `1px solid ${T.border}`, borderRadius: 12, padding: "18px 20px", background: T.paper, height: "100%", boxSizing: "border-box", transition: "box-shadow 0.15s, border-color 0.15s" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(10,22,40,0.08)"; e.currentTarget.style.borderColor = T.ink3; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = T.border; }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+                      <span style={{ fontSize: 15.5, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>{app.employer_name}</span>
+                      <Badge variant={meta.variant} size="sm" icon={meta.icon}>{statusLabel}</Badge>
+                    </div>
+                    <div style={{ fontSize: 13, color: T.ink2, marginBottom: 8 }}>
+                      {app.university_name} · {app.visa} · TOPIK {app.topik_level === 0 ? t("partwork.topikNone") : `${app.topik_level}${t("partwork.topikSuffix")}`}
+                    </div>
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap", fontSize: 11.5, color: T.ink3 }}>
+                      <span>{fmt(t("partwork.weeklyHours"), { hours: app.weekly_hours })}</span>
+                      <span>·</span>
+                      <span>{app.validation_max_hours == null ? t("partwork.allowedUnlimited") : fmt(t("partwork.allowedHours"), { hours: app.validation_max_hours })}</span>
+                      <span>·</span>
+                      <span>{new Date(app.submitted_at || app.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (

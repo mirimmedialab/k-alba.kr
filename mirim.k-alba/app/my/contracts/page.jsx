@@ -7,6 +7,7 @@ import { Btn, Card } from "@/components/UI";
 import { getCurrentUser, getMyContracts } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 import { ListPageSkel } from "@/components/Wireframe"; // ✅ 스켈레톤
+import { useIsDesktop } from "@/lib/useIsDesktop";
 
 const STATUS_INFO = {
   draft: { color: T.ink3, bg: T.cream, icon: "📝" },
@@ -51,6 +52,7 @@ export default function MyContractsPage() {
   const [user, setUser] = useState(null);
   const [contracts, setContracts] = useState(DEMO_CONTRACTS);
   const [loading, setLoading] = useState(true);
+  const isDesktop = useIsDesktop();
 
   useEffect(() => {
     getCurrentUser().then(async (u) => {
@@ -86,6 +88,90 @@ export default function MyContractsPage() {
 
   const completedCount = contracts.filter(c => c.status === "completed").length;
   const pendingCount = contracts.filter(c => c.status !== "completed").length;
+
+  // ───────── 데스크탑(웹) 전용 레이아웃: 넓은 컨테이너 + 2열 카드 그리드 ─────────
+  if (isDesktop) {
+    return (
+      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "40px 28px 64px" }}>
+        <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 18 }} />
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
+          {t("myContracts.header")}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 28, gap: 16, flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <h1 style={{ fontSize: 30, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.2 }}>
+              {t("myContracts.title").replace("{count}", contracts.length)}
+            </h1>
+            <p style={{ color: T.ink2, fontSize: 14, lineHeight: 1.6 }}>
+              {completedCount > 0 && t("myContracts.completedCount").replace("{count}", completedCount)}
+              {completedCount > 0 && pendingCount > 0 && " · "}
+              {pendingCount > 0 && t("myContracts.pendingCount").replace("{count}", pendingCount)}
+              {completedCount === 0 && pendingCount === 0 && t("myContracts.statusOverview")}
+            </p>
+          </div>
+          {isEmployer && (
+            <Link href="/contracts/new" style={{ textDecoration: "none" }}>
+              <button style={{ padding: "12px 20px", background: T.n9, color: T.gold, border: "none", borderRadius: 6, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", letterSpacing: "-0.01em" }}>
+                {t("myContracts.newContractBtn")}
+              </button>
+            </Link>
+          )}
+        </div>
+
+        {contracts.length === 0 ? (
+          <div style={{ padding: "56px 20px", textAlign: "center", background: T.cream, border: `1px solid ${T.border}`, borderRadius: 12 }}>
+            <div style={{ fontSize: 40, marginBottom: 16, opacity: 0.6 }}>📄</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: T.ink, marginBottom: 8, letterSpacing: "-0.02em" }}>{t("myContracts.noContracts")}</div>
+            <p style={{ fontSize: 13, color: T.ink2, marginBottom: 20, lineHeight: 1.6 }}>
+              {isEmployer ? t("myContracts.noContractsEmployer") : t("myContracts.noContractsWorker")}
+            </p>
+            {isEmployer && (
+              <Link href="/contracts/new" style={{ display: "inline-block", padding: "12px 24px", background: T.n9, color: T.gold, textDecoration: "none", fontSize: 13, fontWeight: 700, borderRadius: 6, letterSpacing: "-0.01em" }}>
+                {t("myContracts.writeContractBtn")}
+              </Link>
+            )}
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            {contracts.map((c) => {
+              const st = STATUS_INFO[c.status] || STATUS_INFO.draft;
+              return (
+                <Link key={c.id} href={`/contracts/${c.id}`} style={{ textDecoration: "none" }}>
+                  <div
+                    style={{ border: `1px solid ${T.border}`, borderRadius: 12, padding: "18px 20px", background: T.paper, height: "100%", boxSizing: "border-box", transition: "box-shadow 0.15s, border-color 0.15s" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(10,22,40,0.08)"; e.currentTarget.style.borderColor = T.ink3; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = T.border; }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+                      <span style={{ fontSize: 15.5, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>
+                        {isEmployer ? c.worker_name : c.company_name}
+                      </span>
+                      <span style={{ padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 700, background: st.bg, color: st.color, letterSpacing: "0.02em", whiteSpace: "nowrap" }}>
+                        {st.icon} {t(`contract.status.${c.status}`)}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 13, color: T.ink2, marginBottom: 10 }}>
+                      {isEmployer ? c.company_name : `${t("myContracts.employerName")}: ${c.employer_name || "—"}`}
+                    </div>
+                    <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
+                      <span style={{ fontSize: 14, fontWeight: 800, color: T.accent, letterSpacing: "-0.02em" }}>
+                        {c.pay_type} ₩{Number(c.pay_amount).toLocaleString()}
+                      </span>
+                      <span style={{ fontSize: 11, color: T.ink3 }}>{c.contract_start} ~ {c.contract_end}</span>
+                    </div>
+                    <div style={{ display: "flex", gap: 12, fontSize: 11 }}>
+                      <span style={{ color: c.worker_signed ? T.green : T.ink3 }}>{c.worker_signed ? "✓" : "⏳"} {t("myContracts.workerSignature")}</span>
+                      <span style={{ color: c.employer_signed ? T.green : T.ink3 }}>{c.employer_signed ? "✓" : "⏳"} {t("myContracts.employerSignature")}</span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: "32px 20px", maxWidth: 820, margin: "0 auto" }}>

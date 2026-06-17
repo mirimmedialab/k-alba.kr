@@ -7,6 +7,7 @@ import { getCurrentUser, getMyJobs } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 import { ListPageSkel } from "@/components/Wireframe";
 import { Button, Badge, Empty } from "@/components/ui";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 
 /**
  * /my/jobs 사장님 메인 페이지 (BI v2)
@@ -39,6 +40,7 @@ export default function MyJobsPage() {
   const t = useT();
   const [jobs, setJobs] = useState(DEMO_JOBS);
   const [loading, setLoading] = useState(true);
+  const isDesktop = useIsDesktop();
 
   useEffect(() => {
     getCurrentUser().then(async (u) => {
@@ -53,6 +55,61 @@ export default function MyJobsPage() {
   }, [router]);
 
   if (loading) return <ListPageSkel maxWidth={820} showAction rows={3} />;
+
+  // ───────── 데스크탑(웹) 전용 레이아웃: 넓은 컨테이너 + 2열 카드 그리드 ─────────
+  if (isDesktop) {
+    return (
+      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "40px 28px 64px" }}>
+        <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 18 }} />
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
+          {t("myJobs.header")}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24, paddingBottom: 16, borderBottom: `2px solid ${T.n9}` }}>
+          <div>
+            <h1 style={{ fontSize: 28, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", marginBottom: 4, lineHeight: 1.2 }}>
+              {t("myJobs.title")}
+            </h1>
+            <p style={{ color: T.ink3, fontSize: 13, letterSpacing: "-0.01em" }}>
+              {t("myJobs.jobCount").replace("{count}", jobs.length)}
+            </p>
+          </div>
+          <Button variant="primaryDark" href="/jobs/post" size="md">{t("myJobs.newJobBtn")}</Button>
+        </div>
+
+        {jobs.length === 0 ? (
+          <Empty
+            variant="no-data"
+            icon="📢"
+            title={t("myJobs.noJobs")}
+            description={t("myJobs.noJobsDesc")}
+            action={<Button variant="primaryDark" href="/jobs/post">{t("myJobs.postJobBtn")}</Button>}
+          />
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            {jobs.map((j) => (
+              <Link key={j.id} href={`/applicants?jobId=${j.id}`} style={{ textDecoration: "none" }}>
+                <div
+                  style={{ border: `1px solid ${T.border}`, borderRadius: 12, padding: "18px 20px", background: T.paper, height: "100%", boxSizing: "border-box", transition: "box-shadow 0.15s, border-color 0.15s" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(10,22,40,0.08)"; e.currentTarget.style.borderColor = T.ink3; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = T.border; }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+                    <span style={{ fontSize: 15.5, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{j.title}</span>
+                    <Badge variant={j.status === "active" ? "success" : "neutral"} size="sm">{t(`myJobs.status.${j.status}`)}</Badge>
+                  </div>
+                  <div style={{ fontSize: 13, color: T.ink2, marginBottom: 12 }}>{j.job_type} · {j.address}</div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: T.accent, letterSpacing: "-0.025em" }}>{j.pay_type} ₩{Number(j.pay_amount).toLocaleString()}</span>
+                    <span style={{ fontSize: 12, color: T.ink2, fontWeight: 600 }}>{t("myJobs.applicantCount")} <strong style={{ color: T.ink }}>{j.applicant_count || 0}{t("myJobs.applicantCountSuffix")}</strong></span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: "32px 20px", maxWidth: 820, margin: "0 auto" }}>

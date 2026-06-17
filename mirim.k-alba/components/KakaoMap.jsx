@@ -70,6 +70,9 @@ export default function KakaoMap({
   draggableMarker = null,
   cluster = false,
   reactiveLevel = false,
+  clusterColor = null,
+  highlight = null,
+  highlightColor = null,
   height = 300,
 }) {
   const mapRef = useRef(null);
@@ -79,6 +82,7 @@ export default function KakaoMap({
   const draggableMarkerRef = useRef(null);
   const routeLineRef = useRef(null);
   const clustererRef = useRef(null);
+  const highlightOverlayRef = useRef(null);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
 
@@ -120,14 +124,14 @@ export default function KakaoMap({
         disableClickZoom: false,
         styles: [{
           width: "44px", height: "44px",
-          background: T.n9,
-          color: T.gold,
+          background: clusterColor || T.n9,
+          color: clusterColor ? "#fff" : T.gold,
           borderRadius: "22px",
           textAlign: "center",
           lineHeight: "44px",
           fontWeight: "700",
           fontSize: "13px",
-          border: `2px solid ${T.gold}`,
+          border: `2px solid ${clusterColor ? "#fff" : T.gold}`,
         }],
       });
     }
@@ -340,6 +344,39 @@ export default function KakaoMap({
     bounds.extend(linePath[1]);
     mapInstanceRef.current.setBounds(bounds, 40, 40, 40, 40);
   }, [showRoute, loaded]);
+
+  // ═══ 8. 하이라이트 마커('뿅' 팝 애니메이션) — highlight prop 변경 시 ═══
+  useEffect(() => {
+    if (!mapInstanceRef.current || !loaded) return;
+    const { kakao } = window;
+    if (highlightOverlayRef.current) {
+      highlightOverlayRef.current.setMap(null);
+      highlightOverlayRef.current = null;
+    }
+    if (!highlight || !highlight.latitude || !highlight.longitude) return;
+    const color = highlightColor || T.accent;
+    const el = document.createElement("div");
+    el.style.transformOrigin = "center bottom";
+    el.innerHTML = `<div style="width:24px;height:24px;background:${color};border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 3px 10px rgba(0,0,0,0.35);"></div>`;
+    const overlay = new kakao.maps.CustomOverlay({
+      position: new kakao.maps.LatLng(highlight.latitude, highlight.longitude),
+      content: el,
+      yAnchor: 1,
+      zIndex: 250,
+    });
+    overlay.setMap(mapInstanceRef.current);
+    highlightOverlayRef.current = overlay;
+    try {
+      el.animate(
+        [
+          { transform: "scale(0) translateY(8px)", opacity: 0 },
+          { transform: "scale(1.3) translateY(0)", opacity: 1, offset: 0.6 },
+          { transform: "scale(1)", opacity: 1 },
+        ],
+        { duration: 480, easing: "cubic-bezier(0.2,0.9,0.3,1.3)" }
+      );
+    } catch (_) {}
+  }, [highlight?.latitude, highlight?.longitude, highlightColor, loaded]);
 
   // ═══ UI ═══
   if (error) {

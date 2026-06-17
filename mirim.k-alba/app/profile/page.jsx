@@ -10,6 +10,7 @@ import { FormPageSkel } from "@/components/Wireframe";
 import LocationPicker from "@/components/LocationPicker";
 import { useT } from "@/lib/i18n";
 import { Button, Card, ButtonLoading } from "@/components/ui";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 
 /**
  * /profile 프로필 (BI v2)
@@ -41,6 +42,7 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [workHistory, setWorkHistory] = useState([]);
+  const isDesktop = useIsDesktop();
 
   const TRANSPORT_MODES = [
     { v: "transit", l: t("profile.transportTransit") },
@@ -99,6 +101,8 @@ export default function ProfilePage() {
   }, [router]);
 
   const isEmployer = user?.user_metadata?.user_type === "employer";
+  // 데스크탑: 폰 프레임 제거 + 컨테이너 확장(모바일 값은 그대로)
+  const pageStyle = { padding: isDesktop ? "40px 28px 64px" : 20, maxWidth: isDesktop ? 820 : 600, margin: "0 auto" };
 
   const handleSave = async () => {
     setSaving(true);
@@ -115,7 +119,7 @@ export default function ProfilePage() {
   // ─── 사장님 프로필 (coralDark) ───
   if (isEmployer) {
     return (
-      <div style={{ padding: 20, maxWidth: 600, margin: "0 auto" }}>
+      <div style={pageStyle}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <h2 style={{ fontSize: 22, fontWeight: 800, color: T.navy }}>💼 {t("profile.employerProfile")}</h2>
           {!editing ? (
@@ -186,7 +190,7 @@ export default function ProfilePage() {
 
   // ─── 구직자 프로필 (coral) ───
   return (
-    <div style={{ padding: 20, maxWidth: 600, margin: "0 auto" }}>
+    <div style={pageStyle}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <h2 style={{ fontSize: 22, fontWeight: 800, color: T.navy }}>🌏 {t("profile.myProfile")}</h2>
         {!editing ? (
