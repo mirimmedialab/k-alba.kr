@@ -574,7 +574,7 @@ export default function JobsPage() {
                 {facets.visa.length > 0 && (
                   <FilterGroup title={t("jobs.filterVisa")}>
                     {facets.visa.map(([v, c]) => (
-                      <CheckRow key={v} label={v} count={c} checked={visaSel.includes(v)} onClick={() => toggleIn(visaSel, setVisaSel, v)} />
+                      <CheckRow key={v} label={v === "비자 무관" ? t("jobs.visaAny") : v} count={c} checked={visaSel.includes(v)} onClick={() => toggleIn(visaSel, setVisaSel, v)} />
                     ))}
                   </FilterGroup>
                 )}

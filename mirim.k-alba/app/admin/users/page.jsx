@@ -2,14 +2,14 @@
 import { useEffect, useState, useCallback } from "react";
 import { T } from "@/lib/theme";
 import { adminGet, adminPatch } from "@/lib/adminApi";
-import { Panel, Table, StatusBadge, MiniBtn, Pager, TextInput, SelectInput, fmtDate } from "../_ui";
+import { Panel, Table, MiniBtn, Pager, TextInput, SelectInput, fmtDateTime } from "../_ui";
 
 export default function AdminUsers() {
   const [q, setQ] = useState("");
   const [type, setType] = useState("all");
   const [status, setStatus] = useState("all");
   const [page, setPage] = useState(1);
-  const [data, setData] = useState({ rows: [], total: 0, limit: 20 });
+  const [data, setData] = useState({ rows: [], total: 0, allTotal: 0, limit: 20 });
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
@@ -60,6 +60,13 @@ export default function AdminUsers() {
         <MiniBtn tone="primary" onClick={() => load(1)}>검색</MiniBtn>
       </div>
 
+      <div style={{ fontSize: 13, color: T.ink2, marginBottom: 12 }}>
+        전체 회원 <strong style={{ color: T.ink }}>{(data.allTotal ?? 0).toLocaleString()}</strong>명
+        {(q.trim() !== "" || type !== "all" || status !== "all") && (
+          <> · 현재 조건 <strong style={{ color: T.coral }}>{(data.total ?? 0).toLocaleString()}</strong>명</>
+        )}
+      </div>
+
       {err && <div style={{ padding: 12, background: T.errorBg, color: T.error, borderRadius: 8, marginBottom: 12, fontSize: 13 }}>{err}</div>}
 
       <Panel>
@@ -77,8 +84,16 @@ export default function AdminUsers() {
                 { header: "업체/인증", cell: (r) => r.user_type === "employer"
                     ? <span>{r.company_name || "-"} {r.verified ? <span style={{ color: "#0A8F6B", fontWeight: 700 }}>✓</span> : <span style={{ color: T.ink3 }}>미인증</span>}</span>
                     : "-" },
-                { header: "상태", cell: (r) => <StatusBadge value={r.deactivated_at ? "deleted" : "active"} /> },
-                { header: "가입", cell: (r) => fmtDate(r.created_at) },
+                { header: "상태", cell: (r) => (
+                    <span style={{
+                      display: "inline-block", fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 999,
+                      background: r.deactivated_at ? T.errorBg : T.successBg,
+                      color: r.deactivated_at ? T.error : "#0A8F6B",
+                    }}>
+                      {r.deactivated_at ? "비활성" : "활성"}
+                    </span>
+                  ) },
+                { header: "가입", cell: (r) => fmtDateTime(r.created_at) },
                 { header: "관리", cell: (r) => (
                     <div style={{ display: "flex", gap: 6 }}>
                       {r.user_type === "employer" && (r.verified

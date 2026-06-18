@@ -39,10 +39,13 @@ export async function GET(request) {
 
   query = query.order("created_at", { ascending: false }).range(from, to);
 
-  const { data, count, error } = await query;
+  const [{ data, count, error }, allRes] = await Promise.all([
+    query,
+    svc.from("profiles").select("id", { count: "exact", head: true }),
+  ]);
   if (error) return Response.json({ error: error.message }, { status: 500 });
 
-  return Response.json({ rows: data || [], total: count || 0, page, limit });
+  return Response.json({ rows: data || [], total: count || 0, allTotal: allRes.count || 0, page, limit });
 }
 
 /**
