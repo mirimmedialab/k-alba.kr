@@ -10,7 +10,8 @@ import KakaoMap from "@/components/KakaoMap";
 import RouteCard from "@/components/RouteCard";
 import LastTransitCard from "@/components/LastTransitCard";
 import { formatDistance, calculateDistanceMeters } from "@/lib/geolocation";
-import { formatPay, formatWorkHours } from "@/lib/format";
+import { formatPay, formatWorkHours, localizeWorkText } from "@/lib/format";
+import { romanizeRegion, romanizeCompany } from "@/lib/koroman";
 import {
   Button,
   Card,
@@ -167,7 +168,7 @@ export default function JobDetail({ jobId, embedded = false }) {
       body: JSON.stringify({ jobId: job.id, lang: locale, title: job.title, description: job.desc }),
     })
       .then((r) => r.json())
-      .then((d) => { if (!cancelled && d && (d.title || d.description)) setTr({ title: d.title, description: d.description }); })
+      .then((d) => { if (!cancelled && d && (d.title || d.description || d.industry)) setTr({ title: d.title, description: d.description, industry: d.industry }); })
       .catch(() => {})
       .finally(() => { if (!cancelled) setTranslating(false); });
     return () => { cancelled = true; };
@@ -206,15 +207,23 @@ export default function JobDetail({ jobId, embedded = false }) {
   const displayTitle = (locale !== "ko" && tr?.title) ? tr.title : job.title;
   const displayDesc = (locale !== "ko" && tr?.description) ? tr.description : job.desc;
 
+  const translatingOverlay = (
+    <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 9999, display: "flex", alignItems: "center", gap: 10, background: "rgba(15,23,42,0.93)", color: "#fff", padding: "14px 22px", borderRadius: 12, fontSize: 14.5, fontWeight: 700, boxShadow: "0 10px 34px rgba(0,0,0,0.28)" }}>
+      <span style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "kalbaspin 0.7s linear infinite" }} />
+      {t("common.translating")}
+      <style>{"@keyframes kalbaspin{to{transform:rotate(360deg)}}"}</style>
+    </div>
+  );
+
   if (isDesktop) {
     const koreanLabel = D_KOREAN[job.korean] ? t("kr." + job.korean) : null;
     const desc = String(displayDesc || "").replace(/^\s*담당업무\s*[:：]?\s*/, "").trimEnd();
     const payUnit = ({ 시급: "시간", 일급: "일", 월급: "월", 연봉: "년" })[job.pay_type] || "시간";
     const rows = [
       ["급여", payDisplay(job, locale, t)],
-      ["지역", (locale !== "ko" && tr && tr.region) ? tr.region : job.area],
+      ["지역", locale !== "ko" ? romanizeRegion(job.area) : job.area],
       ["근무", String(job.hours || job.time || "").trim() || "-"],
-      ["업종", job.type],
+      ["업종", (locale !== "ko" && tr && tr.industry) ? tr.industry : job.type],
       job.headcount && String(job.headcount) !== "1"
         ? ["모집인원", /^\d+$/.test(String(job.headcount)) ? `${t("jobDetail.people", { n: job.headcount })}` : job.headcount]
         : null,
@@ -232,8 +241,8 @@ export default function JobDetail({ jobId, embedded = false }) {
       (job.visa || []).length > 0 || !!koreanLabel ||
       !!job.provides_housing || !!job.provides_shuttle || !!job.nearest_station;
     const companyRows = [
-      ["회사명", (locale !== "ko" && tr && tr.company) ? `${job.company || "-"} (${tr.company})` : (job.company || "-")],
-      job.type ? ["업종", job.type] : null,
+      ["회사명", locale !== "ko" ? `${job.company || "-"} (${romanizeCompany(job.company)})` : (job.company || "-")],
+      job.type ? ["업종", (locale !== "ko" && tr && tr.industry) ? tr.industry : job.type] : null,
       ["공고 출처", job.source_type === "worknet" ? "고용24(워크넷)" : "K-ALBA 직접등록"],
     ].filter(Boolean);
     const checklist = [
@@ -257,7 +266,7 @@ export default function JobDetail({ jobId, embedded = false }) {
         <span style={{ fontSize: 13.5, fontWeight: 600, color: D.ink, textAlign: "right", lineHeight: 1.6 }}>
           {isWork
             ? formatWorkHours(tv).map((line, i) => (
-                <span key={i} style={{ display: "block" }}>{line}</span>
+                <span key={i} style={{ display: "block" }}>{locale !== "ko" ? localizeWorkText(line, t) : line}</span>
               ))
             : tv}
         </span>
@@ -275,11 +284,7 @@ export default function JobDetail({ jobId, embedded = false }) {
               <div style={{ fontSize: 40 }}>{job.icon || "💼"}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <h1 style={{ fontSize: 26, fontWeight: 800, color: D.navy, lineHeight: 1.3, margin: 0, letterSpacing: "-0.02em" }}>{displayTitle}</h1>
-                {translating && (
-                  <div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: D.ink2, background: D.cream, padding: "3px 10px", borderRadius: 999 }}>
-                    🌐 {t("common.translating")}
-                  </div>
-                )}
+                {translating && translatingOverlay}
                 <div style={{ fontSize: 14.5, color: D.ink2, marginTop: 8 }}>{job.company}</div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 14 }}>
                   {(job.visa || []).map((v) => <VisaBadge key={v} code={v} variant="solid" size="md" />)}
@@ -366,9 +371,9 @@ export default function JobDetail({ jobId, embedded = false }) {
   const desc = String(displayDesc || "").replace(/^\s*담당업무\s*[:：]?\s*/, "").trimEnd();
   const rows = [
     ["급여", payDisplay(job, locale, t)],
-    ["지역", (locale !== "ko" && tr && tr.region) ? tr.region : job.area],
+    ["지역", locale !== "ko" ? romanizeRegion(job.area) : job.area],
     ["근무", String(job.hours || job.time || "").trim() || "-"],
-    ["업종", job.type],
+    ["업종", (locale !== "ko" && tr && tr.industry) ? tr.industry : job.type],
     job.headcount && String(job.headcount) !== "1" ? ["모집인원", /^\d+$/.test(String(job.headcount)) ? `${t("jobDetail.people", { n: job.headcount })}` : job.headcount] : null,
     job.benefits ? ["복리후생", job.benefits] : null,
     job.expires_at ? ["마감", String(job.expires_at).slice(0, 10)] : null,
@@ -382,8 +387,8 @@ export default function JobDetail({ jobId, embedded = false }) {
   ].filter(Boolean);
   const hasForeignerInfo = (job.visa || []).length > 0 || !!koreanLabel || !!job.provides_housing || !!job.provides_shuttle || !!job.nearest_station;
   const companyRows = [
-    ["회사명", (locale !== "ko" && tr && tr.company) ? `${job.company || "-"} (${tr.company})` : (job.company || "-")],
-    job.type ? ["업종", job.type] : null,
+    ["회사명", locale !== "ko" ? `${job.company || "-"} (${romanizeCompany(job.company)})` : (job.company || "-")],
+    job.type ? ["업종", (locale !== "ko" && tr && tr.industry) ? tr.industry : job.type] : null,
     ["공고 출처", job.source_type === "worknet" ? "고용24(워크넷)" : "K-ALBA 직접등록"],
   ].filter(Boolean);
   const checklist = [
@@ -404,7 +409,7 @@ export default function JobDetail({ jobId, embedded = false }) {
     <div style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "11px 0", borderBottom: "1px solid #F1F5F9" }}>
       <span style={{ fontSize: 13, color: D.ink3, flexShrink: 0 }}>{JD_LABELS[k] ? t(JD_LABELS[k]) : k}</span>
       <span style={{ fontSize: 13, fontWeight: 600, color: D.ink, textAlign: "right", lineHeight: 1.6 }}>
-        {isWork ? formatWorkHours(tv).map((line, i) => (<span key={i} style={{ display: "block" }}>{line}</span>)) : tv}
+        {isWork ? formatWorkHours(tv).map((line, i) => (<span key={i} style={{ display: "block" }}>{locale !== "ko" ? localizeWorkText(line, t) : line}</span>)) : tv}
       </span>
     </div>
     );
@@ -418,11 +423,7 @@ export default function JobDetail({ jobId, embedded = false }) {
         <div style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 16, padding: 18, marginBottom: 14 }}>
           <div style={{ fontSize: 32, marginBottom: 8 }}>{job.icon || "💼"}</div>
           <h1 style={{ fontSize: 20, fontWeight: 800, color: D.navy, lineHeight: 1.3, margin: 0, letterSpacing: "-0.01em" }}>{displayTitle}</h1>
-                {translating && (
-                  <div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: D.ink2, background: D.cream, padding: "3px 10px", borderRadius: 999 }}>
-                    🌐 {t("common.translating")}
-                  </div>
-                )}
+                {translating && translatingOverlay}
           <div style={{ fontSize: 13.5, color: D.ink2, marginTop: 6 }}>{job.company}</div>
           {(job.visa || []).length > 0 && (
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 12 }}>

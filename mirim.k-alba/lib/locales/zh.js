@@ -1,5 +1,6 @@
 export const zh = {
   siteFooter: { terms: "服务条款", privacy: "隐私政策", ceo: "代表", bizNo: "营业执照号", jobInfoNo: "职业信息提供事业申报号", company: "美林媒体实验室股份公司" },
+  wh: { am: "上午", pm: "下午", everyday: "每天", weekday: "工作日", weekend: "周末", workHours: "工作时间", avgWeeklyHours: "平均工时", breakTime: "休息时间", negotiable: "面议", daysPerWeek: "每周{n}天" },
   pay: { hour: "小时", day: "天", month: "月", year: "年", won: "韩元" },
   kr: { none: "韩语不限", beginner: "韩语初级", intermediate: "韩语中级", advanced: "韩语高级" },
   nav: {

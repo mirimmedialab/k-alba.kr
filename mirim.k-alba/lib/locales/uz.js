@@ -1,5 +1,6 @@
 export const uz = {
   siteFooter: { terms: "Foydalanish shartlari", privacy: "Maxfiylik siyosati", ceo: "Direktor", bizNo: "Biznes ro'yxat raqami", jobInfoNo: "Ish ma'lumotlari provayderi raqami", company: "Mirim Media Lab Inc." },
+  wh: { am: "Ertalab", pm: "Tushdan keyin", everyday: "Har kuni", weekday: "Ish kunlari", weekend: "Dam olish kunlari", workHours: "Ish vaqti", avgWeeklyHours: "Haftalik o'rtacha soat", breakTime: "Tanaffus", negotiable: "Kelishiladi", daysPerWeek: "Haftasiga {n} kun" },
   pay: { hour: "soat", day: "kun", month: "oy", year: "yil", won: "won" },
   kr: { none: "Koreys tili shart emas", beginner: "Boshlang'ich koreys tili", intermediate: "O'rta koreys tili", advanced: "Yuqori koreys tili" },
   nav: {

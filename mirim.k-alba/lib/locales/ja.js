@@ -1,5 +1,6 @@
 export const ja = {
   siteFooter: { terms: "利用規約", privacy: "プライバシーポリシー", ceo: "代表", bizNo: "事業者登録番号", jobInfoNo: "職業情報提供事業届出番号", company: "ミリムメディアラボ株式会社" },
+  wh: { am: "午前", pm: "午後", everyday: "毎日", weekday: "平日", weekend: "週末", workHours: "勤務時間", avgWeeklyHours: "平均勤務時間", breakTime: "休憩時間", negotiable: "応相談", daysPerWeek: "週{n}日" },
   pay: { hour: "時間", day: "日", month: "月", year: "年", won: "ウォン" },
   kr: { none: "韓国語不問", beginner: "韓国語初級", intermediate: "韓国語中級", advanced: "韓国語上級" },
   nav: {

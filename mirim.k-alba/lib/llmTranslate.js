@@ -76,7 +76,7 @@ function parseJsonLoose(text) {
 /**
  * 상세 페이지용: 제목·설명·지역·회사명(음역).
  */
-export async function translateJob({ title, description, region, company }, lang) {
+export async function translateJob({ title, description, region, company, industry }, lang) {
   const name = LANG_NAMES[lang];
   if (!name) return null;
 
@@ -85,12 +85,14 @@ export async function translateJob({ title, description, region, company }, lang
     "Translate the Korean job fields below into " + name + ".",
     RULES,
     '- For "company": give the romanized/transliterated reading of the company name in ' + name + " (how it sounds), NOT a meaning translation.",
-    'Return ONLY a JSON object with the keys: "title", "description", "region", "company" (use an empty string for any field that was empty). No extra text.',
+    '- For "industry": translate the meaning of the industry/business category.',
+    'Return ONLY a JSON object with the keys: "title", "description", "region", "company", "industry" (use an empty string for any field that was empty). No extra text.',
     "",
     "Korean title: " + (title || ""),
     "Korean description: " + (description || ""),
     "Korean region: " + (region || ""),
     "Korean company: " + (company || ""),
+    "Korean industry: " + (industry || ""),
   ].join("\n");
 
   const text = await callLLM(prompt, 1500);
@@ -102,42 +104,35 @@ export async function translateJob({ title, description, region, company }, lang
     description: typeof obj.description === "string" ? obj.description : (description || ""),
     region: typeof obj.region === "string" ? obj.region : (region || ""),
     company: typeof obj.company === "string" ? obj.company : (company || ""),
+    industry: typeof obj.industry === "string" ? obj.industry : (industry || ""),
   };
 }
 
 /**
- * 목록용 배치: items = [{ id, title, region }, ...]
- * 반환: { [id]: { title, region } }  (실패 시 null)
+ * 용어 배치 번역: 한국어 용어 배열 → { [ko]: 번역 }.
+ * 업종/지역 facet 라벨처럼 짧은 어구를 한 번에 번역할 때 사용.
  */
-export async function translateListBatch(items, lang) {
+export async function translateTermsBatch(terms, lang) {
   const name = LANG_NAMES[lang];
   if (!name) return null;
-  if (!Array.isArray(items) || items.length === 0) return {};
+  const uniq = [...new Set((terms || []).filter(Boolean))];
+  if (uniq.length === 0) return {};
 
-  const payload = items.map((it) => ({ id: it.id, title: it.title || "", region: it.region || "" }));
   const prompt = [
     "You are a professional translator for a part-time job platform serving foreign workers and students in Korea.",
-    'Translate each item\'s "title" and "region" from Korean into ' + name + ".",
+    "Translate each Korean term (industry / category / region name) into " + name + ".",
     RULES,
-    'Input is a JSON array. Return ONLY a JSON array of the SAME length, each element { "id": <same id>, "title": <translated>, "region": <translated> }. No extra text.',
+    'Input is a JSON array of Korean strings. Return ONLY a JSON object mapping each input string to its ' + name + " translation. No extra text.",
     "",
     "Input:",
-    JSON.stringify(payload),
+    JSON.stringify(uniq),
   ].join("\n");
 
-  const text = await callLLM(prompt, 4000);
+  const text = await callLLM(prompt, 3000);
   if (!text) return null;
-  const arr = parseJsonLoose(text);
-  if (!Array.isArray(arr)) return null;
-
+  const obj = parseJsonLoose(text);
+  if (!obj || typeof obj !== "object" || Array.isArray(obj)) return null;
   const out = {};
-  for (const el of arr) {
-    if (el && el.id != null) {
-      out[String(el.id)] = {
-        title: typeof el.title === "string" ? el.title : "",
-        region: typeof el.region === "string" ? el.region : "",
-      };
-    }
-  }
+  for (const k of uniq) out[k] = typeof obj[k] === "string" ? obj[k] : k;
   return out;
 }

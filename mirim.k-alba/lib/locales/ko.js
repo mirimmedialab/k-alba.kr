@@ -1,5 +1,6 @@
 export const ko = {
   siteFooter: { terms: "이용약관", privacy: "개인정보처리방침", ceo: "대표", bizNo: "사업자등록번호", jobInfoNo: "직업정보제공사업 신고번호", company: "미림미디어랩 주식회사" },
+  wh: { am: "오전", pm: "오후", everyday: "매일", weekday: "평일", weekend: "주말", workHours: "근무시간", avgWeeklyHours: "평균근무시간", breakTime: "휴게시간", negotiable: "협의", daysPerWeek: "주 {n}일" },
   pay: { hour: "시간", day: "일", month: "월", year: "년", won: "원" },
   kr: { none: "한국어 무관", beginner: "한국어 초급", intermediate: "한국어 중급", advanced: "한국어 고급" },
   nav: {

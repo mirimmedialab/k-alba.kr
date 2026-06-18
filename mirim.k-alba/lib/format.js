@@ -81,3 +81,30 @@ export function formatWorkHours(raw) {
     .replace(/(?<!~)(?<!~ )(\(오전\)|\(오후\))/g, "\n$1");
   return s.split("\n").map((x) => x.trim()).filter(Boolean);
 }
+
+/**
+ * 근무시간/요일 문자열을 로케일 단어로 치환(한국어 토큰 → 번역어).
+ * 시간은 "8시 30분" → "8:30" 으로 통일. t는 useT()의 t.
+ */
+export function localizeWorkText(line, t) {
+  if (!line) return line;
+  let s = String(line);
+  // 시각: "8시 30분" -> "8:30", "8시" -> "8:00"
+  s = s.replace(/(\d{1,2})\s*시\s*(\d{1,2})\s*분/g, (m, h, mi) => h + ":" + String(mi).padStart(2, "0"));
+  s = s.replace(/(\d{1,2})\s*시/g, "$1:00");
+  // 오전/오후
+  s = s.replace(/\(?\s*오전\s*\)?/g, t("wh.am") + " ");
+  s = s.replace(/\(?\s*오후\s*\)?/g, t("wh.pm") + " ");
+  // 주 N일 (근무)
+  s = s.replace(/주\s*(\d+)\s*일(\s*근무)?/g, (m, n) => t("wh.daysPerWeek", { n }));
+  // 라벨/단어 (긴 토큰 먼저)
+  s = s.replace(/평균\s*근무\s*시간/g, t("wh.avgWeeklyHours"));
+  s = s.replace(/근무\s*시간/g, t("wh.workHours"));
+  s = s.replace(/휴게\s*시간/g, t("wh.breakTime"));
+  s = s.replace(/매일/g, t("wh.everyday"));
+  s = s.replace(/평일/g, t("wh.weekday"));
+  s = s.replace(/주말/g, t("wh.weekend"));
+  s = s.replace(/요일\s*협의|협의/g, t("wh.negotiable"));
+  s = s.replace(/\s+:\s+/g, ": ").replace(/\(\s*\)/g, "").replace(/\s{2,}/g, " ").trim();
+  return s;
+}

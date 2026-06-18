@@ -1,5 +1,6 @@
 export const en = {
   siteFooter: { terms: "Terms of Service", privacy: "Privacy Policy", ceo: "CEO", bizNo: "Business Reg. No.", jobInfoNo: "Job Info Provider Reg. No.", company: "Mirim Media Lab Inc." },
+  wh: { am: "AM", pm: "PM", everyday: "Every day", weekday: "Weekdays", weekend: "Weekend", workHours: "Work hours", avgWeeklyHours: "Avg weekly hours", breakTime: "Break", negotiable: "Negotiable", daysPerWeek: "{n} days/week" },
   pay: { hour: "hour", day: "day", month: "month", year: "year", won: "won" },
   kr: { none: "Korean not required", beginner: "Beginner Korean", intermediate: "Intermediate Korean", advanced: "Advanced Korean" },
   nav: {

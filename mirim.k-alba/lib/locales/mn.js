@@ -1,5 +1,6 @@
 export const mn = {
   siteFooter: { terms: "Үйлчилгээний нөхцөл", privacy: "Нууцлалын бодлого", ceo: "Захирал", bizNo: "Бизнес бүртгэлийн дугаар", jobInfoNo: "Ажил мэдээлэл нийлүүлэх бүртгэлийн дугаар", company: "Mirim Media Lab Inc." },
+  wh: { am: "Өглөө", pm: "Үдээс хойш", everyday: "Өдөр бүр", weekday: "Ажлын өдрүүд", weekend: "Амралтын өдрүүд", workHours: "Ажлын цаг", avgWeeklyHours: "Долоо хоногийн дундаж цаг", breakTime: "Завсарлага", negotiable: "Тохиролцоно", daysPerWeek: "Долоо хоногт {n} өдөр" },
   pay: { hour: "цаг", day: "өдөр", month: "сар", year: "жил", won: "вон" },
   kr: { none: "Солонгос хэл шаардлагагүй", beginner: "Анхан шатны солонгос хэл", intermediate: "Дунд шатны солонгос хэл", advanced: "Гүнзгий солонгос хэл" },
   nav: {

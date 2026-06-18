@@ -1,5 +1,6 @@
 export const vi = {
   siteFooter: { terms: "Điều khoản dịch vụ", privacy: "Chính sách bảo mật", ceo: "Đại diện", bizNo: "Số ĐKKD", jobInfoNo: "Số ĐK cung cấp thông tin việc làm", company: "Mirim Media Lab Inc." },
+  wh: { am: "Sáng", pm: "Chiều", everyday: "Hằng ngày", weekday: "Ngày thường", weekend: "Cuối tuần", workHours: "Giờ làm việc", avgWeeklyHours: "Giờ làm TB/tuần", breakTime: "Giờ nghỉ", negotiable: "Thỏa thuận", daysPerWeek: "{n} ngày/tuần" },
   pay: { hour: "giờ", day: "ngày", month: "tháng", year: "năm", won: "won" },
   kr: { none: "Không yêu cầu tiếng Hàn", beginner: "Tiếng Hàn sơ cấp", intermediate: "Tiếng Hàn trung cấp", advanced: "Tiếng Hàn cao cấp" },
   nav: {
