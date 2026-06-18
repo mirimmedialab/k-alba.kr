@@ -211,37 +211,37 @@ const AUDIENCE_TABS = [
   {
     id: "workers",
     en: "For Workers",
-    kr: "외국인 구직자",
-    title: "한국어 서류 작성이 어려우신가요?",
-    titleAccent: "모국어로 확인하고 작성하세요!",
+    kr: "landing.audWorkerKr",
+    title: "landing.audWorkerTitle",
+    titleAccent: "landing.audWorkerAccent",
     items: [
-      ["🌐", "내 조건에 꼭 맞는 맞춤형 알바 매칭 서비스"],
-      ["📄", "클릭 몇 번으로 손쉽게 작성하는 표준근로계약서"],
-      ["📑", "복잡한 시간제취업 신청 서류 원클릭 자동 완성"],
+      ["🌐", "landing.audWorkerI1"],
+      ["📄", "landing.audWorkerI2"],
+      ["📑", "landing.audWorkerI3"],
     ],
   },
   {
     id: "employers",
     en: "For Employers",
-    kr: "사장님",
-    title: "외국인 알바 채용부터 계약까지",
-    titleAccent: "복잡한 절차를 한 번에",
+    kr: "landing.audEmployerKr",
+    title: "landing.audEmployerTitle",
+    titleAccent: "landing.audEmployerAccent",
     items: [
-      ["🤝", "우리 사업장에 꼭 필요한 맞춤형 외국인 알바 매칭"],
-      ["📝", "고용 신고의 시작, 필수 표준근로계약서 간편 작성 지원"],
-      ["💼", "군더더기 없이 간편한 구인 공고 등록 및 지원자 관리 시스템"],
+      ["🤝", "landing.audEmployerI1"],
+      ["📝", "landing.audEmployerI2"],
+      ["💼", "landing.audEmployerI3"],
     ],
   },
   {
     id: "universities",
     en: "For Universities",
-    kr: "학교 담당자",
-    title: "교내 유학생들의 알바 현황과",
-    titleAccent: "필수 서류를 스마트하게",
+    kr: "landing.audUniKr",
+    title: "landing.audUniTitle",
+    titleAccent: "landing.audUniAccent",
     items: [
-      ["📊", "우리 학교 외국인 유학생들의 알바 매칭 및 취업 현황 관리"],
-      ["📑", "유학생 시간제취업 신청서 간편 작성 지원"],
-      ["📁", "행정 업무 부담을 획기적으로 줄여주는 효율적인 통합 서류 인프라"],
+      ["📊", "landing.audUniI1"],
+      ["📑", "landing.audUniI2"],
+      ["📁", "landing.audUniI3"],
     ],
   },
 ];
@@ -288,9 +288,9 @@ function MockupShell({ chromeTitle, children }) {
 }
 
 /** Worker 목업 — 다국어 서류 작성 대시보드 */
-function WorkerMockup() {
+function WorkerMockup({ t }) {
   return (
-    <MockupShell chromeTitle="k-alba.kr · 표준근로계약서 작성">
+    <MockupShell chromeTitle={t("landing.mkWorkerChrome")}>
       {/* 언어 탭 */}
       <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
         {["🇰🇷 한국어", "🇻🇳 Tiếng Việt", "🇨🇳 中文", "🇺🇿 Oʻzbek"].map((l, i) => (
@@ -314,9 +314,9 @@ function WorkerMockup() {
       {/* 단계 progress */}
       <div style={{ display: "flex", gap: 10, marginBottom: 18, alignItems: "center" }}>
         {[
-          ["1", "정보 입력", true],
-          ["2", "자동 번역", true],
-          ["3", "서명", false],
+          ["1", t("landing.mkStepInfo"), true],
+          ["2", t("landing.mkStepTranslate"), true],
+          ["3", t("landing.mkStepSign"), false],
         ].map(([n, label, done], i) => (
           <div key={n} style={{ display: "flex", alignItems: "center", gap: 6, flex: 1 }}>
             <div style={{
@@ -337,10 +337,10 @@ function WorkerMockup() {
       {/* Form fields (bilingual) */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {[
-          ["근로자 성명", "Nguyễn Văn Hòa"],
-          ["비자 유형", "D-2 (유학)"],
-          ["시급", "₩ 12,000"],
-          ["근무 기간", "2026.06.01 ~ 2026.12.31"],
+          [t("landing.mkFieldName"), "Nguyễn Văn Hòa"],
+          [t("landing.mkFieldVisa"), "D-2 (유학)"],
+          [t("landing.mkFieldWage"), "₩ 12,000"],
+          [t("landing.mkFieldPeriod"), "2026.06.01 ~ 2026.12.31"],
         ].map(([k, v]) => (
           <div key={k} style={{
             display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -360,22 +360,22 @@ function WorkerMockup() {
         display: "flex", alignItems: "center", gap: 8,
       }}>
         <span>🌐</span>
-        <span>실시간 베트남어 번역이 적용되었습니다</span>
+        <span>{t("landing.mkTranslatedNote")}</span>
       </div>
     </MockupShell>
   );
 }
 
 /** Employer 목업 — 사장님 관리자 대시보드 */
-function EmployerMockup() {
+function EmployerMockup({ t }) {
   return (
-    <MockupShell chromeTitle="k-alba.kr · 사장님 대시보드">
+    <MockupShell chromeTitle={t("landing.mkEmployerChrome")}>
       {/* Stat row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 18 }}>
         {[
-          ["지원자", "24", "#0A1628"],
-          ["진행 공고", "3", "#B8944A"],
-          ["체결 계약", "12", "#0BD8A2"],
+          [t("landing.mkStatApplicants"), "24", "#0A1628"],
+          [t("landing.mkStatActivePosts"), "3", "#B8944A"],
+          [t("landing.mkStatContracts"), "12", "#0BD8A2"],
         ].map(([label, val, color]) => (
           <div key={label} style={{
             padding: "12px 14px", background: "#F9FAFB",
@@ -393,7 +393,7 @@ function EmployerMockup() {
 
       {/* Applicant list */}
       <div style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", marginBottom: 10, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-        최근 지원자
+        {t("landing.mkRecentApplicants")}
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {[
@@ -424,7 +424,7 @@ function EmployerMockup() {
 }
 
 /** University 목업 — 차트 + 서류 리스트 */
-function UniversityMockup() {
+function UniversityMockup({ t }) {
   const bars = [
     ["베트남", 42, "#0BD8A2"],
     ["중국", 28, "#0A1628"],
@@ -434,12 +434,12 @@ function UniversityMockup() {
   ];
   const maxBar = 42;
   return (
-    <MockupShell chromeTitle="k-alba.kr · 학교 행정 대시보드">
+    <MockupShell chromeTitle={t("landing.mkUniChrome")}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
         {/* Chart */}
         <div>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", marginBottom: 10, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-            국가별 신청 현황
+            {t("landing.mkByCountry")}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {bars.map(([country, val, color]) => (
@@ -457,7 +457,7 @@ function UniversityMockup() {
         {/* Document list */}
         <div>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", marginBottom: 10, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-            확인서 발급 대기
+            {t("landing.mkPendingCerts")}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {[
@@ -492,7 +492,7 @@ function UniversityMockup() {
         display: "flex", justifyContent: "space-between", alignItems: "center",
       }}>
         <span style={{ fontSize: 11, fontWeight: 600, color: "#6B7280" }}>
-          이번 학기 누적 신청
+          {t("landing.mkSemesterTotal")}
         </span>
         <span style={{ fontSize: 13, fontWeight: 800, color: "#0A1628" }}>
           1,284건
@@ -502,10 +502,10 @@ function UniversityMockup() {
   );
 }
 
-function AudienceMockup({ id }) {
-  if (id === "workers") return <WorkerMockup />;
-  if (id === "employers") return <EmployerMockup />;
-  if (id === "universities") return <UniversityMockup />;
+function AudienceMockup({ id, t }) {
+  if (id === "workers") return <WorkerMockup t={t} />;
+  if (id === "employers") return <EmployerMockup t={t} />;
+  if (id === "universities") return <UniversityMockup t={t} />;
   return null;
 }
 
@@ -547,7 +547,7 @@ export default function LandingPage() {
 
   // 로딩 중
   if (!authChecked) {
-    return <PageLoading message="잠시만 기다려주세요" minHeight={400} />;
+    return <PageLoading message={t("landing.loadingWait")} minHeight={400} />;
   }
 
   return (
@@ -591,15 +591,15 @@ export default function LandingPage() {
                   marginBottom: 24,
                 }}
               >
-                한국 거주 외국인{" "}
+                {t("landing.heroPre")}
                 <em style={{
                   fontStyle: "normal",
                   background: `linear-gradient(135deg, ${T.gold} 0%, #D4A960 100%)`,
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
-                }}>260만 명</em>
-                을 위한<br />안전한 취업·채용 플랫폼
+                }}>{t("landing.heroHighlight")}</em>
+                {t("landing.heroPost")}
               </h1>
               <p
                 style={{
@@ -611,8 +611,7 @@ export default function LandingPage() {
                   margin: "0 auto 40px",
                 }}
               >
-                비자 조건에 맞는 채용 공고부터 근로계약서 작성까지
-                <br />외국인 근로자와 사업장을 위한 취업 절차를 지원합니다.
+                {t("landing.heroSubtitle")}
               </p>
 
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, marginBottom: 64 }}>
@@ -627,10 +626,10 @@ export default function LandingPage() {
                     fontWeight: 700,
                   }}
                 >
-                  서비스 둘러보기 →
+                  {t("landing.heroCta")}
                 </Button>
                 <div style={{ fontSize: 14, color: "rgba(255,255,255,0.7)" }}>
-                  이미 계정이 있나요?{" "}
+                  {t("landing.haveAccount")}{" "}
                   <a
                     href="/login"
                     style={{
@@ -640,7 +639,7 @@ export default function LandingPage() {
                       textUnderlineOffset: "3px",
                     }}
                   >
-                    로그인
+                    {t("landing.heroLogin")}
                   </a>
                 </div>
               </div>
@@ -659,10 +658,10 @@ export default function LandingPage() {
                 }}
               >
                 {[
-                  ["260만", "한국 거주 외국인"],
-                  ["12+", "대응 비자 유형"],
-                  ["7", "지원 언어"],
-                  ["3min", "근로계약 체결"],
+                  [t("landing.statForeigners"), t("landing.statForeignersLabel")],
+                  ["12+", t("landing.statVisaLabel")],
+                  ["7", t("landing.statLangLabel")],
+                  ["3min", t("landing.statContractLabel")],
                 ].map(([num, label]) => (
                   <div key={label} style={{ textAlign: "center" }}>
                     <div
@@ -722,11 +721,11 @@ export default function LandingPage() {
                 marginBottom: 18,
               }}
             >
-              안녕하세요,{" "}
+              {t("landing.empGreetingPre")}
               <em style={{ fontStyle: "normal", color: T.gold }}>
                 {user.user_metadata?.name || user.email?.split("@")[0]}
-              </em>{" "}
-              사장님!
+              </em>
+              {t("landing.empGreetingPost")}
             </h1>
             <p
               style={{
@@ -736,13 +735,12 @@ export default function LandingPage() {
                 marginBottom: 24,
               }}
             >
-              외국인 채용이 필요하신가요?<br />
-              카카오톡 챗봇으로 3분만에 공고를 완성하세요.
+              {t("landing.empSubtitle")}
             </p>
 
             <div style={{ display: "flex", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
               <Button variant="landingPrimary" href="/my/jobs" size="lg">
-                💼 내 공고 관리 →
+                {t("landing.empBtnMyJobs")}
               </Button>
               <Button
                 variant="landingDark"
@@ -754,7 +752,7 @@ export default function LandingPage() {
                   border: "1px solid rgba(255,255,255,0.3)",
                 }}
               >
-                📢 새 공고 등록
+                {t("landing.empBtnNewJob")}
               </Button>
             </div>
           </div>
@@ -792,11 +790,11 @@ export default function LandingPage() {
                 marginBottom: 18,
               }}
             >
-              안녕하세요,{" "}
+              {t("landing.workerGreetingPre")}
               <em style={{ fontStyle: "normal", color: T.gold }}>
                 {user.user_metadata?.name || user.email?.split("@")[0]}
               </em>
-              님!
+              {t("landing.workerGreetingPost")}
             </h1>
             <p
               style={{
@@ -806,13 +804,12 @@ export default function LandingPage() {
                 marginBottom: 24,
               }}
             >
-              당신에게 맞는 새로운 알바를 찾아보세요.<br />
-              비자 유형에 맞는 합법적인 일자리만 추천합니다.
+              {t("landing.workerSubtitle")}
             </p>
 
             <div style={{ display: "flex", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
               <Button variant="landingPrimary" href="/jobs" size="lg">
-                🔍 알바 찾기 →
+                {t("landing.workerBtnFind")}
               </Button>
               <Button
                 variant="landingDark"
@@ -824,7 +821,7 @@ export default function LandingPage() {
                   border: "1px solid rgba(255,255,255,0.3)",
                 }}
               >
-                📋 내 지원 내역
+                {t("landing.workerBtnApplications")}
               </Button>
             </div>
           </div>
@@ -877,7 +874,7 @@ export default function LandingPage() {
                 marginBottom: 16,
               }}
             >
-              모두를 위한 맞춤형 채용 플랫폼
+              {t("landing.serveHeading")}
             </h2>
           </motion.div>
 
@@ -892,27 +889,27 @@ export default function LandingPage() {
               {
                 icon: "🌏",
                 label: "For Workers",
-                title: "구직자를 위한 빠른 매칭",
-                desc: "7개 언어 지원부터 시간제취업 확인서, 근로계약서 발급까지 외국인 유학생의 안전한 취업 절차를 지원합니다.",
-                features: ["7개 언어 지원", "시간제취업 확인서 발급", "근로계약서 자동 작성", "합법적 취업 절차 지원"],
+                title: t("landing.roleWorkerTitle"),
+                desc: t("landing.roleWorkerDesc"),
+                features: [t("landing.roleWorkerF1"), t("landing.roleWorkerF2"), t("landing.roleWorkerF3"), t("landing.roleWorkerF4")],
                 color: "#0BD8A2",
                 bgColor: "#E0F8EF",
               },
               {
                 icon: "💼",
                 label: "For Employers",
-                title: "사장님을 위한\n효율적인 채용 관리",
-                desc: "카카오톡 기반 간편 채용으로 외국인 인재 모집부터 근로계약까지 한 번에 관리하세요.",
-                features: ["3분 공고 등록", "카카오톡 간편 채용", "근로계약서 자동 작성", "근로계약 관리"],
+                title: t("landing.roleEmployerTitle"),
+                desc: t("landing.roleEmployerDesc"),
+                features: [t("landing.roleEmployerF1"), t("landing.roleEmployerF2"), t("landing.roleEmployerF3"), t("landing.roleEmployerF4")],
                 color: "#C2512A",
                 bgColor: "#F5E8E2",
               },
               {
                 icon: "🏫",
                 label: "For Universities",
-                title: "학교 담당자를 위한\n학생 근로 운영 시스템",
-                desc: "외국인 유학생 시간제취업 확인서 발급부터 관리까지 대학의 유학생 행정을 더 간편하고 체계적으로 운영하세요.",
-                features: ["외국인 유학생 시간제취업 확인서 모바일 발급", "클릭 한 번으로 승인 및 관리", "유학생 불법 취업 최소화", "교육국제화역량 인증제(IEQAS) 대응"],
+                title: t("landing.roleUniTitle"),
+                desc: t("landing.roleUniDesc"),
+                features: [t("landing.roleUniF1"), t("landing.roleUniF2"), t("landing.roleUniF3"), t("landing.roleUniF4")],
                 color: "#7C3AED",
                 bgColor: "#F5F3FF",
               },
@@ -1033,8 +1030,8 @@ export default function LandingPage() {
               marginBottom: 32,
             }}
           >
-            외국인 취업 과정에서 발생하는{" "}
-            <span style={{ color: T.accent }}>어려움</span>
+            {t("landing.problemHeadingPre")}
+            <span style={{ color: T.accent }}>{t("landing.problemHeadingAccent")}</span>
           </motion.h2>
 
           {/* 3가지 이유 - 3열 카드 */}
@@ -1046,9 +1043,9 @@ export default function LandingPage() {
             style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}
           >
             {[
-              ["1", "언어 장벽", "알바 플랫폼 대부분은 한국어 중심으로 운영됩니다. 외국인 구직자는 공고 내용, 급여 조건, 계약 조항을 이해하기 어려운 경우가 많습니다."],
-              ["2", "복잡한 취업 절차", "외국인 유학생은 시간제취업 신청, 확인서 발급 등 복잡한 절차를 거쳐야 합니다. 절차와 정보 접근이 어려워 정식적인 취업 과정을 진행하기 힘든 경우가 많습니다."],
-              ["3", "비공식 취업 구조", "취업 절차와 관리 체계가 복잡하다 보니 외국인 근로자가 비공식적이거나 불법적인 경로로 취업하게 되는 사례가 발생합니다."],
+              ["1", t("landing.problem1Title"), t("landing.problem1Desc")],
+              ["2", t("landing.problem2Title"), t("landing.problem2Desc")],
+              ["3", t("landing.problem3Title"), t("landing.problem3Desc")],
             ].map(([num, title, desc]) => (
               <motion.div
                 key={num}
@@ -1134,10 +1131,10 @@ export default function LandingPage() {
                 marginBottom: 10,
               }}
             >
-              역할별 핵심 기능
+              {t("landing.serveHeading2")}
             </h2>
             <p style={{ fontSize: 16, color: T.ink2, lineHeight: 1.7, letterSpacing: "-0.01em" }}>
-              역할을 선택하면 맞춤 기능을 확인할 수 있습니다
+              {t("landing.serveSub2")}
             </p>
           </div>
 
@@ -1205,7 +1202,7 @@ export default function LandingPage() {
                     {tab.en}
                   </span>
                   <span style={{ fontSize: 17, fontWeight: active ? 800 : 700, letterSpacing: "-0.015em" }}>
-                    {tab.kr}
+                    {t(tab.kr)}
                   </span>
                 </button>
               );
@@ -1245,9 +1242,9 @@ export default function LandingPage() {
                           marginBottom: 36,
                         }}
                       >
-                        {tab.title}
+                        {t(tab.title)}
                         <br />
-                        <span style={{ color: T.navy }}>{tab.titleAccent}</span>
+                        <span style={{ color: T.navy }}>{t(tab.titleAccent)}</span>
                       </h3>
                       <ul style={{ display: "flex", flexDirection: "column", gap: 14, listStyle: "none", padding: 0, margin: 0 }}>
                         {tab.items.map(([icon, text]) => (
@@ -1282,7 +1279,7 @@ export default function LandingPage() {
                                 fontWeight: 600,
                               }}
                             >
-                              {text}
+                              {t(text)}
                             </span>
                           </li>
                         ))}
@@ -1291,7 +1288,7 @@ export default function LandingPage() {
 
                     {/* RIGHT: UI mockup */}
                     <div>
-                      <AudienceMockup id={tab.id} />
+                      <AudienceMockup id={tab.id} t={t} />
                     </div>
                   </>
                 );
@@ -1347,11 +1344,11 @@ export default function LandingPage() {
                 marginBottom: 12,
               }}
             >
-              <span style={{ color: T.gold }}>5단계, 평균 3분.</span>{" "}
-              카카오톡을 쓸 줄 안다면 누구나
+              <span style={{ color: T.gold }}>{t("landing.processHeadingAccent")}</span>{" "}
+              {t("landing.processHeadingRest")}
             </h2>
             <p style={{ fontSize: 16, color: T.ink2, lineHeight: 1.7, letterSpacing: "-0.01em" }}>
-              공고 탐색부터 근무 시작까지, 한 화면에서 흐르듯 이어집니다.
+              {t("landing.processSub")}
             </p>
           </div>
 
@@ -1370,11 +1367,11 @@ export default function LandingPage() {
             className="process-timeline"
           >
             {[
-              ["🔍", "공고 탐색", "비자·언어로 빠르게 좁히기"],
-              ["💬", "챗봇 지원", "카카오톡 5단계 질의응답"],
-              ["👤", "사장님 검토", "지원 후 사장님 응답"],
-              ["📝", "계약 체결", "자동 생성·양측 서명"],
-              ["🚀", "근무 시작", "PDF 보관·이력 적립"],
+              ["🔍", t("landing.step1Label"), t("landing.step1Desc")],
+              ["💬", t("landing.step2Label"), t("landing.step2Desc")],
+              ["👤", t("landing.step3Label"), t("landing.step3Desc")],
+              ["📝", t("landing.step4Label"), t("landing.step4Desc")],
+              ["🚀", t("landing.step5Label"), t("landing.step5Desc")],
             ].map(([icon, title, desc], i) => (
               <motion.div
                 key={title}
@@ -1560,9 +1557,7 @@ export default function LandingPage() {
               color: "#FFFFFF",
             }}
           >
-            외국인 채용부터 행정 서류까지,
-            <br />
-            이제 K-ALBA로{" "}
+            {t("landing.ctaHeadingPre")}
             <span
               style={{
                 background: `linear-gradient(135deg, ${T.gold} 0%, #D4A960 100%)`,
@@ -1571,7 +1566,7 @@ export default function LandingPage() {
                 backgroundClip: "text",
               }}
             >
-              한 번에 해결하세요.
+              {t("landing.ctaHeadingAccent")}
             </span>
           </h2>
           <p
@@ -1586,9 +1581,7 @@ export default function LandingPage() {
               marginRight: "auto",
             }}
           >
-            더 이상 복잡한 절차로 고민하지 마세요.
-            <br />
-            구인구직과 필수 서류 작성을 가장 쉽고 빠르게 도와드립니다.
+            {t("landing.ctaSub")}
           </p>
 
           <a
@@ -1619,7 +1612,7 @@ export default function LandingPage() {
               transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
             }}
           >
-            K-ALBA 무료로 시작하기 →
+            {t("landing.ctaButton")}
           </a>
         </div>
       </motion.section>
@@ -1638,7 +1631,7 @@ export default function LandingPage() {
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <KWordmark size={20} />
               <span style={{ fontSize: 13, color: T.ink3 }}>
-                외국인과 사장님을 잇는 카톡 알바 플랫폼
+                {t("landing.footerTagline")}
               </span>
             </div>
 
@@ -1650,8 +1643,8 @@ export default function LandingPage() {
                 color: T.ink3,
               }}
             >
-              <a href="/terms" style={{ color: T.ink3, textDecoration: "none", fontWeight: 600 }}>이용약관</a>
-              <a href="/privacy" style={{ color: T.ink3, textDecoration: "none", fontWeight: 600 }}>개인정보처리방침</a>
+              <a href="/terms" style={{ color: T.ink3, textDecoration: "none", fontWeight: 600 }}>{t("siteFooter.terms")}</a>
+              <a href="/privacy" style={{ color: T.ink3, textDecoration: "none", fontWeight: 600 }}>{t("siteFooter.privacy")}</a>
             </div>
           </div>
 
@@ -1672,7 +1665,7 @@ export default function LandingPage() {
 
             {/* 두 번째 줄: 법적 정보 (왼쪽 정렬) */}
             <div style={{ fontSize: 11, color: T.ink3, lineHeight: 1.6 }}>
-              대표: {COMPANY.ceo} | 사업자등록번호: {COMPANY.businessNumber} | 직업정보제공사업 신고번호: {COMPANY.jobInfoLicense} | 주소: {COMPANY.address}
+              {t("landing.footerCeo")}: {COMPANY.ceo} | {t("landing.footerBizNo")}: {COMPANY.businessNumber} | {t("landing.footerJobInfoNo")}: {COMPANY.jobInfoLicense} | {t("landing.footerAddress")}: {COMPANY.address}
             </div>
           </div>
         </div>

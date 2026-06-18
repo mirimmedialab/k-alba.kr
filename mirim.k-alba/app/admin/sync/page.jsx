@@ -26,7 +26,8 @@ function StatusCell({ log }) {
 
 function completeCell(log) {
   if (log.status === "running") return isStale(log) ? "미완료" : "진행중";
-  if (!log.completed_at) return "-";
+  // 성공 건만 소요시간 표시 (실패/정리분은 completed_at이 실제 완료시각이 아니므로 '-')
+  if (log.status !== "success" || !log.completed_at) return "-";
   return fmtDuration(log.started_at, log.completed_at);
 }
 

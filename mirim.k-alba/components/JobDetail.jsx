@@ -82,7 +82,7 @@ function payDisplay(job, locale, t) {
   const period = ({ "시급": "hour", "일급": "day", "월급": "month", "연봉": "year" })[job.pay_type] || "hour";
   return `${(Number(job.pay) || 0).toLocaleString()} ${t("pay.won")} / ${t("pay." + period)}`;
 }
-const JD_LABELS = { "근무 조건":"jobDetail.workConditions","외국인 지원 정보":"jobDetail.foreignerInfo","상세 설명":"jobDetail.details","회사 정보":"jobDetail.companyInfo","지원 전 확인사항":"jobDetail.checklistTitle","급여":"jobDetail.pay","지역":"jobDetail.region","근무":"jobDetail.work","업종":"jobDetail.jobType","모집인원":"jobDetail.headcount","복리후생":"jobDetail.benefits","마감":"jobDetail.deadline","가능 비자":"jobDetail.eligibleVisa","한국어 수준":"jobDetail.koreanLevel","숙소 제공":"jobDetail.housing","통근버스":"jobDetail.shuttle","가까운 역":"jobDetail.nearestStation","회사명":"jobDetail.companyName","공고 출처":"jobDetail.source" };
+const JD_LABELS = { "근무 조건":"jobDetail.workConditions","외국인 지원 정보":"jobDetail.foreignerInfo","상세 설명":"jobDetail.details","회사 정보":"jobDetail.companyInfo","지원 전 확인사항":"jobDetail.checklistTitle","급여":"jobDetail.pay","지역":"jobDetail.region","근무":"jobDetail.work","업종":"jobDetail.jobType","모집인원":"jobDetail.headcount","복리후생":"jobDetail.benefits","마감":"jobDetail.deadline","가능 비자":"jobDetail.eligibleVisa","한국어 수준":"jobDetail.koreanLevel","숙소 제공":"jobDetail.housing","통근버스":"jobDetail.shuttle","가까운 역":"jobDetail.nearestStation","근무지 위치":"jobDetail.workLocation","회사명":"jobDetail.companyName","공고 출처":"jobDetail.source" };
 const JD_VALUES = { "제공":"jobDetail.provided","미제공":"jobDetail.notProvided","별도 명시 없음":"jobDetail.notSpecified","고용24(워크넷)":"jobDetail.sourceWorknet","K-ALBA 직접등록":"jobDetail.sourceDirect" };
 
 export default function JobDetail({ jobId, embedded = false }) {
@@ -231,7 +231,7 @@ export default function JobDetail({ jobId, embedded = false }) {
       job.expires_at ? ["마감", String(job.expires_at).slice(0, 10)] : null,
     ].filter(Boolean);
     const foreignerRows = [
-      ["가능 비자", (job.visa || []).join(", ") || "별도 명시 없음"],
+      ["가능 비자", (locale !== "ko" ? (job.visa || []).map((x) => x === "비자 무관" ? t("jobs.visaAny") : x) : (job.visa || [])).join(", ") || "별도 명시 없음"],
       ["한국어 수준", koreanLabel || "별도 명시 없음"],
       ["숙소 제공", job.provides_housing ? "제공" : "미제공"],
       ["통근버스", job.provides_shuttle ? "제공" : "미제공"],
@@ -285,7 +285,7 @@ export default function JobDetail({ jobId, embedded = false }) {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <h1 style={{ fontSize: 26, fontWeight: 800, color: D.navy, lineHeight: 1.3, margin: 0, letterSpacing: "-0.02em" }}>{displayTitle}</h1>
                 {translating && translatingOverlay}
-                <div style={{ fontSize: 14.5, color: D.ink2, marginTop: 8 }}>{job.company}</div>
+                <div style={{ fontSize: 14.5, color: D.ink2, marginTop: 8 }}>{locale !== "ko" ? `${job.company} (${romanizeCompany(job.company)})` : job.company}</div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 14 }}>
                   {(job.visa || []).map((v) => <VisaBadge key={v} code={v} variant="solid" size="md" />)}
                   {koreanLabel && <Chip2>{koreanLabel}</Chip2>}
@@ -337,9 +337,9 @@ export default function JobDetail({ jobId, embedded = false }) {
                 {job.latitude && job.longitude && (
                   <div style={{ marginBottom: 14 }}>
                     <KakaoMap center={{ latitude: job.latitude, longitude: job.longitude }} level={4} markers={[{ latitude: job.latitude, longitude: job.longitude, title: job.company, color: D.navy }]} height={170} />
-                    <div style={{ marginTop: 12, fontSize: 13, fontWeight: 600, color: D.ink, lineHeight: 1.5 }}>📍 {job.address_road || job.address || job.area}</div>
+                    <div style={{ marginTop: 12, fontSize: 13, fontWeight: 600, color: D.ink, lineHeight: 1.5 }}>📍 {locale !== "ko" ? romanizeRegion(job.address_road || job.address || job.area) : (job.address_road || job.address || job.area)}</div>
                     {job.nearest_station && (
-                      <div style={{ marginTop: 6, fontSize: 12, color: D.ink2 }}>🚇 {job.nearest_station}{job.walk_to_station_min ? ` · 걸어서 ${job.walk_to_station_min}분` : ""}</div>
+                      <div style={{ marginTop: 6, fontSize: 12, color: D.ink2 }}>🚇 {locale !== "ko" ? romanizeRegion(job.nearest_station) : job.nearest_station}{job.walk_to_station_min ? ` · ${t("jobDetail.walk", { min: job.walk_to_station_min })}` : ""}</div>
                     )}
                   </div>
                 )}
@@ -379,7 +379,7 @@ export default function JobDetail({ jobId, embedded = false }) {
     job.expires_at ? ["마감", String(job.expires_at).slice(0, 10)] : null,
   ].filter(Boolean);
   const foreignerRows = [
-    ["가능 비자", (job.visa || []).join(", ") || "별도 명시 없음"],
+    ["가능 비자", (locale !== "ko" ? (job.visa || []).map((x) => x === "비자 무관" ? t("jobs.visaAny") : x) : (job.visa || [])).join(", ") || "별도 명시 없음"],
     ["한국어 수준", koreanLabel || "별도 명시 없음"],
     ["숙소 제공", job.provides_housing ? "제공" : "미제공"],
     ["통근버스", job.provides_shuttle ? "제공" : "미제공"],
@@ -424,7 +424,7 @@ export default function JobDetail({ jobId, embedded = false }) {
           <div style={{ fontSize: 32, marginBottom: 8 }}>{job.icon || "💼"}</div>
           <h1 style={{ fontSize: 20, fontWeight: 800, color: D.navy, lineHeight: 1.3, margin: 0, letterSpacing: "-0.01em" }}>{displayTitle}</h1>
                 {translating && translatingOverlay}
-          <div style={{ fontSize: 13.5, color: D.ink2, marginTop: 6 }}>{job.company}</div>
+          <div style={{ fontSize: 13.5, color: D.ink2, marginTop: 6 }}>{locale !== "ko" ? `${job.company} (${romanizeCompany(job.company)})` : job.company}</div>
           {(job.visa || []).length > 0 && (
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 12 }}>
               {(job.visa || []).map((v) => (
@@ -475,7 +475,7 @@ export default function JobDetail({ jobId, embedded = false }) {
         {job.latitude && job.longitude && (
           <Section title="근무지 위치">
             <KakaoMap center={{ latitude: job.latitude, longitude: job.longitude }} level={4} markers={[{ latitude: job.latitude, longitude: job.longitude, title: job.company, color: D.navy }]} height={200} />
-            <div style={{ marginTop: 10, fontSize: 13, fontWeight: 600, color: D.ink }}>📍 {job.address_road || job.address || job.area}</div>
+            <div style={{ marginTop: 10, fontSize: 13, fontWeight: 600, color: D.ink }}>📍 {locale !== "ko" ? romanizeRegion(job.address_road || job.address || job.area) : (job.address_road || job.address || job.area)}</div>
           </Section>
         )}
       </div>

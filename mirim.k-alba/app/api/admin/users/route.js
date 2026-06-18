@@ -39,13 +39,21 @@ export async function GET(request) {
 
   query = query.order("created_at", { ascending: false }).range(from, to);
 
-  const [{ data, count, error }, allRes] = await Promise.all([
+  const [{ data, count, error }, activeRes, deactRes] = await Promise.all([
     query,
-    svc.from("profiles").select("id", { count: "exact", head: true }),
+    svc.from("profiles").select("id", { count: "exact", head: true }).is("deactivated_at", null),
+    svc.from("profiles").select("id", { count: "exact", head: true }).not("deactivated_at", "is", null),
   ]);
   if (error) return Response.json({ error: error.message }, { status: 500 });
 
-  return Response.json({ rows: data || [], total: count || 0, allTotal: allRes.count || 0, page, limit });
+  return Response.json({
+    rows: data || [],
+    total: count || 0,
+    activeTotal: activeRes.count || 0,
+    deactivatedTotal: deactRes.count || 0,
+    page,
+    limit,
+  });
 }
 
 /**

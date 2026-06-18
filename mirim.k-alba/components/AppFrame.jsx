@@ -14,7 +14,7 @@ import { I18nProvider } from "@/lib/i18n";
  */
 
 // NavBar를 숨길 경로 (랜딩 페이지만 자체 히어로가 있어 숨김)
-const HIDE_NAVBAR_ON = ["/", "/m", "/login/admin", "/auth/callback"];
+const HIDE_NAVBAR_ON = ["/login/admin", "/auth/callback"];
 // Footer를 숨길 경로 (자체 푸터가 있는 페이지)
 const HIDE_FOOTER_ON = ["/", "/m", "/login/admin", "/auth/callback"];
 // DesktopMobileFrame(데스크톱 440px 카드)을 사용하지 않을 경로
