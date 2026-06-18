@@ -249,7 +249,7 @@ export default function MobileLandingPage() {
   }
 
   return (
-    <div key={locale}>
+    <div key={locale} style={{ overflowX: "hidden" }}>
       {/* ── HERO ── */}
       <div style={{ ...S.section, paddingTop: 32, paddingBottom: 32 }}>
         {!user ? (

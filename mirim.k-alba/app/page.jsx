@@ -552,7 +552,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div key={locale} style={{ background: T.paper, color: T.ink }}>
+    <div key={locale} style={{ background: T.paper, color: T.ink, overflowX: "hidden" }}>
 
       {/* ═══════════════════ HERO ═══════════════════ */}
       {!user ? (

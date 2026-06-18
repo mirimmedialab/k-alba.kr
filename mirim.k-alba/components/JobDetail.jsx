@@ -197,7 +197,7 @@ export default function JobDetail({ jobId, embedded = false }) {
       body: JSON.stringify({ jobId: job.id, lang: locale, title: job.title, description: job.desc }),
     })
       .then((r) => r.json())
-      .then((d) => { if (!cancelled && d && (d.title || d.description || d.industry)) setTr({ title: d.title, description: d.description, industry: d.industry }); })
+      .then((d) => { if (!cancelled && d && (d.title || d.description || d.industry || d.work || d.benefits)) setTr({ title: d.title, description: d.description, industry: d.industry, work: d.work, benefits: d.benefits }); })
       .catch(() => {})
       .finally(() => { if (!cancelled) setTranslating(false); });
     return () => { cancelled = true; };
@@ -251,12 +251,12 @@ export default function JobDetail({ jobId, embedded = false }) {
     const rows = [
       ["급여", payDisplay(job, locale, t)],
       ["지역", locale !== "ko" ? romanizeRegion(job.area) : job.area],
-      ["근무", String(job.hours || job.time || "").trim() || "-"],
+      ["근무", (locale !== "ko" && tr && tr.work) ? tr.work : (String(job.hours || job.time || "").trim() || "-")],
       ["업종", (locale !== "ko" && tr && tr.industry) ? tr.industry : job.type],
       job.headcount && String(job.headcount) !== "1"
         ? ["모집인원", /^\d+$/.test(String(job.headcount)) ? `${t("jobDetail.people", { n: job.headcount })}` : job.headcount]
         : null,
-      job.benefits ? ["복리후생", job.benefits] : null,
+      job.benefits ? ["복리후생", (locale !== "ko" && tr && tr.benefits) ? tr.benefits : job.benefits] : null,
       job.expires_at ? ["마감", String(job.expires_at).slice(0, 10)] : null,
     ].filter(Boolean);
     const foreignerRows = [
@@ -401,10 +401,10 @@ export default function JobDetail({ jobId, embedded = false }) {
   const rows = [
     ["급여", payDisplay(job, locale, t)],
     ["지역", locale !== "ko" ? romanizeRegion(job.area) : job.area],
-    ["근무", String(job.hours || job.time || "").trim() || "-"],
+    ["근무", (locale !== "ko" && tr && tr.work) ? tr.work : (String(job.hours || job.time || "").trim() || "-")],
     ["업종", (locale !== "ko" && tr && tr.industry) ? tr.industry : job.type],
     job.headcount && String(job.headcount) !== "1" ? ["모집인원", /^\d+$/.test(String(job.headcount)) ? `${t("jobDetail.people", { n: job.headcount })}` : job.headcount] : null,
-    job.benefits ? ["복리후생", job.benefits] : null,
+    job.benefits ? ["복리후생", (locale !== "ko" && tr && tr.benefits) ? tr.benefits : job.benefits] : null,
     job.expires_at ? ["마감", String(job.expires_at).slice(0, 10)] : null,
   ].filter(Boolean);
   const foreignerRows = [

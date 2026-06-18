@@ -29,7 +29,7 @@ export async function POST(request) {
 
   // cache: 설명까지 채워져 있으면 즉시 반환
   const { data: cached } = await db
-    .from("job_translations").select("title, description, region, company")
+    .from("job_translations").select("title, description, region, company, industry, work, benefits")
     .eq("job_id", jobId).eq("lang", lang).maybeSingle();
   if (cached && cached.description) {
     return Response.json({ ok: true, cached: true, ...cached });
@@ -37,7 +37,7 @@ export async function POST(request) {
 
   // source: 클라이언트가 보고 있는 텍스트 우선
   const { data: job } = await db
-    .from("jobs").select("title, description, sido, sigungu, address, employer_external_name, job_type").eq("id", jobId).maybeSingle();
+    .from("jobs").select("title, description, sido, sigungu, address, employer_external_name, job_type, work_hours, benefits").eq("id", jobId).maybeSingle();
   if (!job && overrideTitle == null && overrideDescription == null) {
     return Response.json({ ok: false, error: "job_not_found" }, { status: 404 });
   }
@@ -48,17 +48,19 @@ export async function POST(request) {
     region: regionKo,
     company: job?.employer_external_name || "",
     industry: job?.job_type || "",
+    work: job?.work_hours || "",
+    benefits: job?.benefits || "",
   };
 
   // translate
   const t = await translateJob(src, lang);
   if (!t) {
-    return Response.json({ ok: false, error: "translate_unavailable", title: src.title, description: src.description, region: src.region, company: src.company, industry: src.industry });
+    return Response.json({ ok: false, error: "translate_unavailable", title: src.title, description: src.description, region: src.region, company: src.company, industry: src.industry, work: src.work, benefits: src.benefits });
   }
 
   // save + return
   await db.from("job_translations").upsert({
-    job_id: jobId, lang, title: t.title, description: t.description, region: t.region, company: t.company, industry: t.industry,
+    job_id: jobId, lang, title: t.title, description: t.description, region: t.region, company: t.company, industry: t.industry, work: t.work, benefits: t.benefits,
   });
   return Response.json({ ok: true, cached: false, ...t });
 }
