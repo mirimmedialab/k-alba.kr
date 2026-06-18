@@ -51,22 +51,13 @@ export default function AdminDashboard() {
           </div>
 
           {/* 처리 대기 알림 */}
-          {(data.pendingStaff > 0 || data.openReports > 0) && (
+          {data.pendingStaff > 0 && (
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 22 }}>
-              {data.pendingStaff > 0 && (
-                <Link href="/admin/monitoring?tab=staff" style={{ textDecoration: "none" }}>
-                  <div style={{ padding: "12px 16px", background: T.warningBg, color: "#92600A", borderRadius: 10, fontSize: 13, fontWeight: 700 }}>
-                    ⚠ 학교 담당자 승인 대기 {data.pendingStaff}건
-                  </div>
-                </Link>
-              )}
-              {data.openReports > 0 && (
-                <Link href="/admin/monitoring?tab=reports" style={{ textDecoration: "none" }}>
-                  <div style={{ padding: "12px 16px", background: T.errorBg, color: T.error, borderRadius: 10, fontSize: 13, fontWeight: 700 }}>
-                    ⚠ 미처리 신고 {data.openReports}건
-                  </div>
-                </Link>
-              )}
+              <Link href="/admin/monitoring?tab=staff" style={{ textDecoration: "none" }}>
+                <div style={{ padding: "12px 16px", background: T.warningBg, color: "#92600A", borderRadius: 10, fontSize: 13, fontWeight: 700 }}>
+                  ⚠ 학교 담당자 승인 대기 {data.pendingStaff}건
+                </div>
+              </Link>
             </div>
           )}
 

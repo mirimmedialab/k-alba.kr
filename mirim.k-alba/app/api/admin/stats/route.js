@@ -29,7 +29,6 @@ export async function GET(request) {
     partwork,
     recentSync,
     pendingStaff,
-    openReports,
   ] = await Promise.all([
     svc.from("profiles").select("id", head),
     svc.from("profiles").select("id", head).eq("user_type", "worker"),
@@ -47,7 +46,6 @@ export async function GET(request) {
       .order("started_at", { ascending: false })
       .limit(6),
     svc.from("staff_registrations").select("id", head).eq("status", "pending"),
-    svc.from("staff_misconduct_reports").select("id", head).neq("status", "resolved"),
   ]);
 
   return Response.json({
@@ -67,6 +65,5 @@ export async function GET(request) {
     partwork: partwork.count || 0,
     recentSync: recentSync.data || [],
     pendingStaff: pendingStaff.count || 0,
-    openReports: openReports.count || 0,
   });
 }

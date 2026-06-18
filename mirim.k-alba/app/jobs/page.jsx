@@ -75,10 +75,10 @@ const shortSido = (s) => SIDO_SHORT[s] || s || "";
 
 // 외국인 구직자용 빠른 필터 (PC 전용)
 const QUICK_FILTERS = [
-  { key: "myVisa", label: "내 비자에 맞는 공고", needsVisa: true },
-  { key: "housing", label: "숙소 제공" },
-  { key: "koreanEasy", label: "한국어 초급 가능" },
-  { key: "weekend", label: "주말 근무" },
+  { key: "myVisa", labelKey: "jobs.qfMyVisa", needsVisa: true },
+  { key: "housing", labelKey: "jobs.qfHousing" },
+  { key: "koreanEasy", labelKey: "jobs.qfKoreanEasy" },
+  { key: "weekend", labelKey: "jobs.qfWeekend" },
 ];
 
 // 데스크톱 카드용 작은 칩
@@ -101,6 +101,7 @@ function Chip({ children, green }) {
  * (모바일은 기존 JobListItem 을 그대로 사용; 이 컴포넌트는 PC 마스터-디테일에서만 렌더)
  */
 function DesktopJobCard({ job, onSelect, showDistance }) {
+  const t = useT();
   const payType = job.pay_type || "시급";
   const amount = Number(job.pay_amount || 0).toLocaleString();
   const expiry = job.expires_at ? String(job.expires_at).slice(0, 10) : null;
@@ -189,7 +190,7 @@ function DesktopJobCard({ job, onSelect, showDistance }) {
         onClick={(e) => { e.stopPropagation(); onSelect(job.id); }}
         style={{ width: "100%", padding: "11px", borderRadius: 8, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}
       >
-        지원하기
+        {t("jobs.apply")}
       </button>
     </div>
   );
@@ -224,17 +225,18 @@ function MobileListItem({ job, last, onClick }) {
 
 // 데스크톱(PC) 목록 히어로 — "외국인 합법 알바" 메시지
 function PcHero() {
+  const t = useT();
   return (
     <div style={{ background: D.navy, color: "#fff" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 28px" }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: D.greenBorder, letterSpacing: "0.08em", marginBottom: 12 }}>
-          K-ALBA · 외국인 합법 알바
+          {t("jobs.heroEyebrow")}
         </div>
         <h1 style={{ fontSize: 32, fontWeight: 800, margin: 0, lineHeight: 1.25, letterSpacing: "-0.02em" }}>
-          비자 맞춤<br />외국인 채용 플랫폼
+          {t("jobs.heroTitle1")}<br />{t("jobs.heroTitle2")}
         </h1>
         <p style={{ fontSize: 15, color: "#C7CBDB", marginTop: 14, lineHeight: 1.6, maxWidth: 580 }}>
-          비자·한국어 조건에 맞는 공고만 모았어요. 카드의 비자 뱃지로 합법 가능 여부를 바로 확인하세요.
+          {t("jobs.heroSubtitle")}
         </p>
       </div>
     </div>
@@ -420,7 +422,7 @@ export default function JobsPage() {
       <div style={{ padding: "14px 16px 0" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, background: D.card, border: `1px solid ${D.border}`, borderRadius: 12, padding: "11px 14px", marginBottom: 12 }}>
           <span style={{ fontSize: 15, color: D.ink3 }}>🔍</span>
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="직무, 지역, 회사 검색" style={{ flex: 1, border: "none", outline: "none", fontSize: 14, color: D.ink, background: "transparent", fontFamily: "inherit" }} />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("jobs.searchPlaceholder")} style={{ flex: 1, border: "none", outline: "none", fontSize: 14, color: D.ink, background: "transparent", fontFamily: "inherit" }} />
         </div>
       </div>
 
@@ -441,10 +443,10 @@ export default function JobsPage() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: D.navy }}>{t("jobs.totalJobs").replace("{count}", displayJobs.length)}</div>
           <select value={sortMode} onChange={(e) => setSortMode(e.target.value)} style={{ border: `1px solid ${D.border}`, borderRadius: 8, padding: "6px 8px", fontSize: 12.5, color: D.ink2, fontFamily: "inherit", background: D.card }}>
-            <option value="recommended">추천순</option>
-            <option value="nearest">가까운 순</option>
-            <option value="latest">최신순</option>
-            <option value="pay">급여 높은순</option>
+            <option value="recommended">{t("jobs.sortRecommended")}</option>
+            <option value="nearest">{t("jobs.sortNearest")}</option>
+            <option value="latest">{t("jobs.sortLatest")}</option>
+            <option value="pay">{t("jobs.sortPay")}</option>
           </select>
         </div>
         {listLoading ? (
@@ -487,12 +489,12 @@ export default function JobsPage() {
           {/* 검색바 */}
           <div style={{ marginTop: -26, marginBottom: 24, background: D.card, border: `1px solid ${D.border}`, borderRadius: 14, padding: "10px 14px", display: "flex", gap: 12, alignItems: "center", boxShadow: "0 6px 20px rgba(2,6,23,0.07)", position: "relative", zIndex: 1 }}>
             <span style={{ fontSize: 16, color: D.ink3 }}>🔍</span>
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="직무, 지역, 회사 검색" style={{ flex: 1, border: "none", outline: "none", fontSize: 14, color: D.ink, background: "transparent", fontFamily: "inherit" }} />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("jobs.searchPlaceholder")} style={{ flex: 1, border: "none", outline: "none", fontSize: 14, color: D.ink, background: "transparent", fontFamily: "inherit" }} />
             <select value={sortMode} onChange={(e) => setSortMode(e.target.value)} style={{ border: `1px solid ${D.border}`, borderRadius: 8, padding: "8px 10px", fontSize: 13, color: D.ink2, fontFamily: "inherit", cursor: "pointer" }}>
-              <option value="recommended">추천순</option>
-              <option value="nearest">가까운 순</option>
-              <option value="latest">최신순</option>
-              <option value="pay">급여 높은순</option>
+              <option value="recommended">{t("jobs.sortRecommended")}</option>
+              <option value="nearest">{t("jobs.sortNearest")}</option>
+              <option value="latest">{t("jobs.sortLatest")}</option>
+              <option value="pay">{t("jobs.sortPay")}</option>
             </select>
           </div>
 
@@ -531,7 +533,7 @@ export default function JobsPage() {
                 <div style={{ paddingTop: 16 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, color: D.navy, letterSpacing: "0.02em", marginBottom: 10 }}>추가 조건</div>
                   {QUICK_FILTERS.filter((f) => !f.needsVisa || userProfile?.visa).map((f) => (
-                    <CheckRow key={f.key} label={f.label} checked={!!qf[f.key]} onClick={() => toggleQf(f.key)} />
+                    <CheckRow key={f.key} label={t(f.labelKey)} checked={!!qf[f.key]} onClick={() => toggleQf(f.key)} />
                   ))}
                 </div>
               </div>

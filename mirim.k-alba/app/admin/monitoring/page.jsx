@@ -7,7 +7,6 @@ import { Panel, Table, StatusBadge, fmtDate } from "../_ui";
 const TABS = [
   { key: "sync", label: "동기화 로그" },
   { key: "staff", label: "학교 담당자 신청" },
-  { key: "reports", label: "신고 접수" },
   { key: "kakao", label: "카카오 드래프트" },
   { key: "deactivations", label: "탈퇴 사유" },
 ];
@@ -57,16 +56,12 @@ export default function AdminMonitoring() {
       { header: "상태", cell: (r) => <StatusBadge value={r.status} /> },
       { header: "신청일", cell: (r) => fmtDate(r.created_at) },
     ],
-    reports: [
-      { header: "유형", cell: (r) => r.category || "-" },
-      { header: "내용", maxWidth: 360, wrap: true, cell: (r) => r.description || "-" },
-      { header: "상태", cell: (r) => <StatusBadge value={r.status} /> },
-      { header: "접수일", cell: (r) => fmtDate(r.created_at) },
-      { header: "처리일", cell: (r) => fmtDate(r.resolved_at) },
-    ],
     kakao: [
-      { header: "bot_user_key", maxWidth: 220, cell: (r) => r.bot_user_key || "-" },
-      { header: "단계", cell: (r) => r.step ?? r.state ?? "-" },
+      { header: "작성자", cell: (r) => r.name || (r.linked ? "-" : "미연결") },
+      { header: "업체", cell: (r) => r.company_name || "-" },
+      { header: "유형", cell: (r) => (r.user_type === "employer" ? "사장님" : r.user_type === "worker" ? "알바생" : r.user_type || "-") },
+      { header: "공고 제목", maxWidth: 220, cell: (r) => r.draft_title || "-" },
+      { header: "진행 단계", cell: (r) => (r.step == null ? "-" : `${r.step_no}/${r.step_total} · ${r.step_label}`) },
       { header: "갱신", cell: (r) => fmtDate(r.updated_at) },
     ],
     deactivations: [
@@ -81,7 +76,7 @@ export default function AdminMonitoring() {
     <div>
       <header style={{ marginBottom: 18 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: T.ink, margin: 0 }}>운영 모니터링</h1>
-        <p style={{ fontSize: 13, color: T.ink3, marginTop: 4 }}>동기화 로그, 학교 담당자 승인, 신고, 카카오 드래프트, 탈퇴 사유</p>
+        <p style={{ fontSize: 13, color: T.ink3, marginTop: 4 }}>동기화 로그, 학교 담당자 승인, 카카오 드래프트, 탈퇴 사유</p>
       </header>
 
       <div style={{ display: "flex", gap: 6, marginBottom: 14, borderBottom: `1px solid ${T.border}`, flexWrap: "wrap" }}>
