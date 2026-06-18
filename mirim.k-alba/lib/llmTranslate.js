@@ -27,6 +27,7 @@ export async function translateJob({ title, description }, lang) {
     `- Write the ENTIRE output ONLY in ${name}. Never output English or Korean (except unavoidable proper nouns/brand names).\n` +
     `- Even for short or simple text, you MUST translate into ${name} — do not fall back to another language.\n` +
     `- Natural, concise, suitable for a job listing. Keep numbers, pay, and addresses accurate.\n` +
+    `- Store names, brand names, and company/proper names: keep them as-is or transliterate the sound. NEVER translate them into a literal meaning (e.g., a shop called "롱티" must NOT become "long tea" or "long T-shirt").\n` +
     `Return ONLY a JSON object with exactly two string keys: "title" and "description". No extra text.\n\n` +
     `Korean title: ${title || ""}\n` +
     `Korean description: ${description || ""}`;
