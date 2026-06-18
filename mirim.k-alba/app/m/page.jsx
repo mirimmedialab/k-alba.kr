@@ -37,43 +37,43 @@ const AUDIENCE_TABS_M = [
   {
     id: "workers",
     icon: "🌏",
-    label: "외국인 구직자",
+    labelKey: "audWorkerKr",
     accent: "#4F46E5",
     gradient: "linear-gradient(135deg,#EEF2FF,#E0E7FF)",
     border: "#C7D2FE",
-    title: "한국어 서류 작성이 어려우신가요?\n모국어로 간편하게 자동 완성",
-    items: [
-      "내 조건에 꼭 맞는 알바 매칭",
-      "클릭 몇 번으로 쓰는 표준근로계약서",
-      "시간제취업 신청 서류 자동 완성",
+    titleKey: "mAudWorkerTitle",
+    itemKeys: [
+      "mAudWorkerI1",
+      "mAudWorkerI2",
+      "mAudWorkerI3",
     ],
   },
   {
     id: "employers",
     icon: "💼",
-    label: "사장님",
+    labelKey: "audEmployerKr",
     accent: "#FF6B5A",
     gradient: "linear-gradient(135deg,#FFE8E4,#FFE4E0)",
     border: "rgba(255,107,90,0.25)",
-    title: "외국인 알바 채용부터 계약까지\n복잡한 절차를 한 번에",
-    items: [
-      "우리 매장 맞춤형 인재 매칭",
-      "고용 신고 필수 표준근로계약서 간편 작성",
-      "편리한 구인 공고 및 지원자 관리",
+    titleKey: "mAudEmployerTitle",
+    itemKeys: [
+      "mAudEmployerI1",
+      "mAudEmployerI2",
+      "mAudEmployerI3",
     ],
   },
   {
     id: "universities",
     icon: "🏫",
-    label: "학교 담당자",
+    labelKey: "audUniKr",
     accent: "#7C3AED",
     gradient: "linear-gradient(135deg,#F5F3FF,#EDE9FE)",
     border: "#DDD6FE",
-    title: "교내 유학생들의 알바 현황과\n출입국 서류를 스마트하게",
-    items: [
-      "유학생 알바 매칭 및 취업 현황 관리",
-      "시간제취업 신청서 및 출입국 통합신청서 자동 작성",
-      "효율적인 통합 서류 인프라",
+    titleKey: "mAudUniTitle",
+    itemKeys: [
+      "mAudUniI1",
+      "mAudUniI2",
+      "mAudUniI3",
     ],
   },
 ];
@@ -82,28 +82,28 @@ const AUDIENCE_TABS_M = [
 // 1~2줄 짧은 강조 멘트 + 작성자 정보 (작고 그레이)
 const TESTIMONIALS_M = [
   {
-    quote: "내 조건에 딱 맞는 알바를\n일주일 만에 찾았어요.",
+    quoteKey: "mTesti1Quote",
     flag: "🇻🇳",
     name: "흐엉",
     role: "베트남 · 서울대 유학생",
     bg: "#EEF2FF",
   },
   {
-    quote: "카카오톡 챗봇으로\n3분 만에 공고를 올렸어요.",
+    quoteKey: "mTesti2Quote",
     flag: "🇰🇷",
     name: "박영호",
     role: "평택 딸기농장 대표",
     bg: "#FFFBEB",
   },
   {
-    quote: "한국어 실력에 맞는 알바를\n쉽게 찾을 수 있었어요.",
+    quoteKey: "mTesti3Quote",
     flag: "🇰🇭",
     name: "Sokha M.",
     role: "캄보디아 · 결혼이민자",
     bg: "#FFF7ED",
   },
   {
-    quote: "외국인 채용 절차를\n친절하게 안내받았어요.",
+    quoteKey: "mTesti4Quote",
     flag: "🇰🇷",
     name: "김민수",
     role: "이태원 음식점 대표",
@@ -279,16 +279,16 @@ export default function MobileLandingPage() {
                   }}
                 >
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.mintL, color: "#059669", padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
-                    🌏 외국인 구직자를 위한
+                    {t("landing.mHeroBadgeSeeker")}
                   </div>
                   <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: T.navy, marginBottom: 16, letterSpacing: -1 }}>
-                    한국에서 일하는 외국인을 위한<br />
+                    {t("landing.mHeroSeekerTitle1")}<br />
                     <span style={{ background: "linear-gradient(135deg,#0BD8A2,#06B889)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                      맞춤형 알바
+                      {t("landing.mHeroSeekerTitle2")}
                     </span>
                   </h1>
                   <p style={{ fontSize: 14, lineHeight: 1.8, color: T.ink2, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
-                    내 비자 조건에 맞는 알바 공고부터 근로계약서 작성까지,<br />7개 언어로 더 쉽고 빠르게 도와드립니다.
+                    {t("landing.mHeroSeekerDesc1")}<br />{t("landing.mHeroSeekerDesc2")}
                   </p>
                   <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                     <Button variant="primary" href="/login">{t("landing.seekerCta")}</Button>
@@ -309,20 +309,20 @@ export default function MobileLandingPage() {
                   }}
                 >
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.coralL, color: T.coral, padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
-                    💼 사장님을 위한
+                    {t("landing.mHeroBadgeEmployer")}
                   </div>
                   <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: T.navy, marginBottom: 16, letterSpacing: -1 }}>
-                    카카오톡 챗봇으로<br />
+                    {t("landing.mHeroEmployerTitle1")}<br />
                     <span style={{ background: `linear-gradient(135deg,${T.coral},#FF8A7A)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                      3분만에 공고 완성
+                      {t("landing.mHeroEmployerTitle2")}
                     </span>
                   </h1>
                   <p style={{ fontSize: 14, lineHeight: 1.8, color: T.ink2, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
-                    카카오톡 챗봇으로 공고 등록부터 근로계약서 작성까지,<br />외국인 채용 절차를 더 간편하게 도와드립니다.
+                    {t("landing.mHeroEmployerDesc1")}<br />{t("landing.mHeroEmployerDesc2")}
                   </p>
                   <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                     <Button variant="primary" href="/login" style={{ boxShadow: `0 4px 16px ${T.coral}40` }}>
-                      공고 등록 — 무료 가입
+                      {t("landing.employerCta")}
                     </Button>
                     <Button variant="secondary" href="/login">{t("landing.haveAccount")}</Button>
                   </div>
@@ -341,23 +341,23 @@ export default function MobileLandingPage() {
                   }}
                 >
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#F5F3FF", color: "#7C3AED", padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
-                    🏫 학교 담당자를 위한
+                    {t("landing.mHeroBadgeUni")}
                     <span style={{ fontSize: 10, fontWeight: 700, color: T.ink3, background: "#fff", padding: "1px 6px", borderRadius: 4, marginLeft: 2 }}>
-                      준비중
+                      {t("landing.mComingSoon")}
                     </span>
                   </div>
                   <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: T.navy, marginBottom: 16, letterSpacing: -1 }}>
-                    유학생 시간제취업,<br />
+                    {t("landing.mHeroUniTitle1")}<br />
                     <span style={{ background: "linear-gradient(135deg,#7C3AED,#A78BFA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                      모바일에서 한 번에
+                      {t("landing.mHeroUniTitle2")}
                     </span>
                   </h1>
                   <p style={{ fontSize: 14, lineHeight: 1.8, color: T.ink2, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
-                    시간제취업 확인서 발급부터 승인까지,<br />카카오톡으로 유학생 행정을 더 간편하게 운영하세요.
+                    {t("landing.mHeroUniDesc1")}<br />{t("landing.mHeroUniDesc2")}
                   </p>
                   <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                     <Button variant="primary" disabled style={{ boxShadow: `0 4px 16px ${T.coral}40` }}>
-                      학교 담당자 시작
+                      {t("landing.mHeroUniCta")}
                     </Button>
                     <Button variant="secondary" disabled>{t("landing.haveAccount")}</Button>
                   </div>
@@ -370,7 +370,7 @@ export default function MobileLandingPage() {
                 <button
                   key={i}
                   onClick={() => setHeroIdx(i)}
-                  aria-label={i === 0 ? "구직자 보기" : i === 1 ? "사장님 보기" : "학교 담당자 보기"}
+                  aria-label={i === 0 ? t("landing.mDotSeeker") : i === 1 ? t("landing.mDotEmployer") : t("landing.mDotUni")}
                   style={{
                     width: i === heroIdx ? 24 : 8,
                     height: 8,
@@ -391,7 +391,7 @@ export default function MobileLandingPage() {
               ))}
             </div>
             <div style={{ marginTop: 10, fontSize: 11, color: T.ink3, textAlign: "center" }}>
-              🌏 외국인 구직자 · 💼 사장님 · 🏫 대학 담당자 <span style={{ color: T.mint, fontWeight: 700 }}>모두 무료</span>
+              {t("landing.mAllRoles")}<span style={{ color: T.mint, fontWeight: 700 }}>{t("landing.mAllFree")}</span>
             </div>
           </div>
         ) : userType === "employer" ? (
@@ -404,24 +404,23 @@ export default function MobileLandingPage() {
 
             <div style={{ fontSize: 48, marginBottom: 12 }}>👋</div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.coralL, color: T.coral, padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
-              💼 사장님
+              {t("landing.mBadgeEmployer")}
             </div>
             <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: T.navy, marginBottom: 16, letterSpacing: -1 }}>
-              안녕하세요,<br />
+              {t("landing.mGreetingHello")}<br />
               <span style={{ background: `linear-gradient(135deg,${T.coral},#FF8A7A)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                 {user.user_metadata?.name || user.email?.split("@")[0]}
-              </span>{" "}
-              사장님!
+              </span>{t("landing.mEmployerSuffix")}
             </h1>
             <p style={{ fontSize: 14, lineHeight: 1.8, color: T.ink2, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
-              외국인 채용 절차를 더 간편하게.<br />
-              카카오톡으로 공고 등록부터 계약까지 한 번에.
+              {t("landing.mEmployerSub1")}<br />
+              {t("landing.mEmployerSub2")}
             </p>
             <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
               <Button variant="primary" href="/my/jobs" style={{ boxShadow: `0 4px 16px ${T.coral}40` }}>
-                💼 내 공고 관리 →
+                {t("landing.empBtnMyJobs")}
               </Button>
-              <Button variant="secondary" href="/jobs/post">📢 새 공고 등록</Button>
+              <Button variant="secondary" href="/jobs/post">{t("landing.empBtnNewJob")}</Button>
             </div>
           </div>
         ) : (
@@ -434,22 +433,22 @@ export default function MobileLandingPage() {
 
             <div style={{ fontSize: 48, marginBottom: 12 }}>👋</div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: T.mintL, color: "#059669", padding: "6px 14px", borderRadius: 100, fontSize: 11, fontWeight: 700, marginBottom: 18 }}>
-              🌏 외국인 구직자
+              {t("landing.mBadgeWorker")}
             </div>
             <h1 style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.25, color: T.navy, marginBottom: 16, letterSpacing: -1 }}>
-              안녕하세요,<br />
+              {t("landing.mGreetingHello")}<br />
               <span style={{ background: "linear-gradient(135deg,#0BD8A2,#06B889)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                 {user.user_metadata?.name || user.email?.split("@")[0]}
               </span>
-              님!
+              {t("landing.mWorkerSuffix")}
             </h1>
             <p style={{ fontSize: 14, lineHeight: 1.8, color: T.ink2, marginBottom: 24, maxWidth: 420, margin: "0 auto 24px" }}>
-              당신의 비자 조건에 맞는<br />
-              새로운 알바 공고를 확인해보세요.
+              {t("landing.mWorkerSub1")}<br />
+              {t("landing.mWorkerSub2")}
             </p>
             <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-              <Button variant="primary" href="/jobs">🔍 알바 찾기 →</Button>
-              <Button variant="secondary" href="/my/applications">📋 내 지원 내역</Button>
+              <Button variant="primary" href="/jobs">{t("landing.workerBtnFind")}</Button>
+              <Button variant="secondary" href="/my/applications">{t("landing.workerBtnApplications")}</Button>
             </div>
           </div>
         )}
@@ -743,7 +742,7 @@ export default function MobileLandingPage() {
       {/* ── TRUST BAR ── */}
       <div style={{ ...S.section, paddingBottom: 24 }}>
         <div style={{ display: "flex", justifyContent: "center", gap: 20, flexWrap: "wrap", padding: "14px 0", borderTop: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}` }}>
-          {[["📊", "직업정보제공사업"], ["🌐", "7개 언어 지원"], ["💬", "카카오톡 기반"]].map(([ic, l]) => (
+          {[["📊", t("landing.mTrustJobInfo")], ["🌐", t("landing.mTrust7Lang")], ["💬", t("landing.mTrustKakao")]].map(([ic, l]) => (
             <div key={l} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, color: T.ink3 }}>
               <span style={{ fontSize: 14 }}>{ic}</span>{l}
             </div>
@@ -828,7 +827,7 @@ export default function MobileLandingPage() {
                           transition: "all 0.3s ease-in-out",
                         }}
                       >
-                        {tab.icon} {tab.label}
+                        {tab.icon} {t("landing." + tab.labelKey)}
                       </div>
                       <h3
                         style={{
@@ -842,7 +841,7 @@ export default function MobileLandingPage() {
                           transition: "all 0.3s ease-in-out",
                         }}
                       >
-                        {tab.title}
+                        {t("landing." + tab.titleKey)}
                       </h3>
                       <ul
                         style={{
@@ -854,9 +853,9 @@ export default function MobileLandingPage() {
                           gap: 10,
                         }}
                       >
-                        {tab.items.map((item) => (
+                        {tab.itemKeys.map((itemKey) => (
                           <li
-                            key={item}
+                            key={itemKey}
                             style={{
                               display: "flex",
                               alignItems: "flex-start",
@@ -897,7 +896,7 @@ export default function MobileLandingPage() {
                                 letterSpacing: "-0.01em",
                               }}
                             >
-                              {item}
+                              {t("landing." + itemKey)}
                             </span>
                           </li>
                         ))}
@@ -912,7 +911,7 @@ export default function MobileLandingPage() {
           {/* Left arrow — small + translucent so it doesn't block card copy */}
           <button
             type="button"
-            aria-label="이전"
+            aria-label={t("landing.mPrev")}
             onClick={goAudiencePrev}
             style={{
               position: "absolute",
@@ -946,7 +945,7 @@ export default function MobileLandingPage() {
           {/* Right arrow — small + translucent */}
           <button
             type="button"
-            aria-label="다음"
+            aria-label={t("landing.mNext")}
             onClick={goAudienceNext}
             style={{
               position: "absolute",
@@ -984,7 +983,7 @@ export default function MobileLandingPage() {
             <button
               key={tab.id}
               type="button"
-              aria-label={`${tab.label} 보기`}
+              aria-label={t("landing.mViewRole", { label: t("landing." + tab.labelKey) })}
               onClick={() => goAudienceTo(i)}
               style={{
                 width: i === audienceLogicalIdx ? 22 : 7,
@@ -1007,8 +1006,8 @@ export default function MobileLandingPage() {
       {/* ── TESTIMONIALS (compact swipe carousel) ── */}
       <div style={{ background: T.cream, padding: "48px 0 56px" }}>
         <div style={{ maxWidth: 600, margin: "0 auto", padding: "0 20px" }}>
-          <div style={S.label}>이용 후기</div>
-          <div style={S.title}>실제 사용자들의 이야기</div>
+          <div style={S.label}>{t("landing.mTestiLabel")}</div>
+          <div style={S.title}>{t("landing.mTestiTitle")}</div>
         </div>
 
         <div
@@ -1028,9 +1027,9 @@ export default function MobileLandingPage() {
               transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
             }}
           >
-            {TESTIMONIALS_M.map((t) => (
+            {TESTIMONIALS_M.map((tItem) => (
               <div
-                key={t.name}
+                key={tItem.name}
                 style={{
                   width: `${100 / TESTIMONIALS_M.length}%`,
                   flexShrink: 0,
@@ -1074,7 +1073,7 @@ export default function MobileLandingPage() {
                       minHeight: 78,
                     }}
                   >
-                    {t.quote}
+                    {t("landing." + tItem.quoteKey)}
                   </div>
 
                   {/* Author meta */}
@@ -1084,21 +1083,21 @@ export default function MobileLandingPage() {
                         width: 36,
                         height: 36,
                         borderRadius: 12,
-                        background: t.bg,
+                        background: tItem.bg,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         fontSize: 18,
                       }}
                     >
-                      {t.flag}
+                      {tItem.flag}
                     </div>
                     <div>
                       <div style={{ fontSize: 12, fontWeight: 700, color: T.ink2 }}>
-                        {t.name}
+                        {tItem.name}
                       </div>
                       <div style={{ fontSize: 11, color: T.ink3, marginTop: 1 }}>
-                        {t.role}
+                        {tItem.role}
                       </div>
                     </div>
                   </div>
@@ -1110,11 +1109,11 @@ export default function MobileLandingPage() {
 
         {/* Dots */}
         <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 16 }}>
-          {TESTIMONIALS_M.map((t, i) => (
+          {TESTIMONIALS_M.map((tItem, i) => (
             <button
-              key={t.name}
+              key={tItem.name}
               type="button"
-              aria-label={`후기 ${i + 1} 보기`}
+              aria-label={t("landing.mViewTesti", { n: i + 1 })}
               onClick={() => setTestimonialIdx(i)}
               style={{
                 width: i === testimonialIdx ? 22 : 7,
@@ -1136,12 +1135,12 @@ export default function MobileLandingPage() {
         <div style={{ maxWidth: 600, margin: "0 auto" }}>
           <div style={{ background: "#fff", borderRadius: 20, padding: "40px 28px", textAlign: "center", border: `1px solid ${T.border}` }}>
             <h2 style={{ fontSize: 22, fontWeight: 900, color: T.navy, marginBottom: 12, letterSpacing: -0.5, lineHeight: 1.35 }}>
-              외국인 채용부터 행정 서류까지,<br />
-              이제 <span style={{ color: T.coral }}>K-ALBA</span>로 한 번에 해결하세요.
+              {t("landing.mCtaTitle1")}<br />
+              {t("landing.mCtaTitle2Pre")}<span style={{ color: T.coral }}>K-ALBA</span>{t("landing.mCtaTitle2Post")}
             </h2>
             <p style={{ fontSize: 13, color: T.ink3, marginBottom: 24, lineHeight: 1.75 }}>
-              더 이상 복잡한 절차로 고민하지 마세요.<br />
-              구인구직과 필수 서류 작성을 가장 쉽고 빠르게 도와드립니다.
+              {t("landing.mCtaSub1")}<br />
+              {t("landing.mCtaSub2")}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "stretch" }}>
               <Link href="/login" style={{ width: "100%", display: "block" }}>
@@ -1166,7 +1165,7 @@ export default function MobileLandingPage() {
                     letterSpacing: "-0.01em",
                   }}
                 >
-                  🌏 구직자로 시작
+                  {t("landing.startAsSeeker")}
                 </button>
               </Link>
               <Link href="/login" style={{ width: "100%", display: "block" }}>
@@ -1191,13 +1190,13 @@ export default function MobileLandingPage() {
                     letterSpacing: "-0.01em",
                   }}
                 >
-                  💼 사장님으로 시작
+                  {t("landing.startAsEmployer")}
                 </button>
               </Link>
               <button
                 type="button"
                 disabled
-                aria-label="학교 담당자로 시작 (서비스 준비중)"
+                aria-label={t("landing.mStartUniAria")}
                 style={{
                   width: "100%",
                   background: "#7C3AED",
@@ -1218,7 +1217,7 @@ export default function MobileLandingPage() {
                   position: "relative",
                 }}
               >
-                🏫 학교 담당자로 시작
+                {t("landing.mStartAsUni")}
                 <span
                   style={{
                     fontSize: 10,
@@ -1230,7 +1229,7 @@ export default function MobileLandingPage() {
                     letterSpacing: "-0.01em",
                   }}
                 >
-                  준비중
+                  {t("landing.mComingSoon")}
                 </span>
               </button>
             </div>
@@ -1253,7 +1252,7 @@ export default function MobileLandingPage() {
                 letterSpacing: "-0.01em",
               }}
             >
-              이용약관
+              {t("siteFooter.terms")}
             </Link>
             <span style={{ margin: "0 12px", color: T.ink3 }}>|</span>
             <Link
@@ -1266,15 +1265,15 @@ export default function MobileLandingPage() {
                 letterSpacing: "-0.01em",
               }}
             >
-              개인정보처리방침
+              {t("siteFooter.privacy")}
             </Link>
           </div>
 
           {/* 법적 정보 */}
           <div style={{ fontSize: 11, color: T.ink3, lineHeight: 1.8, marginBottom: 8 }}>
-            {COMPANY.brandName} | 대표: {COMPANY.ceo} | 사업자등록번호: {COMPANY.businessNumber}
+            {COMPANY.brandName} | {t("siteFooter.ceo")}: {COMPANY.ceo} | {t("siteFooter.bizNo")}: {COMPANY.businessNumber}
             <br />
-            직업정보제공사업 신고번호: {COMPANY.jobInfoLicense} | {COMPANY.name}
+            {t("siteFooter.jobInfoNo")}: {COMPANY.jobInfoLicense} | {COMPANY.name}
           </div>
           <div style={{ fontSize: 10, color: T.g500 }}>
             © 2026 {COMPANY.brandName}. All rights reserved.

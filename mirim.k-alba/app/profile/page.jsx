@@ -174,13 +174,23 @@ export default function ProfilePage() {
 
         <Card>
           <div style={{ fontSize: 12, fontWeight: 700, color: T.coral, marginBottom: 12, letterSpacing: 1 }}>{t("profile.verificationStatus")}</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 14, background: T.mintL, borderRadius: 10 }}>
-            <span style={{ fontSize: 24 }}>✅</span>
-            <div>
-              <div style={{ fontWeight: 700, color: "#059669" }}>{t("profile.verified")}</div>
-              <div style={{ fontSize: 12, color: T.ink3 }}>{t("profile.verifiedDesc")}</div>
+          {profile?.verified ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 14, background: T.mintL, borderRadius: 10 }}>
+              <span style={{ fontSize: 24 }}>✅</span>
+              <div>
+                <div style={{ fontWeight: 700, color: "#059669" }}>{t("profile.verified")}</div>
+                <div style={{ fontSize: 12, color: T.ink3 }}>{t("profile.verifiedDesc")}</div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 14, background: T.cream, border: `1px solid ${T.border}`, borderRadius: 10 }}>
+              <span style={{ fontSize: 24 }}>⚠️</span>
+              <div>
+                <div style={{ fontWeight: 700, color: T.ink2 }}>사업자 인증 미완료</div>
+                <div style={{ fontSize: 12, color: T.ink3 }}>사업자등록번호 인증이 완료되지 않았습니다.</div>
+              </div>
+            </div>
+          )}
         </Card>
 
         <DangerZone />

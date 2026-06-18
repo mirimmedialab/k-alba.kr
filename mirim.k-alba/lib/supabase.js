@@ -21,13 +21,13 @@ export async function signUp(email, password, userType, name, extra = {}) {
   });
   // ✅ 널 안전성: data가 null일 수 있음
   if (data?.user && !error) {
-    const { error: profileError } = await supabase.from("profiles").insert({
+    const { error: profileError } = await supabase.from("profiles").upsert({
       id: data.user.id,
       email,
       name,
       user_type: userType,
       ...extra,
-    });
+    }, { onConflict: "id" });
     // profiles insert 실패도 에러로 리턴
     if (profileError) return { data, error: profileError };
   }

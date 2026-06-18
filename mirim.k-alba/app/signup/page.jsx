@@ -190,10 +190,9 @@ export default function SignupPage() {
 
     setLoading(true);
     const extra = role === "employer" ? {
+      // 위 handleVerifyBusiness(국세청 NTS 검증) 통과 후에만 제출 가능 → verified 저장
       business_number: bizForm.businessNumber.replace(/-/g, ""),
-      representative_name: bizForm.representativeName,
-      opening_date: bizForm.openingDate.replace(/-/g, ""),
-      business_verified: true,
+      verified: true,
     } : {};
     const { error } = await signUp(form.email, form.password, role, form.name, extra);
     setLoading(false);
