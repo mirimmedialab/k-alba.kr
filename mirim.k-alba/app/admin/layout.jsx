@@ -3,13 +3,13 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { T } from "@/lib/theme";
-import { supabase, getCurrentUser, signOut } from "@/lib/supabase";
 
 /**
  * 관리자 콘솔 공통 레이아웃 (데스크탑 전용)
  *
  * - 좌측 고정 사이드바 + 우측 콘텐츠 영역
- * - role=admin 인증 게이트 (미들웨어 + RLS에 더한 클라이언트 가드)
+ * - 인증: httpOnly 쿠키(kalba_admin) 유효성을 /api/admin/auth/check 로 확인
+ *   (미들웨어 쿠키 존재 확인 + API 쿠키 검증의 이중 가드)
  * - AppFrame에서 /admin 은 폰 프레임/네비/푸터를 제외하므로 풀폭으로 렌더된다.
  */
 
@@ -26,36 +26,28 @@ const NAV = [
 export default function AdminLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [state, setState] = useState("loading"); // loading | ok | denied
-  const [email, setEmail] = useState("");
+  const [state, setState] = useState("loading"); // loading | ok
 
   useEffect(() => {
     (async () => {
-      const user = await getCurrentUser();
-      if (!user) { router.push("/login/admin"); return; }
-      const role = user.user_metadata?.role || user.app_metadata?.role;
-      if (role !== "admin") { setState("denied"); return; }
-      setEmail(user.email || "");
-      setState("ok");
+      try {
+        const res = await fetch("/api/admin/auth/check", { cache: "no-store" });
+        if (res.ok) { setState("ok"); return; }
+      } catch (_) {}
+      router.replace("/login/admin");
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const logout = async () => {
+    try { await fetch("/api/admin/auth/logout", { method: "POST" }); } catch (_) {}
+    router.replace("/login/admin");
+  };
 
   if (state === "loading") {
     return (
       <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: T.cream, color: T.ink3 }}>
         불러오는 중…
-      </div>
-    );
-  }
-  if (state === "denied") {
-    return (
-      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: T.cream }}>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 18, fontWeight: 800, color: T.ink }}>접근 권한이 없습니다</div>
-          <div style={{ fontSize: 14, color: T.ink3, marginTop: 6 }}>관리자(role=admin) 계정만 접근할 수 있습니다.</div>
-          <Link href="/" style={{ display: "inline-block", marginTop: 16, color: T.coral, fontWeight: 700 }}>← 홈으로</Link>
-        </div>
       </div>
     );
   }
@@ -116,9 +108,8 @@ export default function AdminLayout({ children }) {
         </nav>
 
         <div style={{ padding: 16, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-          <div style={{ fontSize: 12, color: "#AEBACE", marginBottom: 8, wordBreak: "break-all" }}>{email}</div>
           <button
-            onClick={async () => { await signOut(); router.push("/"); }}
+            onClick={logout}
             style={{
               width: "100%", fontSize: 13, fontWeight: 700, padding: "8px 0",
               borderRadius: 8, border: "1px solid rgba(255,255,255,0.18)",

@@ -1,12 +1,57 @@
+import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
 
 /**
- * 관리자 API 공통 인증 유틸 (서버 전용)
+ * 관리자 인증 (ID/비밀번호 + httpOnly 쿠키 세션)
  *
- * 모든 /api/admin/* 라우트는 RLS를 우회해야 하므로 SERVICE_ROLE_KEY로 동작한다.
- * 미들웨어는 /api/* 를 가드하지 않으므로(폴스루) 각 라우트에서 반드시 requireAdmin()으로
- * 호출자가 role=admin 인지 토큰을 검증한다. (이중 보안)
+ * - 자격증명은 코드에 두지 않고 환경변수로 둔다.
+ *     ADMIN_ID  (기본값 "kalbaadmin")
+ *     ADMIN_PW  (필수 — 미설정 시 관리자 로그인 비활성)
+ * - 로그인 성공 시 쿠키 kalba_admin = sha256(ADMIN_ID:ADMIN_PW) 를 굽는다.
+ *   이 값은 서버 전용 ADMIN_PW를 알아야만 만들 수 있어 위조가 어렵다.
  */
+
+export const ADMIN_COOKIE = "kalba_admin";
+
+function adminId() {
+  return process.env.ADMIN_ID || "kalbaadmin";
+}
+
+/** 아이디/비밀번호 검증 */
+export function adminCredsOk(id, pw) {
+  const PW = process.env.ADMIN_PW || "";
+  if (!PW) return false;
+  return id === adminId() && pw === PW;
+}
+
+/** 쿠키에 저장할 세션 토큰 */
+export function adminSessionToken() {
+  const PW = process.env.ADMIN_PW || "";
+  return crypto.createHash("sha256").update(`${adminId()}:${PW}`).digest("hex");
+}
+
+/** 쿠키 값이 유효한 관리자 세션인지 (상수시간 비교) */
+export function isValidAdminCookie(value) {
+  const PW = process.env.ADMIN_PW || "";
+  if (!PW || !value) return false;
+  const expected = adminSessionToken();
+  try {
+    const a = Buffer.from(String(value));
+    const b = Buffer.from(expected);
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
+}
+
+function parseCookies(header) {
+  const out = {};
+  (header || "").split(/;\s*/).forEach((p) => {
+    const i = p.indexOf("=");
+    if (i > 0) out[p.slice(0, i).trim()] = decodeURIComponent(p.slice(i + 1));
+  });
+  return out;
+}
 
 export function getServiceClient() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -16,29 +61,19 @@ export function getServiceClient() {
 }
 
 /**
- * Bearer 토큰을 검증하고 role=admin 인지 확인한다.
- * @returns {{ svc, user } | { error, status }}
+ * 관리자 API 가드: 쿠키 검증 + RLS 우회용 service client 반환
+ * @returns {{ svc } | { error, status }}
  */
 export async function requireAdmin(request) {
   const svc = getServiceClient();
   if (!svc) return { error: "server_misconfigured", status: 500 };
-
-  const token = (request.headers.get("authorization") || "")
-    .replace(/^Bearer\s+/i, "")
-    .trim();
-  if (!token) return { error: "unauthorized", status: 401 };
-
-  const { data, error } = await svc.auth.getUser(token);
-  const user = data?.user;
-  if (error || !user) return { error: "invalid_token", status: 401 };
-
-  const role = user.user_metadata?.role || user.app_metadata?.role;
-  if (role !== "admin") return { error: "forbidden", status: 403 };
-
-  return { svc, user };
+  const cookies = parseCookies(request.headers.get("cookie") || "");
+  if (!isValidAdminCookie(cookies[ADMIN_COOKIE])) {
+    return { error: "unauthorized", status: 401 };
+  }
+  return { svc };
 }
 
-/** requireAdmin 결과가 에러인지 검사 */
 export function isAuthError(r) {
   return !!(r && r.error);
 }
