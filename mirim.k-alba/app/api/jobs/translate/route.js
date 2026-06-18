@@ -24,25 +24,6 @@ export async function POST(request) {
     return Response.json({ ok: false, error: "bad_request" }, { status: 400 });
   }
 
-  // ── 임시 진단 모드 (?debug) — 원인 파악 후 제거 ──
-  if (body && body.debug) {
-    const hasAnthropic = !!process.env.ANTHROPIC_API_KEY;
-    const hasOpenAI = !!process.env.OPENAI_API_KEY;
-    const info = { hasAnthropic, hasOpenAI };
-    if (hasAnthropic) {
-      try {
-        const r = await fetch("https://api.anthropic.com/v1/messages", {
-          method: "POST",
-          headers: { "content-type": "application/json", "x-api-key": process.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
-          body: JSON.stringify({ model: "claude-3-5-haiku-latest", max_tokens: 100, messages: [{ role: "user", content: "Translate to English, return only the text: 안녕하세요" }] }),
-        });
-        info.anthropicStatus = r.status;
-        info.anthropicBody = (await r.text()).slice(0, 800);
-      } catch (e) { info.anthropicFetchError = String(e && e.message || e); }
-    }
-    return Response.json(info);
-  }
-
   const db = createClient(url, key, { auth: { persistSession: false } });
 
   // 1) 캐시

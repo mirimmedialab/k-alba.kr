@@ -34,14 +34,21 @@ export async function translateJob({ title, description }, lang) {
 
   try {
     if (anthropicKey) {
-      const r = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "content-type": "application/json", "x-api-key": anthropicKey, "anthropic-version": "2023-06-01" },
-        body: JSON.stringify({ model: "claude-3-5-haiku-latest", max_tokens: 1500, messages: [{ role: "user", content: prompt }] }),
-        signal: AbortSignal.timeout(20000),
-      });
-      const d = await r.json();
-      text = d?.content?.[0]?.text || "";
+      // 모델명이 시점에 따라 바뀌므로 후보를 순차 시도(404면 다음 후보)
+      const MODELS = ["claude-haiku-4-5-20251001", "claude-3-5-haiku-20241022", "claude-3-haiku-20240307"];
+      for (const model of MODELS) {
+        const r = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: { "content-type": "application/json", "x-api-key": anthropicKey, "anthropic-version": "2023-06-01" },
+          body: JSON.stringify({ model, max_tokens: 1500, messages: [{ role: "user", content: prompt }] }),
+          signal: AbortSignal.timeout(20000),
+        });
+        if (r.status === 404) continue; // 모델 미존재 → 다음 후보
+        if (!r.ok) return null;
+        const d = await r.json();
+        text = d?.content?.[0]?.text || "";
+        break;
+      }
     } else if (openaiKey) {
       const r = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",

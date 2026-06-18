@@ -1,9 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { T } from "@/lib/theme";
-import { supabase, getCurrentUser } from "@/lib/supabase";
+import { adminGet } from "@/lib/adminApi";
 import { Button, Badge, Empty, PageLoading } from "@/components/ui";
 
 /**
@@ -16,46 +15,28 @@ import { Button, Badge, Empty, PageLoading } from "@/components/ui";
  *   - 새 캠페인 생성 버튼
  */
 export default function AdminCampaignsPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
   const [campaigns, setCampaigns] = useState([]);
   const [filter, setFilter] = useState("all");
 
+  // 인증은 상위 admin/layout.jsx(kalba_admin 쿠키 게이트)에서 처리.
   useEffect(() => {
     (async () => {
-      const user = await getCurrentUser();
-      if (!user) {
-        router.push("/login");
-        return;
+      try {
+        const res = await adminGet("/api/admin/campaigns?limit=200");
+        setCampaigns(res.rows || []);
+      } catch (_) {
+        setCampaigns([]);
       }
-      const role = user.user_metadata?.role || user.app_metadata?.role;
-      if (role !== "admin") {
-        router.push("/");
-        return;
-      }
-      setAuthorized(true);
-      await load();
       setLoading(false);
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const load = async () => {
-    if (!supabase) return;
-    const { data } = await supabase
-      .from("email_campaigns")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setCampaigns(data || []);
-  };
 
   const filtered = filter === "all"
     ? campaigns
     : campaigns.filter(c => c.status === filter);
 
   if (loading) return <PageLoading message="로딩 중..." minHeight={400} />;
-  if (!authorized) return null;
 
   return (
     <div style={{ padding: "32px 20px", maxWidth: 1100, margin: "0 auto" }}>
