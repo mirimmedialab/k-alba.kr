@@ -65,6 +65,12 @@ export async function GET(req) {
       .select("id");
     if (e2) throw e2;
 
+    // 마감(expired) 처리된 공고들의 번역 캐시도 삭제 (행 자체는 유지되므로 명시적으로 정리)
+    const expiredIds = [...(expiredByDate || []), ...(expiredByAge || [])].map((r) => r.id);
+    if (expiredIds.length > 0) {
+      await supabase.from("job_translations").delete().in("job_id", expiredIds);
+    }
+
     const total =
       (expiredByDate?.length || 0) + (expiredByAge?.length || 0);
 

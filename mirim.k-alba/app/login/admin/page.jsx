@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { T } from "@/lib/theme";
-import BrandLogo from "@/components/BrandLogo";
 import { signInWithOAuth } from "@/lib/supabase";
 
 /**
@@ -10,6 +9,7 @@ import { signInWithOAuth } from "@/lib/supabase";
  * - 네비게이션 바·폰 프레임·푸터·카카오버튼 없이 풀스크린 중앙 정렬
  *   (AppFrame에서 "/login/admin" 경로를 프레임/네비 제외 목록에 추가)
  * - 소셜 로그인(카카오/구글)만 노출. 로그인 후 /admin 으로 이동(콜백에서 처리).
+ * - 배경은 진한 네이비(#0A1628). 다크 배경이라 네비바 로고를 흰색으로 반전 표시.
  */
 export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
@@ -37,38 +37,41 @@ export default function AdminLoginPage() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: T.cream,
+        background: T.n9,
         padding: "24px",
       }}
     >
       <div style={{ width: "100%", maxWidth: 380, textAlign: "center" }}>
-        {/* 로고 */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 28 }}>
-          <BrandLogo size={30} />
+        {/* 로고 (네비바와 동일, 다크 배경용 흰색 반전) */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 26 }}>
+          <img
+            src="/img/k-alba_logo.svg"
+            alt="K-ALBA"
+            style={{ height: 48, width: "auto", display: "block", filter: "brightness(0) invert(1)" }}
+          />
         </div>
 
         {/* 타이틀 */}
         <h1
           style={{
-            fontSize: 26,
+            fontSize: 24,
             fontWeight: 800,
-            color: T.ink,
+            color: "#FFFFFF",
             letterSpacing: "-0.025em",
-            marginBottom: 6,
+            marginBottom: 28,
           }}
         >
-          로그인
+          관리자 콘솔
         </h1>
-        <p style={{ fontSize: 13, color: T.ink3, marginBottom: 28 }}>관리자 콘솔</p>
 
         {error && (
           <div
             style={{
               padding: "10px 12px",
-              background: T.accentBg,
-              color: T.accent,
+              background: "rgba(220,38,38,0.15)",
+              color: "#FCA5A5",
               borderRadius: 8,
-              border: `1px solid ${T.accent}30`,
+              border: "1px solid rgba(220,38,38,0.4)",
               fontSize: 13,
               marginBottom: 14,
             }}
