@@ -249,3 +249,22 @@ export function fmtPay(type, amount) {
   const label = type === "hourly" ? "시급" : type === "monthly" ? "월급" : type === "daily" ? "일급" : "";
   return `${label} ${won}원`;
 }
+
+export function fmtDateTime(v) {
+  if (!v) return "-";
+  try {
+    const d = new Date(v);
+    const p = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  } catch (_) { return "-"; }
+}
+
+export function fmtDuration(start, end) {
+  if (!start || !end) return "-";
+  try {
+    const ms = new Date(end) - new Date(start);
+    if (!(ms >= 0)) return "-";
+    const sec = Math.round(ms / 1000);
+    return sec < 60 ? `${sec}초` : `${Math.floor(sec / 60)}분 ${sec % 60}초`;
+  } catch (_) { return "-"; }
+}

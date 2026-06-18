@@ -76,6 +76,14 @@ const DEMO_JOBS = {
   "7": { id: 7, icon: "🌾", title: "딸기 수확 작업자", company: "논산 딸기농장", area: "충남 논산", hours: "주 40시간", pay: 150000, visa: ["E-9", "H-2", "F-4"], korean: "none", type: "농업", desc: "딸기 수확, 선별, 포장 작업. 비닐하우스 내 작업 (겨울 따뜻). 숙소 무료, 3끼 식사 제공.", days: ["매일"], time: "06:00~15:00" },
 };
 
+function payDisplay(job, locale, t) {
+  if (locale === "ko") return `${job.pay_type || "시급"} ${formatPay(job.pay, job.pay_type)}`;
+  const period = ({ "시급": "hour", "일급": "day", "월급": "month", "연봉": "year" })[job.pay_type] || "hour";
+  return `${(Number(job.pay) || 0).toLocaleString()} ${t("pay.won")} / ${t("pay." + period)}`;
+}
+const JD_LABELS = { "근무 조건":"jobDetail.workConditions","외국인 지원 정보":"jobDetail.foreignerInfo","상세 설명":"jobDetail.details","회사 정보":"jobDetail.companyInfo","지원 전 확인사항":"jobDetail.checklistTitle","급여":"jobDetail.pay","지역":"jobDetail.region","근무":"jobDetail.work","업종":"jobDetail.jobType","모집인원":"jobDetail.headcount","복리후생":"jobDetail.benefits","마감":"jobDetail.deadline","가능 비자":"jobDetail.eligibleVisa","한국어 수준":"jobDetail.koreanLevel","숙소 제공":"jobDetail.housing","통근버스":"jobDetail.shuttle","가까운 역":"jobDetail.nearestStation","회사명":"jobDetail.companyName","공고 출처":"jobDetail.source" };
+const JD_VALUES = { "제공":"jobDetail.provided","미제공":"jobDetail.notProvided","별도 명시 없음":"jobDetail.notSpecified","고용24(워크넷)":"jobDetail.sourceWorknet","K-ALBA 직접등록":"jobDetail.sourceDirect" };
+
 export default function JobDetail({ jobId, embedded = false }) {
   const router = useRouter();
   const t = useT();
@@ -190,7 +198,7 @@ export default function JobDetail({ jobId, embedded = false }) {
   if (!job)
     return (
       <div style={{ padding: 40, textAlign: "center", color: T.ink3, fontSize: 14 }}>
-        공고를 찾을 수 없습니다.
+        {t("jobDetail.notFound")}
       </div>
     );
 
@@ -199,16 +207,16 @@ export default function JobDetail({ jobId, embedded = false }) {
   const displayDesc = (locale !== "ko" && tr?.description) ? tr.description : job.desc;
 
   if (isDesktop) {
-    const koreanLabel = D_KOREAN[job.korean];
+    const koreanLabel = D_KOREAN[job.korean] ? t("kr." + job.korean) : null;
     const desc = String(displayDesc || "").replace(/^\s*담당업무\s*[:：]?\s*/, "").trimEnd();
     const payUnit = ({ 시급: "시간", 일급: "일", 월급: "월", 연봉: "년" })[job.pay_type] || "시간";
     const rows = [
-      ["급여", `${job.pay_type || "시급"} ${formatPay(job.pay, job.pay_type)}`],
-      ["지역", job.area],
+      ["급여", payDisplay(job, locale, t)],
+      ["지역", (locale !== "ko" && tr && tr.region) ? tr.region : job.area],
       ["근무", String(job.hours || job.time || "").trim() || "-"],
       ["업종", job.type],
       job.headcount && String(job.headcount) !== "1"
-        ? ["모집인원", /^\d+$/.test(String(job.headcount)) ? `${job.headcount}명` : job.headcount]
+        ? ["모집인원", /^\d+$/.test(String(job.headcount)) ? `${t("jobDetail.people", { n: job.headcount })}` : job.headcount]
         : null,
       job.benefits ? ["복리후생", job.benefits] : null,
       job.expires_at ? ["마감", String(job.expires_at).slice(0, 10)] : null,
@@ -218,46 +226,49 @@ export default function JobDetail({ jobId, embedded = false }) {
       ["한국어 수준", koreanLabel || "별도 명시 없음"],
       ["숙소 제공", job.provides_housing ? "제공" : "미제공"],
       ["통근버스", job.provides_shuttle ? "제공" : "미제공"],
-      job.nearest_station ? ["가까운 역", `${job.nearest_station}${job.walk_to_station_min ? ` (도보 ${job.walk_to_station_min}분)` : ""}`] : null,
+      job.nearest_station ? ["가까운 역", `${job.nearest_station}${job.walk_to_station_min ? ` ${t("jobDetail.walk", { min: job.walk_to_station_min })}` : ""}`] : null,
     ].filter(Boolean);
     const hasForeignerInfo =
       (job.visa || []).length > 0 || !!koreanLabel ||
       !!job.provides_housing || !!job.provides_shuttle || !!job.nearest_station;
     const companyRows = [
-      ["회사명", job.company || "-"],
+      ["회사명", (locale !== "ko" && tr && tr.company) ? `${job.company || "-"} (${tr.company})` : (job.company || "-")],
       job.type ? ["업종", job.type] : null,
       ["공고 출처", job.source_type === "worknet" ? "고용24(워크넷)" : "K-ALBA 직접등록"],
     ].filter(Boolean);
     const checklist = [
-      "비자 만료일이 근무 종료일보다 늦은지 확인하세요.",
-      "주당 근무 시간이 비자 허용 범위(예: 유학 D-2 학기 중 주 25시간) 내인지 확인하세요.",
-      "근무 시작 전 표준근로계약서를 작성하세요.",
-      "급여가 최저임금 이상인지 확인하세요.",
+      t("jobDetail.check1"),
+      t("jobDetail.check2"),
+      t("jobDetail.check3"),
+      t("jobDetail.check4"),
     ];
 
     const Section = ({ title, id, children }) => (
       <div id={id} style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 16, padding: 24, marginBottom: 16 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: D.navy, marginBottom: 16, letterSpacing: "-0.01em" }}>{title}</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: D.navy, marginBottom: 16, letterSpacing: "-0.01em" }}>{JD_LABELS[title] ? t(JD_LABELS[title]) : title}</div>
         {children}
       </div>
     );
-    const Row = ({ k, v, isWork }) => (
+    const Row = ({ k, v, isWork }) => {
+      const tv = (typeof v === "string" && JD_VALUES[v]) ? t(JD_VALUES[v]) : v;
+      return (
       <div style={{ display: "flex", justifyContent: "space-between", gap: 20, padding: "12px 0", borderBottom: "1px solid #F1F5F9" }}>
-        <span style={{ fontSize: 13.5, color: D.ink3, flexShrink: 0 }}>{k}</span>
+        <span style={{ fontSize: 13.5, color: D.ink3, flexShrink: 0 }}>{JD_LABELS[k] ? t(JD_LABELS[k]) : k}</span>
         <span style={{ fontSize: 13.5, fontWeight: 600, color: D.ink, textAlign: "right", lineHeight: 1.6 }}>
           {isWork
-            ? formatWorkHours(v).map((line, i) => (
+            ? formatWorkHours(tv).map((line, i) => (
                 <span key={i} style={{ display: "block" }}>{line}</span>
               ))
-            : v}
+            : tv}
         </span>
       </div>
-    );
+      );
+    };
 
     return (
       <div style={{ background: D.bg, minHeight: "100vh" }}>
         <div style={{ maxWidth: 1080, margin: "0 auto", padding: "20px 28px 64px" }}>
-          <Link href="/jobs" style={{ color: D.ink2, fontSize: 14, marginBottom: 16, display: "inline-block" }}>← 공고 목록</Link>
+          <Link href="/jobs" style={{ color: D.ink2, fontSize: 14, marginBottom: 16, display: "inline-block" }}>← {t("jobDetail.jobsList")}</Link>
 
           <div style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 16, padding: 28, marginBottom: 16 }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
@@ -273,8 +284,8 @@ export default function JobDetail({ jobId, embedded = false }) {
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 14 }}>
                   {(job.visa || []).map((v) => <VisaBadge key={v} code={v} variant="solid" size="md" />)}
                   {koreanLabel && <Chip2>{koreanLabel}</Chip2>}
-                  {job.provides_housing && <Chip2 green>🏠 숙소제공</Chip2>}
-                  {job.provides_shuttle && <Chip2 green>🚐 통근버스</Chip2>}
+                  {job.provides_housing && <Chip2 green>🏠 {t("jobDetail.housing")}</Chip2>}
+                  {job.provides_shuttle && <Chip2 green>🚐 {t("jobDetail.shuttle")}</Chip2>}
                 </div>
               </div>
             </div>
@@ -302,7 +313,7 @@ export default function JobDetail({ jobId, embedded = false }) {
                 {companyRows.map(([k, v]) => <Row key={k} k={k} v={v} />)}
               </Section>
               {job.apply_url && (
-                <a href={job.apply_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "12px", marginBottom: 16, background: D.card, border: `1px solid ${D.border}`, borderRadius: 10, color: D.ink2, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>🔗 고용24 원문 보기</a>
+                <a href={job.apply_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "12px", marginBottom: 16, background: D.card, border: `1px solid ${D.border}`, borderRadius: 10, color: D.ink2, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>🔗 {t("jobDetail.viewOriginal")}</a>
               )}
               <Section title="지원 전 확인사항">
                 <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -333,9 +344,9 @@ export default function JobDetail({ jobId, embedded = false }) {
                   <>
                     <div style={{ display: "flex", gap: 8 }}>
                       <button onClick={() => router.push("/login")} style={{ flex: 1, padding: "13px 8px", borderRadius: 10, background: "#fff", color: D.ink, border: `1px solid ${D.border}`, fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, whiteSpace: "nowrap" }}>
-                        <span style={{ fontSize: 15 }}>♡</span> 관심 공고
+                        <span style={{ fontSize: 15 }}>♡</span> {t("jobDetail.interest")}
                       </button>
-                      <button onClick={handleApply} style={{ flex: 1.3, padding: "13px", borderRadius: 10, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>지원하기</button>
+                      <button onClick={handleApply} style={{ flex: 1.3, padding: "13px", borderRadius: 10, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>{t("jobs.apply")}</button>
                     </div>
                     {hasForeignerInfo && (
                       <button onClick={() => { if (typeof document === "undefined") return; const el = document.getElementById("foreigner-info"); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: "smooth" }); }} style={{ width: "100%", marginTop: 8, padding: "12px", borderRadius: 10, background: D.greenBg, color: D.green, border: `1px solid ${D.greenBorder}`, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit" }}>비자 가능 여부 확인하기</button>
@@ -351,14 +362,14 @@ export default function JobDetail({ jobId, embedded = false }) {
     );
   }
 
-  const koreanLabel = D_KOREAN[job.korean];
+  const koreanLabel = D_KOREAN[job.korean] ? t("kr." + job.korean) : null;
   const desc = String(displayDesc || "").replace(/^\s*담당업무\s*[:：]?\s*/, "").trimEnd();
   const rows = [
-    ["급여", `${job.pay_type || "시급"} ${formatPay(job.pay, job.pay_type)}`],
-    ["지역", job.area],
+    ["급여", payDisplay(job, locale, t)],
+    ["지역", (locale !== "ko" && tr && tr.region) ? tr.region : job.area],
     ["근무", String(job.hours || job.time || "").trim() || "-"],
     ["업종", job.type],
-    job.headcount && String(job.headcount) !== "1" ? ["모집인원", /^\d+$/.test(String(job.headcount)) ? `${job.headcount}명` : job.headcount] : null,
+    job.headcount && String(job.headcount) !== "1" ? ["모집인원", /^\d+$/.test(String(job.headcount)) ? `${t("jobDetail.people", { n: job.headcount })}` : job.headcount] : null,
     job.benefits ? ["복리후생", job.benefits] : null,
     job.expires_at ? ["마감", String(job.expires_at).slice(0, 10)] : null,
   ].filter(Boolean);
@@ -367,39 +378,42 @@ export default function JobDetail({ jobId, embedded = false }) {
     ["한국어 수준", koreanLabel || "별도 명시 없음"],
     ["숙소 제공", job.provides_housing ? "제공" : "미제공"],
     ["통근버스", job.provides_shuttle ? "제공" : "미제공"],
-    job.nearest_station ? ["가까운 역", `${job.nearest_station}${job.walk_to_station_min ? ` (도보 ${job.walk_to_station_min}분)` : ""}`] : null,
+    job.nearest_station ? ["가까운 역", `${job.nearest_station}${job.walk_to_station_min ? ` ${t("jobDetail.walk", { min: job.walk_to_station_min })}` : ""}`] : null,
   ].filter(Boolean);
   const hasForeignerInfo = (job.visa || []).length > 0 || !!koreanLabel || !!job.provides_housing || !!job.provides_shuttle || !!job.nearest_station;
   const companyRows = [
-    ["회사명", job.company || "-"],
+    ["회사명", (locale !== "ko" && tr && tr.company) ? `${job.company || "-"} (${tr.company})` : (job.company || "-")],
     job.type ? ["업종", job.type] : null,
     ["공고 출처", job.source_type === "worknet" ? "고용24(워크넷)" : "K-ALBA 직접등록"],
   ].filter(Boolean);
   const checklist = [
-    "비자 만료일이 근무 종료일보다 늦은지 확인하세요.",
+    t("jobDetail.check1"),
     "주당 근무 시간이 비자 허용 범위 내인지 확인하세요.",
-    "근무 시작 전 표준근로계약서를 작성하세요.",
-    "급여가 최저임금 이상인지 확인하세요.",
+    t("jobDetail.check3"),
+    t("jobDetail.check4"),
   ];
   const Section = ({ title, children }) => (
     <div style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 16, padding: 18, marginBottom: 14 }}>
-      <div style={{ fontSize: 14.5, fontWeight: 700, color: D.navy, marginBottom: 14 }}>{title}</div>
+      <div style={{ fontSize: 14.5, fontWeight: 700, color: D.navy, marginBottom: 14 }}>{JD_LABELS[title] ? t(JD_LABELS[title]) : title}</div>
       {children}
     </div>
   );
-  const Row = ({ k, v, isWork }) => (
+  const Row = ({ k, v, isWork }) => {
+    const tv = (typeof v === "string" && JD_VALUES[v]) ? t(JD_VALUES[v]) : v;
+    return (
     <div style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "11px 0", borderBottom: "1px solid #F1F5F9" }}>
-      <span style={{ fontSize: 13, color: D.ink3, flexShrink: 0 }}>{k}</span>
+      <span style={{ fontSize: 13, color: D.ink3, flexShrink: 0 }}>{JD_LABELS[k] ? t(JD_LABELS[k]) : k}</span>
       <span style={{ fontSize: 13, fontWeight: 600, color: D.ink, textAlign: "right", lineHeight: 1.6 }}>
-        {isWork ? formatWorkHours(v).map((line, i) => (<span key={i} style={{ display: "block" }}>{line}</span>)) : v}
+        {isWork ? formatWorkHours(tv).map((line, i) => (<span key={i} style={{ display: "block" }}>{line}</span>)) : tv}
       </span>
     </div>
-  );
+    );
+  };
 
   return (
     <div style={{ background: D.bg, minHeight: "100vh", paddingBottom: 86 }}>
       <div style={{ padding: "14px 16px 20px" }}>
-        <Link href="/jobs" style={{ color: D.ink2, fontSize: 14, marginBottom: 12, display: "inline-block" }}>← 공고 목록</Link>
+        <Link href="/jobs" style={{ color: D.ink2, fontSize: 14, marginBottom: 12, display: "inline-block" }}>← {t("jobDetail.jobsList")}</Link>
 
         <div style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 16, padding: 18, marginBottom: 14 }}>
           <div style={{ fontSize: 32, marginBottom: 8 }}>{job.icon || "💼"}</div>
@@ -443,7 +457,7 @@ export default function JobDetail({ jobId, embedded = false }) {
         </Section>
 
         {job.apply_url && (
-          <a href={job.apply_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "12px", marginBottom: 14, background: D.card, border: `1px solid ${D.border}`, borderRadius: 10, color: D.ink2, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>🔗 고용24 원문 보기</a>
+          <a href={job.apply_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "12px", marginBottom: 14, background: D.card, border: `1px solid ${D.border}`, borderRadius: 10, color: D.ink2, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>🔗 {t("jobDetail.viewOriginal")}</a>
         )}
 
         <Section title="지원 전 확인사항">
@@ -470,7 +484,7 @@ export default function JobDetail({ jobId, embedded = false }) {
         {applied ? (
           <div style={{ flex: 1, textAlign: "center", padding: "13px", color: D.green, fontWeight: 800, fontSize: 15 }}>🎉 {t("jobs.applied")}</div>
         ) : (
-          <button onClick={handleApply} style={{ flex: 1, padding: "14px", borderRadius: 10, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: "inherit" }}>지원하기</button>
+          <button onClick={handleApply} style={{ flex: 1, padding: "14px", borderRadius: 10, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: "inherit" }}>{t("jobs.apply")}</button>
         )}
       </div>
 

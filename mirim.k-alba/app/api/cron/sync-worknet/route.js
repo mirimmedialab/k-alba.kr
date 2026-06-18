@@ -44,6 +44,19 @@ const KEYWORDS = ["외국인", "비자", "국적"];
 const PER_PAGE = 100;
 const MAX_PAGES = 10; // 키워드당 최대 1,000건
 
+const FETCH_TIMEOUT_MS = 12000; // 개별 외부요청 타임아웃 (행 방지)
+const DEADLINE_MS = 50000; // 전체 시간 예산 (Vercel 60s 전에 로그 마무리 보장)
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = FETCH_TIMEOUT_MS) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: ctrl.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function GET(req) {
   const authHeader = req.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -56,6 +69,7 @@ export async function GET(req) {
   );
 
   const startedAt = new Date();
+  const deadline = startedAt.getTime() + DEADLINE_MS;
   const { data: logEntry } = await supabase
     .from("sync_logs")
     .insert({
@@ -71,6 +85,7 @@ export async function GET(req) {
   let itemsUpdated = 0;
   let itemsFailed = 0;
   let apiCalls = 0;
+  const httpErrors = [];
 
   try {
     const apiKey = process.env.WORKNET_API_KEY;
@@ -80,7 +95,9 @@ export async function GET(req) {
     const uniqueItems = new Map(); // wantedAuthNo -> item 객체
 
     for (const keyword of KEYWORDS) {
+      if (Date.now() > deadline) break;
       for (let page = 1; page <= MAX_PAGES; page++) {
+        if (Date.now() > deadline) break;
         const params = new URLSearchParams({
           authKey: apiKey,
           callTp: "L",
@@ -90,13 +107,22 @@ export async function GET(req) {
           keyword,
         });
 
-        const response = await fetch(
-          `${WORK24_API_BASE}?${params.toString()}`,
-          { cache: "no-store" }
-        );
+        let response;
+        try {
+          response = await fetchWithTimeout(
+            `${WORK24_API_BASE}?${params.toString()}`,
+            { cache: "no-store" }
+          );
+        } catch (err) {
+          httpErrors.push(
+            `${keyword} p${page}: ${err?.name === "AbortError" ? "타임아웃" : err?.message || "요청실패"}`
+          );
+          break; // 이 키워드 중단, 다음 키워드로
+        }
         apiCalls++;
 
         if (!response.ok) {
+          httpErrors.push(`${keyword} p${page}: HTTP ${response.status}`);
           console.error(
             `[worknet sync] "${keyword}" page ${page} HTTP ${response.status}`
           );
@@ -118,8 +144,14 @@ export async function GET(req) {
       }
     }
 
+    // 수집 0건인데 HTTP/네트워크 오류가 있었으면 원인을 남기고 실패 처리
+    if (uniqueItems.size === 0 && httpErrors.length) {
+      throw new Error(`고용24 API 오류: ${httpErrors.slice(0, 5).join("; ")}`);
+    }
+
     // 2) jobs 테이블에 upsert
     for (const item of uniqueItems.values()) {
+      if (Date.now() > deadline) break; // 시간 예산 초과 → 남은 항목은 다음 실행에서
       itemsFetched++;
       try {
         const job = transformWorknetItem(item);
@@ -177,7 +209,7 @@ export async function GET(req) {
         items_new: itemsNew,
         items_updated: itemsUpdated,
         items_failed: itemsFailed,
-        metadata: { keywords: KEYWORDS, api_calls: apiCalls, unique: itemsFetched },
+        metadata: { keywords: KEYWORDS, api_calls: apiCalls, unique: uniqueItems.size, http_errors: httpErrors.slice(0, 5) },
       })
       .eq("id", logEntry.id);
 
@@ -205,13 +237,13 @@ export async function GET(req) {
       .eq("id", logEntry.id);
 
     if (process.env.SLACK_WEBHOOK_URL) {
-      await fetch(process.env.SLACK_WEBHOOK_URL, {
+      await fetchWithTimeout(process.env.SLACK_WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text: `🚨 WorkNet(고용24) 동기화 실패: ${e?.message || e}`,
         }),
-      }).catch(() => {});
+      }, 5000).catch(() => {});
     }
 
     return Response.json({ ok: false, error: e?.message }, { status: 500 });
@@ -286,9 +318,10 @@ async function fetchWorknetDetail(authNo) {
       infoSvc: "VALIDATION",
       wantedAuthNo: authNo,
     });
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `https://www.work24.go.kr/cm/openApi/call/wk/callOpenApiSvcInfo210D01.do?${p.toString()}`,
-      { cache: "no-store" }
+      { cache: "no-store" },
+      8000
     );
     const xml = await res.text();
     if (!xml.includes("<wantedDtl>") || xml.includes("정보가 존재하지 않습니다")) {
@@ -332,9 +365,10 @@ async function geocodeAddress(address) {
   if (!key || !address) return null;
   for (const path of ["address", "keyword"]) {
     try {
-      const res = await fetch(
+      const res = await fetchWithTimeout(
         `https://dapi.kakao.com/v2/local/search/${path}.json?query=${encodeURIComponent(address)}&size=1`,
-        { headers: { Authorization: `KakaoAK ${key}` }, cache: "no-store" }
+        { headers: { Authorization: `KakaoAK ${key}` }, cache: "no-store" },
+        6000
       );
       const j = await res.json();
       const d = (j.documents || [])[0];

@@ -2,9 +2,10 @@ import { createClient } from "@supabase/supabase-js";
 import { translateJob, isSupportedLang } from "@/lib/llmTranslate";
 
 /**
- * POST /api/jobs/translate  { jobId, lang }
- * 지연 번역 + 캐싱: 캐시 있으면 즉시 반환, 없으면 1회 번역 후 job_translations에 저장.
- * 번역 불가(키 미설정/실패) 시 한국어 원본을 반환해 화면은 항상 내용이 보이게 함.
+ * POST /api/jobs/translate  { jobId, lang, title?, description? }
+ * 지연 번역 + 캐싱: 캐시 있으면 즉시 반환, 없으면 1회 번역 후 저장.
+ * 번역 불가 시 한국어 원본을 반환해 화면은 항상 보이게 함.
+ * 번역 항목: 제목, 설명, 지역(sido+sigungu), 회사명(음역).
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,31 +27,37 @@ export async function POST(request) {
 
   const db = createClient(url, key, { auth: { persistSession: false } });
 
-  // 1) 캐시
+  // cache: 설명까지 채워져 있으면 즉시 반환
   const { data: cached } = await db
-    .from("job_translations").select("title, description")
+    .from("job_translations").select("title, description, region, company")
     .eq("job_id", jobId).eq("lang", lang).maybeSingle();
-  if (cached) return Response.json({ ok: true, cached: true, ...cached });
-
-  // 2) 원본 (클라이언트가 보고 있는 텍스트 우선 — 워크넷 보강 제목/설명 대응)
-  let src;
-  if (overrideTitle != null || overrideDescription != null) {
-    src = { title: overrideTitle || "", description: overrideDescription || "" };
-  } else {
-    const { data: job } = await db
-      .from("jobs").select("title, description").eq("id", jobId).maybeSingle();
-    if (!job) return Response.json({ ok: false, error: "job_not_found" }, { status: 404 });
-    src = job;
+  if (cached && cached.description) {
+    return Response.json({ ok: true, cached: true, ...cached });
   }
 
-  // 3) 번역
+  // source: 클라이언트가 보고 있는 텍스트 우선
+  const { data: job } = await db
+    .from("jobs").select("title, description, sido, sigungu, address, company_name").eq("id", jobId).maybeSingle();
+  if (!job && overrideTitle == null && overrideDescription == null) {
+    return Response.json({ ok: false, error: "job_not_found" }, { status: 404 });
+  }
+  const regionKo = [job?.sido, job?.sigungu].filter(Boolean).join(" ") || job?.address || "";
+  const src = {
+    title: overrideTitle != null ? overrideTitle : (job?.title || ""),
+    description: overrideDescription != null ? overrideDescription : (job?.description || ""),
+    region: regionKo,
+    company: job?.company_name || "",
+  };
+
+  // translate
   const t = await translateJob(src, lang);
   if (!t) {
-    // 번역 불가 → 원본 반환(캐시는 안 함)
-    return Response.json({ ok: false, error: "translate_unavailable", title: src.title, description: src.description });
+    return Response.json({ ok: false, error: "translate_unavailable", title: src.title, description: src.description, region: src.region, company: src.company });
   }
 
-  // 4) 저장 + 반환
-  await db.from("job_translations").upsert({ job_id: jobId, lang, title: t.title, description: t.description });
+  // save + return
+  await db.from("job_translations").upsert({
+    job_id: jobId, lang, title: t.title, description: t.description, region: t.region, company: t.company,
+  });
   return Response.json({ ok: true, cached: false, ...t });
 }

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { T } from "@/lib/theme";
 import { adminGet } from "@/lib/adminApi";
-import { Panel, Stat, Table, StatusBadge, fmtDate } from "./_ui";
+import { Panel, Stat, fmtDateTime } from "./_ui";
 
 /**
  * /admin — 관리자 대시보드
@@ -61,23 +61,36 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* 최근 동기화 로그 */}
+          {/* 데이터 동기화 요약 (소스별 최신 결과) */}
           <Panel
-            title="최근 데이터 동기화"
+            title="데이터 동기화"
             right={<Link href="/admin/sync" style={{ fontSize: 13, color: T.coral, fontWeight: 700 }}>전체 보기 →</Link>}
           >
-            <Table
-              columns={[
-                { header: "소스", key: "source" },
-                { header: "상태", cell: (r) => <StatusBadge value={r.status} /> },
-                { header: "수집", align: "right", cell: (r) => (r.items_fetched ?? 0).toLocaleString() },
-                { header: "신규", align: "right", cell: (r) => (r.items_new ?? 0).toLocaleString() },
-                { header: "실패", align: "right", cell: (r) => (r.items_failed ?? 0).toLocaleString() },
-                { header: "시작", cell: (r) => fmtDate(r.started_at) },
-              ]}
-              rows={data.recentSync}
-              empty="동기화 기록이 없습니다."
-            />
+            {(!data.syncSummary || data.syncSummary.length === 0) ? (
+              <div style={{ padding: "28px 18px", textAlign: "center", color: T.ink3 }}>동기화 기록이 없습니다.</div>
+            ) : (
+              data.syncSummary.map((s, i) => {
+                const label = s.source === "cleanup" ? "갱신 · 만료 공고 정리" : `수집 · ${s.source}`;
+                let chipBg, chipFg, chipText;
+                if (s.status === "success") { chipBg = T.successBg; chipFg = "#0A8F6B"; chipText = "✓ 성공"; }
+                else if (s.status === "failed" || s.status === "error") { chipBg = T.errorBg; chipFg = T.error; chipText = "✗ 실패"; }
+                else if (s.stale) { chipBg = T.errorBg; chipFg = T.error; chipText = "⚠ 미완료"; }
+                else { chipBg = T.infoBg; chipFg = T.info; chipText = "진행중"; }
+                const metric = s.source === "cleanup" ? `정리 ${s.items_updated}건` : `신규 ${s.items_new}건`;
+                return (
+                  <div key={s.source} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 18px", borderTop: i === 0 ? "none" : `1px solid ${T.border}` }}>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>{label}</div>
+                      <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>{fmtDateTime(s.started_at)}</div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <span style={{ display: "inline-block", fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 999, background: chipBg, color: chipFg }}>{chipText}</span>
+                      <div style={{ fontSize: 12, color: T.ink3, marginTop: 4 }}>{metric}</div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </Panel>
         </>
       )}

@@ -42,11 +42,29 @@ export async function GET(request) {
     svc.from("partwork_applications").select("id", head),
     svc
       .from("sync_logs")
-      .select("id, source, status, started_at, completed_at, items_fetched, items_new, items_failed")
+      .select("id, source, status, started_at, completed_at, items_fetched, items_new, items_updated, items_failed")
       .order("started_at", { ascending: false })
-      .limit(6),
+      .limit(60),
     svc.from("staff_registrations").select("id", head).eq("status", "pending"),
   ]);
+
+  // 소스별 최신 동기화 결과 요약 (대시보드용)
+  const STALE_MS = 30 * 60 * 1000;
+  const seenSrc = {};
+  const syncSummary = [];
+  for (const l of recentSync.data || []) {
+    if (seenSrc[l.source]) continue;
+    seenSrc[l.source] = true;
+    syncSummary.push({
+      source: l.source,
+      status: l.status,
+      started_at: l.started_at,
+      completed_at: l.completed_at,
+      items_new: l.items_new || 0,
+      items_updated: l.items_updated || 0,
+      stale: l.status === "running" && Date.now() - new Date(l.started_at).getTime() > STALE_MS,
+    });
+  }
 
   return Response.json({
     users: {
@@ -63,7 +81,7 @@ export async function GET(request) {
     applications: applications.count || 0,
     contracts: contracts.count || 0,
     partwork: partwork.count || 0,
-    recentSync: recentSync.data || [],
+    syncSummary,
     pendingStaff: pendingStaff.count || 0,
   });
 }

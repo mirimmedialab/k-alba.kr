@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
 import { getJobs } from "@/lib/supabase";
-import { useT } from "@/lib/i18n";
+import { useT, useLocale } from "@/lib/i18n";
 import { useNearbyJobs } from "@/lib/useNearbyJobs";
 import { useRecommendedJobs } from "@/lib/useRecommendedJobs";
 import { formatDistance } from "@/lib/geolocation";
@@ -100,13 +100,14 @@ function Chip({ children, green }) {
  * 데스크톱(PC) 좌측 리스트 카드 — 외국인 구직자용 정보 밀도
  * (모바일은 기존 JobListItem 을 그대로 사용; 이 컴포넌트는 PC 마스터-디테일에서만 렌더)
  */
-function DesktopJobCard({ job, onSelect, showDistance }) {
+function DesktopJobCard({ job, tr, onSelect, showDistance }) {
   const t = useT();
+  const { locale } = useLocale();
   const payType = job.pay_type || "시급";
   const amount = Number(job.pay_amount || 0).toLocaleString();
   const expiry = job.expires_at ? String(job.expires_at).slice(0, 10) : null;
   const visas = (job.visa_types || []).slice(0, 4);
-  const loc = [shortSido(job.sido), job.sigungu].filter(Boolean).join(" ") || job.address || "";
+  const loc = (tr && tr.region) || [shortSido(job.sido), job.sigungu].filter(Boolean).join(" ") || job.address || "";
   const workTime = shortWorkTime(job);
   return (
     <div
@@ -134,7 +135,7 @@ function DesktopJobCard({ job, onSelect, showDistance }) {
 
       {/* 제목 (2줄 고정) */}
       <div style={{ fontWeight: 700, fontSize: 15.5, color: D.navy, lineHeight: 1.35, letterSpacing: "-0.01em", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", minHeight: 42, marginBottom: 6 }}>
-        {job.title}
+        {(tr && tr.title) || job.title}
       </div>
 
       {/* 회사명 (위치 분리) */}
@@ -176,13 +177,13 @@ function DesktopJobCard({ job, onSelect, showDistance }) {
       {/* 마감일 */}
       {expiry && (
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: D.ink2, marginBottom: 5 }}>
-          <span>📅</span><span>마감 {expiry}</span>
+          <span>📅</span><span>{t("jobDetail.deadline")} {expiry}</span>
         </div>
       )}
 
       {/* 급여 — 시급/월급/연봉 자동 */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, fontWeight: 700, color: D.ink }}>
-        <span>💰</span><span>{payType} {formatPay(job.pay_amount, payType)}</span>
+        <span>💰</span><span>{locale === "ko" ? `${payType} ${formatPay(job.pay_amount, payType)}` : `${(Number(job.pay_amount) || 0).toLocaleString()} ${t("pay.won")} / ${t("pay." + (({ "시급": "hour", "일급": "day", "월급": "month", "연봉": "year" })[payType] || "hour"))}`}</span>
       </div>
 
       <div style={{ flex: 1, minHeight: 12 }} />
@@ -197,14 +198,16 @@ function DesktopJobCard({ job, onSelect, showDistance }) {
 }
 
 // 모바일 컴팩트 리스트 행 (674개를 빠르게 훑기 위한 리스트형)
-function MobileListItem({ job, last, onClick }) {
+function MobileListItem({ job, tr, last, onClick }) {
+  const t = useT();
+  const { locale } = useLocale();
   const visas = (job.visa_types || []).slice(0, 3);
-  const loc = [shortSido(job.sido), job.sigungu].filter(Boolean).join(" ") || job.address || "";
+  const loc = (tr && tr.region) || [shortSido(job.sido), job.sigungu].filter(Boolean).join(" ") || job.address || "";
   const workTime = shortWorkTime(job);
   return (
     <div onClick={onClick} style={{ display: "flex", gap: 12, padding: "14px", borderBottom: last ? "none" : `1px solid ${D.border}`, cursor: "pointer" }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: D.navy, lineHeight: 1.3, marginBottom: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{job.title}</div>
+        <div style={{ fontSize: 14, fontWeight: 700, color: D.navy, lineHeight: 1.3, marginBottom: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{(tr && tr.title) || job.title}</div>
         <div style={{ fontSize: 12, color: D.ink2, marginBottom: workTime ? 3 : 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{job.company_name}{loc ? ` · ${loc}` : ""}</div>
         {workTime && (
           <div style={{ fontSize: 11.5, color: D.ink3, marginBottom: 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>🕐 {workTime}</div>
@@ -216,8 +219,8 @@ function MobileListItem({ job, last, onClick }) {
         </div>
       </div>
       <div style={{ textAlign: "right", flexShrink: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 800, color: D.navy, letterSpacing: "-0.01em" }}>{formatPay(job.pay_amount, job.pay_type)}</div>
-        <div style={{ fontSize: 11, color: D.ink3, marginTop: 2 }}>{job.pay_type || "시급"}</div>
+        <div style={{ fontSize: 14, fontWeight: 800, color: D.navy, letterSpacing: "-0.01em" }}>{locale === "ko" ? formatPay(job.pay_amount, job.pay_type) : `${(Number(job.pay_amount) || 0).toLocaleString()} ${t("pay.won")}`}</div>
+        <div style={{ fontSize: 11, color: D.ink3, marginTop: 2 }}>{locale === "ko" ? (job.pay_type || "시급") : t("pay." + (({ "시급": "hour", "일급": "day", "월급": "month", "연봉": "year" })[job.pay_type] || "hour"))}</div>
       </div>
     </div>
   );
@@ -245,6 +248,7 @@ function PcHero() {
 
 export default function JobsPage() {
   const t = useT();
+  const { locale } = useLocale();
   const router = useRouter();
   const [sortMode, setSortMode] = useState("recommended");
   const [radius, setRadius] = useState(10);
@@ -262,6 +266,7 @@ export default function JobsPage() {
   const [regionSel, setRegionSel] = useState([]);
   const [industrySel, setIndustrySel] = useState([]);
   const [minWage, setMinWage] = useState(0);
+  const [listTr, setListTr] = useState({});
   const toggleIn = (arr, setter, v) =>
     setter(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
@@ -409,14 +414,40 @@ export default function JobsPage() {
     currentPage * PAGE_SIZE
   );
 
+  // 목록 지연 배치 번역 (데스크탑, 비한국어): 현재 페이지 공고의 제목·지역을 한 번에 번역/캐시
   const recommended = fallbackJobs.slice(0, 12);
+  const pageIdsKey = [...new Set([...pageJobs.map((j) => j.id), ...recommended.map((j) => j.id)])].join(",");
+  useEffect(() => {
+    if (locale === "ko") return;
+    const ids = pageIdsKey ? pageIdsKey.split(",").map(Number) : [];
+    if (ids.length === 0) return;
+    let alive = true;
+    (async () => {
+      try {
+        const r = await fetch("/api/jobs/translate-batch", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ ids, lang: locale }),
+        });
+        const d = await r.json();
+        if (alive && d?.map) {
+          setListTr((prev) => {
+            const next = { ...prev };
+            for (const [k, v] of Object.entries(d.map)) next[`${locale}:${k}`] = v;
+            return next;
+          });
+        }
+      } catch (_) {}
+    })();
+    return () => { alive = false; };
+  }, [pageIdsKey, locale, isDesktop]);
 
   // 모바일(친근형): 히어로 + 검색 + 빠른필터 칩 + 추천 peek 캐러셀 + 1열 리스트
   const mobileLayout = (
     <div style={{ background: D.bg, minHeight: "100vh", paddingBottom: 28 }}>
       <div style={{ background: D.navy, color: "#fff", padding: "20px 18px 18px" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: D.greenBorder, letterSpacing: "0.04em", marginBottom: 7 }}>외국인 합법 알바</div>
-        <div style={{ fontSize: 19, fontWeight: 800, lineHeight: 1.35 }}>내 비자로 가능한<br />알바를 찾아보세요</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: D.greenBorder, letterSpacing: "0.04em", marginBottom: 7 }}>{t("jobs.heroEyebrowM")}</div>
+        <div style={{ fontSize: 19, fontWeight: 800, lineHeight: 1.35 }}>{t("jobs.heroTitleM1")}<br />{t("jobs.heroTitleM2")}</div>
       </div>
 
       <div style={{ padding: "14px 16px 0" }}>
@@ -428,11 +459,11 @@ export default function JobsPage() {
 
       {recommended.length > 0 && (
         <div style={{ marginTop: 4, marginBottom: 6 }}>
-          <div style={{ padding: "4px 16px 10px", fontSize: 15, fontWeight: 800, color: D.navy }}>🔥 오늘의 추천</div>
+          <div style={{ padding: "4px 16px 10px", fontSize: 15, fontWeight: 800, color: D.navy }}>🔥 {t("jobs.todayRec")}</div>
           <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "0 16px 8px", scrollSnapType: "x mandatory" }}>
             {recommended.map((j) => (
               <div key={"rec-" + j.id} style={{ flex: "0 0 84%", scrollSnapAlign: "start", display: "flex" }}>
-                <DesktopJobCard job={j} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} />
+                <DesktopJobCard job={j} tr={listTr[`${locale}:${j.id}`]} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} />
               </div>
             ))}
           </div>
@@ -456,7 +487,7 @@ export default function JobsPage() {
         ) : (
           <div style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 14, overflow: "hidden" }}>
             {pageJobs.map((j, idx) => (
-              <MobileListItem key={j.id} job={j} last={idx === pageJobs.length - 1} onClick={() => router.push(`/jobs/${j.id}`)} />
+              <MobileListItem key={j.id} job={j} tr={listTr[`${locale}:${j.id}`]} last={idx === pageJobs.length - 1} onClick={() => router.push(`/jobs/${j.id}`)} />
             ))}
           </div>
         )}
@@ -503,35 +534,35 @@ export default function JobsPage() {
             <aside style={{ width: 248, flexShrink: 0, position: "sticky", top: 20 }}>
               <div style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 14, padding: "4px 18px 14px" }}>
                 {facets.visa.length > 0 && (
-                  <FilterGroup title="Visa · 비자">
+                  <FilterGroup title={t("jobs.filterVisa")}>
                     {facets.visa.map(([v, c]) => (
                       <CheckRow key={v} label={v} count={c} checked={visaSel.includes(v)} onClick={() => toggleIn(visaSel, setVisaSel, v)} />
                     ))}
                   </FilterGroup>
                 )}
                 {facets.region.length > 0 && (
-                  <FilterGroup title="Region · 지역">
+                  <FilterGroup title={t("jobs.filterRegion")}>
                     {facets.region.map(([v, c]) => (
                       <CheckRow key={v} label={v} count={c} checked={regionSel.includes(v)} onClick={() => toggleIn(regionSel, setRegionSel, v)} />
                     ))}
                   </FilterGroup>
                 )}
                 {facets.industry.length > 0 && (
-                  <FilterGroup title="Industry · 업종">
+                  <FilterGroup title={t("jobs.filterIndustry")}>
                     {facets.industry.map(([v, c]) => (
                       <CheckRow key={v} label={v} count={c} checked={industrySel.includes(v)} onClick={() => toggleIn(industrySel, setIndustrySel, v)} />
                     ))}
                   </FilterGroup>
                 )}
-                <FilterGroup title="Salary · 시급">
+                <FilterGroup title={t("jobs.filterSalary")}>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                     {[[0, "전체"], [10000, "1만원↑"], [11000, "1.1만↑"], [12000, "1.2만↑"]].map(([w, l]) => (
-                      <button key={w} onClick={() => setMinWage(w)} style={{ padding: "6px 10px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", border: `1px solid ${minWage === w ? D.green : D.border}`, background: minWage === w ? D.greenBg : "#fff", color: minWage === w ? D.green : D.ink2 }}>{l}</button>
+                      <button key={w} onClick={() => setMinWage(w)} style={{ padding: "6px 10px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", border: `1px solid ${minWage === w ? D.green : D.border}`, background: minWage === w ? D.greenBg : "#fff", color: minWage === w ? D.green : D.ink2 }}>{w === 0 ? t("jobs.filterAll") : (locale === "ko" ? l : `${(Number(w)).toLocaleString()}+`)}</button>
                     ))}
                   </div>
                 </FilterGroup>
                 <div style={{ paddingTop: 16 }}>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: D.navy, letterSpacing: "0.02em", marginBottom: 10 }}>추가 조건</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: D.navy, letterSpacing: "0.02em", marginBottom: 10 }}>{t("jobs.moreFilters")}</div>
                   {QUICK_FILTERS.filter((f) => !f.needsVisa || userProfile?.visa).map((f) => (
                     <CheckRow key={f.key} label={t(f.labelKey)} checked={!!qf[f.key]} onClick={() => toggleQf(f.key)} />
                   ))}
@@ -553,7 +584,7 @@ export default function JobsPage() {
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 16, alignItems: "stretch" }}>
                   {pageJobs.map((j) => (
-                    <DesktopJobCard key={j.id} job={j} selected={false} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={sortMode === "nearest" || sortMode === "recommended"} />
+                    <DesktopJobCard key={j.id} job={j} tr={listTr[`${locale}:${j.id}`]} selected={false} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={sortMode === "nearest" || sortMode === "recommended"} />
                   ))}
                 </div>
               )}
@@ -571,7 +602,7 @@ export default function JobsPage() {
           {recommended.length > 0 && (
             <div style={{ marginTop: 44, paddingBottom: 56 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <div style={{ fontSize: 18, fontWeight: 800, color: D.navy }}>🔥 이번 주 추천 비자 채용</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: D.navy }}>🔥 {t("jobs.weeklyRec")}</div>
                 <div style={{ display: "flex", gap: 8 }}>
                   <button aria-label="이전" onClick={() => recRef.current && recRef.current.scrollBy({ left: -recRef.current.clientWidth, behavior: "smooth" })} style={{ width: 34, height: 34, borderRadius: 999, border: `1px solid ${D.border}`, background: D.card, color: D.navy, fontSize: 16, cursor: "pointer", fontFamily: "inherit" }}>‹</button>
                   <button aria-label="다음" onClick={() => recRef.current && recRef.current.scrollBy({ left: recRef.current.clientWidth, behavior: "smooth" })} style={{ width: 34, height: 34, borderRadius: 999, border: `1px solid ${D.border}`, background: D.card, color: D.navy, fontSize: 16, cursor: "pointer", fontFamily: "inherit" }}>›</button>
@@ -580,7 +611,7 @@ export default function JobsPage() {
               <div ref={recRef} style={{ display: "flex", gap: 16, overflowX: "hidden", scrollBehavior: "smooth", scrollSnapType: "x mandatory" }}>
                 {recommended.map((j) => (
                   <div key={"rec-" + j.id} style={{ width: "calc((100% - 48px) / 4)", height: 322, flexShrink: 0, display: "flex", scrollSnapAlign: "start" }}>
-                    <DesktopJobCard job={j} selected={false} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} />
+                    <DesktopJobCard job={j} tr={listTr[`${locale}:${j.id}`]} selected={false} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} />
                   </div>
                 ))}
               </div>

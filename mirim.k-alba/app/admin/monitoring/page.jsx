@@ -5,7 +5,6 @@ import { adminGet } from "@/lib/adminApi";
 import { Panel, Table, StatusBadge, fmtDate } from "../_ui";
 
 const TABS = [
-  { key: "sync", label: "동기화 로그" },
   { key: "staff", label: "학교 담당자 신청" },
   { key: "kakao", label: "카카오 드래프트" },
   { key: "deactivations", label: "탈퇴 사유" },
@@ -16,7 +15,7 @@ function initialTab() {
     const t = new URLSearchParams(window.location.search).get("tab");
     if (t && TABS.some((x) => x.key === t)) return t;
   }
-  return "sync";
+  return "staff";
 }
 
 export default function AdminMonitoring() {
@@ -37,16 +36,6 @@ export default function AdminMonitoring() {
   useEffect(() => { load(tab); /* eslint-disable-next-line */ }, [tab]);
 
   const columns = {
-    sync: [
-      { header: "소스", key: "source" },
-      { header: "상태", cell: (r) => <StatusBadge value={r.status} /> },
-      { header: "수집", align: "right", cell: (r) => (r.items_fetched ?? 0).toLocaleString() },
-      { header: "신규", align: "right", cell: (r) => (r.items_new ?? 0).toLocaleString() },
-      { header: "갱신", align: "right", cell: (r) => (r.items_updated ?? 0).toLocaleString() },
-      { header: "실패", align: "right", cell: (r) => (r.items_failed ?? 0).toLocaleString() },
-      { header: "오류", maxWidth: 220, cell: (r) => r.error || "-" },
-      { header: "시작", cell: (r) => fmtDate(r.started_at) },
-    ],
     staff: [
       { header: "대학", maxWidth: 180, cell: (r) => <strong>{r.university_name || "-"}</strong> },
       { header: "신청자", cell: (r) => r.applicant_name || "-" },
@@ -76,7 +65,7 @@ export default function AdminMonitoring() {
     <div>
       <header style={{ marginBottom: 18 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, color: T.ink, margin: 0 }}>운영 모니터링</h1>
-        <p style={{ fontSize: 13, color: T.ink3, marginTop: 4 }}>동기화 로그, 학교 담당자 승인, 카카오 드래프트, 탈퇴 사유</p>
+        <p style={{ fontSize: 13, color: T.ink3, marginTop: 4 }}>학교 담당자 승인, 카카오 드래프트, 탈퇴 사유</p>
       </header>
 
       <div style={{ display: "flex", gap: 6, marginBottom: 14, borderBottom: `1px solid ${T.border}`, flexWrap: "wrap" }}>
