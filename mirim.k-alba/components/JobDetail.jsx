@@ -82,6 +82,7 @@ export default function JobDetail({ jobId, embedded = false }) {
   const isDesktop = useIsDesktop();
   const { locale } = useLocale();
   const [tr, setTr] = useState(null);
+  const [translating, setTranslating] = useState(false);
   const [job, setJob] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const [applied, setApplied] = useState(false);
@@ -149,8 +150,9 @@ export default function JobDetail({ jobId, embedded = false }) {
   // 제목·설명을 사용자 언어로 지연 번역(서버가 캐싱). ko/미지원이면 원본 유지.
   useEffect(() => {
     if (!job || !job.id) return;
-    if (locale === "ko") { setTr(null); return; }
+    if (locale === "ko") { setTr(null); setTranslating(false); return; }
     let cancelled = false;
+    setTranslating(true);
     fetch("/api/jobs/translate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -158,7 +160,8 @@ export default function JobDetail({ jobId, embedded = false }) {
     })
       .then((r) => r.json())
       .then((d) => { if (!cancelled && d && (d.title || d.description)) setTr({ title: d.title, description: d.description }); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setTranslating(false); });
     return () => { cancelled = true; };
   }, [job?.id, job?.title, locale]);
 
@@ -261,6 +264,11 @@ export default function JobDetail({ jobId, embedded = false }) {
               <div style={{ fontSize: 40 }}>{job.icon || "💼"}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <h1 style={{ fontSize: 26, fontWeight: 800, color: D.navy, lineHeight: 1.3, margin: 0, letterSpacing: "-0.02em" }}>{displayTitle}</h1>
+                {translating && (
+                  <div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: D.ink2, background: D.cream, padding: "3px 10px", borderRadius: 999 }}>
+                    🌐 {t("common.translating")}
+                  </div>
+                )}
                 <div style={{ fontSize: 14.5, color: D.ink2, marginTop: 8 }}>{job.company}</div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 14 }}>
                   {(job.visa || []).map((v) => <VisaBadge key={v} code={v} variant="solid" size="md" />)}
@@ -396,6 +404,11 @@ export default function JobDetail({ jobId, embedded = false }) {
         <div style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 16, padding: 18, marginBottom: 14 }}>
           <div style={{ fontSize: 32, marginBottom: 8 }}>{job.icon || "💼"}</div>
           <h1 style={{ fontSize: 20, fontWeight: 800, color: D.navy, lineHeight: 1.3, margin: 0, letterSpacing: "-0.01em" }}>{displayTitle}</h1>
+                {translating && (
+                  <div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: D.ink2, background: D.cream, padding: "3px 10px", borderRadius: 999 }}>
+                    🌐 {t("common.translating")}
+                  </div>
+                )}
           <div style={{ fontSize: 13.5, color: D.ink2, marginTop: 6 }}>{job.company}</div>
           {(job.visa || []).length > 0 && (
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 12 }}>
