@@ -73,7 +73,7 @@ export default function AdminLayout({ children }) {
       >
         <div style={{ padding: "22px 22px 16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <img src="/img/k-alba_logo.svg" alt="K-ALBA" style={{ height: 26, width: "auto", display: "block" }} />
+            <img src="/img/k-alba_logo.svg" alt="K-ALBA" style={{ height: 26, width: "auto", display: "block", filter: "brightness(0) invert(1)" }} />
           </div>
           <div style={{ fontSize: 11, color: "#7E8DA8", marginTop: 4 }}>관리자 콘솔</div>
         </div>
