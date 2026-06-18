@@ -6,7 +6,7 @@ import { T } from "@/lib/theme";
 import { getCurrentUser, getMyJobs } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 import { ListPageSkel } from "@/components/Wireframe";
-import { Button, Badge, Empty } from "@/components/ui";
+import { Button, Badge, Empty, PageLoading } from "@/components/ui";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 
 /**
@@ -54,7 +54,7 @@ export default function MyJobsPage() {
     });
   }, [router]);
 
-  if (loading) return <ListPageSkel maxWidth={820} showAction rows={3} />;
+  if (loading) return isDesktop ? <PageLoading message="잠시만 기다려주세요" minHeight={400} /> : <ListPageSkel maxWidth={820} showAction rows={3} />;
 
   // ───────── 데스크탑(웹) 전용 레이아웃: 넓은 컨테이너 + 2열 카드 그리드 ─────────
   if (isDesktop) {

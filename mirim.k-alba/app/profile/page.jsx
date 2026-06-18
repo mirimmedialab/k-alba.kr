@@ -9,7 +9,7 @@ import { VISA_OPTIONS, COUNTRIES, KOREAN_LEVELS, WORK_TYPES, JOB_TYPES, REGIONS,
 import { FormPageSkel } from "@/components/Wireframe";
 import LocationPicker from "@/components/LocationPicker";
 import { useT } from "@/lib/i18n";
-import { Button, Card, ButtonLoading } from "@/components/ui";
+import { Button, Card, ButtonLoading, PageLoading } from "@/components/ui";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 
 /**
@@ -114,7 +114,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (!user) return <FormPageSkel maxWidth={600} fields={5} />;
+  if (!user) return isDesktop ? <PageLoading message="잠시만 기다려주세요" minHeight={400} /> : <FormPageSkel maxWidth={600} fields={5} />;
 
   // ─── 사장님 프로필 (coralDark) ───
   if (isEmployer) {

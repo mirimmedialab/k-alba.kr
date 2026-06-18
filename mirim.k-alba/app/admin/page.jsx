@@ -1,372 +1,95 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { T } from "@/lib/theme";
-import { supabase, getCurrentUser } from "@/lib/supabase";
-import { Button, Badge, Empty, PageLoading } from "@/components/ui";
+import { adminGet } from "@/lib/adminApi";
+import { Panel, Stat, Table, StatusBadge, fmtDate } from "./_ui";
 
 /**
  * /admin — 관리자 대시보드
- *
- * 보호: user_metadata.role === "admin" 만 접근 가능
- *
- * 섹션:
- *   1. 실시간 지표 (유저/공고/계약서)
- *   2. 데이터 동기화 상태 (WorkNet/AgriWork)
- *   3. 이메일 캠페인 현황
- *   4. 최근 등록 / 이슈 알림
+ * 인증은 상위 layout.jsx(role=admin 게이트)에서 처리.
  */
 export default function AdminDashboard() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
-  const [stats, setStats] = useState(null);
-  const [syncLogs, setSyncLogs] = useState([]);
-  const [campaigns, setCampaigns] = useState([]);
+  const [data, setData] = useState(null);
+  const [err, setErr] = useState("");
 
   useEffect(() => {
-    (async () => {
-      const user = await getCurrentUser();
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-      // 관리자 권한 체크
-      const role = user.user_metadata?.role || user.app_metadata?.role;
-      if (role !== "admin") {
-        router.push("/");
-        return;
-      }
-      setAuthorized(true);
-      await loadDashboard();
-      setLoading(false);
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    adminGet("/api/admin/stats").then(setData).catch((e) => setErr(e.message));
   }, []);
 
-  const loadDashboard = async () => {
-    if (!supabase) return;
-
-    // 통계 (병렬)
-    const [
-      usersResult,
-      jobsResult,
-      contractsResult,
-      applicationsResult,
-      logsResult,
-      campaignsResult,
-    ] = await Promise.all([
-      supabase.from("profiles").select("id", { count: "exact", head: true }),
-      supabase.from("jobs").select("id, status", { count: "exact" }),
-      supabase.from("contracts").select("id, status", { count: "exact" }),
-      supabase.from("applications").select("id", { count: "exact", head: true }),
-      supabase
-        .from("sync_logs")
-        .select("*")
-        .order("started_at", { ascending: false })
-        .limit(5),
-      supabase
-        .from("email_campaigns")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(5),
-    ]);
-
-    const activeJobs = (jobsResult.data || []).filter(j => j.status === "active").length;
-    const completedContracts = (contractsResult.data || []).filter(c => c.status === "completed").length;
-
-    setStats({
-      users: usersResult.count || 0,
-      jobs: jobsResult.count || 0,
-      activeJobs,
-      contracts: contractsResult.count || 0,
-      completedContracts,
-      applications: applicationsResult.count || 0,
-    });
-
-    setSyncLogs(logsResult.data || []);
-    setCampaigns(campaignsResult.data || []);
-  };
-
-  if (loading) {
-    return <PageLoading message="로딩 중..." minHeight={400} />;
-  }
-
-  if (!authorized) return null;
-
   return (
-    <div style={{ padding: "32px 20px", maxWidth: 1100, margin: "0 auto" }}>
-      {/* Editorial 헤더 */}
-      <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 18 }} />
-      <div style={{
-        fontSize: 11, fontWeight: 700, color: T.ink3,
-        letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8,
-      }}>
-        Admin · 관리자 대시보드
-      </div>
-      <h1 style={{
-        fontSize: 28, fontWeight: 800, color: T.ink,
-        letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.25,
-      }}>
-        K-ALBA 운영 현황
-      </h1>
-      <p style={{ color: T.ink2, fontSize: 14, marginBottom: 32, lineHeight: 1.6 }}>
-        전체 서비스 지표와 데이터 동기화 상태를 확인할 수 있습니다.
-      </p>
+    <div>
+      <header style={{ marginBottom: 20 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: T.ink, margin: 0 }}>대시보드</h1>
+        <p style={{ fontSize: 13, color: T.ink3, marginTop: 4 }}>K-ALBA 운영 지표 한눈에 보기</p>
+      </header>
 
-      {/* 실시간 지표 */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-        gap: 16,
-        marginBottom: 40,
-      }}>
-        <MetricCard label="전체 회원" value={stats?.users} suffix="명" />
-        <MetricCard label="활성 공고" value={stats?.activeJobs} total={stats?.jobs} suffix="개" />
-        <MetricCard label="지원 건수" value={stats?.applications} suffix="건" />
-        <MetricCard label="완료 계약" value={stats?.completedContracts} total={stats?.contracts} suffix="건" />
-      </div>
-
-      {/* 관리 메뉴 */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-        gap: 12,
-        marginBottom: 40,
-      }}>
-        <AdminMenuCard
-          title="이메일 캠페인"
-          desc="B2B 아웃리치 캠페인 생성·발송·지표 확인"
-          href="/admin/campaigns"
-          icon="📧"
-        />
-        <AdminMenuCard
-          title="이메일 연락처"
-          desc="수집된 사업자 이메일 + 동의 상태 관리"
-          href="/admin/contacts"
-          icon="📇"
-        />
-        <AdminMenuCard
-          title="공고 데이터 동기화"
-          desc="WorkNet · AgriWork 크롤링 상태 점검"
-          href="/admin/sync"
-          icon="🔄"
-        />
-        <AdminMenuCard
-          title="사용자 관리"
-          desc="회원 조회 · 비자 통계 · 차단 관리"
-          href="/admin/users"
-          icon="👥"
-        />
-      </div>
-
-      {/* 데이터 동기화 상태 */}
-      <section style={{ marginBottom: 40 }}>
-        <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 14 }} />
-        <div style={{
-          fontSize: 11, fontWeight: 700, color: T.ink3,
-          letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8,
-        }}>
-          Data Sync · 데이터 동기화
-        </div>
-        <h2 style={{ fontSize: 20, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", marginBottom: 16 }}>
-          최근 동기화 로그
-        </h2>
-
-        {syncLogs.length === 0 ? (
-          <Empty
-            variant="no-data"
-            description="아직 동기화 로그가 없습니다. 스케줄러를 확인해 주세요."
-          />
-        ) : (
-          <div style={{ border: `1px solid ${T.border}`, borderRadius: 4, overflow: "hidden" }}>
-            {syncLogs.map((log, i) => (
-              <div key={log.id} style={{
-                padding: "14px 16px",
-                borderBottom: i < syncLogs.length - 1 ? `1px solid ${T.border}` : "none",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 12,
-                flexWrap: "wrap",
-              }}>
-                <div style={{ flex: 1, minWidth: 200 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>
-                    {log.source} · {log.status}
-                  </div>
-                  <div style={{ fontSize: 11, color: T.ink3, marginTop: 2 }}>
-                    {new Date(log.started_at).toLocaleString("ko-KR")}
-                    {log.completed_at && ` ~ ${new Date(log.completed_at).toLocaleTimeString("ko-KR")}`}
-                  </div>
-                </div>
-                <div style={{ display: "flex", gap: 12, fontSize: 12 }}>
-                  <span style={{ color: T.ink2 }}>
-                    수집 <strong style={{ color: T.ink }}>{log.items_fetched || 0}</strong>
-                  </span>
-                  <span style={{ color: T.green }}>
-                    신규 <strong>{log.items_new || 0}</strong>
-                  </span>
-                  {log.items_failed > 0 && (
-                    <span style={{ color: T.accent }}>
-                      실패 <strong>{log.items_failed}</strong>
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* 이메일 캠페인 */}
-      <section style={{ marginBottom: 40 }}>
-        <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 14 }} />
-        <div style={{
-          fontSize: 11, fontWeight: 700, color: T.ink3,
-          letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8,
-        }}>
-          Email Campaigns · 이메일 캠페인
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
-          <h2 style={{ fontSize: 20, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>
-            최근 캠페인
-          </h2>
-          <Button variant="primary" size="sm" href="/admin/campaigns/new">
-            + 새 캠페인
-          </Button>
-        </div>
-
-        {campaigns.length === 0 ? (
-          <Empty
-            variant="no-data"
-            description="아직 캠페인이 없습니다"
-          />
-        ) : (
-          <div style={{ border: `1px solid ${T.border}`, borderRadius: 4, overflow: "hidden" }}>
-            {campaigns.map((c, i) => (
-              <Link key={c.id} href={`/admin/campaigns/${c.id}`} style={{ textDecoration: "none" }}>
-                <div style={{
-                  padding: "14px 16px",
-                  borderBottom: i < campaigns.length - 1 ? `1px solid ${T.border}` : "none",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: 12,
-                  flexWrap: "wrap",
-                  cursor: "pointer",
-                  transition: "background 0.15s",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = T.cream)}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                >
-                  <div style={{ flex: 1, minWidth: 200 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>
-                      {c.name}
-                    </div>
-                    <div style={{ fontSize: 11, color: T.ink3, marginTop: 2 }}>
-                      {c.status} · {new Date(c.created_at).toLocaleDateString("ko-KR")}
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", gap: 12, fontSize: 12 }}>
-                    <span style={{ color: T.ink2 }}>
-                      발송 <strong style={{ color: T.ink }}>{c.sent_count || 0}</strong>/{c.total_targets || 0}
-                    </span>
-                    {c.opened_count > 0 && (
-                      <span style={{ color: T.green }}>
-                        개봉 <strong>{c.opened_count}</strong>
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
-    </div>
-  );
-}
-
-function MetricCard({ label, value, total, suffix = "" }) {
-  return (
-    <div style={{
-      padding: 20,
-      background: T.paper,
-      border: `1px solid ${T.border}`,
-      borderTop: `3px solid ${T.gold}`,
-      borderRadius: 4,
-    }}>
-      <div style={{
-        fontSize: 11,
-        fontWeight: 600,
-        color: T.ink3,
-        letterSpacing: "-0.01em",
-        marginBottom: 8,
-      }}>
-        {label}
-      </div>
-      <div style={{
-        fontSize: 30,
-        fontWeight: 800,
-        color: T.ink,
-        letterSpacing: "-0.03em",
-        lineHeight: 1,
-      }}>
-        {value != null ? value.toLocaleString() : "—"}
-        <span style={{ fontSize: 13, fontWeight: 600, color: T.ink3, marginLeft: 4 }}>
-          {suffix}
-        </span>
-      </div>
-      {total != null && total !== value && (
-        <div style={{ fontSize: 11, color: T.ink3, marginTop: 4 }}>
-          전체 {total.toLocaleString()}개 중
+      {err && (
+        <div style={{ padding: 14, background: T.errorBg, color: T.error, borderRadius: 10, marginBottom: 16, fontSize: 13 }}>
+          데이터를 불러오지 못했습니다: {err}
         </div>
       )}
-    </div>
-  );
-}
 
-function AdminMenuCard({ title, desc, href, icon }) {
-  return (
-    <Link href={href} style={{ textDecoration: "none" }}>
-      <div
-        style={{
-          padding: 20,
-          background: T.paper,
-          border: `1px solid ${T.border}`,
-          borderRadius: 4,
-          cursor: "pointer",
-          transition: "all 0.15s",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = T.gold;
-          e.currentTarget.style.transform = "translateY(-2px)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = T.border;
-          e.currentTarget.style.transform = "translateY(0)";
-        }}
-      >
-        <div style={{
-          fontSize: 24,
-          marginBottom: 10,
-        }}>
-          {icon}
-        </div>
-        <div style={{
-          fontSize: 14,
-          fontWeight: 800,
-          color: T.ink,
-          marginBottom: 4,
-          letterSpacing: "-0.02em",
-        }}>
-          {title}
-        </div>
-        <div style={{ fontSize: 12, color: T.ink2, lineHeight: 1.5 }}>
-          {desc}
-        </div>
-      </div>
-    </Link>
+      {!data && !err && <div style={{ color: T.ink3 }}>불러오는 중…</div>}
+
+      {data && (
+        <>
+          {/* 회원 지표 */}
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 14 }}>
+            <Stat label="전체 회원" value={data.users.total.toLocaleString()} sub={`최근 7일 +${data.users.new7d}`} accent={T.navy} />
+            <Stat label="알바생" value={data.users.workers.toLocaleString()} accent={T.coral} />
+            <Stat label="사장님" value={data.users.employers.toLocaleString()} accent={T.gold} />
+            <Stat label="탈퇴(비활성)" value={data.users.deactivated.toLocaleString()} accent={T.ink3} />
+          </div>
+
+          {/* 서비스 지표 */}
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 22 }}>
+            <Stat label="전체 공고" value={data.jobs.total.toLocaleString()} sub={`활성 ${data.jobs.active.toLocaleString()}건`} accent={T.navy} />
+            <Stat label="지원 내역" value={data.applications.toLocaleString()} accent={T.coral} />
+            <Stat label="근로계약서" value={data.contracts.toLocaleString()} accent={T.mint} />
+            <Stat label="시간제취업 신청" value={data.partwork.toLocaleString()} accent={T.gold} />
+          </div>
+
+          {/* 처리 대기 알림 */}
+          {(data.pendingStaff > 0 || data.openReports > 0) && (
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 22 }}>
+              {data.pendingStaff > 0 && (
+                <Link href="/admin/monitoring?tab=staff" style={{ textDecoration: "none" }}>
+                  <div style={{ padding: "12px 16px", background: T.warningBg, color: "#92600A", borderRadius: 10, fontSize: 13, fontWeight: 700 }}>
+                    ⚠ 학교 담당자 승인 대기 {data.pendingStaff}건
+                  </div>
+                </Link>
+              )}
+              {data.openReports > 0 && (
+                <Link href="/admin/monitoring?tab=reports" style={{ textDecoration: "none" }}>
+                  <div style={{ padding: "12px 16px", background: T.errorBg, color: T.error, borderRadius: 10, fontSize: 13, fontWeight: 700 }}>
+                    ⚠ 미처리 신고 {data.openReports}건
+                  </div>
+                </Link>
+              )}
+            </div>
+          )}
+
+          {/* 최근 동기화 로그 */}
+          <Panel
+            title="최근 데이터 동기화"
+            right={<Link href="/admin/sync" style={{ fontSize: 13, color: T.coral, fontWeight: 700 }}>전체 보기 →</Link>}
+          >
+            <Table
+              columns={[
+                { header: "소스", key: "source" },
+                { header: "상태", cell: (r) => <StatusBadge value={r.status} /> },
+                { header: "수집", align: "right", cell: (r) => (r.items_fetched ?? 0).toLocaleString() },
+                { header: "신규", align: "right", cell: (r) => (r.items_new ?? 0).toLocaleString() },
+                { header: "실패", align: "right", cell: (r) => (r.items_failed ?? 0).toLocaleString() },
+                { header: "시작", cell: (r) => fmtDate(r.started_at) },
+              ]}
+              rows={data.recentSync}
+              empty="동기화 기록이 없습니다."
+            />
+          </Panel>
+        </>
+      )}
+    </div>
   );
 }

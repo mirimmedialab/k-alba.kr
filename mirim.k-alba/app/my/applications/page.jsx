@@ -6,7 +6,7 @@ import { T } from "@/lib/theme";
 import { getCurrentUser, getMyApplications } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 import { ListPageSkel } from "@/components/Wireframe";
-import { Badge, Empty, Button } from "@/components/ui";
+import { Badge, Empty, Button, PageLoading } from "@/components/ui";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 
 /**
@@ -51,7 +51,7 @@ export default function MyApplicationsPage() {
     });
   }, [router]);
 
-  if (loading) return <ListPageSkel maxWidth={820} rows={3} />;
+  if (loading) return isDesktop ? <PageLoading message="잠시만 기다려주세요" minHeight={400} /> : <ListPageSkel maxWidth={820} rows={3} />;
 
   const pendingCount = applications.filter(a => a.status === "pending").length;
   const acceptedCount = applications.filter(a => a.status === "accepted").length;

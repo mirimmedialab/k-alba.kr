@@ -7,6 +7,7 @@ import { Btn, Card } from "@/components/UI";
 import { getCurrentUser, getMyContracts } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 import { ListPageSkel } from "@/components/Wireframe"; // ✅ 스켈레톤
+import { PageLoading } from "@/components/ui";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 
 const STATUS_INFO = {
@@ -84,7 +85,7 @@ export default function MyContractsPage() {
 
   const isEmployer = user?.user_metadata?.user_type === "employer";
 
-  if (loading) return <ListPageSkel maxWidth={820} showAction rows={3} />;
+  if (loading) return isDesktop ? <PageLoading message="잠시만 기다려주세요" minHeight={400} /> : <ListPageSkel maxWidth={820} showAction rows={3} />;
 
   const completedCount = contracts.filter(c => c.status === "completed").length;
   const pendingCount = contracts.filter(c => c.status !== "completed").length;
