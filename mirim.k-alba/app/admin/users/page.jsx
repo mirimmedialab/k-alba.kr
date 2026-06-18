@@ -112,16 +112,18 @@ export default function AdminUsers() {
                     ? <span>{r.company_name || "-"} {r.verified ? <span style={{ color: "#0A8F6B", fontWeight: 700 }}>✓</span> : <span style={{ color: T.ink3 }}>미인증</span>}</span>
                     : "-" },
                 { header: tab === "deactivated" ? "탈퇴일" : "가입", cell: (r) => fmtDateTime(tab === "deactivated" ? r.deactivated_at : r.created_at) },
-                { header: "관리", cell: (r) => (
-                    <div style={{ display: "flex", gap: 6 }}>
-                      {r.user_type === "employer" && (r.verified
-                        ? <MiniBtn onClick={() => act(r.id, "unverify")}>인증해제</MiniBtn>
-                        : <MiniBtn tone="success" onClick={() => act(r.id, "verify")}>인증</MiniBtn>)}
-                      {r.deactivated_at
-                        ? <MiniBtn tone="success" onClick={() => act(r.id, "reactivate")}>활성화</MiniBtn>
-                        : <MiniBtn tone="danger" onClick={() => act(r.id, "deactivate")}>비활성</MiniBtn>}
-                    </div>
-                  ) },
+                { header: "관리", cell: (r) => {
+                    const btns = [];
+                    if (r.user_type === "employer") {
+                      btns.push(r.verified
+                        ? <MiniBtn key="v" onClick={() => act(r.id, "unverify")}>인증해제</MiniBtn>
+                        : <MiniBtn key="v" tone="success" onClick={() => act(r.id, "verify")}>인증</MiniBtn>);
+                    }
+                    if (r.deactivated_at) {
+                      btns.push(<MiniBtn key="a" tone="success" onClick={() => act(r.id, "reactivate")}>활성화</MiniBtn>);
+                    }
+                    return btns.length ? <div style={{ display: "flex", gap: 6 }}>{btns}</div> : <span style={{ color: T.ink3 }}>-</span>;
+                  } },
               ]}
               rows={data.rows}
               empty={tab === "deactivated" ? "탈퇴(비활성) 회원이 없습니다." : "조건에 맞는 회원이 없습니다."}
