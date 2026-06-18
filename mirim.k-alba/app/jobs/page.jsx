@@ -7,7 +7,8 @@ import { useT, useLocale } from "@/lib/i18n";
 import { useNearbyJobs } from "@/lib/useNearbyJobs";
 import { useRecommendedJobs } from "@/lib/useRecommendedJobs";
 import { formatDistance } from "@/lib/geolocation";
-import { formatPay, shortWorkTime } from "@/lib/format";
+import { formatPay, shortWorkTime, localizeWorkText } from "@/lib/format";
+import { romanizeRegion } from "@/lib/koroman";
 import { getCurrentUser, getProfile } from "@/lib/supabase";
 import { Input, VisaBadge, PageLoading, Empty } from "@/components/ui";
 import { useIsDesktop } from "@/lib/useIsDesktop";
@@ -107,7 +108,8 @@ function DesktopJobCard({ job, tr, onSelect, showDistance }) {
   const amount = Number(job.pay_amount || 0).toLocaleString();
   const expiry = job.expires_at ? String(job.expires_at).slice(0, 10) : null;
   const visas = (job.visa_types || []).slice(0, 4);
-  const loc = (tr && tr.region) || [shortSido(job.sido), job.sigungu].filter(Boolean).join(" ") || job.address || "";
+  const korLoc = [shortSido(job.sido), job.sigungu].filter(Boolean).join(" ") || job.address || "";
+  const loc = locale !== "ko" ? romanizeRegion(korLoc) : korLoc;
   const workTime = shortWorkTime(job);
   return (
     <div
@@ -170,7 +172,7 @@ function DesktopJobCard({ job, tr, onSelect, showDistance }) {
       {workTime && (
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: D.ink2, marginBottom: 5 }}>
           <span>🕐</span>
-          <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{workTime}</span>
+          <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{locale !== "ko" ? localizeWorkText(workTime, t) : workTime}</span>
         </div>
       )}
 
@@ -202,7 +204,8 @@ function MobileListItem({ job, tr, last, onClick }) {
   const t = useT();
   const { locale } = useLocale();
   const visas = (job.visa_types || []).slice(0, 3);
-  const loc = (tr && tr.region) || [shortSido(job.sido), job.sigungu].filter(Boolean).join(" ") || job.address || "";
+  const korLoc = [shortSido(job.sido), job.sigungu].filter(Boolean).join(" ") || job.address || "";
+  const loc = locale !== "ko" ? romanizeRegion(korLoc) : korLoc;
   const workTime = shortWorkTime(job);
   return (
     <div onClick={onClick} style={{ display: "flex", gap: 12, padding: "14px", borderBottom: last ? "none" : `1px solid ${D.border}`, cursor: "pointer" }}>
@@ -210,7 +213,7 @@ function MobileListItem({ job, tr, last, onClick }) {
         <div style={{ fontSize: 14, fontWeight: 700, color: D.navy, lineHeight: 1.3, marginBottom: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{(tr && tr.title) || job.title}</div>
         <div style={{ fontSize: 12, color: D.ink2, marginBottom: workTime ? 3 : 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{job.company_name}{loc ? ` · ${loc}` : ""}</div>
         {workTime && (
-          <div style={{ fontSize: 11.5, color: D.ink3, marginBottom: 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>🕐 {workTime}</div>
+          <div style={{ fontSize: 11.5, color: D.ink3, marginBottom: 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>🕐 {locale !== "ko" ? localizeWorkText(workTime, t) : workTime}</div>
         )}
         <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
           {visas.map((v) => (
@@ -267,6 +270,8 @@ export default function JobsPage() {
   const [industrySel, setIndustrySel] = useState([]);
   const [minWage, setMinWage] = useState(0);
   const [listTr, setListTr] = useState({});
+  const [termTr, setTermTr] = useState({});
+  const [listTranslating, setListTranslating] = useState(false);
   const toggleIn = (arr, setter, v) =>
     setter(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
@@ -422,6 +427,7 @@ export default function JobsPage() {
     const ids = pageIdsKey ? pageIdsKey.split(",").map(Number) : [];
     if (ids.length === 0) return;
     let alive = true;
+    setListTranslating(true);
     (async () => {
       try {
         const r = await fetch("/api/jobs/translate-batch", {
@@ -438,13 +444,44 @@ export default function JobsPage() {
           });
         }
       } catch (_) {}
+      finally { if (alive) setListTranslating(false); }
     })();
     return () => { alive = false; };
   }, [pageIdsKey, locale, isDesktop]);
 
+  // 업종 facet 라벨 번역 (비한국어): 보이는 업종 용어들을 한 번에 번역/캐시
+  const industryKey = facets.industry.map(([v]) => v).join("|");
+  useEffect(() => {
+    if (locale === "ko") return;
+    const terms = industryKey ? industryKey.split("|").filter(Boolean) : [];
+    if (terms.length === 0) return;
+    let alive = true;
+    (async () => {
+      try {
+        const r = await fetch("/api/terms/translate-batch", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ terms, lang: locale }),
+        });
+        const d = await r.json();
+        if (alive && d?.map) setTermTr((prev) => ({ ...prev, ...d.map }));
+      } catch (_) {}
+    })();
+    return () => { alive = false; };
+  }, [industryKey, locale]);
+
+  const listOverlay = (locale !== "ko" && (listLoading || listTranslating)) ? (
+    <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 9999, display: "flex", alignItems: "center", gap: 10, background: "rgba(15,23,42,0.93)", color: "#fff", padding: "14px 22px", borderRadius: 12, fontSize: 14.5, fontWeight: 700, boxShadow: "0 10px 34px rgba(0,0,0,0.28)" }}>
+      <span style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "kalbaspin 0.7s linear infinite" }} />
+      {t("common.translating")}
+      <style>{"@keyframes kalbaspin{to{transform:rotate(360deg)}}"}</style>
+    </div>
+  ) : null;
+
   // 모바일(친근형): 히어로 + 검색 + 빠른필터 칩 + 추천 peek 캐러셀 + 1열 리스트
   const mobileLayout = (
     <div style={{ background: D.bg, minHeight: "100vh", paddingBottom: 28 }}>
+      {listOverlay}
       <div style={{ background: D.navy, color: "#fff", padding: "20px 18px 18px" }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: D.greenBorder, letterSpacing: "0.04em", marginBottom: 7 }}>{t("jobs.heroEyebrowM")}</div>
         <div style={{ fontSize: 19, fontWeight: 800, lineHeight: 1.35 }}>{t("jobs.heroTitleM1")}<br />{t("jobs.heroTitleM2")}</div>
@@ -515,6 +552,7 @@ export default function JobsPage() {
 
     return (
       <div style={{ background: D.bg, minHeight: "100vh" }}>
+        {listOverlay}
         <PcHero />
         <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 28px" }}>
           {/* 검색바 */}
@@ -543,14 +581,14 @@ export default function JobsPage() {
                 {facets.region.length > 0 && (
                   <FilterGroup title={t("jobs.filterRegion")}>
                     {facets.region.map(([v, c]) => (
-                      <CheckRow key={v} label={v} count={c} checked={regionSel.includes(v)} onClick={() => toggleIn(regionSel, setRegionSel, v)} />
+                      <CheckRow key={v} label={locale !== "ko" ? romanizeRegion(v) : v} count={c} checked={regionSel.includes(v)} onClick={() => toggleIn(regionSel, setRegionSel, v)} />
                     ))}
                   </FilterGroup>
                 )}
                 {facets.industry.length > 0 && (
                   <FilterGroup title={t("jobs.filterIndustry")}>
                     {facets.industry.map(([v, c]) => (
-                      <CheckRow key={v} label={v} count={c} checked={industrySel.includes(v)} onClick={() => toggleIn(industrySel, setIndustrySel, v)} />
+                      <CheckRow key={v} label={(locale !== "ko" && termTr[v]) ? termTr[v] : v} count={c} checked={industrySel.includes(v)} onClick={() => toggleIn(industrySel, setIndustrySel, v)} />
                     ))}
                   </FilterGroup>
                 )}
@@ -828,55 +866,28 @@ function JobListItem({ job, index, showDistance, showReason, onSelect, selected 
                 <span>🚇 {job.nearest_station}{job.walk_to_station_min ? ` ${job.walk_to_station_min}분` : ""}</span>
               )}
               {job.provides_housing && (
-                <span style={{ color: T.green, fontWeight: 600 }}>{t("jobs.providesHousing")}</span>
+                <span style={{ color: T.green, fontWeight: 600 }}>🏠 {t("jobDetail.housing")}</span>
               )}
               {job.provides_shuttle && (
-                <span style={{ color: T.green, fontWeight: 600 }}>{t("jobs.providesShuttle")}</span>
+                <span style={{ color: T.green, fontWeight: 600 }}>🚐 {t("jobDetail.shuttle")}</span>
               )}
             </div>
           )}
 
-          {/* 추천 이유 (추천순일 때만) */}
-          {showReason && job.reason && (
-            <div style={{
-              fontSize: 11,
-              color: T.accent,
-              fontWeight: 600,
-              marginBottom: 6,
-              letterSpacing: "-0.01em",
-            }}>
-              {job.reason}
-              {job.score_total != null && (
-                <span style={{
-                  color: T.ink3,
-                  fontWeight: 500,
-                  marginLeft: 6,
-                }}>
-                  {t("jobs.matchScore").replace("{score}", Math.round(job.score_total))}
-                </span>
-              )}
+          {/* 비자 배지 */}
+          {(job.visa_types || []).length > 0 && (
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+              {(job.visa_types || []).slice(0, 4).map((v) => (
+                <VisaBadge key={v} code={v} variant="solid" size="sm" />
+              ))}
             </div>
           )}
 
-          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-            {(job.visa_types || []).slice(0, 3).map((v) => (
-              <VisaBadge key={v} code={v} />
-            ))}
+          {/* 급여 */}
+          <div style={{ fontSize: 14, fontWeight: 800, color: T.ink, letterSpacing: "-0.01em" }}>
+            {job.pay_type || "시급"} {formatPay(job.pay_amount, job.pay_type)}
           </div>
         </div>
-
-        {/* 급여 */}
-        <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <div style={{
-            fontSize: 16, fontWeight: 800, color: T.accent,
-            letterSpacing: "-0.025em", lineHeight: 1, marginBottom: 4,
-          }}>
-            ₩{Number(job.pay_amount).toLocaleString()}
-          </div>
-          <div style={{ fontSize: 11, color: T.ink3, letterSpacing: "-0.01em" }}>
-            {job.pay_type || "시급"}
-          </div>
-        </div>
-      </div>
+    </div>
   );
 }

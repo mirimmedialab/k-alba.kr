@@ -37,7 +37,7 @@ export async function POST(request) {
 
   // source: 클라이언트가 보고 있는 텍스트 우선
   const { data: job } = await db
-    .from("jobs").select("title, description, sido, sigungu, address, company_name").eq("id", jobId).maybeSingle();
+    .from("jobs").select("title, description, sido, sigungu, address, company_name, job_type").eq("id", jobId).maybeSingle();
   if (!job && overrideTitle == null && overrideDescription == null) {
     return Response.json({ ok: false, error: "job_not_found" }, { status: 404 });
   }
@@ -47,17 +47,18 @@ export async function POST(request) {
     description: overrideDescription != null ? overrideDescription : (job?.description || ""),
     region: regionKo,
     company: job?.company_name || "",
+    industry: job?.job_type || "",
   };
 
   // translate
   const t = await translateJob(src, lang);
   if (!t) {
-    return Response.json({ ok: false, error: "translate_unavailable", title: src.title, description: src.description, region: src.region, company: src.company });
+    return Response.json({ ok: false, error: "translate_unavailable", title: src.title, description: src.description, region: src.region, company: src.company, industry: src.industry });
   }
 
   // save + return
   await db.from("job_translations").upsert({
-    job_id: jobId, lang, title: t.title, description: t.description, region: t.region, company: t.company,
+    job_id: jobId, lang, title: t.title, description: t.description, region: t.region, company: t.company, industry: t.industry,
   });
   return Response.json({ ok: true, cached: false, ...t });
 }
