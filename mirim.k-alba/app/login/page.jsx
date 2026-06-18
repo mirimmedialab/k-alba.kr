@@ -20,6 +20,8 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // 어드민(/admin)으로 redirect되어 온 경우: 소셜 로그인만 노출
+  const [adminLogin, setAdminLogin] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,6 +51,8 @@ export default function LoginPage() {
       if (params.get("reason") === "deactivated") {
         setError("탈퇴했거나 존재하지 않는 계정이에요. 새로 가입해 주세요.");
       }
+      const rd = params.get("redirect") || "";
+      if (rd === "/admin" || rd.startsWith("/admin/")) setAdminLogin(true);
     }
   }, []);
 
@@ -157,37 +161,40 @@ export default function LoginPage() {
           {t("auth.loginGoogle")}
         </button>
 
-        {/* Divider */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            margin: "24px 0",
-          }}
-        >
-          <div style={{ flex: 1, height: 1, background: T.border }} />
-          <span style={{ fontSize: 12, color: T.ink3, letterSpacing: "-0.01em" }}>
-            {t("auth.orEmail")}
-          </span>
-          <div style={{ flex: 1, height: 1, background: T.border }} />
-        </div>
+        {/* Divider + Email/Password (어드민 로그인 화면에서는 숨김) */}
+        {!adminLogin && (
+          <>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                margin: "24px 0",
+              }}
+            >
+              <div style={{ flex: 1, height: 1, background: T.border }} />
+              <span style={{ fontSize: 12, color: T.ink3, letterSpacing: "-0.01em" }}>
+                {t("auth.orEmail")}
+              </span>
+              <div style={{ flex: 1, height: 1, background: T.border }} />
+            </div>
 
-        {/* Email/Password */}
-        <Inp
-          label={t("auth.email")}
-          type="email"
-          placeholder="email@example.com"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-        />
-        <Inp
-          label={t("auth.password")}
-          type="password"
-          placeholder={t("auth.passwordHint")}
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-        />
+            <Inp
+              label={t("auth.email")}
+              type="email"
+              placeholder="email@example.com"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+            />
+            <Inp
+              label={t("auth.password")}
+              type="password"
+              placeholder={t("auth.passwordHint")}
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+            />
+          </>
+        )}
 
         {error && (
           <div
@@ -206,33 +213,37 @@ export default function LoginPage() {
           </div>
         )}
 
-        <Btn primary full type="submit" disabled={loading}>
-          {loading ? t("auth.loggingIn") : t("auth.loginBtn") + " →"}
-        </Btn>
+        {!adminLogin && (
+          <>
+            <Btn primary full type="submit" disabled={loading}>
+              {loading ? t("auth.loggingIn") : t("auth.loginBtn") + " →"}
+            </Btn>
 
-        <p
-          style={{
-            textAlign: "center",
-            marginTop: 24,
-            fontSize: 13,
-            color: T.ink3,
-            letterSpacing: "-0.01em",
-            marginBottom: 32,
-          }}
-        >
-          {t("auth.noAccount")}{" "}
-          <Link
-            href="/signup"
-            style={{
-              color: T.ink,
-              fontWeight: 700,
-              borderBottom: `1px solid ${T.ink}`,
-              paddingBottom: 1,
-            }}
-          >
-            {t("auth.signupLink")}
-          </Link>
-        </p>
+            <p
+              style={{
+                textAlign: "center",
+                marginTop: 24,
+                fontSize: 13,
+                color: T.ink3,
+                letterSpacing: "-0.01em",
+                marginBottom: 32,
+              }}
+            >
+              {t("auth.noAccount")}{" "}
+              <Link
+                href="/signup"
+                style={{
+                  color: T.ink,
+                  fontWeight: 700,
+                  borderBottom: `1px solid ${T.ink}`,
+                  paddingBottom: 1,
+                }}
+              >
+                {t("auth.signupLink")}
+              </Link>
+            </p>
+          </>
+        )}
       </form>
     </div>
   );
