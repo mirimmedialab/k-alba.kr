@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
 import { getJob, applyJob, getCurrentUser, getProfile } from "@/lib/supabase";
-import { useT } from "@/lib/i18n";
+import { useT, useLocale } from "@/lib/i18n";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 import KakaoMap from "@/components/KakaoMap";
 import RouteCard from "@/components/RouteCard";
@@ -80,6 +80,8 @@ export default function JobDetail({ jobId, embedded = false }) {
   const router = useRouter();
   const t = useT();
   const isDesktop = useIsDesktop();
+  const { locale } = useLocale();
+  const [tr, setTr] = useState(null);
   const [job, setJob] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const [applied, setApplied] = useState(false);
@@ -144,6 +146,22 @@ export default function JobDetail({ jobId, embedded = false }) {
     });
   }, [jobId]);
 
+  // 제목·설명을 사용자 언어로 지연 번역(서버가 캐싱). ko/미지원이면 원본 유지.
+  useEffect(() => {
+    if (!job || !job.id) return;
+    if (locale === "ko") { setTr(null); return; }
+    let cancelled = false;
+    fetch("/api/jobs/translate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jobId: job.id, lang: locale, title: job.title, description: job.desc }),
+    })
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled && d && (d.title || d.description)) setTr({ title: d.title, description: d.description }); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [job?.id, job?.title, locale]);
+
   const handleApply = async () => {
     // 원문 공고 링크가 있으면 그쪽으로 이동(외부 새 탭). 없으면(직접등록 공고) 내부 원클릭 지원.
     if (job?.apply_url) {
@@ -173,9 +191,13 @@ export default function JobDetail({ jobId, embedded = false }) {
       </div>
     );
 
+  // 번역본이 있으면 그것으로 표시(없으면 한국어 원본)
+  const displayTitle = (locale !== "ko" && tr?.title) ? tr.title : job.title;
+  const displayDesc = (locale !== "ko" && tr?.description) ? tr.description : job.desc;
+
   if (isDesktop) {
     const koreanLabel = D_KOREAN[job.korean];
-    const desc = String(job.desc || "").replace(/^\s*담당업무\s*[:：]?\s*/, "").trimEnd();
+    const desc = String(displayDesc || "").replace(/^\s*담당업무\s*[:：]?\s*/, "").trimEnd();
     const payUnit = ({ 시급: "시간", 일급: "일", 월급: "월", 연봉: "년" })[job.pay_type] || "시간";
     const rows = [
       ["급여", `${job.pay_type || "시급"} ${formatPay(job.pay, job.pay_type)}`],
@@ -238,7 +260,7 @@ export default function JobDetail({ jobId, embedded = false }) {
             <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
               <div style={{ fontSize: 40 }}>{job.icon || "💼"}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <h1 style={{ fontSize: 26, fontWeight: 800, color: D.navy, lineHeight: 1.3, margin: 0, letterSpacing: "-0.02em" }}>{job.title}</h1>
+                <h1 style={{ fontSize: 26, fontWeight: 800, color: D.navy, lineHeight: 1.3, margin: 0, letterSpacing: "-0.02em" }}>{displayTitle}</h1>
                 <div style={{ fontSize: 14.5, color: D.ink2, marginTop: 8 }}>{job.company}</div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 14 }}>
                   {(job.visa || []).map((v) => <VisaBadge key={v} code={v} variant="solid" size="md" />)}
@@ -322,7 +344,7 @@ export default function JobDetail({ jobId, embedded = false }) {
   }
 
   const koreanLabel = D_KOREAN[job.korean];
-  const desc = String(job.desc || "").replace(/^\s*담당업무\s*[:：]?\s*/, "").trimEnd();
+  const desc = String(displayDesc || "").replace(/^\s*담당업무\s*[:：]?\s*/, "").trimEnd();
   const rows = [
     ["급여", `${job.pay_type || "시급"} ${formatPay(job.pay, job.pay_type)}`],
     ["지역", job.area],
@@ -373,7 +395,7 @@ export default function JobDetail({ jobId, embedded = false }) {
 
         <div style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 16, padding: 18, marginBottom: 14 }}>
           <div style={{ fontSize: 32, marginBottom: 8 }}>{job.icon || "💼"}</div>
-          <h1 style={{ fontSize: 20, fontWeight: 800, color: D.navy, lineHeight: 1.3, margin: 0, letterSpacing: "-0.01em" }}>{job.title}</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 800, color: D.navy, lineHeight: 1.3, margin: 0, letterSpacing: "-0.01em" }}>{displayTitle}</h1>
           <div style={{ fontSize: 13.5, color: D.ink2, marginTop: 6 }}>{job.company}</div>
           {(job.visa || []).length > 0 && (
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 12 }}>

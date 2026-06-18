@@ -18,6 +18,8 @@ export async function POST(request) {
   try { body = await request.json(); } catch (_) {}
   const jobId = body?.jobId;
   const lang = String(body?.lang || "");
+  const overrideTitle = typeof body?.title === "string" ? body.title : null;
+  const overrideDescription = typeof body?.description === "string" ? body.description : null;
   if (!jobId || !isSupportedLang(lang)) {
     return Response.json({ ok: false, error: "bad_request" }, { status: 400 });
   }
@@ -30,16 +32,22 @@ export async function POST(request) {
     .eq("job_id", jobId).eq("lang", lang).maybeSingle();
   if (cached) return Response.json({ ok: true, cached: true, ...cached });
 
-  // 2) 원본
-  const { data: job } = await db
-    .from("jobs").select("title, description").eq("id", jobId).maybeSingle();
-  if (!job) return Response.json({ ok: false, error: "job_not_found" }, { status: 404 });
+  // 2) 원본 (클라이언트가 보고 있는 텍스트 우선 — 워크넷 보강 제목/설명 대응)
+  let src;
+  if (overrideTitle != null || overrideDescription != null) {
+    src = { title: overrideTitle || "", description: overrideDescription || "" };
+  } else {
+    const { data: job } = await db
+      .from("jobs").select("title, description").eq("id", jobId).maybeSingle();
+    if (!job) return Response.json({ ok: false, error: "job_not_found" }, { status: 404 });
+    src = job;
+  }
 
   // 3) 번역
-  const t = await translateJob(job, lang);
+  const t = await translateJob(src, lang);
   if (!t) {
     // 번역 불가 → 원본 반환(캐시는 안 함)
-    return Response.json({ ok: false, error: "translate_unavailable", title: job.title, description: job.description });
+    return Response.json({ ok: false, error: "translate_unavailable", title: src.title, description: src.description });
   }
 
   // 4) 저장 + 반환
