@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
 import { T } from "@/lib/theme";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 
 /**
  * DesktopMobileFrame (v2 - Login/Signup Style)
@@ -23,22 +23,10 @@ import { T } from "@/lib/theme";
  *   - 로그인/회원가입 페이지와 동일한 레이아웃 스타일
  */
 export default function DesktopMobileFrame({ children }) {
-  const [isDesktop, setIsDesktop] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const isDesktop = useIsDesktop(1024);
 
-  useEffect(() => {
-    const check = () => {
-      // 1024px 이상은 데스크톱으로 간주 (태블릿 가로/노트북 이상)
-      setIsDesktop(window.innerWidth >= 1024);
-    };
-    check();
-    setMounted(true);
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-
-  // 마운트 전 또는 모바일: wrapper 없이 그대로
-  if (!mounted || !isDesktop) {
+  // 모바일(또는 SSR): wrapper 없이 그대로 풀스크린
+  if (!isDesktop) {
     return <>{children}</>;
   }
 
