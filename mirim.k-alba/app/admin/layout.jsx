@@ -32,7 +32,7 @@ export default function AdminLayout({ children }) {
   useEffect(() => {
     (async () => {
       const user = await getCurrentUser();
-      if (!user) { router.push("/login?redirect=/admin"); return; }
+      if (!user) { router.push("/login/admin"); return; }
       const role = user.user_metadata?.role || user.app_metadata?.role;
       if (role !== "admin") { setState("denied"); return; }
       setEmail(user.email || "");

@@ -52,7 +52,10 @@ export default function LoginPage() {
         setError("탈퇴했거나 존재하지 않는 계정이에요. 새로 가입해 주세요.");
       }
       const rd = params.get("redirect") || "";
-      if (rd === "/admin" || rd.startsWith("/admin/")) setAdminLogin(true);
+      if (rd === "/admin" || rd.startsWith("/admin/")) {
+        setAdminLogin(true);
+        router.replace("/login/admin"); // 관리자 전용 로그인(풀스크린)으로 이동
+      }
     }
   }, []);
 

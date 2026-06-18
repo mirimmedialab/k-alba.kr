@@ -130,6 +130,15 @@ export default function AuthCallbackPage() {
         sessionStorage.removeItem("k-alba-oauth-intent");
         sessionStorage.removeItem("k-alba-oauth-role");
 
+        // 로그인 시작 시 지정한 이동 경로(예: 관리자 콘솔)가 있으면 우선 적용
+        let postLogin = "";
+        try { postLogin = sessionStorage.getItem("k-alba-post-login") || ""; } catch (_) {}
+        sessionStorage.removeItem("k-alba-post-login");
+        if (postLogin && postLogin.startsWith("/")) {
+          router.replace(postLogin);
+          return;
+        }
+
         router.replace(userType === "employer" ? "/my/jobs" : "/jobs");
       } catch (e) {
         console.error("[auth/callback]", e);
