@@ -10,6 +10,7 @@ export const ko = {
     signup: "회원가입",
     logout: "로그아웃",
     findJob: "알바 찾기",
+    favorites: "♡ 관심공고",
     myApplications: "지원 내역",
     contracts: "계약서",
     chat: "채팅",
@@ -593,6 +594,14 @@ export const ko = {
     select: "언어 선택",
     current: "현재 언어",
   },
+  favorites: {
+    header: "Favorites · 관심공고",
+    title: "관심공고 {count}건",
+    subtitle: "하트를 누른 공고를 모아 봤어요. 카드를 누르면 상세로 이동합니다.",
+    empty: "아직 관심공고가 없습니다",
+    emptyDesc: "마음에 드는 공고의 하트를 눌러 저장해 보세요",
+    remove: "관심공고 해제",
+  },
   myApplications: {
     header: "Applications · 내 지원 내역",
     title: "총 {count}건 지원",
@@ -668,17 +677,17 @@ export const ko = {
       draft: "작성 중",
       submitted: "제출됨",
       reviewing: "검토 중",
-      documents_needed: "서류 요청",
-      approved: "승인 완료",
-      rejected: "반려",
+      documents_needed: "서류 보완 필요",
+      approved: "승인됨",
+      rejected: "반려됨",
       cancelled: "취소됨"
     }
   },
   chat: {
     title: "채팅",
-    conversationsCount: "{count}개의 대화",
+    conversationsCount: "대화 {count}개",
     online: "온라인",
-    inputPlaceholder: "메시지 입력...",
+    inputPlaceholder: "메시지를 입력하세요...",
     yesterday: "어제",
     daysAgo: "{n}일 전",
     empty: "아직 대화가 없습니다"

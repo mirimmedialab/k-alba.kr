@@ -56,11 +56,12 @@ export default function NavBar() {
 
   // 랜딩 페이지(/)는 자체 히어로가 있으므로 별도 네비 있음
   // 여기선 랜딩에도 navbar 표시 (웹 랜딩과 일관성)
-  const onLanding = pathname === "/";
+  const onLanding = pathname === "/" || pathname === "/m";
 
   const seekerLinks = [
     { href: "/jobs", label: t("nav.findJob") },
     { href: "/jobs/map", label: "🗺️ 지도" },
+    { href: "/my/favorites", label: t("nav.favorites") },
     { href: "/my/applications", label: t("nav.myApplications") },
     { href: "/my/contracts", label: t("nav.contracts") },
     { href: "/partwork", label: "🎓 시간제취업" },
@@ -117,7 +118,7 @@ export default function NavBar() {
             <LanguageSwitcher compact />
             {authChecked && !user && (
               <Link
-                href="/signup"
+                href="/jobs"
                 style={{
                   fontSize: 14,
                   fontWeight: 600,
@@ -129,7 +130,7 @@ export default function NavBar() {
                   letterSpacing: "-0.01em",
                 }}
               >
-                시작하기 →
+                {t("nav.getStarted")} →
               </Link>
             )}
             {authChecked && user && (
@@ -145,7 +146,7 @@ export default function NavBar() {
                   textDecoration: "none",
                 }}
               >
-                내 대시보드 →
+                {t("nav.myDashboard")} →
               </Link>
             )}
             {!authChecked && <NavAuthSkel />}

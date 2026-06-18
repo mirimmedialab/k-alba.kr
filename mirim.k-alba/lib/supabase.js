@@ -146,6 +146,50 @@ export async function getMyJobs(employerId) {
 }
 
 // ────────────────────────────────
+// Favorites (관심공고 / 찜)
+// ────────────────────────────────
+// 특정 공고가 찜되어 있는지 확인
+export async function isJobFavorited(userId, jobId) {
+  if (!supabase || !userId || !jobId) return false;
+  const { data } = await supabase
+    .from("job_favorites")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("job_id", jobId)
+    .maybeSingle();
+  return !!data;
+}
+
+// 찜 추가 (중복은 무시)
+export async function addFavorite(userId, jobId) {
+  if (!supabase) return { error: { message: "Supabase not configured" } };
+  return await supabase
+    .from("job_favorites")
+    .upsert({ user_id: userId, job_id: jobId }, { onConflict: "user_id,job_id" });
+}
+
+// 찜 해제
+export async function removeFavorite(userId, jobId) {
+  if (!supabase) return { error: { message: "Supabase not configured" } };
+  return await supabase
+    .from("job_favorites")
+    .delete()
+    .eq("user_id", userId)
+    .eq("job_id", jobId);
+}
+
+// 내 관심공고 목록 (공고 정보 조인)
+export async function getMyFavorites(userId) {
+  if (!supabase) return [];
+  const { data } = await supabase
+    .from("job_favorites")
+    .select("id, created_at, job_id, job:jobs(*, employer:profiles(name, company_name))")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  return data || [];
+}
+
+// ────────────────────────────────
 // Applications
 // ────────────────────────────────
 export async function applyJob(jobId, applicantId, message) {

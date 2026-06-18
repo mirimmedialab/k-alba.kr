@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
-import { getJob, applyJob, getCurrentUser, getProfile } from "@/lib/supabase";
+import { getJob, applyJob, getCurrentUser, getProfile, isJobFavorited, addFavorite, removeFavorite } from "@/lib/supabase";
 import { useT, useLocale } from "@/lib/i18n";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 import KakaoMap from "@/components/KakaoMap";
@@ -99,6 +99,8 @@ export default function JobDetail({ jobId, embedded = false }) {
   const [message, setMessage] = useState("");
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
+  const [faved, setFaved] = useState(false);
+  const [favBusy, setFavBusy] = useState(false);
 
   useEffect(() => {
     getJob(jobId).then((data) => {
@@ -155,6 +157,33 @@ export default function JobDetail({ jobId, embedded = false }) {
       }
     });
   }, [jobId]);
+
+  // 로그인한 사용자가 이 공고를 찜했는지 확인 (user/job 둘 다 준비됐을 때)
+  useEffect(() => {
+    if (!user || !job?.id) { setFaved(false); return; }
+    let cancelled = false;
+    isJobFavorited(user.id, job.id).then((f) => { if (!cancelled) setFaved(f); });
+    return () => { cancelled = true; };
+  }, [user?.id, job?.id]);
+
+  // 하트 토글: 비로그인 → 로그인 페이지, 로그인 → 찜/해제
+  const toggleFavorite = async () => {
+    const u = user || (await getCurrentUser());
+    if (!u) {
+      router.push("/login");
+      return;
+    }
+    if (!user) setUser(u);
+    if (!job?.id || favBusy) return;
+    setFavBusy(true);
+    const next = !faved;
+    setFaved(next); // 낙관적 업데이트
+    const { error } = next
+      ? await addFavorite(u.id, job.id)
+      : await removeFavorite(u.id, job.id);
+    if (error) setFaved(!next); // 실패 시 롤백
+    setFavBusy(false);
+  };
 
   // 제목·설명을 사용자 언어로 지연 번역(서버가 캐싱). ko/미지원이면 원본 유지.
   useEffect(() => {
@@ -348,8 +377,8 @@ export default function JobDetail({ jobId, embedded = false }) {
                 ) : (
                   <>
                     <div style={{ display: "flex", gap: 8 }}>
-                      <button onClick={() => router.push("/login")} style={{ flex: 1, padding: "13px 8px", borderRadius: 10, background: "#fff", color: D.ink, border: `1px solid ${D.border}`, fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, whiteSpace: "nowrap" }}>
-                        <span style={{ fontSize: 15 }}>♡</span> {t("jobDetail.interest")}
+                      <button onClick={toggleFavorite} aria-pressed={faved} style={{ flex: 1, padding: "13px 8px", borderRadius: 10, background: faved ? T.coralL : "#fff", color: faved ? T.coral : D.ink, border: `1px solid ${faved ? T.coral : D.border}`, fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, whiteSpace: "nowrap" }}>
+                        <span style={{ fontSize: 15, color: T.coral }}>{faved ? "♥" : "♡"}</span> {t("jobDetail.interest")}
                       </button>
                       <button onClick={handleApply} style={{ flex: 1.3, padding: "13px", borderRadius: 10, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>{t("jobs.apply")}</button>
                     </div>
@@ -481,23 +510,13 @@ export default function JobDetail({ jobId, embedded = false }) {
       </div>
 
       <div style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: D.card, borderTop: `1px solid ${D.border}`, padding: "10px 16px", display: "flex", gap: 10, zIndex: 50 }}>
-        <button onClick={() => router.push("/login")} aria-label="관심 공고 등록" style={{ flexShrink: 0, width: 52, borderRadius: 10, background: "#fff", border: `1px solid ${D.border}`, color: D.ink2, fontSize: 18, cursor: "pointer", fontFamily: "inherit" }}>♡</button>
+        <button onClick={toggleFavorite} aria-pressed={faved} aria-label={t("jobDetail.interest")} style={{ flexShrink: 0, width: 54, borderRadius: 10, background: faved ? T.coralL : "#fff", color: faved ? T.coral : D.ink, border: `1px solid ${faved ? T.coral : D.border}`, fontWeight: 700, fontSize: 18, cursor: "pointer", fontFamily: "inherit" }}>{faved ? "♥" : "♡"}</button>
         {applied ? (
-          <div style={{ flex: 1, textAlign: "center", padding: "13px", color: D.green, fontWeight: 800, fontSize: 15 }}>🎉 {t("jobs.applied")}</div>
+          <div style={{ flex: 1, textAlign: "center", padding: "13px 0", color: D.green, fontWeight: 800, fontSize: 15 }}>🎉 {t("jobs.applied")}</div>
         ) : (
-          <button onClick={handleApply} style={{ flex: 1, padding: "14px", borderRadius: 10, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: "inherit" }}>{t("jobs.apply")}</button>
+          <button onClick={handleApply} style={{ flex: 1, padding: "13px", borderRadius: 10, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 15, cursor: "pointer", fontFamily: "inherit" }}>{t("jobs.apply")}</button>
         )}
       </div>
-
     </div>
   );
-}
-// K-ALBA 공고 → 시뮬레이터 공고 ID 매핑
-function getSimulatorJobId(job) {
-  if (!job) return "k1";
-  const t = (job.type || job.title || "").toLowerCase();
-  if (t.includes("카페") || t.includes("바리스타")) return "k1";
-  if (t.includes("농업") || t.includes("딸기") || t.includes("수확")) return "k2";
-  if (t.includes("식당") || t.includes("서빙") || t.includes("주방")) return "k3";
-  return "k1";
 }
