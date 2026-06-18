@@ -253,6 +253,14 @@ export const zh = {
     termsRequired: "(必填)", termsOfService: "服务条款",
     privacyPolicy: "隐私政策", termsAgreeSuffix: "。",
   },
+  favorites: {
+    header: "收藏职位",
+    title: "收藏职位 {count} 个",
+    subtitle: "你点过心的职位都在这里。点击卡片查看详情。",
+    empty: "还没有收藏的职位",
+    emptyDesc: "点击喜欢职位上的爱心即可保存",
+    remove: "取消收藏",
+  },
   jobDetail: {
     workLocation: "工作地点",
     walk: "(步行{min}分钟)", people: "{n}名",

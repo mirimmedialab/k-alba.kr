@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { T } from "@/lib/theme";
 import { getCurrentUser, getMyFavorites, removeFavorite } from "@/lib/supabase";
-import { useT } from "@/lib/i18n";
+import { useT, useLocale } from "@/lib/i18n";
+import { romanizeRegion, romanizeCompany } from "@/lib/koroman";
 import { ListPageSkel } from "@/components/Wireframe";
 import { Empty, Button, PageLoading } from "@/components/ui";
 import { useIsDesktop } from "@/lib/useIsDesktop";
@@ -19,7 +20,9 @@ import { useIsDesktop } from "@/lib/useIsDesktop";
 export default function MyFavoritesPage() {
   const router = useRouter();
   const t = useT();
+  const { locale } = useLocale();
   const [favorites, setFavorites] = useState([]);
+  const [tr, setTr] = useState({});
   const [loading, setLoading] = useState(true);
   const isDesktop = useIsDesktop();
 
@@ -35,6 +38,33 @@ export default function MyFavoritesPage() {
     });
   }, [router]);
 
+  // 제목 지연 배치 번역 (비한국어): 찜한 공고들의 제목을 한 번에 번역/캐시
+  const idsKey = favorites.map((f) => f.job_id).join(",");
+  useEffect(() => {
+    if (locale === "ko" || !idsKey) return;
+    const ids = idsKey.split(",").map(Number).filter(Boolean);
+    if (ids.length === 0) return;
+    let alive = true;
+    (async () => {
+      try {
+        const r = await fetch("/api/jobs/translate-batch", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ ids, lang: locale }),
+        });
+        const d = await r.json();
+        if (alive && d?.map) {
+          setTr((prev) => {
+            const n = { ...prev };
+            for (const [k, v] of Object.entries(d.map)) n[`${locale}:${k}`] = v;
+            return n;
+          });
+        }
+      } catch (_) {}
+    })();
+    return () => { alive = false; };
+  }, [idsKey, locale]);
+
   const handleRemove = async (e, fav) => {
     e.preventDefault();
     e.stopPropagation();
@@ -48,17 +78,23 @@ export default function MyFavoritesPage() {
     }
   };
 
-  if (loading) return isDesktop ? <PageLoading message="잠시만 기다려주세요" minHeight={400} /> : <ListPageSkel maxWidth={820} rows={3} />;
+  if (loading) return isDesktop ? <PageLoading message={t("partwork.loading")} minHeight={400} /> : <ListPageSkel maxWidth={820} rows={3} />;
 
   const payText = (job) => {
     if (!job) return "";
     const amount = Number(job.pay_amount ?? job.pay ?? 0);
     if (!amount) return "";
-    return `${job.pay_type || "시급"} ${amount.toLocaleString()}${t("pay.won")}`;
+    const pt = job.pay_type || "시급";
+    if (locale === "ko") return `${pt} ${amount.toLocaleString()}${t("pay.won")}`;
+    const period = ({ "시급": "hour", "일급": "day", "월급": "month", "연봉": "year" })[pt] || "hour";
+    return `${amount.toLocaleString()} ${t("pay.won")} / ${t("pay." + period)}`;
   };
-  const areaText = (job) => job?.sigungu || job?.address || job?.sido || "";
-  const companyText = (job) =>
-    job?.employer?.company_name || job?.employer_external_name || job?.company_name || t("myApplications.companyUnknown");
+  const areaText = (job) => { const a = job?.sigungu || job?.address || job?.sido || ""; return locale !== "ko" ? romanizeRegion(a) : a; };
+  const companyText = (job) => {
+    const c = job?.employer?.company_name || job?.employer_external_name || job?.company_name || "";
+    if (!c) return t("myApplications.companyUnknown");
+    return locale !== "ko" ? `${c} (${romanizeCompany(c)})` : c;
+  };
 
   const HeartBtn = ({ fav }) => (
     <button
@@ -103,7 +139,7 @@ export default function MyFavoritesPage() {
                 >
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, marginBottom: 8 }}>
                     <span style={{ fontSize: 15.5, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
-                      {fav.job?.title || t("jobs.title")}
+                      {(tr[`${locale}:${fav.job_id}`] && tr[`${locale}:${fav.job_id}`].title) || fav.job?.title || t("jobs.title")}
                     </span>
                     <HeartBtn fav={fav} />
                   </div>
@@ -151,7 +187,7 @@ export default function MyFavoritesPage() {
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 15, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", marginBottom: 6 }}>
-                    {fav.job?.title || t("jobs.title")}
+                    {(tr[`${locale}:${fav.job_id}`] && tr[`${locale}:${fav.job_id}`].title) || fav.job?.title || t("jobs.title")}
                   </div>
                   <div style={{ fontSize: 13, color: T.ink2, marginBottom: 4 }}>{companyText(fav.job)}</div>
                   <div style={{ fontSize: 12, color: T.ink3, display: "flex", gap: 8, flexWrap: "wrap" }}>

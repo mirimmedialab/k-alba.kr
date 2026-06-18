@@ -255,6 +255,14 @@ export const ja = {
     termsRequired: "(必須)", termsOfService: "利用規約",
     privacyPolicy: "プライバシーポリシー", termsAgreeSuffix: "。",
   },
+  favorites: {
+    header: "お気に入り",
+    title: "お気に入り {count}件",
+    subtitle: "ハートを押した求人をまとめました。カードをタップすると詳細へ移動します。",
+    empty: "まだお気に入りがありません",
+    emptyDesc: "気に入った求人のハートを押して保存しましょう",
+    remove: "お気に入り解除",
+  },
   jobDetail: {
     workLocation: "勤務地",
     walk: "(徒歩{min}分)", people: "{n}名",

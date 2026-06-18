@@ -253,6 +253,14 @@ export const mn = {
     termsRequired: "(Заавал)", termsOfService: "Үйлчилгээний нөхцөл",
     privacyPolicy: "Нууцлалын бодлого", termsAgreeSuffix: ".",
   },
+  favorites: {
+    header: "Хадгалсан",
+    title: "Хадгалсан {count} зар",
+    subtitle: "Таны таалагдсан зарууд энд байна. Дэлгэрэнгүйг харахын тулд картыг дарна уу.",
+    empty: "Одоогоор хадгалсан зар алга",
+    emptyDesc: "Таалагдсан зарын зүрхэн дээр дарж хадгална уу",
+    remove: "Хадгалснаас хасах",
+  },
   jobDetail: {
     workLocation: "Ажлын байршил",
     walk: "(алхаж {min} мин)", people: "{n} хүн",

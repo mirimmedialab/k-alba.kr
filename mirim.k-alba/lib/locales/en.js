@@ -300,6 +300,14 @@ export const en = {
     privacyPolicy: "Privacy Policy",
     termsAgreeSuffix: ".",
   },
+  favorites: {
+    header: "Favorites",
+    title: "{count} saved jobs",
+    subtitle: "Jobs you hearted, all in one place. Tap a card to see details.",
+    empty: "No saved jobs yet",
+    emptyDesc: "Tap the heart on jobs you like to save them",
+    remove: "Remove from favorites",
+  },
   jobDetail: {
     workLocation: "Work location",
     walk: "({min} min walk)", people: "{n} positions",

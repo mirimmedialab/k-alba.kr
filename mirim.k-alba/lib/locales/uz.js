@@ -255,6 +255,14 @@ export const uz = {
     termsRequired: "(Majburiy)", termsOfService: "Xizmat shartlari",
     privacyPolicy: "Maxfiylik siyosati", termsAgreeSuffix: ".",
   },
+  favorites: {
+    header: "Saqlanganlar",
+    title: "{count} ta saqlangan e'lon",
+    subtitle: "Yoqtirgan e'lonlaringiz shu yerda. Batafsil ko'rish uchun kartani bosing.",
+    empty: "Hali saqlangan e'lon yo'q",
+    emptyDesc: "Yoqqan e'londagi yurakchani bosib saqlang",
+    remove: "Saqlanganlardan olib tashlash",
+  },
   jobDetail: {
     workLocation: "Ish joyi",
     walk: "({min} daqiqa piyoda)", people: "{n} kishi",

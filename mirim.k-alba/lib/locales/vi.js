@@ -255,6 +255,14 @@ export const vi = {
     termsRequired: "(Bắt buộc)", termsOfService: "Điều khoản dịch vụ",
     privacyPolicy: "Chính sách bảo mật", termsAgreeSuffix: ".",
   },
+  favorites: {
+    header: "Việc đã lưu",
+    title: "{count} việc đã lưu",
+    subtitle: "Những việc bạn đã thích, tất cả ở đây. Nhấn vào thẻ để xem chi tiết.",
+    empty: "Chưa có việc đã lưu",
+    emptyDesc: "Nhấn vào trái tim trên việc bạn thích để lưu",
+    remove: "Bỏ lưu",
+  },
   jobDetail: {
     workLocation: "Địa điểm làm việc",
     walk: "(đi bộ {min} phút)", people: "{n} người",
