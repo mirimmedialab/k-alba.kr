@@ -136,3 +136,49 @@ export async function translateTermsBatch(terms, lang) {
   for (const k of uniq) out[k] = typeof obj[k] === "string" ? obj[k] : k;
   return out;
 }
+
+
+/**
+ * 목록 배치 번역: 공고 목록의 제목·지역을 한 번의 호출로 번역.
+ * 입력: [{ id, title, region }, ...]
+ * 반환: { [id]: { title, region } }  (실패/키없음 시 null → 호출측은 한국어 폴백)
+ */
+export async function translateListBatch(items, lang) {
+  const name = LANG_NAMES[lang];
+  if (!name) return null;
+  const list = (items || []).filter((it) => it && (it.title || it.region));
+  if (list.length === 0) return {};
+
+  const input = list.map((it) => ({
+    id: String(it.id),
+    title: it.title || "",
+    region: it.region || "",
+  }));
+
+  const prompt = [
+    "You are a professional translator for a part-time job platform serving foreign workers and students in Korea.",
+    "Translate each job listing's title and region into " + name + ".",
+    RULES,
+    'Input is a JSON array of objects with keys "id", "title", "region".',
+    'Return ONLY a JSON object mapping each id (as a string) to an object { "title", "region" } translated into ' +
+      name + ". Keep the same ids. Use an empty string for any field that was empty. No extra text.",
+    "",
+    "Input:",
+    JSON.stringify(input),
+  ].join("\n");
+
+  const text = await callLLM(prompt, 3000);
+  if (!text) return null;
+  const obj = parseJsonLoose(text);
+  if (!obj || typeof obj !== "object" || Array.isArray(obj)) return null;
+
+  const out = {};
+  for (const it of input) {
+    const tr = obj[it.id];
+    out[it.id] = {
+      title: tr && typeof tr.title === "string" ? tr.title : it.title,
+      region: tr && typeof tr.region === "string" ? tr.region : it.region,
+    };
+  }
+  return out;
+}
