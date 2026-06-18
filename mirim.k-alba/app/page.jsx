@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { T, COMPANY } from "@/lib/theme";
-import { useT } from "@/lib/i18n";
+import { useT, useLocale } from "@/lib/i18n";
 import { getSession, supabase } from "@/lib/supabase";
 import { UserChip } from "@/components/UserChip";
 import { Button, KWordmark, PageLoading } from "@/components/ui";
@@ -511,6 +511,7 @@ function AudienceMockup({ id, t }) {
 
 export default function LandingPage() {
   const t = useT();
+  const { locale } = useLocale();
   const prefersReducedMotion = useReducedMotion();
   const [authChecked, setAuthChecked] = useState(false);
   const [user, setUser] = useState(null);
@@ -551,7 +552,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div style={{ background: T.paper, color: T.ink }}>
+    <div key={locale} style={{ background: T.paper, color: T.ink }}>
 
       {/* ═══════════════════ HERO ═══════════════════ */}
       {!user ? (

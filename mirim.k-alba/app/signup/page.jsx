@@ -162,7 +162,7 @@ export default function SignupPage() {
       const data = await res.json();
       if (data.valid === true) {
         setBizVerified(true);
-        setBizStatus(data.status || "정상");
+        setBizStatus(data.status || t("auth.bizStatusNormal"));
         setBizError("");
       } else {
         setBizVerified(false);
@@ -206,7 +206,7 @@ export default function SignupPage() {
   const handleSocial = async (provider) => {
     // role이 선택되지 않은 상태면 OAuth 차단
     if (!role || (role !== "worker" && role !== "employer")) {
-      setError("먼저 가입 유형(구직자 또는 사장님)을 선택해주세요.");
+      setError(t("auth.selectTypeFirst"));
       return;
     }
 
@@ -241,7 +241,7 @@ export default function SignupPage() {
                 display: "block",
               }}
             >
-              ← 뒤로
+              ← {t("common.back")}
             </Link>
 
             {/* 헤드라인 */}
@@ -256,11 +256,11 @@ export default function SignupPage() {
                   marginBottom: 10,
                 }}
               >
-                외국인 채용과 시간제취업,<br />
-                <span style={{ color: "#FF6B5A" }}>더 쉽고 안전하게</span>
+                {t("auth.headline1")}<br />
+                <span style={{ color: "#FF6B5A" }}>{t("auth.headlineAccent")}</span>
               </h1>
               <p style={{ color: T.ink2, fontSize: 15, lineHeight: 1.6 }}>
-                사용자 유형을 선택해주세요.
+                {t("auth.selectUserType")}
               </p>
             </div>
 
@@ -270,24 +270,24 @@ export default function SignupPage() {
                 [
                   "worker",
                   "🌏",
-                  "외국인 구직자",
-                  "한국에서 합법적으로 일자리를 찾고 싶어요",
+                  t("auth.cardSeekerTitle"),
+                  t("auth.cardSeekerDesc"),
                   T.gold,
                   "#FFF8E5",
                 ],
                 [
                   "employer",
                   "💼",
-                  "사장님",
-                  "외국인 직원을 안전하게 채용하고 싶어요",
+                  t("auth.cardEmployerTitle"),
+                  t("auth.cardEmployerDesc"),
                   T.accent,
                   "#FFF3F0",
                 ],
                 [
                   "university",
                   "🏫",
-                  "대학 담당자",
-                  "유학생 취업·시간제취업 관리를 돕고 싶어요",
+                  t("auth.cardUniversityTitle"),
+                  t("auth.cardUniversityDesc"),
                   "#7C3AED",
                   "#F5F3FF",
                 ],
@@ -372,7 +372,7 @@ export default function SignupPage() {
                               borderRadius: 3,
                             }}
                           >
-                            준비중
+                            {t("auth.comingSoon")}
                           </span>
                         )}
                       </div>
@@ -726,7 +726,7 @@ export default function SignupPage() {
             >
               {t("auth.termsOfService")}
             </Link>
-            {" 및 "}
+            {" " + t("common.and") + " "}
             <Link
               href="/privacy"
               target="_blank"

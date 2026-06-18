@@ -249,7 +249,7 @@ export default function MobileLandingPage() {
   }
 
   return (
-    <div>
+    <div key={locale}>
       {/* ── HERO ── */}
       <div style={{ ...S.section, paddingTop: 32, paddingBottom: 32 }}>
         {!user ? (

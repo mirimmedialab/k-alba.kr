@@ -108,11 +108,11 @@ export default function AdminUsers() {
                 { header: "이메일", key: "email", maxWidth: 200 },
                 { header: "연락처", cell: (r) => r.phone || "-" },
                 { header: "비자/국적", cell: (r) => [r.visa, r.nationality || r.country].filter(Boolean).join(" · ") || "-" },
-                { header: "업체/인증", cell: (r) => r.user_type === "employer"
+                { header: "업체명", cell: (r) => r.user_type === "employer"
                     ? <span>{r.company_name || "-"} {r.verified ? <span style={{ color: "#0A8F6B", fontWeight: 700 }}>✓</span> : <span style={{ color: T.ink3 }}>미인증</span>}</span>
                     : "-" },
-                { header: tab === "deactivated" ? "탈퇴일" : "가입", cell: (r) => fmtDateTime(tab === "deactivated" ? r.deactivated_at : r.created_at) },
-                { header: "관리", cell: (r) => {
+                { header: tab === "deactivated" ? "탈퇴일시" : "가입일시", cell: (r) => fmtDateTime(tab === "deactivated" ? r.deactivated_at : r.created_at) },
+                { header: "인증여부", cell: (r) => {
                     const btns = [];
                     if (r.user_type === "employer") {
                       btns.push(r.verified
