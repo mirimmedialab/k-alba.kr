@@ -2,6 +2,7 @@
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import KakaoLogo from "@/components/KakaoLogo";
 
 /**
  * /employer/kakao-join?b=<botUserKey>
@@ -50,9 +51,9 @@ function JoinInner() {
         <button
           onClick={start}
           disabled={busy || !b}
-          style={{ width: "100%", padding: "15px 0", borderRadius: 12, border: "none", background: (busy || !b) ? "#FDE68A" : "#FEE500", color: "#191600", fontSize: 16, fontWeight: 800, cursor: (busy || !b) ? "default" : "pointer" }}
+          style={{ width: "100%", padding: "15px 0", borderRadius: 12, border: "none", background: (busy || !b) ? "#FDE68A" : "#FEE500", color: "#191600", fontSize: 16, fontWeight: 800, cursor: (busy || !b) ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
         >
-          {busy ? "카카오 로그인 중…" : "카카오로 로그인하기"}
+          {!busy && <KakaoLogo size={20} />} {busy ? "카카오 로그인 중…" : "카카오로 로그인하기"}
         </button>
 
         {!b && (

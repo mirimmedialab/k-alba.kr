@@ -6,6 +6,7 @@ import { T, COMPANY } from "@/lib/theme";
 import { signUp, signInWithOAuth } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 import { Button, Input, KWordmark, ButtonLoading } from "@/components/ui";
+import KakaoLogo from "@/components/KakaoLogo";
 
 /**
  * /signup 회원가입 (BI v2)
@@ -478,7 +479,7 @@ export default function SignupPage() {
             marginBottom: 8,
           }}
         >
-          <span style={{ fontSize: 16 }}>💬</span> {t("auth.signupKakao")}
+          <KakaoLogo size={18} /> {t("auth.signupKakao")}
         </button>
         <button
           type="button"

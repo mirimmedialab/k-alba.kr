@@ -6,6 +6,7 @@ import { T } from "@/lib/theme";
 import { Btn, Inp } from "@/components/UI";
 import { signIn, signInWithOAuth, isAccountDeactivated, signOut } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
+import KakaoLogo from "@/components/KakaoLogo";
 
 /**
  * 로그인 페이지 — McKinsey 에디토리얼 스타일
@@ -130,7 +131,7 @@ export default function LoginPage() {
             letterSpacing: "-0.01em",
           }}
         >
-          <span style={{ fontSize: 16 }}>💬</span> {t("auth.loginKakao")}
+          <KakaoLogo size={18} /> {t("auth.loginKakao")}
         </button>
 
         <button
