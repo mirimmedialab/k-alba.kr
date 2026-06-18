@@ -1,9 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { T } from "@/lib/theme";
-import { supabase, getCurrentUser } from "@/lib/supabase";
+import { adminGet } from "@/lib/adminApi";
 import { Badge, Empty, PageLoading } from "@/components/ui";
 
 /**
@@ -16,58 +15,26 @@ import { Badge, Empty, PageLoading } from "@/components/ui";
  *   - 실패 로그
  */
 export default function AdminSyncPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
   const [logs, setLogs] = useState([]);
   const [sourceCounts, setSourceCounts] = useState(null);
 
+  // 인증은 상위 admin/layout.jsx(kalba_admin 쿠키 게이트)에서 처리.
   useEffect(() => {
     (async () => {
-      const user = await getCurrentUser();
-      if (!user) {
-        router.push("/login");
-        return;
+      try {
+        const res = await adminGet("/api/admin/sync");
+        setLogs(res.logs || []);
+        setSourceCounts(res.sourceCounts || {});
+      } catch (_) {
+        setLogs([]);
+        setSourceCounts({});
       }
-      const role = user.user_metadata?.role || user.app_metadata?.role;
-      if (role !== "admin") {
-        router.push("/");
-        return;
-      }
-      setAuthorized(true);
-      await load();
       setLoading(false);
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const load = async () => {
-    if (!supabase) return;
-
-    const [logsResult, sourcesResult] = await Promise.all([
-      supabase
-        .from("sync_logs")
-        .select("*")
-        .order("started_at", { ascending: false })
-        .limit(30),
-      supabase
-        .from("jobs")
-        .select("source_type"),
-    ]);
-
-    setLogs(logsResult.data || []);
-
-    // 소스별 집계
-    const counts = {};
-    (sourcesResult.data || []).forEach((j) => {
-      const s = j.source_type || "direct";
-      counts[s] = (counts[s] || 0) + 1;
-    });
-    setSourceCounts(counts);
-  };
-
   if (loading) return <PageLoading message="로딩 중..." minHeight={400} />;
-  if (!authorized) return null;
 
   // 소스별 최신 로그 계산
   const latestByLource = {};

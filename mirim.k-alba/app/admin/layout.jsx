@@ -122,7 +122,9 @@ export default function AdminLayout({ children }) {
       </aside>
 
       {/* 콘텐츠 */}
-      <main style={{ flex: 1, minWidth: 0, padding: "28px 32px", maxWidth: 1400 }}>{children}</main>
+      <main style={{ flex: 1, minWidth: 0, padding: "28px 32px" }}>
+        <div style={{ maxWidth: 1400, margin: "0 auto" }}>{children}</div>
+      </main>
     </div>
   );
 }
