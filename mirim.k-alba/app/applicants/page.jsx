@@ -8,6 +8,7 @@ import { getJobApplicants, updateApplicationStatus, getCurrentUser } from "@/lib
 import { KakaoChatModal } from "@/components/KakaoChatModal";
 import { ListPageSkel } from "@/components/Wireframe";
 import { Button, Badge, Empty } from "@/components/ui";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 
 /**
  * /applicants 사장님 지원자 보기 (BI v2)
@@ -34,24 +35,19 @@ import { Button, Badge, Empty } from "@/components/ui";
  *   - botAvatar 🎉/💌 (BI v2 결정과 호환 — 🤖만 금지)
  */
 
-const DEMO_APPLICANTS = [
-  { id: 1, applicant_id: "u1", status: "pending", message: "성실하게 일하겠습니다!", created_at: "2026-04-12", applicant: { name: "Linh T.", country: "베트남", visa: "D-2", korean_level: "intermediate", rating: 4.8, organization: "서울대학교" } },
-  { id: 2, applicant_id: "u2", status: "pending", message: "카페 경험 2년 있습니다.", created_at: "2026-04-11", applicant: { name: "Wang X.", country: "중국", visa: "F-4", korean_level: "advanced", rating: 4.5, organization: "연세대학교" } },
-  { id: 3, applicant_id: "u3", status: "accepted", message: "", created_at: "2026-04-10", applicant: { name: "Sokha M.", country: "캄보디아", visa: "F-6", korean_level: "intermediate", rating: 4.9, organization: "" } },
-];
-
 const KOREAN_LABELS = { none: "한국어 불필요", beginner: "초급", intermediate: "중급", advanced: "고급" };
 
 function ApplicantsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const jobId = searchParams.get("jobId");
-  const [applicants, setApplicants] = useState(DEMO_APPLICANTS);
+  const [applicants, setApplicants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMode, setChatMode] = useState(null);
   const [activeApplicant, setActiveApplicant] = useState(null);
+  const isDesktop = useIsDesktop();
 
   useEffect(() => {
     getCurrentUser().then(async (u) => {
@@ -130,6 +126,65 @@ function ApplicantsContent() {
   };
 
   if (loading) return <ListPageSkel maxWidth={700} rows={3} />;
+
+  if (isDesktop) {
+    return (
+      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "40px 28px 64px" }}>
+        <Link href="/my/jobs" style={{ color: T.ink3, fontSize: 13, marginBottom: 18, display: "inline-block", textDecoration: "none" }}>← 내 공고로</Link>
+        <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 18 }} />
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Applicants · 지원자 관리</div>
+        <h1 style={{ fontSize: 30, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.2 }}>지원자 {applicants.length}명</h1>
+        <p style={{ color: T.ink2, fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>각 지원자를 확인하고 합격·거절을 결정하세요. 합격 시 카톡 챗봇으로 자동 알림이 전송됩니다.</p>
+
+        <div style={{ display: "flex", gap: 4, marginBottom: 20, borderBottom: `1px solid ${T.border}` }}>
+          {[["all", "전체", applicants.length], ["pending", "검토 중", applicants.filter(a => a.status === "pending").length], ["accepted", "합격", applicants.filter(a => a.status === "accepted").length], ["rejected", "불합격", applicants.filter(a => a.status === "rejected").length]].map(([v, l, n]) => {
+            const active = filter === v;
+            return (
+              <button key={v} onClick={() => setFilter(v)} style={{ padding: "10px 14px", background: "transparent", border: "none", fontSize: 13, fontWeight: active ? 700 : 500, color: active ? T.ink : T.ink3, borderBottom: active ? `2px solid ${T.accent}` : "2px solid transparent", marginBottom: -1, cursor: "pointer", fontFamily: "inherit" }}>
+                {l} <span style={{ color: T.ink3, fontWeight: 600 }}>({n})</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {filtered.length === 0 ? (
+          <Empty variant="no-results" description="해당하는 지원자가 없습니다" />
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            {filtered.map((a) => (
+              <div key={a.id} style={{ border: `1px solid ${T.border}`, borderRadius: 12, padding: "18px 20px", background: T.paper, boxSizing: "border-box" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 20 }}>{getFlag(a.applicant.country)}</span>
+                  <span style={{ fontSize: 16, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>{a.applicant.name}</span>
+                  {a.applicant.rating && <span style={{ fontSize: 11, fontWeight: 700, color: T.gold, background: T.n9, padding: "2px 7px", borderRadius: 4 }}>⭐ {a.applicant.rating}</span>}
+                  <Badge variant={statusVariant[a.status] || "neutral"} size="sm">{statusLabel[a.status] || a.status}</Badge>
+                </div>
+                <div style={{ fontSize: 13, color: T.ink2, marginBottom: 4 }}>{a.applicant.country} · {a.applicant.visa} · {KOREAN_LABELS[a.applicant.korean_level] || "-"}</div>
+                {a.applicant.organization && <div style={{ fontSize: 12, color: T.ink3, marginBottom: 4 }}>{a.applicant.organization}</div>}
+                {a.message && <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.6, background: T.cream, padding: "10px 12px", borderLeft: `3px solid ${T.gold}`, margin: "10px 0", borderRadius: "0 4px 4px 0" }}>{a.message}</div>}
+                <div style={{ fontSize: 11, color: T.ink3, marginBottom: 12 }}>지원일: {new Date(a.created_at).toLocaleDateString("ko-KR")}</div>
+                {a.status === "pending" && (
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    <Button variant="primaryDark" size="sm" onClick={() => handleAction(a, "accept")}>💬 합격 챗봇</Button>
+                    <Button variant="secondary" size="sm" onClick={() => handleAction(a, "reject")}>거절</Button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <KakaoChatModal
+          open={chatOpen}
+          onClose={() => { setChatOpen(false); setTimeout(() => setActiveApplicant(null), 300); }}
+          title={chatMode === "accept" ? "🎉 합격 안내봇" : "💌 거절 안내봇"}
+          botAvatar={chatMode === "accept" ? "🎉" : "💌"}
+          steps={chatMode === "accept" ? acceptSteps : rejectSteps}
+          onComplete={handleChatComplete}
+        />
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: "32px 20px", maxWidth: 820, margin: "0 auto" }}>

@@ -37,7 +37,7 @@ export async function POST(request) {
 
   // source: 클라이언트가 보고 있는 텍스트 우선
   const { data: job } = await db
-    .from("jobs").select("title, description, sido, sigungu, address, company_name, job_type").eq("id", jobId).maybeSingle();
+    .from("jobs").select("title, description, sido, sigungu, address, employer_external_name, job_type").eq("id", jobId).maybeSingle();
   if (!job && overrideTitle == null && overrideDescription == null) {
     return Response.json({ ok: false, error: "job_not_found" }, { status: 404 });
   }
@@ -46,7 +46,7 @@ export async function POST(request) {
     title: overrideTitle != null ? overrideTitle : (job?.title || ""),
     description: overrideDescription != null ? overrideDescription : (job?.description || ""),
     region: regionKo,
-    company: job?.company_name || "",
+    company: job?.employer_external_name || "",
     industry: job?.job_type || "",
   };
 

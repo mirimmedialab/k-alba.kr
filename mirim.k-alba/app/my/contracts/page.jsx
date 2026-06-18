@@ -17,41 +17,11 @@ const STATUS_INFO = {
   completed: { color: "#2A7A4A", bg: "#E8F5EC", icon: "✓" },
 };
 
-const DEMO_CONTRACTS = [
-  {
-    id: "demo-sample-1",
-    company_name: "블루보틀 강남점",
-    worker_name: "Linh T.",
-    pay_type: "시급",
-    pay_amount: 12000,
-    contract_start: "2026-05-01",
-    contract_end: "2026-10-31",
-    status: "completed",
-    worker_signed: true,
-    employer_signed: true,
-    created_at: "2026-04-12T10:00:00Z",
-  },
-  {
-    id: "demo-sample-2",
-    company_name: "논산 OO농장",
-    worker_name: "Sokha M.",
-    pay_type: "일급",
-    pay_amount: 150000,
-    contract_start: "2026-04-20",
-    contract_end: "2026-07-20",
-    status: "worker_signing",
-    worker_signed: false,
-    employer_signed: false,
-    created_at: "2026-04-13T14:30:00Z",
-  },
-];
-
-
 export default function MyContractsPage() {
   const router = useRouter();
   const t = useT();
   const [user, setUser] = useState(null);
-  const [contracts, setContracts] = useState(DEMO_CONTRACTS);
+  const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const isDesktop = useIsDesktop();
 
@@ -64,21 +34,7 @@ export default function MyContractsPage() {
       setUser(u);
       const role = u.user_metadata?.user_type === "employer" ? "employer" : "worker";
       const data = await getMyContracts(u.id, role);
-
-      let localContracts = [];
-      if (typeof window !== "undefined") {
-        Object.keys(localStorage).forEach((key) => {
-          if (key.startsWith("contract-demo-")) {
-            try {
-              const c = JSON.parse(localStorage.getItem(key));
-              localContracts.push({ ...c, id: key.replace("contract-", "") });
-            } catch (e) {}
-          }
-        });
-      }
-
-      const combined = [...(data || []), ...localContracts];
-      if (combined.length > 0) setContracts(combined);
+      setContracts(data || []);
       setLoading(false);
     });
   }, [router]);

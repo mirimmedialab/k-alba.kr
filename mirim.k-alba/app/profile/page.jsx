@@ -507,9 +507,6 @@ function DangerZone() {
       ) : (
         <div style={{ border: `1px solid ${DANGER}33`, background: "#FEF2F2", borderRadius: 10, padding: 16 }}>
           <div style={{ fontSize: 14, fontWeight: 800, color: DANGER, marginBottom: 6 }}>회원 탈퇴</div>
-          <p style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.6, marginBottom: 14 }}>
-            탈퇴하면 계정이 비활성화되어 로그인할 수 없어요. 작성하신 정보는 보관되며, 다시 이용하시려면 고객센터를 통해 복구할 수 있어요.
-          </p>
 
           <div style={{ fontSize: 12, fontWeight: 700, color: T.ink, marginBottom: 8 }}>탈퇴 사유를 알려주세요</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
