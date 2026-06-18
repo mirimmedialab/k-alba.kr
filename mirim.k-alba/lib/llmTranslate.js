@@ -5,11 +5,11 @@
  */
 const LANG_NAMES = {
   en: "English",
-  vi: "Vietnamese (Tiếng Việt)",
-  zh: "Simplified Chinese (简体中文)",
-  uz: "Uzbek (O'zbekcha)",
-  mn: "Mongolian (Монгол)",
-  ja: "Japanese (日本語)",
+  vi: "Vietnamese — Tiếng Việt",
+  zh: "Simplified Chinese — 简体中文",
+  uz: "Uzbek (O'zbek tili) written in the Latin alphabet",
+  mn: "Mongolian (Монгол хэл) written in Cyrillic script",
+  ja: "Japanese — 日本語",
 };
 
 export function isSupportedLang(lang) {
@@ -21,9 +21,12 @@ export async function translateJob({ title, description }, lang) {
   if (!name) return null;
 
   const prompt =
-    `You translate part-time job postings for a platform serving foreign workers/students in Korea.\n` +
-    `Translate the Korean fields below into ${name}. Keep it natural, concise, and appropriate for a job listing.\n` +
-    `Keep store/brand/proper names sensible (don't over-translate). Numbers, pay, addresses stay accurate.\n` +
+    `You are a professional translator for a part-time job platform serving foreign workers and students in Korea.\n` +
+    `Translate the Korean job fields below into ${name}.\n` +
+    `CRITICAL RULES:\n` +
+    `- Write the ENTIRE output ONLY in ${name}. Never output English or Korean (except unavoidable proper nouns/brand names).\n` +
+    `- Even for short or simple text, you MUST translate into ${name} — do not fall back to another language.\n` +
+    `- Natural, concise, suitable for a job listing. Keep numbers, pay, and addresses accurate.\n` +
     `Return ONLY a JSON object with exactly two string keys: "title" and "description". No extra text.\n\n` +
     `Korean title: ${title || ""}\n` +
     `Korean description: ${description || ""}`;
