@@ -984,14 +984,14 @@ export default function LandingPage() {
                       key={feature}
                       style={{
                         display: "flex",
-                        alignItems: "center",
+                        alignItems: "flex-start",
                         gap: 8,
                         fontSize: 14,
                         color: T.ink,
                       }}
                     >
                       <span style={{ color: item.color, fontWeight: 700 }}>✓</span>
-                      {feature}
+                      <span style={{ whiteSpace: "pre-line" }}>{feature}</span>
                     </div>
                   ))}
                 </div>
