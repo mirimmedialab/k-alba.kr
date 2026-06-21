@@ -136,6 +136,7 @@ html, body {
   letter-spacing: -0.01em;
   word-break: keep-all;
   overflow-wrap: break-word;
+  overflow-x: clip;
 }
 
 html {

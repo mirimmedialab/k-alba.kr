@@ -45,9 +45,13 @@ export default function AppFrame({ children }) {
 
   return (
     <I18nProvider>
-      {showNavBar && <NavBar />}
-      {useFrame ? <DesktopMobileFrame>{children}</DesktopMobileFrame> : children}
-      {showFooter && <Footer />}
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        {showNavBar && <NavBar />}
+        <div style={{ flex: "1 0 auto" }}>
+          {useFrame ? <DesktopMobileFrame>{children}</DesktopMobileFrame> : children}
+        </div>
+        {showFooter && <Footer />}
+      </div>
       {showKakao && <KakaoFloatingButton />}
     </I18nProvider>
   );
