@@ -371,7 +371,7 @@ function EmployerMockup({ t }) {
   return (
     <MockupShell chromeTitle={t("landing.mkEmployerChrome")}>
       {/* Stat row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 18 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 10, marginBottom: 18 }}>
         {[
           [t("landing.mkStatApplicants"), "24", "#0A1628"],
           [t("landing.mkStatActivePosts"), "3", "#B8944A"],
@@ -435,7 +435,7 @@ function UniversityMockup({ t }) {
   const maxBar = 42;
   return (
     <MockupShell chromeTitle={t("landing.mkUniChrome")}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 18 }}>
         {/* Chart */}
         <div>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", marginBottom: 10, letterSpacing: "0.05em", textTransform: "uppercase" }}>
@@ -649,7 +649,7 @@ export default function LandingPage() {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
+                  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
                   gap: 32,
                   padding: "40px 0",
                   borderTop: "1px solid rgba(255, 255, 255, 0.12)",
@@ -881,7 +881,7 @@ export default function LandingPage() {
             initial={prefersReducedMotion ? "visible" : "hidden"}
             animate="visible"
             variants={staggerDownContainer}
-            style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 32 }}
+            style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 32 }}
           >
             {[
               {
@@ -1035,7 +1035,7 @@ export default function LandingPage() {
             initial={prefersReducedMotion ? "visible" : "hidden"}
             animate="visible"
             variants={staggerContainer}
-            style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}
+            style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 20 }}
           >
             {[
               ["1", t("landing.problem1Title"), t("landing.problem1Desc")],
