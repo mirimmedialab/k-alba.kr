@@ -832,8 +832,7 @@ export default function LandingPage() {
       {/* ═══════════════════ TARGET AUDIENCE CARDS ═══════════════════ */}
       <motion.section
         initial={prefersReducedMotion ? "visible" : "hidden"}
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
+        animate="visible"
         variants={fadeInDown}
         style={{
           padding: "96px 20px",
@@ -844,8 +843,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1080, margin: "0 auto" }}>
           <motion.div
             initial={prefersReducedMotion ? "visible" : "hidden"}
-            whileInView="visible"
-            viewport={{ once: true }}
+            animate="visible"
             variants={fadeInDown}
             style={{ textAlign: "center", marginBottom: 56 }}
           >
@@ -881,8 +879,7 @@ export default function LandingPage() {
 
           <motion.div
             initial={prefersReducedMotion ? "visible" : "hidden"}
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
+            animate="visible"
             variants={staggerDownContainer}
             style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 32 }}
           >
@@ -1007,8 +1004,7 @@ export default function LandingPage() {
       {/* ═══════════════════ PROBLEM (크림 배경) ═══════════════════ */}
       <motion.section
         initial={prefersReducedMotion ? "visible" : "hidden"}
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
+        animate="visible"
         variants={fadeInUp}
         style={{
           padding: "96px 20px",
@@ -1019,8 +1015,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: 960, margin: "0 auto" }}>
           <motion.h2
             initial={prefersReducedMotion ? "visible" : "hidden"}
-            whileInView="visible"
-            viewport={{ once: true }}
+            animate="visible"
             variants={fadeInUp}
             style={{
               fontWeight: 800,
@@ -1038,8 +1033,7 @@ export default function LandingPage() {
           {/* 3가지 이유 - 3열 카드 */}
           <motion.div
             initial={prefersReducedMotion ? "visible" : "hidden"}
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
+            animate="visible"
             variants={staggerContainer}
             style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}
           >
@@ -1099,8 +1093,7 @@ export default function LandingPage() {
       {/* ═══════════════════ AUDIENCE TABS (Workers / Employers / Universities) ═══════════════════ */}
       <motion.section
         initial={prefersReducedMotion ? "visible" : "hidden"}
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.15 }}
+        animate="visible"
         variants={fadeInUp}
         style={{
           padding: "clamp(80px, 10vw, 120px) 20px",
@@ -1312,8 +1305,7 @@ export default function LandingPage() {
       {/* ═══════════════════ PROCESS (horizontal timeline) ═══════════════════ */}
       <motion.section
         initial={prefersReducedMotion ? "visible" : "hidden"}
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.15 }}
+        animate="visible"
         variants={fadeInUp}
         style={{
           padding: "clamp(80px, 10vw, 120px) 20px",
@@ -1356,8 +1348,7 @@ export default function LandingPage() {
           {/* Timeline grid */}
           <motion.div
             initial={prefersReducedMotion ? "visible" : "hidden"}
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.1 }}
+            animate="visible"
             variants={staggerContainer}
             style={{
               display: "grid",
@@ -1500,8 +1491,7 @@ export default function LandingPage() {
       {/* ═══════════════════ FINAL CTA (dark navy banner) ═══════════════════ */}
       <motion.section
         initial={prefersReducedMotion ? "visible" : "hidden"}
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
+        animate="visible"
         variants={fadeInUp}
         style={{
           padding: "clamp(100px, 12vw, 140px) 20px",
