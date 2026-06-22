@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import chromium from "@sparticuz/chromium";
+import chromium from "@sparticuz/chromium-min";
 import puppeteer from "puppeteer-core";
 
 /**
@@ -9,25 +9,29 @@ import puppeteer from "puppeteer-core";
  * 교차로 사장님 초대 메일에 "실제로 이렇게 올라갑니다" 미리보기 이미지로 사용.
  *
  * Query:
- *   ?mode=desktop | mobile   (기본 desktop)  ← 둘 다 떠보고 메일로 비교용
- *   ?upload=1                Supabase Storage(job-previews 버킷)에 1회 저장 후 공개 URL(JSON) 반환 (운영용)
- *                            생략 시 PNG를 그대로 응답 (테스트용 — <img src>가 이 엔드포인트를 직접 가리킬 수 있음)
+ *   ?mode=desktop | mobile   (기본 desktop)
+ *   ?upload=1                Supabase Storage(job-previews)에 1회 저장 후 공개 URL(JSON) 반환 (운영용)
+ *                            생략 시 PNG를 그대로 응답 (테스트용)
  *
- * 운영 메모:
- *   - 테스트(PNG 직접 반환)는 메일을 열 때마다 캡처가 돌아 비싸다.
- *   - 운영에선 공고 import 시점에 ?upload=1 로 "한 번만" 떠서 Storage URL을 메일에 박는다.
+ * 크롬 바이너리: @sparticuz/chromium-min + 원격 팩(.tar).
+ *   서버리스 번들에 50MB 바이너리를 안 넣고, 콜드스타트 때 팩을 받아 /tmp에 풀어 실행.
+ *   (Next 파일 트레이싱이 라이브러리를 함수에 못 넣는 문제 우회 — libnss3.so 누락 해결)
+ *   더 빠르게 하려면 CHROMIUM_PACK_URL 로 Supabase 등 가까운 곳의 팩을 가리킨다.
  *
- * 환경변수:
- *   NEXT_PUBLIC_SITE_URL          (예: https://www.k-alba.kr)
- *   SUPABASE_URL / NEXT_PUBLIC_SUPABASE_URL,  SUPABASE_SERVICE_ROLE_KEY   (upload 시)
- *   LOCAL_CHROME_PATH             (로컬 개발 시 설치된 Chrome 경로, 선택)
+ * 환경변수: NEXT_PUBLIC_SITE_URL, CHROMIUM_PACK_URL(선택),
+ *   SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY(upload 시), LOCAL_CHROME_PATH(로컬)
  */
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60; // 캡처는 콜드스타트 포함 수십 초 걸릴 수 있음
+export const maxDuration = 60;
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://www.k-alba.kr";
+
+// @sparticuz/chromium 버전과 동일 태그의 팩이어야 함 (현재 131.0.1)
+const CHROMIUM_PACK =
+  process.env.CHROMIUM_PACK_URL ||
+  "https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar";
 
 const VIEWPORTS = {
   desktop: { width: 1280, height: 900, deviceScaleFactor: 2, isMobile: false },
@@ -35,7 +39,6 @@ const VIEWPORTS = {
 };
 
 async function launchBrowser() {
-  // 로컬 개발: 시스템 Chrome 사용 (sparticuz는 서버리스 전용, 로컬에선 executablePath가 없음)
   const local = process.env.LOCAL_CHROME_PATH;
   if (local) {
     return puppeteer.launch({
@@ -46,8 +49,8 @@ async function launchBrowser() {
     });
   }
   return puppeteer.launch({
-    args: chromium.args,
-    executablePath: await chromium.executablePath(),
+    args: [...chromium.args, "--lang=ko-KR"],
+    executablePath: await chromium.executablePath(CHROMIUM_PACK),
     headless: chromium.headless,
     defaultViewport: null,
   });
@@ -64,6 +67,11 @@ export async function GET(request, { params }) {
   try {
     browser = await launchBrowser();
     const page = await browser.newPage();
+    await page.setExtraHTTPHeaders({ "Accept-Language": "ko-KR,ko;q=0.9" });
+    await page.evaluateOnNewDocument(() => {
+      Object.defineProperty(navigator, "language", { get: () => "ko-KR" });
+      Object.defineProperty(navigator, "languages", { get: () => ["ko-KR", "ko"] });
+    });
     await page.setViewport(vp);
     if (mode === "mobile") {
       await page.setUserAgent(
@@ -73,34 +81,36 @@ export async function GET(request, { params }) {
 
     await page.goto(`${SITE}/jobs/${id}`, { waitUntil: "networkidle2", timeout: 45000 });
 
-    // 클라이언트 렌더 페이지 — "근무 조건"이 보일 때까지 대기
     await page
       .waitForFunction(() => /근무\s*조건/.test(document.body.innerText), { timeout: 20000 })
       .catch(() => {});
 
-    // 하단 고정 지원바·토스트 등 position:fixed 오버레이 숨김 (캡처 깔끔하게)
+    // 카카오 지도 타일이 실제로 로드될 때까지 대기 (안 기다리면 지도 자리가 빈칸으로 찍힘)
+    await page
+      .waitForFunction(
+        () => [...document.querySelectorAll("img")].some(
+          (i) => /daumcdn|kakao|map/i.test(i.src) && i.complete && i.naturalWidth > 0
+        ),
+        { timeout: 12000 }
+      )
+      .catch(() => {});
+
     await page.addStyleTag({ content: `[style*="position:fixed"]{display:none !important}` });
 
-    // 지도 타일·이미지 로드 여유
-    await new Promise((r) => setTimeout(r, 700));
+    await new Promise((r) => setTimeout(r, 2000)); // 지도 타일 추가 로드 여유
 
     const png = await page.screenshot({ type: "png", fullPage: true });
 
     await browser.close();
     browser = null;
 
-    // ── 테스트: PNG 직접 반환 ──
     if (!doUpload) {
       return new Response(png, {
         status: 200,
-        headers: {
-          "Content-Type": "image/png",
-          "Cache-Control": "public, max-age=300", // 5분 캐시 (테스트용)
-        },
+        headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=300" },
       });
     }
 
-    // ── 운영: Storage에 1회 저장 후 공개 URL 반환 ──
     const supaUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!supaUrl || !serviceKey) {
