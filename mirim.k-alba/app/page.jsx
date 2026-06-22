@@ -577,11 +577,6 @@ export default function LandingPage() {
           }} />
 
           <div style={{ maxWidth: 1080, margin: "0 auto", position: "relative" }}>
-            {/* 상단 워드마크 */}
-            <div style={{ marginBottom: 56 }}>
-              <KWordmark variant="dark" size={28} />
-            </div>
-
             <div style={{ textAlign: "center", marginBottom: 64 }}>
               <h1
                 style={{
@@ -590,6 +585,7 @@ export default function LandingPage() {
                   lineHeight: 1.2,
                   letterSpacing: "-0.04em",
                   marginBottom: 24,
+                  whiteSpace: "pre-line",
                 }}
               >
                 {t("landing.heroPre")}
@@ -610,6 +606,7 @@ export default function LandingPage() {
                   marginBottom: 40,
                   maxWidth: 680,
                   margin: "0 auto 40px",
+                  whiteSpace: "pre-line",
                 }}
               >
                 {t("landing.heroSubtitle")}
@@ -707,11 +704,6 @@ export default function LandingPage() {
               <UserChip user={user} />
             </div>
 
-            {/* 상단 워드마크 */}
-            <div style={{ marginBottom: 32 }}>
-              <KWordmark variant="dark" size={22} />
-            </div>
-
             <div style={{ fontSize: 32, marginBottom: 16 }}>👋</div>
             <h1
               style={{
@@ -774,11 +766,6 @@ export default function LandingPage() {
             {/* 우측 상단 UserChip */}
             <div style={{ position: "absolute", top: -10, right: 0 }}>
               <UserChip user={user} />
-            </div>
-
-            {/* 상단 워드마크 */}
-            <div style={{ marginBottom: 32 }}>
-              <KWordmark variant="dark" size={22} />
             </div>
 
             <div style={{ fontSize: 32, marginBottom: 16 }}>👋</div>
@@ -1546,6 +1533,7 @@ export default function LandingPage() {
               letterSpacing: "-0.028em",
               marginBottom: 22,
               color: "#FFFFFF",
+              whiteSpace: "pre-line",
             }}
           >
             {t("landing.ctaHeadingPre")}
@@ -1570,6 +1558,7 @@ export default function LandingPage() {
               maxWidth: 620,
               marginLeft: "auto",
               marginRight: "auto",
+              whiteSpace: "pre-line",
             }}
           >
             {t("landing.ctaSub")}

@@ -2,7 +2,7 @@ import "./globals.css";
 import AppFrame from "@/components/AppFrame";
 
 export const metadata = {
-  title: "K-ALBA · 외국인 알바 매칭 + 시간제취업 신청",
+  title: "K-ALBA",
   description: "한국에 거주하는 260만 외국인을 위한 통합 디지털 인프라. 알바 매칭, 표준근로계약서, 시간제취업 신청, 출입국 통합신청서 자동 작성.",
   keywords: ["외국인 알바", "유학생 알바", "시간제취업", "외국인 일자리", "K-ALBA"],
   authors: [{ name: "미림미디어랩(주)" }],
