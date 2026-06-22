@@ -51,7 +51,7 @@ export default function MyApplicationsPage() {
     });
   }, [router]);
 
-  if (loading) return isDesktop ? <PageLoading message="잠시만 기다려주세요" minHeight={400} /> : <ListPageSkel maxWidth={820} rows={3} />;
+  if (loading) return isDesktop ? <PageLoading message={t("common.pleaseWait")} minHeight={400} /> : <ListPageSkel maxWidth={820} rows={3} />;
 
   const pendingCount = applications.filter(a => a.status === "pending").length;
   const acceptedCount = applications.filter(a => a.status === "accepted").length;

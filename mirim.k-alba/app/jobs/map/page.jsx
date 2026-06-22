@@ -6,6 +6,7 @@ import KakaoMap from "@/components/KakaoMap";
 import { useNearbyJobs } from "@/lib/useNearbyJobs";
 import { formatDistance } from "@/lib/geolocation";
 import { useIsDesktop } from "@/lib/useIsDesktop";
+import { useT } from "@/lib/i18n";
 
 /**
  * 지도 탐색 뷰 — 반경 내 공고들을 지도에 마커로 표시
@@ -19,6 +20,7 @@ import { useIsDesktop } from "@/lib/useIsDesktop";
  *   - 상단 필터: 반경 / 비자 / 업종
  */
 export default function JobsMapPage() {
+  const t = useT();
   const [radius, setRadius] = useState(10);
   const [visaFilter, setVisaFilter] = useState(null);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -102,28 +104,28 @@ export default function JobsMapPage() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 14 }}>
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>
-              Map · 지도 탐색
+              {t("jobsMap.eyebrow")}
             </div>
             <div style={{ fontSize: 22, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>
-              내 주변 공고 <span style={{ color: T.accent }}>{jobsWithCoords.length}</span>개
+              {t("jobsMap.nearbyCount", { n: jobsWithCoords.length })}
             </div>
           </div>
           <Link href="/jobs" style={{ textDecoration: "none" }}>
             <span style={{ display: "inline-block", padding: "8px 14px", fontSize: 13, fontWeight: 600, color: T.ink2, border: `1px solid ${T.border}`, borderRadius: 6 }}>
-              📋 전체 공고 목록 보기
+              {t("jobsMap.viewAllJobs")}
             </span>
           </Link>
         </div>
 
         {/* 필터 */}
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginBottom: 16 }}>
-          <span style={{ fontSize: 12, color: T.ink3, marginRight: 2 }}>반경</span>
+          <span style={{ fontSize: 12, color: T.ink3, marginRight: 2 }}>{t("jobsMap.radius")}</span>
           {[3, 5, 10, 20, 50].map((r) => (
             <button key={r} onClick={() => setRadius(r)} style={chip(radius === r)}>{r}km</button>
           ))}
           <span style={{ width: 1, height: 18, background: T.border, margin: "0 8px" }} />
-          <span style={{ fontSize: 12, color: T.ink3, marginRight: 2 }}>비자</span>
-          <button onClick={() => setVisaFilter(null)} style={chipA(!visaFilter)}>전체</button>
+          <span style={{ fontSize: 12, color: T.ink3, marginRight: 2 }}>{t("jobsMap.visa")}</span>
+          <button onClick={() => setVisaFilter(null)} style={chipA(!visaFilter)}>{t("jobsMap.all")}</button>
           {VISA_OPTIONS.map((v) => {
             const active = visaFilter?.includes(v);
             return (
@@ -136,10 +138,10 @@ export default function JobsMapPage() {
         <div style={{ display: "flex", gap: 20, height: "calc(100vh - 240px)", minHeight: 480 }}>
           <aside ref={listRef} style={{ width: 380, flexShrink: 0, border: `1px solid ${T.border}`, borderRadius: 12, overflowY: "auto", background: T.paper }}>
             {loading ? (
-              <div style={{ padding: 24, fontSize: 13, color: T.ink3 }}>🗺️ 주변 공고 찾는 중...</div>
+              <div style={{ padding: 24, fontSize: 13, color: T.ink3 }}>{t("jobsMap.searching")}</div>
             ) : jobsWithCoords.length === 0 ? (
               <div style={{ padding: 24, fontSize: 13, color: T.ink3, lineHeight: 1.7 }}>
-                이 반경에 표시할 공고가 없어요.<br />반경을 넓혀보세요.
+                {t("jobsMap.noJobsInRadius")}<br />{t("jobsMap.widenRadius")}
               </div>
             ) : (
               jobsWithCoords.map((j) => {
@@ -154,12 +156,12 @@ export default function JobsMapPage() {
                     <div style={{ fontSize: 14, fontWeight: 700, color: T.ink, marginBottom: 4, letterSpacing: "-0.01em" }}>{j.title}</div>
                     <div style={{ fontSize: 12, color: T.ink2, marginBottom: 6 }}>{j.company_name || ""}{j.company_name ? " · " : ""}{j.sigungu || j.address || ""}</div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: T.accent }}>{j.pay_type || "시급"} ₩{Number(j.pay_amount || 0).toLocaleString()}</span>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: T.accent }}>{j.pay_type || t("jobsMap.payHourly")} ₩{Number(j.pay_amount || 0).toLocaleString()}</span>
                       <span style={{ fontSize: 12, color: T.ink3 }}>📍 {formatDistance(j.distance_m)}</span>
                     </div>
                     {sel && (
                       <Link href={`/jobs/${j.id}`} style={{ textDecoration: "none" }}>
-                        <div style={{ marginTop: 10, padding: "8px", textAlign: "center", background: T.n9, color: T.paper, borderRadius: 6, fontSize: 12, fontWeight: 700 }}>자세히 보기 →</div>
+                        <div style={{ marginTop: 10, padding: "8px", textAlign: "center", background: T.n9, color: T.paper, borderRadius: 6, fontSize: 12, fontWeight: 700 }}>{t("jobsMap.viewDetail")}</div>
                       </Link>
                     )}
                   </div>
@@ -185,12 +187,12 @@ export default function JobsMapPage() {
             )}
             {locationSource !== "default" && (
               <div style={{ position: "absolute", top: 12, right: 12, background: T.paper, border: `1px solid ${T.border}`, borderRadius: 4, padding: "6px 10px", fontSize: 11, fontWeight: 600, color: locationSource === "gps" ? T.green : T.accent, boxShadow: "0 2px 8px rgba(0,0,0,0.1)", zIndex: 5 }}>
-                {locationSource === "gps" ? "📍 현재 위치" : "🏠 등록 거주지"}
+                {locationSource === "gps" ? t("jobsMap.currentLocation") : t("jobsMap.registeredResidence")}
               </div>
             )}
             {locationSource === "default" && !loading && (
               <button onClick={requestLocation} style={{ position: "absolute", bottom: 16, left: "50%", transform: "translateX(-50%)", padding: "12px 22px", background: T.n9, color: T.paper, border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 12px rgba(10,22,40,0.25)", zIndex: 5, whiteSpace: "nowrap" }}>
-                📍 내 위치 허용하고 주변 공고 보기
+                {t("jobsMap.allowLocation")}
               </button>
             )}
           </main>
@@ -228,10 +230,10 @@ export default function JobsMapPage() {
               textTransform: "uppercase",
               marginBottom: 2,
             }}>
-              Map · 지도 탐색
+              {t("jobsMap.eyebrow")}
             </div>
             <div style={{ fontSize: 15, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em" }}>
-              내 주변 공고 {jobsWithCoords.length}개
+              {t("jobsMap.nearbyCount", { n: jobsWithCoords.length })}
             </div>
           </div>
           <Link href="/jobs" style={{ textDecoration: "none" }}>
@@ -244,7 +246,7 @@ export default function JobsMapPage() {
               borderRadius: 4,
               letterSpacing: "-0.01em",
             }}>
-              📋 리스트 보기
+              {t("jobsMap.viewList")}
             </div>
           </Link>
         </div>
@@ -256,7 +258,7 @@ export default function JobsMapPage() {
           flexWrap: "wrap",
           alignItems: "center",
         }}>
-          <span style={{ fontSize: 11, color: T.ink3, marginRight: 2 }}>반경:</span>
+          <span style={{ fontSize: 11, color: T.ink3, marginRight: 2 }}>{t("jobsMap.radiusColon")}</span>
           {[3, 5, 10, 20, 50].map((r) => (
             <button
               key={r}
@@ -277,7 +279,7 @@ export default function JobsMapPage() {
             </button>
           ))}
 
-          <span style={{ fontSize: 11, color: T.ink3, marginLeft: 8, marginRight: 2 }}>비자:</span>
+          <span style={{ fontSize: 11, color: T.ink3, marginLeft: 8, marginRight: 2 }}>{t("jobsMap.visaColon")}</span>
           <button
             onClick={() => setVisaFilter(null)}
             style={{
@@ -292,7 +294,7 @@ export default function JobsMapPage() {
               fontFamily: "inherit",
             }}
           >
-            전체
+            {t("jobsMap.all")}
           </button>
           {VISA_OPTIONS.map((v) => {
             const active = visaFilter?.includes(v);
@@ -333,7 +335,7 @@ export default function JobsMapPage() {
             color: T.ink3,
             zIndex: 10,
           }}>
-            🗺️ 주변 공고 찾는 중...
+            {t("jobsMap.searching")}
           </div>
         ) : null}
 
@@ -364,7 +366,7 @@ export default function JobsMapPage() {
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
             zIndex: 5,
           }}>
-            {locationSource === "gps" ? "📍 현재 위치" : "🏠 등록 거주지"}
+            {locationSource === "gps" ? t("jobsMap.currentLocation") : t("jobsMap.registeredResidence")}
           </div>
         )}
 
@@ -391,14 +393,14 @@ export default function JobsMapPage() {
               zIndex: 5,
             }}
           >
-            📍 내 위치 허용하고 주변 공고 보기
+            {t("jobsMap.allowLocation")}
           </button>
         )}
       </div>
 
       {/* 하단 선택 공고 시트 */}
       {selectedJob && (
-        <SelectedJobSheet job={selectedJob} onClose={() => setSelectedJob(null)} />
+        <SelectedJobSheet job={selectedJob} onClose={() => setSelectedJob(null)} t={t} />
       )}
     </div>
   );
@@ -407,7 +409,7 @@ export default function JobsMapPage() {
 /**
  * 마커 클릭 시 하단에 뜨는 공고 요약 시트
  */
-function SelectedJobSheet({ job, onClose }) {
+function SelectedJobSheet({ job, onClose, t }) {
   return (
     <div style={{
       position: "fixed",
@@ -484,13 +486,13 @@ function SelectedJobSheet({ job, onClose }) {
         marginBottom: 12,
       }}>
         <div>
-          <div style={{ fontSize: 11, color: T.ink3, marginBottom: 2 }}>거리</div>
+          <div style={{ fontSize: 11, color: T.ink3, marginBottom: 2 }}>{t("jobsMap.distance")}</div>
           <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>
             📍 {formatDistance(job.distance_m)}
           </div>
         </div>
         <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 11, color: T.ink3, marginBottom: 2 }}>{job.pay_type || "시급"}</div>
+          <div style={{ fontSize: 11, color: T.ink3, marginBottom: 2 }}>{job.pay_type || t("jobsMap.payHourly")}</div>
           <div style={{
             fontSize: 18,
             fontWeight: 800,
@@ -526,7 +528,7 @@ function SelectedJobSheet({ job, onClose }) {
             background: "#E8F5EC",
             color: T.green,
           }}>
-            🏠 숙식 제공
+            {t("jobsMap.providesHousing")}
           </span>
         )}
       </div>
@@ -546,7 +548,7 @@ function SelectedJobSheet({ job, onClose }) {
           fontFamily: "inherit",
           letterSpacing: "-0.01em",
         }}>
-          자세히 보기 →
+          {t("jobsMap.viewDetail")}
         </button>
       </Link>
     </div>

@@ -7,6 +7,7 @@ import { JOB_PRESETS, getMarketPay } from "@/data/marketData";
 import { createJob, getCurrentUser } from "@/lib/supabase";
 import { Button, KIcon } from "@/components/ui";
 import { useIsDesktop } from "@/lib/useIsDesktop";
+import { useT } from "@/lib/i18n";
 
 /**
  * /jobs/post 공고 등록 (BI v2)
@@ -35,6 +36,7 @@ import { useIsDesktop } from "@/lib/useIsDesktop";
  *   - 푸시 알림 발송 (반경 내 구독자)
  */
 export default function PostJobPage() {
+  const t = useT();
   const router = useRouter();
   const [messages, setMessages] = useState([]);
   const [step, setStep] = useState(0);
@@ -82,32 +84,34 @@ export default function PostJobPage() {
   const getBotMessage = (s, a) => {
     const p = JOB_PRESETS[a.jobType] || JOB_PRESETS["기타"];
     const jt = a.jobType || "";
-    if (s === 1) return "어떤 업종의 알바를 구하시나요?";
-    if (s === 2) return `공고 제목을 입력해 주세요!\n\n💡 예시: "${p.title}"`;
-    if (s === 3) return `근무형태를 선택해 주세요. (여러 개 가능)\n\n💡 ${jt} 업종은 보통 "${p.workTypeHint}" 이 많아요.`;
-    if (s === 4) return `근무지 주소를 입력해 주세요.\n\n💡 예시: "${p.addrEx}"\n\n🔍 아래 [주소 검색] 버튼을 눌러 쉽게 찾을 수 있어요!`;
-    if (s === 5) return `상세 주소를 입력해 주세요.\n(건물명, 층수, 호수 등)\n\n💡 예시: "${p.addrDEx || "3층, OO빌딩"}"\n(없으면 "없음" 입력)`;
-    if (s === 6) return `급여 형태를 선택해 주세요.\n\n💡 ${jt} 업종은 "${p.payType}" 지급이 일반적이에요.`;
+    if (s === 1) return t("postJob.botStep1");
+    if (s === 2) return t("postJob.botStep2", { ex: p.title });
+    if (s === 3) return t("postJob.botStep3", { jt, hint: p.workTypeHint });
+    if (s === 4) return t("postJob.botStep4", { ex: p.addrEx });
+    if (s === 5) return t("postJob.botStep5", { ex: p.addrDEx || t("postJob.phAddrDetailEx") });
+    if (s === 6) return t("postJob.botStep6", { jt, pt: p.payType });
     if (s === 7) {
       const mkt = getMarketPay(a.jobType, a.address);
       let guide = "";
       if (mkt) {
-        guide = `💡 ${mkt.region === "전국" ? jt + " 전국 평균" : mkt.region + " " + jt} 현재 공고 시세:\n`;
-        guide += `▫ 평균: ${mkt.type} ${mkt.avg.toLocaleString()}원\n`;
-        guide += `▫ 중앙값: ${mkt.type} ${mkt.median.toLocaleString()}원 (가장 많이 주는 금액)\n`;
-        guide += `▫ 범위: ${mkt.min.toLocaleString()}~${mkt.max.toLocaleString()}원\n`;
-        guide += `📊 최근 공고 ${mkt.count}건 분석`;
-        if (mkt.note) guide += `\n📌 ${mkt.note}`;
+        guide = mkt.region === "전국"
+          ? t("postJob.guideHeaderNation", { jt })
+          : t("postJob.guideHeaderRegion", { region: mkt.region, jt });
+        guide += t("postJob.guideAvg", { type: mkt.type, avg: mkt.avg.toLocaleString() });
+        guide += t("postJob.guideMedian", { type: mkt.type, median: mkt.median.toLocaleString() });
+        guide += t("postJob.guideRange", { min: mkt.min.toLocaleString(), max: mkt.max.toLocaleString() });
+        guide += t("postJob.guideCount", { count: mkt.count });
+        if (mkt.note) guide += t("postJob.guideNote", { note: mkt.note });
       }
-      return `${a.payType || p.payType} 금액을 입력해 주세요. (숫자만)\n\n${guide}\n\n⚠️ 최저시급: ₩10,030`;
+      return t("postJob.botStep7", { pt: a.payType || p.payType, guide });
     }
-    if (s === 8) return `근무 시간대를 알려주세요.\n\n💡 ${jt} 추천: "${p.hoursEx}"`;
-    if (s === 9) return `근무 요일을 선택해 주세요.\n\n💡 ${jt} 업종은 "${p.daysHint}" 이 많아요.`;
-    if (s === 10) return `필요한 한국어 수준은?\n\n💡 ${jt} 업종은 "${p.koreanHint}" 정도면 충분해요.`;
-    if (s === 11) return "지원 가능한 비자를 선택해 주세요. (여러 개 가능)";
-    if (s === 12) return `모집 인원은 몇 명인가요?\n\n💡 ${jt} 공고는 보통 ${p.headHint} 모집이 많아요.`;
-    if (s === 13) return p.beneHint ? `제공하는 복리후생이 있나요? (여러 개 가능)\n\n💡 ${jt} 업종은 보통 "${p.beneHint}" 을 제공해요.` : "제공하는 복리후생이 있나요? (여러 개 가능)";
-    if (s === 14) return `마지막이에요! 상세 업무 내용이나 우대 조건을 입력해 주세요.\n\n💡 ${jt} 예시:\n"${p.descEx}"\n\n(건너뛰려면 '없음' 입력)`;
+    if (s === 8) return t("postJob.botStep8", { jt, ex: p.hoursEx });
+    if (s === 9) return t("postJob.botStep9", { jt, hint: p.daysHint });
+    if (s === 10) return t("postJob.botStep10", { jt, hint: p.koreanHint });
+    if (s === 11) return t("postJob.botStep11");
+    if (s === 12) return t("postJob.botStep12", { jt, hint: p.headHint });
+    if (s === 13) return p.beneHint ? t("postJob.botStep13", { jt, hint: p.beneHint }) : t("postJob.botStep13NoHint");
+    if (s === 14) return t("postJob.botStep14", { jt, ex: p.descEx });
     return "";
   };
 
@@ -115,15 +119,15 @@ export default function PostJobPage() {
     const p = JOB_PRESETS[a.jobType] || JOB_PRESETS["기타"];
     if (s === 2) return p.title;
     if (s === 4) return p.addrEx;
-    if (s === 5) return p.addrDEx || "예: 3층, OO빌딩";
+    if (s === 5) return p.addrDEx || t("postJob.phAddrDetailEx");
     if (s === 7) {
       const mkt = getMarketPay(a.jobType, a.address);
       return mkt ? String(mkt.median) : p.payEx;
     }
     if (s === 8) return p.hoursEx;
-    if (s === 12) return "직접 입력";
-    if (s === 14) return "업무 내용, 우대 조건 등";
-    return "입력하세요...";
+    if (s === 12) return t("postJob.phHeadcount");
+    if (s === 14) return t("postJob.phDescription");
+    return t("postJob.sendPlaceholder");
   };
 
   useEffect(() => {
@@ -131,7 +135,7 @@ export default function PostJobPage() {
     initRef.current = true;
     setTyping(true);
     setTimeout(() => {
-      setMessages([{ from: "bot", text: "안녕하세요 사장님! 😊\nK-ALBA 채용공고 도우미입니다.\n대화하듯 답변하시면 채용공고가 자동으로 만들어져요!" }]);
+      setMessages([{ from: "bot", text: t("postJob.greeting") }]);
       setTyping(false);
       setTimeout(() => {
         setTyping(true);
@@ -152,7 +156,7 @@ export default function PostJobPage() {
     if (newStep > TOTAL_STEPS) {
       setTyping(true);
       setTimeout(() => {
-        setMessages((m) => [...m, { from: "bot", text: "채용공고가 완성되었습니다! 아래 내용을 확인해 주세요. 👇", summary: newAnswers }]);
+        setMessages((m) => [...m, { from: "bot", text: t("postJob.completedNotice"), summary: newAnswers }]);
         setTyping(false);
       }, 800);
       return;
@@ -282,13 +286,13 @@ export default function PostJobPage() {
 
   // 웹 폼 제출: 동일한 handlePost 재사용
   const submitWebForm = async () => {
-    if (!form.jobType) return setWebErr("업종을 선택해 주세요.");
-    if (!form.title.trim()) return setWebErr("공고 제목을 입력해 주세요.");
-    if (form.workType.length === 0) return setWebErr("근무형태를 1개 이상 선택해 주세요.");
-    if (!form.address) return setWebErr("근무지 주소를 입력해 주세요.");
-    if (!form.payType) return setWebErr("급여 형태를 선택해 주세요.");
-    if (!String(form.payAmount).trim()) return setWebErr("급여 금액을 입력해 주세요.");
-    if (form.visa.length === 0) return setWebErr("지원 가능 비자를 1개 이상 선택해 주세요.");
+    if (!form.jobType) return setWebErr(t("postJob.errJobType"));
+    if (!form.title.trim()) return setWebErr(t("postJob.errTitle"));
+    if (form.workType.length === 0) return setWebErr(t("postJob.errWorkType"));
+    if (!form.address) return setWebErr(t("postJob.errAddress"));
+    if (!form.payType) return setWebErr(t("postJob.errPayType"));
+    if (!String(form.payAmount).trim()) return setWebErr(t("postJob.errPayAmount"));
+    if (form.visa.length === 0) return setWebErr(t("postJob.errVisa"));
     setWebErr("");
     setWebBusy(true);
     try {
@@ -324,7 +328,7 @@ export default function PostJobPage() {
       initRef.current = true;
       setTyping(true);
       setTimeout(() => {
-        setMessages([{ from: "bot", text: "안녕하세요 사장님! 😊\nK-ALBA 채용공고 도우미입니다.\n대화하듯 답변하시면 채용공고가 자동으로 만들어져요!" }]);
+        setMessages([{ from: "bot", text: t("postJob.greeting") }]);
         setTyping(false);
         setTimeout(() => {
           setTyping(true);
@@ -348,17 +352,17 @@ export default function PostJobPage() {
       <div style={{ padding: "50px 20px", maxWidth: 440, margin: "0 auto", textAlign: "center" }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
         <h2 style={{ fontSize: 20, fontWeight: 800, color: T.navy, marginBottom: 8 }}>
-          공고가 등록되었습니다!
+          {t("postJob.postedTitle")}
         </h2>
         <p style={{ color: T.ink3, fontSize: 14, marginBottom: 24 }}>
-          외국인 구직자들에게 자동으로 매칭됩니다
+          {t("postJob.postedDesc")}
         </p>
         <div style={{ display: "flex", gap: 10 }}>
           <Button variant="primaryDark" fullWidth onClick={() => router.push("/my/jobs")}>
-            내 공고 확인
+            {t("postJob.viewMyJobs")}
           </Button>
           <Button variant="secondary" fullWidth onClick={() => { setPosted(false); resetChat(); }}>
-            추가 등록
+            {t("postJob.postAnother")}
           </Button>
         </div>
       </div>
@@ -381,82 +385,82 @@ export default function PostJobPage() {
     return (
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "40px 28px 80px" }}>
         <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 18 }} />
-        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>사장님 공고 등록</div>
-        <h1 style={{ fontSize: 30, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.2 }}>공고 등록</h1>
-        <p style={{ color: T.ink2, fontSize: 14, marginBottom: 30, lineHeight: 1.6 }}>필요한 정보를 입력하면 공고가 바로 등록돼요. {req} 표시는 필수입니다.</p>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>{t("postJob.webEyebrow")}</div>
+        <h1 style={{ fontSize: 30, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.2 }}>{t("postJob.title")}</h1>
+        <p style={{ color: T.ink2, fontSize: 14, marginBottom: 30, lineHeight: 1.6 }}>{t("postJob.webIntro", { req })}</p>
 
         <div style={field}>
-          <label style={lab}>업종 {req}</label>
+          <label style={lab}>{t("postJob.labelJobType", { req })}</label>
           <div style={rowS}>{getStepOptions(1).map((o) => <button key={o} type="button" onClick={() => setF("jobType", o)} style={chip(form.jobType === o)}>{o}</button>)}</div>
         </div>
 
         <div style={field}>
-          <label style={lab}>공고 제목 {req}</label>
+          <label style={lab}>{t("postJob.labelTitle", { req })}</label>
           <input value={form.title} onChange={(e) => setF("title", e.target.value)} placeholder={preset.title} style={inp} />
         </div>
 
         <div style={field}>
-          <label style={lab}>근무형태 {req} <span style={{ color: T.ink3, fontWeight: 500 }}>(여러 개 가능)</span></label>
+          <label style={lab}>{t("postJob.labelWorkType", { req })} <span style={{ color: T.ink3, fontWeight: 500 }}>{t("postJob.multipleAllowed")}</span></label>
           <div style={rowS}>{getStepOptions(3).map((o) => <button key={o} type="button" onClick={() => toggle("workType", o)} style={chip(form.workType.includes(o))}>{o}</button>)}</div>
         </div>
 
         <div style={field}>
-          <label style={lab}>근무지 주소 {req}</label>
+          <label style={lab}>{t("postJob.labelAddress", { req })}</label>
           <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
-            <input value={form.address} readOnly placeholder="주소 검색을 눌러주세요" style={{ ...inp, flex: 1, background: T.cream }} />
-            <button type="button" onClick={() => setWebAddrOpen(true)} style={{ padding: "11px 16px", borderRadius: 8, background: "#FEE500", color: "#3C1E1E", border: "none", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>🔍 주소 검색</button>
+            <input value={form.address} readOnly placeholder={t("postJob.phAddressSearch")} style={{ ...inp, flex: 1, background: T.cream }} />
+            <button type="button" onClick={() => setWebAddrOpen(true)} style={{ padding: "11px 16px", borderRadius: 8, background: "#FEE500", color: "#3C1E1E", border: "none", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>{t("postJob.webAddrSearchBtn")}</button>
           </div>
-          <input value={form.addressDetail} onChange={(e) => setF("addressDetail", e.target.value)} placeholder="상세주소 (건물명·층·호수 등 — 선택)" style={inp} />
+          <input value={form.addressDetail} onChange={(e) => setF("addressDetail", e.target.value)} placeholder={t("postJob.phAddressDetail")} style={inp} />
         </div>
 
         <div style={field}>
-          <label style={lab}>급여 {req}</label>
+          <label style={lab}>{t("postJob.labelPay", { req })}</label>
           <div style={{ ...rowS, marginBottom: 8 }}>{getStepOptions(6).map((o) => <button key={o} type="button" onClick={() => setF("payType", o)} style={chip(form.payType === o)}>{o}</button>)}</div>
-          <input value={form.payAmount} onChange={(e) => setF("payAmount", e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="금액 (숫자만, 예: 11000)" style={inp} />
-          <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 6 }}>⚠️ 2026년 최저시급 ₩10,030</div>
+          <input value={form.payAmount} onChange={(e) => setF("payAmount", e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder={t("postJob.phPayAmount")} style={inp} />
+          <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 6 }}>{t("postJob.minWage2026")}</div>
         </div>
 
         <div style={field}>
-          <label style={lab}>근무 시간대</label>
+          <label style={lab}>{t("postJob.labelWorkHours")}</label>
           <div style={{ ...rowS, marginBottom: 8 }}>{getStepOptions(8).map((o) => <button key={o} type="button" onClick={() => setF("workHours", o)} style={chip(form.workHours === o)}>{o}</button>)}</div>
-          <input value={form.workHours} onChange={(e) => setF("workHours", e.target.value)} placeholder="직접 입력 가능 (예: 09:00~18:00)" style={inp} />
+          <input value={form.workHours} onChange={(e) => setF("workHours", e.target.value)} placeholder={t("postJob.phWorkHours")} style={inp} />
         </div>
 
         <div style={field}>
-          <label style={lab}>근무 요일</label>
+          <label style={lab}>{t("postJob.labelWorkDays")}</label>
           <div style={rowS}>{getStepOptions(9).map((o) => <button key={o} type="button" onClick={() => setF("workDays", o)} style={chip(form.workDays === o)}>{o}</button>)}</div>
         </div>
 
         <div style={field}>
-          <label style={lab}>필요한 한국어 수준</label>
+          <label style={lab}>{t("postJob.labelKorean")}</label>
           <div style={rowS}>{getStepOptions(10).map((o) => <button key={o} type="button" onClick={() => setF("korean", o)} style={chip(form.korean === o)}>{o}</button>)}</div>
         </div>
 
         <div style={field}>
-          <label style={lab}>지원 가능 비자 {req} <span style={{ color: T.ink3, fontWeight: 500 }}>(여러 개 가능)</span></label>
+          <label style={lab}>{t("postJob.labelVisa", { req })} <span style={{ color: T.ink3, fontWeight: 500 }}>{t("postJob.multipleAllowed")}</span></label>
           <div style={rowS}>{getStepOptions(11).map((o) => <button key={o} type="button" onClick={() => toggle("visa", o)} style={chip(form.visa.includes(o))}>{o}</button>)}</div>
         </div>
 
         <div style={field}>
-          <label style={lab}>모집 인원</label>
+          <label style={lab}>{t("postJob.labelHeadcount")}</label>
           <div style={{ ...rowS, marginBottom: 8 }}>{getStepOptions(12).map((o) => <button key={o} type="button" onClick={() => setF("headcount", o)} style={chip(form.headcount === o)}>{o}</button>)}</div>
-          <input value={form.headcount} onChange={(e) => setF("headcount", e.target.value)} placeholder="직접 입력 가능" style={inp} />
+          <input value={form.headcount} onChange={(e) => setF("headcount", e.target.value)} placeholder={t("postJob.phHeadcountDirect")} style={inp} />
         </div>
 
         <div style={field}>
-          <label style={lab}>복리후생 <span style={{ color: T.ink3, fontWeight: 500 }}>(여러 개 가능)</span></label>
+          <label style={lab}>{t("postJob.labelBenefits")} <span style={{ color: T.ink3, fontWeight: 500 }}>{t("postJob.multipleAllowed")}</span></label>
           <div style={rowS}>{getStepOptions(13).map((o) => <button key={o} type="button" onClick={() => toggle("benefits", o)} style={chip(form.benefits.includes(o))}>{o}</button>)}</div>
         </div>
 
         <div style={field}>
-          <label style={lab}>상세 설명</label>
-          <textarea value={form.description} onChange={(e) => setF("description", e.target.value)} placeholder="담당 업무, 우대 조건 등을 자유롭게 적어주세요." style={{ ...inp, minHeight: 110, resize: "vertical" }} />
+          <label style={lab}>{t("postJob.labelDescription")}</label>
+          <textarea value={form.description} onChange={(e) => setF("description", e.target.value)} placeholder={t("postJob.phDescriptionWeb")} style={{ ...inp, minHeight: 110, resize: "vertical" }} />
         </div>
 
         {webErr && <div style={{ color: "#DC2626", fontSize: 13, marginBottom: 14, fontWeight: 600 }}>{webErr}</div>}
 
         <Button variant="primaryDark" fullWidth onClick={submitWebForm} disabled={webBusy}>
-          {webBusy ? "등록 중..." : "공고 등록하기"}
+          {webBusy ? t("postJob.posting") : t("postJob.submitBtn")}
         </Button>
 
         <AddressSearchModal
@@ -474,31 +478,31 @@ export default function PostJobPage() {
       <div style={{ padding: "14px 20px", borderBottom: `1px solid ${T.border}`, background: "#fff", display: "flex", alignItems: "center", gap: 12 }}>
         <KIcon variant="kakao" size="md" style={{ width: 40, height: 40, fontSize: 20, borderRadius: 12 }} />
         <div>
-          <div style={{ fontWeight: 800, fontSize: 15, color: T.navy }}>K-ALBA 채용 도우미</div>
-          <div style={{ fontSize: 11, color: T.ink3 }}>카카오톡 챗봇 · {step > 0 ? `진행 ${step}/${TOTAL_STEPS}` : "시작"}</div>
+          <div style={{ fontWeight: 800, fontSize: 15, color: T.navy }}>{t("postJob.headerName")}</div>
+          <div style={{ fontSize: 11, color: T.ink3 }}>{t("postJob.headerChannel")} · {step > 0 ? `${t("postJob.progress")} ${step}/${TOTAL_STEPS}` : t("postJob.start")}</div>
         </div>
       </div>
 
       {/* 메시지 영역 (카톡 채팅 배경 #B2C7D9 보존) */}
       <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", background: "#B2C7D9" }}>
         <div style={{ textAlign: "center", marginBottom: 16 }}>
-          <span style={{ background: "rgba(0,0,0,0.15)", color: "#fff", padding: "4px 14px", borderRadius: 20, fontSize: 11 }}>오늘</span>
+          <span style={{ background: "rgba(0,0,0,0.15)", color: "#fff", padding: "4px 14px", borderRadius: 20, fontSize: 11 }}>{t("postJob.today")}</span>
         </div>
 
         {messages.map((m, i) => {
           if (m.summary) {
             const a = m.summary;
             const summaryRows = [
-              ["업종", a.jobType],
-              ["근무형태", a.workType],
-              ["급여", a.payAmount ? `${a.payType} ${Number(String(a.payAmount).replace(/[^0-9]/g, "")).toLocaleString()}원` : null],
-              ["근무지", a.address ? `${a.address}${a.addressDetail && a.addressDetail !== "없음" ? " " + a.addressDetail : ""}` : null],
-              ["근무시간", a.workHours],
-              ["근무요일", a.workDays],
-              ["한국어", a.korean],
-              ["비자", a.visa],
-              ["모집인원", a.headcount],
-              ["복리후생", a.benefits]
+              [t("postJob.rowJobType"), a.jobType],
+              [t("postJob.rowWorkType"), a.workType],
+              [t("postJob.rowPay"), a.payAmount ? t("postJob.payAmountFmt", { pt: a.payType, amount: Number(String(a.payAmount).replace(/[^0-9]/g, "")).toLocaleString() }) : null],
+              [t("postJob.rowLocation"), a.address ? `${a.address}${a.addressDetail && a.addressDetail !== "없음" ? " " + a.addressDetail : ""}` : null],
+              [t("postJob.rowWorkHours"), a.workHours],
+              [t("postJob.rowWorkDays"), a.workDays],
+              [t("postJob.rowKorean"), a.korean],
+              [t("postJob.rowVisa"), a.visa],
+              [t("postJob.rowHeadcount"), a.headcount],
+              [t("postJob.rowBenefits"), a.benefits]
             ].filter(([, v]) => v);
 
             return (
@@ -510,8 +514,8 @@ export default function PostJobPage() {
                 <div style={{ marginLeft: 40, background: "#fff", borderRadius: 16, overflow: "hidden", marginBottom: 10, border: `1px solid ${T.border}` }}>
                   {/* 카드 헤더: 코랄 그라데이션 (기쁨 강조 — 그대로 유지) */}
                   <div style={{ background: `linear-gradient(135deg,${T.coral},#FF8A7A)`, padding: "16px 18px", color: "#fff" }}>
-                    <div style={{ fontSize: 11, opacity: 0.8, marginBottom: 4 }}>K-ALBA 채용공고</div>
-                    <div style={{ fontSize: 17, fontWeight: 800 }}>{a.title || "채용공고"}</div>
+                    <div style={{ fontSize: 11, opacity: 0.8, marginBottom: 4 }}>{t("postJob.summaryBrand")}</div>
+                    <div style={{ fontSize: 17, fontWeight: 800 }}>{a.title || t("postJob.summaryDefaultTitle")}</div>
                   </div>
                   <div style={{ padding: "16px 18px" }}>
                     {summaryRows.map((row) => (
@@ -526,8 +530,8 @@ export default function PostJobPage() {
                   </div>
                   {/* 등록 버튼 — coralDark (사장님 페이지) */}
                   <div style={{ padding: "0 18px 16px", display: "flex", gap: 8 }}>
-                    <button onClick={handlePost} style={{ flex: 1, padding: "12px", borderRadius: 10, background: T.coralDark, color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>공고 등록하기</button>
-                    <button onClick={resetChat} style={{ flex: 1, padding: "12px", borderRadius: 10, background: T.cream, color: T.ink2, border: "none", fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>다시 작성</button>
+                    <button onClick={handlePost} style={{ flex: 1, padding: "12px", borderRadius: 10, background: T.coralDark, color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>{t("postJob.submitBtn")}</button>
+                    <button onClick={resetChat} style={{ flex: 1, padding: "12px", borderRadius: 10, background: T.cream, color: T.ink2, border: "none", fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>{t("postJob.resetBtn")}</button>
                   </div>
                 </div>
               </div>
@@ -593,7 +597,7 @@ export default function PostJobPage() {
             })}
           </div>
           <button onClick={confirmMulti} disabled={multiSel.length === 0} style={{ width: "100%", padding: "10px", borderRadius: 10, background: multiSel.length > 0 ? T.mint : T.border, color: multiSel.length > 0 ? "#fff" : T.ink3, border: "none", fontWeight: 700, fontSize: 13, cursor: multiSel.length > 0 ? "pointer" : "default", fontFamily: "inherit" }}>
-            {multiSel.length > 0 ? `${multiSel.length}개 선택 완료` : "선택해 주세요"}
+            {multiSel.length > 0 ? t("postJob.multiDone", { n: multiSel.length }) : t("postJob.multiSelectPrompt")}
           </button>
         </div>
       )}
@@ -603,11 +607,11 @@ export default function PostJobPage() {
         <div style={{ background: "#fff", borderTop: `1px solid ${T.border}` }}>
           <div style={{ padding: "10px 16px 6px" }}>
             <button onClick={() => setAddrModal(true)} style={{ width: "100%", padding: 12, borderRadius: 12, background: "#FEE500", color: "#3C1E1E", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-              🔍 카카오 주소 검색
+              {t("postJob.kakaoAddrSearch")}
             </button>
           </div>
           <div style={{ padding: "4px 16px 10px", display: "flex", gap: 8 }}>
-            <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleInputSend()} placeholder="직접 입력도 가능" style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `2px solid ${T.border}`, fontSize: 14, fontFamily: "inherit", outline: "none" }} />
+            <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleInputSend()} placeholder={t("postJob.phAddrDirect")} style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `2px solid ${T.border}`, fontSize: 14, fontFamily: "inherit", outline: "none" }} />
             <button onClick={handleInputSend} disabled={!input.trim()} style={{ padding: "10px 16px", borderRadius: 12, background: input.trim() ? T.coralDark : T.border, color: input.trim() ? "#fff" : T.ink3, border: "none", fontWeight: 700, fontSize: 15, cursor: input.trim() ? "pointer" : "default" }}>↑</button>
           </div>
         </div>

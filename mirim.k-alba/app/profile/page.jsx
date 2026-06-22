@@ -114,7 +114,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (!user) return isDesktop ? <PageLoading message="잠시만 기다려주세요" minHeight={400} /> : <FormPageSkel maxWidth={600} fields={5} />;
+  if (!user) return isDesktop ? <PageLoading message={t("common.pleaseWait")} minHeight={400} /> : <FormPageSkel maxWidth={600} fields={5} />;
 
   // ─── 사장님 프로필 (coralDark) ───
   if (isEmployer) {
@@ -186,8 +186,8 @@ export default function ProfilePage() {
             <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 14, background: T.cream, border: `1px solid ${T.border}`, borderRadius: 10 }}>
               <span style={{ fontSize: 24 }}>⚠️</span>
               <div>
-                <div style={{ fontWeight: 700, color: T.ink2 }}>사업자 인증 미완료</div>
-                <div style={{ fontSize: 12, color: T.ink3 }}>사업자등록번호 인증이 완료되지 않았습니다.</div>
+                <div style={{ fontWeight: 700, color: T.ink2 }}>{t("profile.notVerified")}</div>
+                <div style={{ fontSize: 12, color: T.ink3 }}>{t("profile.notVerifiedDesc")}</div>
               </div>
             </div>
           )}
@@ -432,6 +432,7 @@ export default function ProfilePage() {
 }
 
 function DangerZone() {
+  const t = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [reasonCode, setReasonCode] = useState("");
@@ -440,11 +441,11 @@ function DangerZone() {
   const [err, setErr] = useState("");
 
   const REASONS = [
-    ["not_found", "원하는 일자리/지원자를 찾지 못해서"],
-    ["no_longer_needed", "더 이상 필요하지 않아서"],
-    ["too_hard", "사용법이 어려워서"],
-    ["privacy", "개인정보가 걱정돼서"],
-    ["etc", "기타"],
+    ["not_found", t("profile.reasonNotFound")],
+    ["no_longer_needed", t("profile.reasonNoLongerNeeded")],
+    ["too_hard", t("profile.reasonTooHard")],
+    ["privacy", t("profile.reasonPrivacy")],
+    ["etc", t("profile.reasonEtc")],
   ];
   const DANGER = "#DC2626";
 
@@ -454,7 +455,7 @@ function DangerZone() {
   };
 
   const handleDeactivate = async () => {
-    if (!reasonCode) { setErr("탈퇴 사유를 선택해 주세요."); return; }
+    if (!reasonCode) { setErr(t("profile.withdrawSelectReason")); return; }
     setBusy(true); setErr("");
     try {
       const { data } = await supabase.auth.getSession();
@@ -469,11 +470,11 @@ function DangerZone() {
         router.replace("/account/goodbye");
       } else {
         setBusy(false);
-        setErr("탈퇴 처리에 실패했어요. 잠시 후 다시 시도해 주세요.");
+        setErr(t("profile.withdrawFailed"));
       }
     } catch (_) {
       setBusy(false);
-      setErr("오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
+      setErr(t("profile.withdrawError"));
     }
   };
 
@@ -488,7 +489,7 @@ function DangerZone() {
           borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
         }}
       >
-        로그아웃
+        {t("profile.logout")}
       </button>
 
       {!open ? (
@@ -502,13 +503,13 @@ function DangerZone() {
             textDecoration: "underline", textUnderlineOffset: "3px",
           }}
         >
-          회원 탈퇴
+          {t("profile.withdraw")}
         </button>
       ) : (
         <div style={{ border: `1px solid ${DANGER}33`, background: "#FEF2F2", borderRadius: 10, padding: 16 }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: DANGER, marginBottom: 6 }}>회원 탈퇴</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: DANGER, marginBottom: 6 }}>{t("profile.withdraw")}</div>
 
-          <div style={{ fontSize: 12, fontWeight: 700, color: T.ink, marginBottom: 8 }}>탈퇴 사유를 알려주세요</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: T.ink, marginBottom: 8 }}>{t("profile.withdrawReasonTitle")}</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
             {REASONS.map(([code, label]) => (
               <label key={code} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: T.ink, cursor: "pointer" }}>
@@ -522,7 +523,7 @@ function DangerZone() {
             <textarea
               value={reasonText}
               onChange={(e) => setReasonText(e.target.value)}
-              placeholder="자세히 알려주시면 개선에 큰 도움이 돼요 (선택)"
+              placeholder={t("profile.withdrawReasonPlaceholder")}
               style={{ width: "100%", padding: 10, borderRadius: 8, border: `1px solid ${T.border}`, fontSize: 13, minHeight: 64, resize: "vertical", fontFamily: "inherit", outline: "none", boxSizing: "border-box", marginBottom: 10 }}
             />
           )}
@@ -536,7 +537,7 @@ function DangerZone() {
               disabled={busy}
               style={{ flex: 1, padding: "11px", background: T.paper, color: T.ink2, border: `1px solid ${T.border}`, borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
             >
-              취소
+              {t("common.cancel")}
             </button>
             <button
               type="button"
@@ -544,7 +545,7 @@ function DangerZone() {
               disabled={busy}
               style={{ flex: 1, padding: "11px", background: DANGER, color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: busy ? "default" : "pointer", fontFamily: "inherit", opacity: busy ? 0.7 : 1 }}
             >
-              {busy ? "처리 중..." : "탈퇴하기"}
+              {busy ? t("profile.withdrawProcessing") : t("profile.withdrawConfirm")}
             </button>
           </div>
         </div>

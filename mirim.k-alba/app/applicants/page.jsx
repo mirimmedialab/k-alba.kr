@@ -9,6 +9,7 @@ import { KakaoChatModal } from "@/components/KakaoChatModal";
 import { ListPageSkel } from "@/components/Wireframe";
 import { Button, Badge, Empty } from "@/components/ui";
 import { useIsDesktop } from "@/lib/useIsDesktop";
+import { useT } from "@/lib/i18n";
 
 /**
  * /applicants 사장님 지원자 보기 (BI v2)
@@ -35,9 +36,9 @@ import { useIsDesktop } from "@/lib/useIsDesktop";
  *   - botAvatar 🎉/💌 (BI v2 결정과 호환 — 🤖만 금지)
  */
 
-const KOREAN_LABELS = { none: "한국어 불필요", beginner: "초급", intermediate: "중급", advanced: "고급" };
-
 function ApplicantsContent() {
+  const t = useT();
+  const KOREAN_LABELS = { none: t("applicants.krNone"), beginner: t("applicants.krBeginner"), intermediate: t("applicants.krIntermediate"), advanced: t("applicants.krAdvanced") };
   const router = useRouter();
   const searchParams = useSearchParams();
   const jobId = searchParams.get("jobId");
@@ -64,20 +65,20 @@ function ApplicantsContent() {
   }, [jobId, router]);
 
   const acceptSteps = activeApplicant ? [
-    { type: "bot", text: `🎉 ${activeApplicant.applicant.name}님을 합격시키시는군요!\n\n빠르게 몇 가지만 확인하면 자동으로 합격 알림이 전송됩니다.` },
-    { type: "bot", text: "📅 첫 출근일을 정해주세요.\n(나중에 채팅에서 변경 가능)", input: { type: "date" }, key: "start_date" },
-    { type: "bot", text: "🤝 출근 전 면접/오리엔테이션이 필요한가요?", quickReplies: ["면접 필요", "오리엔테이션", "바로 출근"], key: "interview_type" },
-    { type: "bot", text: "📍 만남 장소는 어디로 할까요?", quickReplies: ["사업장에서", "근처 카페", "줌(화상)"], key: "meeting_place" },
-    { type: "bot", text: (a) => `⏰ ${a.interview_type === "바로 출근" ? "출근 시간" : "면접 시간"}을 알려주세요.`, input: { type: "text", placeholder: "예: 오전 10시, 오후 2시" }, key: "meeting_time" },
-    { type: "bot", text: "💬 합격자에게 보낼 메시지 (선택)", input: { type: "text", placeholder: "축하 메시지나 준비물 안내", optional: true }, key: "message" },
-    { type: "bot", text: (a) => `✅ 모든 정보가 입력되었어요!\n\n📤 ${activeApplicant.applicant.name}님께 자동 발송:\n• 합격 알림\n• ${a.interview_type === "바로 출근" ? "출근 안내" : a.interview_type + " 일정"}\n• 채팅방 자동 생성\n\n💡 다음 단계: 근로계약서 작성!`, delay: 900 },
+    { type: "bot", text: t("applicants.acc1", { name: activeApplicant.applicant.name }) },
+    { type: "bot", text: t("applicants.acc2"), input: { type: "date" }, key: "start_date" },
+    { type: "bot", text: t("applicants.acc3"), quickReplies: [t("applicants.qrInterview"), t("applicants.qrOrientation"), t("applicants.qrStartNow")], key: "interview_type" },
+    { type: "bot", text: t("applicants.acc4"), quickReplies: [t("applicants.qrWorkplace"), t("applicants.qrCafe"), t("applicants.qrZoom")], key: "meeting_place" },
+    { type: "bot", text: (a) => a.interview_type === t("applicants.qrStartNow") ? t("applicants.acc5Start") : t("applicants.acc5Interview"), input: { type: "text", placeholder: t("applicants.acc5Placeholder") }, key: "meeting_time" },
+    { type: "bot", text: t("applicants.acc6"), input: { type: "text", placeholder: t("applicants.acc6Placeholder"), optional: true }, key: "message" },
+    { type: "bot", text: (a) => t("applicants.acc7", { name: activeApplicant.applicant.name, schedule: a.interview_type === t("applicants.qrStartNow") ? t("applicants.scheduleStart") : a.interview_type + " " + t("applicants.scheduleSuffix") }), delay: 900 },
   ] : [];
 
   const rejectSteps = activeApplicant ? [
-    { type: "bot", text: `😔 ${activeApplicant.applicant.name}님을 불합격시키시는군요.` },
-    { type: "bot", text: "💌 정중한 거절 메시지를 보내드릴게요.\n사유를 선택해주세요.", quickReplies: ["조건 불일치", "다른 후보 선정", "비자 문제", "직접 작성"], key: "reason" },
-    { type: "bot", text: (a) => a.reason === "직접 작성" ? "직접 메시지를 작성해주세요." : "추가로 전하실 메시지가 있나요? (선택)", input: { type: "text", placeholder: "메시지", optional: true }, key: "custom_message" },
-    { type: "bot", text: `📤 ${activeApplicant.applicant.name}님께 정중한 거절 알림을 보냈습니다.\n좋은 인연이 다음에 있길 바랍니다.`, delay: 800 },
+    { type: "bot", text: t("applicants.rej1", { name: activeApplicant.applicant.name }) },
+    { type: "bot", text: t("applicants.rej2"), quickReplies: [t("applicants.qrMismatch"), t("applicants.qrOtherCandidate"), t("applicants.qrVisaIssue"), t("applicants.qrWriteOwn")], key: "reason" },
+    { type: "bot", text: (a) => a.reason === t("applicants.qrWriteOwn") ? t("applicants.rej3Own") : t("applicants.rej3Other"), input: { type: "text", placeholder: t("applicants.rej3Placeholder"), optional: true }, key: "custom_message" },
+    { type: "bot", text: t("applicants.rej4", { name: activeApplicant.applicant.name }), delay: 800 },
   ] : [];
 
   const handleAction = async (applicant, status) => {
@@ -110,9 +111,9 @@ function ApplicantsContent() {
     rejected: "error",
   };
   const statusLabel = {
-    pending: "검토 중",
-    accepted: "합격",
-    rejected: "불합격",
+    pending: t("applicants.statusPending"),
+    accepted: t("applicants.statusAccepted"),
+    rejected: t("applicants.statusRejected"),
   };
 
   // 국기 이모지
@@ -130,14 +131,14 @@ function ApplicantsContent() {
   if (isDesktop) {
     return (
       <div style={{ maxWidth: 1040, margin: "0 auto", padding: "40px 28px 64px" }}>
-        <Link href="/my/jobs" style={{ color: T.ink3, fontSize: 13, marginBottom: 18, display: "inline-block", textDecoration: "none" }}>← 내 공고로</Link>
+        <Link href="/my/jobs" style={{ color: T.ink3, fontSize: 13, marginBottom: 18, display: "inline-block", textDecoration: "none" }}>← {t("applicants.backToJobs")}</Link>
         <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 18 }} />
-        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Applicants · 지원자 관리</div>
-        <h1 style={{ fontSize: 30, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.2 }}>지원자 {applicants.length}명</h1>
-        <p style={{ color: T.ink2, fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>각 지원자를 확인하고 합격·거절을 결정하세요. 합격 시 카톡 챗봇으로 자동 알림이 전송됩니다.</p>
+        <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Applicants · {t("applicants.kicker")}</div>
+        <h1 style={{ fontSize: 30, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.2 }}>{t("applicants.count", { n: applicants.length })}</h1>
+        <p style={{ color: T.ink2, fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>{t("applicants.desc")}</p>
 
         <div style={{ display: "flex", gap: 4, marginBottom: 20, borderBottom: `1px solid ${T.border}` }}>
-          {[["all", "전체", applicants.length], ["pending", "검토 중", applicants.filter(a => a.status === "pending").length], ["accepted", "합격", applicants.filter(a => a.status === "accepted").length], ["rejected", "불합격", applicants.filter(a => a.status === "rejected").length]].map(([v, l, n]) => {
+          {[["all", t("applicants.filterAll"), applicants.length], ["pending", t("applicants.filterPending"), applicants.filter(a => a.status === "pending").length], ["accepted", t("applicants.filterAccepted"), applicants.filter(a => a.status === "accepted").length], ["rejected", t("applicants.filterRejected"), applicants.filter(a => a.status === "rejected").length]].map(([v, l, n]) => {
             const active = filter === v;
             return (
               <button key={v} onClick={() => setFilter(v)} style={{ padding: "10px 14px", background: "transparent", border: "none", fontSize: 13, fontWeight: active ? 700 : 500, color: active ? T.ink : T.ink3, borderBottom: active ? `2px solid ${T.accent}` : "2px solid transparent", marginBottom: -1, cursor: "pointer", fontFamily: "inherit" }}>
@@ -148,7 +149,7 @@ function ApplicantsContent() {
         </div>
 
         {filtered.length === 0 ? (
-          <Empty variant="no-results" description="해당하는 지원자가 없습니다" />
+          <Empty variant="no-results" description={t("applicants.empty")} />
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             {filtered.map((a) => (
@@ -162,11 +163,11 @@ function ApplicantsContent() {
                 <div style={{ fontSize: 13, color: T.ink2, marginBottom: 4 }}>{a.applicant.country} · {a.applicant.visa} · {KOREAN_LABELS[a.applicant.korean_level] || "-"}</div>
                 {a.applicant.organization && <div style={{ fontSize: 12, color: T.ink3, marginBottom: 4 }}>{a.applicant.organization}</div>}
                 {a.message && <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.6, background: T.cream, padding: "10px 12px", borderLeft: `3px solid ${T.gold}`, margin: "10px 0", borderRadius: "0 4px 4px 0" }}>{a.message}</div>}
-                <div style={{ fontSize: 11, color: T.ink3, marginBottom: 12 }}>지원일: {new Date(a.created_at).toLocaleDateString("ko-KR")}</div>
+                <div style={{ fontSize: 11, color: T.ink3, marginBottom: 12 }}>{t("applicants.appliedDate")}: {new Date(a.created_at).toLocaleDateString("ko-KR")}</div>
                 {a.status === "pending" && (
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    <Button variant="primaryDark" size="sm" onClick={() => handleAction(a, "accept")}>💬 합격 챗봇</Button>
-                    <Button variant="secondary" size="sm" onClick={() => handleAction(a, "reject")}>거절</Button>
+                    <Button variant="primaryDark" size="sm" onClick={() => handleAction(a, "accept")}>💬 {t("applicants.acceptBot")}</Button>
+                    <Button variant="secondary" size="sm" onClick={() => handleAction(a, "reject")}>{t("applicants.reject")}</Button>
                   </div>
                 )}
               </div>
@@ -177,7 +178,7 @@ function ApplicantsContent() {
         <KakaoChatModal
           open={chatOpen}
           onClose={() => { setChatOpen(false); setTimeout(() => setActiveApplicant(null), 300); }}
-          title={chatMode === "accept" ? "🎉 합격 안내봇" : "💌 거절 안내봇"}
+          title={chatMode === "accept" ? "🎉 " + t("applicants.acceptBotTitle") : "💌 " + t("applicants.rejectBotTitle")}
           botAvatar={chatMode === "accept" ? "🎉" : "💌"}
           steps={chatMode === "accept" ? acceptSteps : rejectSteps}
           onComplete={handleChatComplete}
@@ -192,7 +193,7 @@ function ApplicantsContent() {
         color: T.ink3, fontSize: 12, marginBottom: 18,
         display: "inline-block", textDecoration: "none", letterSpacing: "-0.01em",
       }}>
-        ← 내 공고로
+        ← {t("applicants.backToJobs")}
       </Link>
 
       {/* Editorial 헤더 */}
@@ -201,25 +202,25 @@ function ApplicantsContent() {
         fontSize: 11, fontWeight: 700, color: T.ink3,
         letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8,
       }}>
-        Applicants · 지원자 관리
+        Applicants · {t("applicants.kicker")}
       </div>
       <h1 style={{
         fontSize: 28, fontWeight: 800, color: T.ink,
         letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.25,
       }}>
-        지원자 {applicants.length}명
+        {t("applicants.count", { n: applicants.length })}
       </h1>
       <p style={{ color: T.ink2, fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>
-        각 지원자를 확인하고 합격·거절을 결정하세요. 합격 시 카톡 챗봇으로 자동 알림이 전송됩니다.
+        {t("applicants.desc")}
       </p>
 
       {/* 상태 필터 */}
       <div style={{ display: "flex", gap: 4, marginBottom: 20, borderBottom: `1px solid ${T.border}`, overflowX: "auto" }}>
         {[
-          ["all", "전체", applicants.length],
-          ["pending", "검토 중", applicants.filter(a => a.status === "pending").length],
-          ["accepted", "합격", applicants.filter(a => a.status === "accepted").length],
-          ["rejected", "불합격", applicants.filter(a => a.status === "rejected").length],
+          ["all", t("applicants.filterAll"), applicants.length],
+          ["pending", t("applicants.filterPending"), applicants.filter(a => a.status === "pending").length],
+          ["accepted", t("applicants.filterAccepted"), applicants.filter(a => a.status === "accepted").length],
+          ["rejected", t("applicants.filterRejected"), applicants.filter(a => a.status === "rejected").length],
         ].map(([v, l, n]) => {
           const active = filter === v;
           return (
@@ -252,7 +253,7 @@ function ApplicantsContent() {
           // Step 3-C Empty
           <Empty
             variant="no-results"
-            description="해당하는 지원자가 없습니다"
+            description={t("applicants.empty")}
           />
         ) : (
           filtered.map((a, idx) => (
@@ -338,7 +339,7 @@ function ApplicantsContent() {
                 marginBottom: 12,
                 marginLeft: 40,
               }}>
-                지원일: {new Date(a.created_at).toLocaleDateString("ko-KR")}
+                {t("applicants.appliedDate")}: {new Date(a.created_at).toLocaleDateString("ko-KR")}
               </div>
 
               {/* 액션 버튼 — Step 3-A Button (사장님 페이지 = primaryDark) */}
@@ -349,14 +350,14 @@ function ApplicantsContent() {
                     size="sm"
                     onClick={() => handleAction(a, "accept")}
                   >
-                    💬 합격 챗봇
+                    💬 {t("applicants.acceptBot")}
                   </Button>
                   <Button
                     variant="secondary"
                     size="sm"
                     onClick={() => handleAction(a, "reject")}
                   >
-                    거절
+                    {t("applicants.reject")}
                   </Button>
                 </div>
               )}
@@ -372,7 +373,7 @@ function ApplicantsContent() {
           setChatOpen(false);
           setTimeout(() => setActiveApplicant(null), 300);
         }}
-        title={chatMode === "accept" ? "🎉 합격 안내봇" : "💌 거절 안내봇"}
+        title={chatMode === "accept" ? "🎉 " + t("applicants.acceptBotTitle") : "💌 " + t("applicants.rejectBotTitle")}
         botAvatar={chatMode === "accept" ? "🎉" : "💌"}
         steps={chatMode === "accept" ? acceptSteps : rejectSteps}
         onComplete={handleChatComplete}

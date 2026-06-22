@@ -60,11 +60,11 @@ export default function NavBar() {
 
   const seekerLinks = [
     { href: "/jobs", label: t("nav.findJob") },
-    { href: "/jobs/map", label: "🗺️ 지도" },
+    { href: "/jobs/map", label: t("nav.map") },
     { href: "/my/favorites", label: t("nav.favorites") },
     { href: "/my/applications", label: t("nav.myApplications") },
     { href: "/my/contracts", label: t("nav.contracts") },
-    { href: "/partwork", label: "🎓 시간제취업" },
+    { href: "/partwork", label: t("nav.partwork") },
     { href: "/profile", label: t("nav.profile") },
   ];
 
@@ -79,7 +79,7 @@ export default function NavBar() {
   const isAdmin = user?.user_metadata?.role === "admin" || user?.app_metadata?.role === "admin";
 
   const links = userType === "employer" ? employerLinks : seekerLinks;
-  const finalLinks = isAdmin ? [...links, { href: "/admin", label: "⚙️ 관리자" }] : links;
+  const finalLinks = isAdmin ? [...links, { href: "/admin", label: t("nav.admin") }] : links;
 
   // 로고 클릭 시 이동할 경로 (로그인 상태에 따라 분기)
   const logoHref = !user ? "/" : userType === "employer" ? "/my/jobs" : "/jobs";
