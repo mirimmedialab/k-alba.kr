@@ -95,7 +95,7 @@ export default function Empty({
         justifyContent: "center",
         textAlign: "center",
         padding: s.padding,
-        background: T.cream,
+        background: T.paper,
         border: `1.5px dashed ${T.borderStrong}`,
         borderRadius: L.rLg,
         fontFamily: TYPE.family,

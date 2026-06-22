@@ -10,7 +10,7 @@ export const ko = {
     signup: "회원가입",
     logout: "로그아웃",
     findJob: "알바 찾기",
-    favorites: "♡ 관심공고",
+    favorites: "♥ 관심공고",
     myApplications: "지원 내역",
     contracts: "계약서",
     chat: "채팅",
