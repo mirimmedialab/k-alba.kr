@@ -43,8 +43,16 @@
     }
   ],
   "functions": {
-    "app/api/cron/sync-worknet/route.js": { "maxDuration": 60 },
-    "app/api/cron/cleanup-expired-jobs/route.js": { "maxDuration": 30 }
+    "app/api/cron/sync-worknet/route.js": {
+      "maxDuration": 60
+    },
+    "app/api/cron/cleanup-expired-jobs/route.js": {
+      "maxDuration": 30
+    },
+    "app/api/jobs/[id]/preview-shot/route.js": {
+      "maxDuration": 60,
+      "memory": 1769
+    }
   },
   "crons": [
     {
