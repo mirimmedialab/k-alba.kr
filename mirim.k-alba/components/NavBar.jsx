@@ -6,6 +6,7 @@ import { T } from "@/lib/theme";
 import { getSession, signOut, supabase } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { KWordmark } from "@/components/ui";
 import NotificationBell from "@/components/NotificationBell";
 import { NavAuthSkel } from "@/components/Wireframe";
 
@@ -109,7 +110,7 @@ export default function NavBar() {
       >
         {/* 브랜드 로고 — 타이포 기반 (이모지 X) */}
         <Link href={logoHref} style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
-          <img src="/img/k-alba_logo.svg" alt="K-ALBA" style={{ height: 44, width: "auto", display: "block" }} />
+          <KWordmark size={30} />
         </Link>
 
         {/* 랜딩 페이지: 심플하게 언어 + CTA 만 */}

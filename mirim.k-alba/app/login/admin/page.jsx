@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { KWordmark } from "@/components/ui";
 
 /**
  * /login/admin — 관리자 전용 로그인 (ID/비밀번호)
@@ -40,7 +41,7 @@ export default function AdminLoginPage() {
   return (
     <div className="adlg-root">
       <form className="adlg-card" onSubmit={submit}>
-        <img className="adlg-logo" src="/img/k-alba_logo.svg" alt="K-ALBA" />
+        <KWordmark variant="dark" size={30} style={{ marginBottom: 4 }} />
         <div className="adlg-cap">ADMIN CONSOLE</div>
 
         {error && <div className="adlg-err">{error}</div>}
