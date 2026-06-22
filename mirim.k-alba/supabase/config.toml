@@ -1,0 +1,71 @@
+# K-ALBA Supabase config — Branching(테스트/실서버 분리)용
+# project_id 는 실서버(production) 프로젝트 ref 입니다.
+project_id = "uqgqqsescalotabaivee"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+# 실서버 Postgres 메이저 버전과 동일하게 유지
+major_version = 17
+
+[db.pooler]
+enabled = false
+
+# 브랜치 생성 시 seed.sql 자동 적용 (ephemeral 브랜치 기본 동작)
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[realtime]
+enabled = true
+
+[studio]
+enabled = true
+port = 54323
+
+# 메일 테스트용 로컬 inbucket (로컬 개발 전용)
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+# 로컬/브랜치에서 사용할 기본 site_url (실제 staging URL 은 Vercel 통합이 주입)
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://localhost:3000"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+
+# =====================================================================
+# persistent 브랜치(develop = 테스트 서버) 전용 설정
+# ---------------------------------------------------------------------
+# 1) 먼저 persistent 브랜치를 생성:
+#      npx supabase --experimental branches create develop --persistent
+# 2) 생성된 BRANCH PROJECT ID 확인:
+#      npx supabase --experimental branches list
+# 3) 아래 project_id 를 그 값으로 바꾸고 주석 해제 → seed 자동 적용 활성화
+# =====================================================================
+# [remotes.develop]
+# project_id = "<develop-branch-project-id>"
+#
+# [remotes.develop.db.seed]
+# enabled = true
+# sql_paths = ["./seed.sql"]

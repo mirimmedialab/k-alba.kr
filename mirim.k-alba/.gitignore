@@ -58,3 +58,7 @@ DEPLOYMENT.md
 
 # Phase 1-2 백업 파일
 *.v1.backup
+
+# claude cowork
+CLAUDE.md
+docs/TEST_ENVIRONMENT_SETUP.md
