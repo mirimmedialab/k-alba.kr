@@ -331,7 +331,7 @@ export default function JobsPage() {
         ...j,
         // 직접 등록 공고는 employer 프로필, 외부(워크넷) 공고는 employer_external_name
         company_name:
-          j.employer?.company_name || j.employer_external_name || j.company_name || "",
+          j.employer?.company_name || j.employer_external_name || j.company_name || j.employer?.name || "",
       }));
       if (!alive) return;
       setFallbackJobs(normalized);
@@ -648,7 +648,7 @@ export default function JobsPage() {
               </div>
               <div ref={recRef} style={{ display: "flex", gap: 16, overflowX: "hidden", scrollBehavior: "smooth", scrollSnapType: "x mandatory" }}>
                 {recommended.map((j) => (
-                  <div key={"rec-" + j.id} style={{ width: "calc((100% - 48px) / 4)", height: 322, flexShrink: 0, display: "flex", scrollSnapAlign: "start" }}>
+                  <div key={"rec-" + j.id} style={{ width: "calc((100% - 48px) / 4)", minHeight: 322, flexShrink: 0, display: "flex", scrollSnapAlign: "start" }}>
                     <DesktopJobCard job={j} tr={listTr[`${locale}:${j.id}`]} selected={false} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} />
                   </div>
                 ))}
