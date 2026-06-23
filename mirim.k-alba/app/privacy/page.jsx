@@ -133,7 +133,7 @@ export default function PrivacyPage() {
         </p>
         <table style={tableStyle}>
           <tbody>
-            <tr><th style={thLabel}>제공받는 자</th><td style={tdStyle}>미림미디어랩 주식회사가 운영하는 플랫폼 (TRAX, K-UNIV, E-7)</td></tr>
+            <tr><th style={thLabel}>제공받는 자</th><td style={tdStyle}>미림미디어랩 주식회사가 운영하는 플랫폼 — TRAX(trax.mirimmedialab.co.kr), K-UNIV(k-univ.kr), E-7(e-7.kr)</td></tr>
             <tr><th style={thLabel}>제공 목적</th><td style={tdStyle}>계열 플랫폼 간 통합 회원 관리, 연계 서비스 제공</td></tr>
             <tr><th style={thLabel}>제공 항목</th><td style={tdStyle}>이름, 이메일 주소, 비자 유형, 서비스 이용 이력</td></tr>
             <tr><th style={thLabel}>보유·이용 기간</th><td style={tdStyle}>회원 탈퇴 시 또는 제공 목적 달성 시까지</td></tr>
