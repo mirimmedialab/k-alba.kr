@@ -41,8 +41,16 @@ export default function TermsPage() {
             "0 4px 20px rgba(10, 22, 40, 0.08), 0 1px 4px rgba(10, 22, 40, 0.04)",
         }}
       >
+      <style>{`
+        .terms-sub { list-style: none; margin: 10px 0 14px; padding: 12px 16px; border-left: 3px solid ${T.gold}; background: ${T.cream}; border-radius: 8px; }
+        .terms-sub li { position: relative; padding-left: 16px; margin: 5px 0; }
+        .terms-sub li:first-child { margin-top: 0; }
+        .terms-sub li:last-child { margin-bottom: 0; }
+        .terms-sub li::before { content: "–"; position: absolute; left: 2px; color: ${T.gold}; font-weight: 700; }
+      `}</style>
+
       {/* 헤더 */}
-      <div style={{ marginBottom: 32, borderBottom: `2px solid ${T.gold}`, paddingBottom: 20 }}>
+      <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontSize: 28, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: "-0.02em" }}>
           이용약관
         </h1>
@@ -58,7 +66,7 @@ export default function TermsPage() {
         </Article>
 
         <Article num={2} title="용어의 정의">
-          <ul style={ulStyle}>
+          <ul className="terms-sub">
             <li><strong>"서비스"</strong>: 회사가 제공하는 K-ALBA 웹사이트(k-alba.kr), 카카오톡 채널, 모바일 앱 등 K-ALBA 브랜드로 제공되는 모든 서비스를 의미합니다.</li>
             <li><strong>"이용자"</strong>: 회사의 서비스에 접속하여 본 약관에 따라 회사가 제공하는 서비스를 받는 회원 및 비회원을 말합니다.</li>
             <li><strong>"구직회원"</strong>: 한국에서 일자리를 찾는 외국인 이용자를 말합니다.</li>
@@ -81,7 +89,7 @@ export default function TermsPage() {
           <ol style={olStyle}>
             <li>회원가입은 이용자가 본 약관과 개인정보처리방침에 동의하고, 회사가 정한 절차에 따라 가입 신청을 완료한 시점에 성립합니다.</li>
             <li>회사는 다음의 경우 가입을 거절하거나 사후 해지할 수 있습니다.
-              <ul style={ulStyle}>
+              <ul className="terms-sub">
                 <li>타인의 명의를 도용한 경우</li>
                 <li>허위 정보를 기재하거나 회사가 제시한 내용을 기재하지 않은 경우</li>
                 <li>고용주 회원이 사업자등록번호 진위 확인에 실패한 경우</li>
@@ -103,7 +111,7 @@ export default function TermsPage() {
           <ol style={olStyle}>
             <li>이용자는 언제든지 서비스 내 "프로필 → 계정 관리"에서 탈퇴를 요청할 수 있습니다.</li>
             <li>회사는 다음의 경우 회원 자격을 제한·정지·상실시킬 수 있습니다.
-              <ul style={ulStyle}>
+              <ul className="terms-sub">
                 <li>본 약관을 위반한 경우</li>
                 <li>다른 이용자의 권리나 명예, 신용을 침해한 경우</li>
                 <li>허위 공고를 게시하거나 비자 요건에 부적합한 채용을 시도한 경우</li>
@@ -117,13 +125,13 @@ export default function TermsPage() {
       <Section title="제3장 서비스 이용">
         <Article num={7} title="서비스의 내용">
           <p>회사는 다음과 같은 서비스를 제공합니다.</p>
-          <ul style={ulStyle}>
+          <ul style={{ ...ulStyle, listStyle: "none", paddingLeft: 0 }}>
             <li><strong>구인·구직 정보 제공 (직업정보제공사업)</strong>: 외국인 대상 구인 공고 게시 및 검색</li>
             <li><strong>매칭 서비스</strong>: 비자·언어·지역 기반 자동 매칭, 챗봇 기반 지원 흐름</li>
-            <li>다국어(한국어, 영어, 중국어, 베트남어, 우즈벡어, 몽골어, 일본어) 근로계약서 자동 생성 및 전자 서명</li>
-            <li>D-2/D-4 비자 유학생을 위한 시간제취업 신청서 자동 작성 및 학교 담당자 검토</li>
-            <li>지원 결과·계약 진행 상황 등에 관한 카카오톡 알림</li>
-            <li>1:1 채팅 및 평가 시스템</li>
+            <li style={svcDescStyle}><span aria-hidden="true" style={svcIndentStyle}><strong>매칭 서비스</strong>: </span>다국어(한국어, 영어, 중국어, 베트남어, 우즈벡어, 몽골어, 일본어) 근로계약서 자동 생성 및 전자 서명</li>
+            <li style={svcDescStyle}><span aria-hidden="true" style={svcIndentStyle}><strong>매칭 서비스</strong>: </span>D-2/D-4 비자 유학생을 위한 시간제취업 신청서 자동 작성 및 학교 담당자 검토</li>
+            <li style={svcDescStyle}><span aria-hidden="true" style={svcIndentStyle}><strong>매칭 서비스</strong>: </span>지원 결과·계약 진행 상황 등에 관한 카카오톡 알림</li>
+            <li style={svcDescStyle}><span aria-hidden="true" style={svcIndentStyle}><strong>매칭 서비스</strong>: </span>1:1 채팅 및 평가 시스템</li>
           </ul>
         </Article>
 
@@ -136,7 +144,7 @@ export default function TermsPage() {
 
         <Article num={9} title="이용자의 의무">
           <p>이용자는 다음 행위를 하여서는 안 됩니다.</p>
-          <ul style={ulStyle}>
+          <ul className="terms-sub">
             <li>회원가입 시 또는 정보 변경 시 허위 사실을 기재하는 행위</li>
             <li>타인의 정보를 도용하는 행위</li>
             <li>회사의 운영진, 직원 또는 관계자를 사칭하는 행위</li>
@@ -156,7 +164,7 @@ export default function TermsPage() {
           <ol style={olStyle}>
             <li>고용주 회원은 「근로기준법」, 「출입국관리법」, 「외국인근로자의 고용 등에 관한 법률」 및 관련 법령을 준수하여 공고를 등록하여야 합니다.</li>
             <li>공고에는 다음 사항이 정확히 기재되어야 합니다.
-              <ul style={ulStyle}>
+              <ul className="terms-sub">
                 <li>업무 내용, 근로 시간, 근무지, 임금</li>
                 <li>채용 가능한 비자 유형</li>
                 <li>한국어 능력 요구 수준 (필요한 경우)</li>
@@ -244,6 +252,8 @@ export default function TermsPage() {
 // ─── 스타일 ───
 const ulStyle = { paddingLeft: 20, marginTop: 8, marginBottom: 12 };
 const olStyle = { paddingLeft: 20, marginTop: 8, marginBottom: 12 };
+const svcDescStyle = { paddingLeft: "6em", textIndent: "-6em" };
+const svcIndentStyle = { visibility: "hidden" };
 const linkStyle = { color: "#1A56F0", textDecoration: "none" };
 
 // ─── 섹션 컴포넌트 ───

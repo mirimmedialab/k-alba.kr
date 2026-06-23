@@ -42,6 +42,14 @@ export default function PrivacyPage() {
             "0 4px 20px rgba(10, 22, 40, 0.08), 0 1px 4px rgba(10, 22, 40, 0.04)",
         }}
       >
+      <style>{`
+        .terms-sub { list-style: none; margin: 10px 0 14px; padding: 12px 16px; border-left: 3px solid ${T.gold}; background: ${T.cream}; border-radius: 8px; }
+        .terms-sub li { position: relative; padding-left: 16px; margin: 5px 0; }
+        .terms-sub li:first-child { margin-top: 0; }
+        .terms-sub li:last-child { margin-bottom: 0; }
+        .terms-sub li::before { content: "–"; position: absolute; left: 2px; color: ${T.gold}; font-weight: 700; }
+      `}</style>
+
       {/* 헤더 */}
       <div style={{ marginBottom: 32, borderBottom: `2px solid ${T.gold}`, paddingBottom: 20 }}>
         <h1 style={{ fontSize: 28, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: "-0.02em" }}>
@@ -60,7 +68,7 @@ export default function PrivacyPage() {
       <Section title="제1조 (개인정보의 수집 항목 및 수집 방법)">
         <p>회사는 다음과 같은 개인정보를 수집합니다.</p>
         <Sub title="1. 회원가입 및 서비스 이용 시 수집 항목">
-          <ul style={ulStyle}>
+          <ul className="terms-sub">
             <li>구직회원: 이메일, 이름(닉네임), 연락처, 국적, 비자 유형, 한국어 능력, 거주 지역, 프로필 사진(선택)</li>
             <li>사장님(고용주) 회원: 이메일, 이름, 연락처, 사업자등록번호, 사업장명, 사업장 주소, 업종</li>
             <li>유학생(D-2/D-4) 시간제취업 신청자: 위 구직회원 항목에 더하여 재학 대학명, 학번, 학과, 학기, 외국인등록번호 일부, TOPIK 등급, 직전 학기 성적</li>
@@ -68,12 +76,12 @@ export default function PrivacyPage() {
           </ul>
         </Sub>
         <Sub title="2. 서비스 이용 과정에서 자동 수집되는 항목">
-          <ul style={ulStyle}>
+          <ul className="terms-sub">
             <li>접속 IP, 쿠키, 접속 기록, 기기 정보(OS, 브라우저), 이용 일시, 위치 정보(이용자 동의 시)</li>
           </ul>
         </Sub>
         <Sub title="3. 수집 방법">
-          <ul style={ulStyle}>
+          <ul className="terms-sub">
             <li>홈페이지 회원가입, 카카오톡/구글 소셜 로그인</li>
             <li>카카오톡 채널 챗봇을 통한 입력</li>
             <li>구인 공고 등록, 알바 지원, 시간제취업 신청 등 서비스 이용 과정</li>
@@ -84,7 +92,7 @@ export default function PrivacyPage() {
 
       <Section title="제2조 (개인정보의 수집 및 이용 목적)">
         <p>회사는 수집한 개인정보를 다음의 목적을 위해 이용합니다.</p>
-        <ul style={ulStyle}>
+        <ul className="terms-sub">
           <li><strong>회원 식별 및 관리</strong>: 본인 확인, 부정 이용 방지, 회원자격 유지·관리</li>
           <li><strong>서비스 제공</strong>: 구인·구직 매칭, 근로계약 체결 지원, 다국어 서류 자동 생성, 시간제취업 신청 처리</li>
           <li><strong>비자 합법성 확인</strong>: 비자 유형별 합법 취업 가능 여부 자동 검증</li>
@@ -101,7 +109,7 @@ export default function PrivacyPage() {
           회사는 이용자의 개인정보를 회원 탈퇴 시 또는 수집·이용 목적이 달성된 후에는 지체 없이 파기합니다.
           단, 다음의 정보에 대해서는 관련 법령에 따라 일정 기간 보관합니다.
         </p>
-        <ul style={ulStyle}>
+        <ul className="terms-sub">
           <li>계약 또는 청약철회 등에 관한 기록: <strong>5년</strong> (전자상거래법)</li>
           <li>대금결제 및 재화 등의 공급에 관한 기록: <strong>5년</strong> (전자상거래법)</li>
           <li>소비자의 불만 또는 분쟁처리에 관한 기록: <strong>3년</strong> (전자상거래법)</li>
@@ -116,7 +124,7 @@ export default function PrivacyPage() {
           회사는 이용자의 개인정보를 제1조의 수집·이용 목적 범위를 초과하여 이용하거나
           제3자에게 제공하지 않습니다. 다만 다음의 경우는 예외로 합니다.
         </p>
-        <ul style={ulStyle}>
+        <ul className="terms-sub">
           <li>이용자가 사전에 동의한 경우 (예: 구인 공고에 지원 시 사장님에게 프로필 정보 제공)</li>
           <li>법령의 규정에 의하거나 수사 목적으로 법령에 정해진 절차와 방법에 따라 수사기관의 요구가 있는 경우</li>
           <li>유학생 시간제취업 신청 시 소속 대학 담당자에게 신청서 정보 제공 (이용자 동의 후)</li>
@@ -167,7 +175,7 @@ export default function PrivacyPage() {
 
       <Section title="제6조 (이용자의 권리·의무 및 행사 방법)">
         <p>이용자는 언제든지 다음의 권리를 행사할 수 있습니다.</p>
-        <ul style={ulStyle}>
+        <ul className="terms-sub">
           <li>개인정보 열람 요청</li>
           <li>오류 정정 요청</li>
           <li>삭제 요청</li>
@@ -190,7 +198,7 @@ export default function PrivacyPage() {
           <p>회원 탈퇴 또는 보유기간 경과 시 별도 DB로 옮겨 내부 방침 및 관련 법령에 따라 일정 기간 저장된 후 파기합니다.</p>
         </Sub>
         <Sub title="파기 방법">
-          <ul style={ulStyle}>
+          <ul className="terms-sub">
             <li>전자적 파일 형태: 복구 불가능한 방법으로 영구 삭제</li>
             <li>종이 문서: 분쇄 또는 소각</li>
           </ul>
@@ -199,7 +207,7 @@ export default function PrivacyPage() {
 
       <Section title="제8조 (개인정보의 안전성 확보 조치)">
         <p>회사는 개인정보의 안전성 확보를 위해 다음과 같은 조치를 취하고 있습니다.</p>
-        <ul style={ulStyle}>
+        <ul className="terms-sub">
           <li>개인정보 취급자 최소화 및 접근권한 관리</li>
           <li>개인정보의 암호화 저장 및 전송 (HTTPS, AES 암호화)</li>
           <li>해킹 등에 대비한 기술적 대책 (방화벽, 침입탐지 시스템)</li>
@@ -244,7 +252,7 @@ export default function PrivacyPage() {
         <p>
           개인정보 침해로 인한 신고나 상담이 필요하신 경우 아래 기관에 문의하시기 바랍니다.
         </p>
-        <ul style={ulStyle}>
+        <ul className="terms-sub">
           <li>개인정보분쟁조정위원회: 1833-6972 (<a href="https://www.kopico.go.kr" target="_blank" rel="noopener noreferrer" style={linkStyle}>www.kopico.go.kr</a>)</li>
           <li>개인정보침해신고센터: 118 (<a href="https://privacy.kisa.or.kr" target="_blank" rel="noopener noreferrer" style={linkStyle}>privacy.kisa.or.kr</a>)</li>
           <li>대검찰청: 1301 (<a href="https://www.spo.go.kr" target="_blank" rel="noopener noreferrer" style={linkStyle}>www.spo.go.kr</a>)</li>
