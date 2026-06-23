@@ -155,70 +155,61 @@ export default function PrivacyPage() {
 
       <Section title="제6조 (개인정보의 국외 이전)">
         <p>
-          회사는 AI 기반 다국어 번역 기능 제공을 위해, 이용자가 등록한 공고 콘텐츠의 텍스트를 다음과 같이
-          국외로 이전(처리위탁)합니다.
+          회사는 AI 기반 다국어 번역 기능 제공을 위해, 이용자가 등록한 공고 콘텐츠의 텍스트를 아래와 같이
+          국외로 이전(처리위탁)합니다. 이용자는 서비스 이용 시 위 국외 이전에 동의한 것으로 보며, 동의를
+          거부할 수 있으나 이 경우 다국어 번역 기능 이용이 제한될 수 있습니다.
         </p>
-        <ul className="terms-sub">
-          <li>이전받는 자: Anthropic, PBC (Claude API) 또는 OpenAI, L.L.C. (환경 설정에 따라 선택 이용)</li>
-          <li>이전 국가: 미국</li>
-          <li>이전 항목: 번역을 위해 처리되는 공고 텍스트(제목·설명·근무지역·회사명·업종·근무조건·복리후생 등)</li>
-          <li>이전 목적: AI 기반 다국어 번역 처리</li>
-          <li>보유·이용 기간: 번역 처리에 필요한 기간 (각 사의 API 정책에 따라 처리)</li>
-        </ul>
-        <p style={{ marginTop: 12, fontSize: 13, color: T.ink2 }}>
-          이용자는 서비스 이용 시 위 국외 이전에 동의한 것으로 보며, 동의를 거부할 수 있으나 이 경우
-          다국어 번역 기능 이용이 제한될 수 있습니다.
-        </p>
+        <table style={tableStyle}>
+          <tbody>
+            <tr><th style={thLabel}>이전받는 자</th><td style={tdStyle}>Anthropic, PBC (Claude API) 또는 OpenAI, L.L.C. (환경 설정에 따라 선택 이용)</td></tr>
+            <tr><th style={thLabel}>이전 국가</th><td style={tdStyle}>미국</td></tr>
+            <tr><th style={thLabel}>이전 항목</th><td style={tdStyle}>번역을 위해 처리되는 공고 텍스트(제목·설명·근무지역·회사명·업종·근무조건·복리후생 등)</td></tr>
+            <tr><th style={thLabel}>이전 목적</th><td style={tdStyle}>AI 기반 다국어 번역 처리</td></tr>
+            <tr><th style={thLabel}>보유·이용 기간</th><td style={tdStyle}>번역 처리에 필요한 기간 (각 사의 API 정책에 따라 처리)</td></tr>
+          </tbody>
+        </table>
       </Section>
 
       <Section title="제7조 (개인정보의 파기 절차 및 방법)">
         <p>
-          회사는 개인정보 보유기간이 경과하거나 처리목적이 달성된 경우 지체 없이 해당 개인정보를 파기합니다.
+          회사는 개인정보 보유기간의 경과, 처리목적 달성 등 개인정보가 불필요하게 되었을 때에는 지체 없이
+          해당 개인정보를 파기합니다.
         </p>
-        <Sub title="파기 절차">
-          <p>회원 탈퇴 또는 보유기간 경과 시 별도 DB로 옮겨 내부 방침 및 관련 법령에 따라 일정 기간 저장된 후 파기합니다.</p>
-        </Sub>
-        <Sub title="파기 방법">
-          <ul className="terms-sub">
-            <li>전자적 파일 형태: 복구 불가능한 방법으로 영구 삭제</li>
-            <li>종이 문서: 분쇄 또는 소각</li>
-          </ul>
-        </Sub>
+        <p style={{ marginTop: 12 }}>
+          전자적 파일 형태의 정보는 복구·재생할 수 없는 기술적 방법으로 삭제하며, 종이에 출력된 개인정보는
+          분쇄하거나 소각하여 파기합니다.
+        </p>
       </Section>
 
       <Section title="제8조 (정보주체의 권리·의무 및 행사 방법)">
-        <p>이용자(정보주체)는 언제든지 다음의 권리를 행사할 수 있습니다.</p>
-        <ul className="terms-sub">
-          <li>개인정보 열람 요청</li>
-          <li>오류 정정 요청</li>
-          <li>삭제 요청</li>
-          <li>처리정지 요청</li>
-          <li>회원 탈퇴 (서비스 내 프로필 메뉴 또는 k-alba@naver.com 이메일)</li>
-        </ul>
+        <p>
+          정보주체는 회사에 대해 언제든지 개인정보 열람·정정·삭제·처리정지 요구 등의 권리를 행사할 수 있습니다.
+        </p>
         <p style={{ marginTop: 12 }}>
-          위 권리 행사는 서비스 내 "프로필 → 계정 관리"에서 직접 처리하시거나,
-          <a href="mailto:k-alba@naver.com" style={linkStyle}> k-alba@naver.com</a>로 요청하실 수 있습니다.
-          회사는 요청에 대해 지체 없이 처리하며, 이용자가 개인정보의 오류 등에 대한 정정을 요청한
-          경우 정정을 완료할 때까지 해당 개인정보를 이용하거나 제공하지 않습니다.
+          위 권리 행사는 서비스 내 "프로필 → 계정 관리" 설정을 통해 직접 처리하거나, 개인정보 보호책임자에게
+          <a href="mailto:k-alba@naver.com" style={linkStyle}> k-alba@naver.com</a>으로 연락하시면 지체 없이 조치합니다.
+          이용자가 개인정보의 오류 등에 대한 정정을 요청한 경우, 회사는 정정을 완료할 때까지 해당 개인정보를
+          이용하거나 제공하지 않습니다.
         </p>
       </Section>
 
       <Section title="제9조 (개인정보의 안전성 확보 조치)">
-        <p>회사는 개인정보의 안전성 확보를 위해 다음과 같은 조치를 취하고 있습니다.</p>
+        <p>회사는 개인정보의 안전성 확보를 위해 다음의 조치를 취하고 있습니다.</p>
         <ul className="terms-sub">
-          <li>개인정보 취급자 최소화 및 접근권한 관리</li>
-          <li>개인정보의 암호화 저장 및 전송 (HTTPS, AES 암호화)</li>
-          <li>해킹 등에 대비한 기술적 대책 (방화벽, 침입탐지 시스템)</li>
-          <li>접속기록의 보관 및 위변조 방지</li>
-          <li>비인가자에 대한 출입 통제 및 보안 정책 시행</li>
-          <li>Row Level Security(RLS) 데이터베이스 정책으로 사용자별 데이터 격리</li>
+          <li><strong>비밀번호 보호</strong>: 이용자의 비밀번호는 인증 시스템에서 안전하게 암호화(해시)되어 저장·관리되며, 회사도 원문을 알 수 없습니다.</li>
+          <li><strong>접근 권한 관리</strong>: 개인정보를 처리하는 시스템에 대한 접근 권한을 최소한으로 부여·관리하고, 민감 정보는 사용자에게 노출되지 않도록 접근을 제한합니다.</li>
+          <li><strong>통신 암호화</strong>: HTTPS(SSL/TLS) 프로토콜을 사용하여 데이터 전송 구간을 암호화합니다.</li>
+          <li><strong>데이터 격리</strong>: Row Level Security(RLS) 데이터베이스 정책으로 사용자별 데이터를 격리합니다.</li>
+          <li>접속 기록 보관 및 위·변조 방지, 보안 프로그램의 설치 및 주기적 점검.</li>
         </ul>
       </Section>
 
       <Section title="제10조 (쿠키의 사용)">
         <p>
-          회사는 이용자에게 개인화·맞춤형 서비스를 제공하기 위해 쿠키(Cookie)를 사용합니다.
-          이용자는 브라우저 설정을 통해 쿠키 저장을 거부할 수 있으나, 이 경우 로그인이 필요한 일부
+          회사는 이용자의 로그인 상태 유지 및 서비스 이용 편의를 위해 쿠키(Cookie)를 사용합니다.
+        </p>
+        <p style={{ marginTop: 12 }}>
+          이용자는 웹 브라우저 설정을 통해 쿠키 저장을 거부할 수 있으나, 이 경우 로그인이 필요한 일부
           서비스 이용에 어려움이 있을 수 있습니다.
         </p>
       </Section>
@@ -228,22 +219,13 @@ export default function PrivacyPage() {
           회사는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보 처리와 관련한
           이용자의 불만 처리 및 피해 구제 등을 위하여 다음과 같이 개인정보 보호책임자를 지정하고 있습니다.
         </p>
-        <div
-          style={{
-            background: T.cream,
-            border: `1px solid ${T.g200}`,
-            borderRadius: 10,
-            padding: 16,
-            marginTop: 12,
-          }}
-        >
-          <div style={{ fontWeight: 700, color: T.navy, marginBottom: 6 }}>개인정보 보호책임자</div>
-          <div style={{ color: T.ink2, lineHeight: 1.9, fontSize: 13 }}>
-            <div>성명: 남기환 (대표이사 겸임)</div>
-            <div>소속: 미림미디어랩 주식회사</div>
-            <div>이메일: <a href="mailto:k-alba@naver.com" style={linkStyle}>k-alba@naver.com</a></div>
-          </div>
-        </div>
+        <table style={tableStyle}>
+          <tbody>
+            <tr><th style={thLabel}>개인정보 보호책임자</th><td style={tdStyle}>남기환 (대표이사 겸임)</td></tr>
+            <tr><th style={thLabel}>소속</th><td style={tdStyle}>미림미디어랩 주식회사</td></tr>
+            <tr><th style={thLabel}>이메일</th><td style={tdStyle}><a href="mailto:k-alba@naver.com" style={linkStyle}>k-alba@naver.com</a></td></tr>
+          </tbody>
+        </table>
       </Section>
 
       <Section title="제12조 (권익침해 구제 방법)">
@@ -251,12 +233,17 @@ export default function PrivacyPage() {
           정보주체는 개인정보 침해로 인한 구제를 받기 위하여 아래 기관에 분쟁 해결이나 상담 등을
           신청할 수 있습니다.
         </p>
-        <ul className="terms-sub">
-          <li>개인정보분쟁조정위원회: 1833-6972 (<a href="https://www.kopico.go.kr" target="_blank" rel="noopener noreferrer" style={linkStyle}>www.kopico.go.kr</a>)</li>
-          <li>개인정보침해신고센터: 118 (<a href="https://privacy.kisa.or.kr" target="_blank" rel="noopener noreferrer" style={linkStyle}>privacy.kisa.or.kr</a>)</li>
-          <li>대검찰청: 1301 (<a href="https://www.spo.go.kr" target="_blank" rel="noopener noreferrer" style={linkStyle}>www.spo.go.kr</a>)</li>
-          <li>경찰청: 182 (<a href="https://ecrm.cyber.go.kr" target="_blank" rel="noopener noreferrer" style={linkStyle}>ecrm.cyber.go.kr</a>)</li>
-        </ul>
+        <table style={tableStyle}>
+          <thead>
+            <tr><th style={thStyle}>기관</th><th style={thStyle}>연락처</th><th style={thStyle}>웹사이트</th></tr>
+          </thead>
+          <tbody>
+            <tr><td style={tdStyle}>개인정보분쟁조정위원회</td><td style={tdStyle}>1833-6972</td><td style={tdStyle}><a href="https://www.kopico.go.kr" target="_blank" rel="noopener noreferrer" style={linkStyle}>www.kopico.go.kr</a></td></tr>
+            <tr><td style={tdStyle}>개인정보침해신고센터</td><td style={tdStyle}>118</td><td style={tdStyle}><a href="https://privacy.kisa.or.kr" target="_blank" rel="noopener noreferrer" style={linkStyle}>privacy.kisa.or.kr</a></td></tr>
+            <tr><td style={tdStyle}>대검찰청</td><td style={tdStyle}>1301</td><td style={tdStyle}><a href="https://www.spo.go.kr" target="_blank" rel="noopener noreferrer" style={linkStyle}>www.spo.go.kr</a></td></tr>
+            <tr><td style={tdStyle}>경찰청</td><td style={tdStyle}>182</td><td style={tdStyle}><a href="https://ecrm.cyber.go.kr" target="_blank" rel="noopener noreferrer" style={linkStyle}>ecrm.cyber.go.kr</a></td></tr>
+          </tbody>
+        </table>
       </Section>
 
       <Section title="제13조 (개인정보 처리방침의 변경)">
@@ -280,6 +267,7 @@ const linkStyle = { color: "#1A56F0", textDecoration: "none" };
 const tableStyle = { width: "100%", borderCollapse: "collapse", marginTop: 12, fontSize: 13 };
 const thStyle = { border: "1px solid #D4D0CA", padding: "8px 12px", background: "#F7F5F0", textAlign: "left", fontWeight: 700, color: "#0A1628" };
 const tdStyle = { border: "1px solid #D4D0CA", padding: "8px 12px", color: "#3F5273" };
+const thLabel = { ...thStyle, width: 130, whiteSpace: "nowrap", verticalAlign: "top" };
 
 // ─── 섹션 컴포넌트 ───
 function Section({ title, children }) {
