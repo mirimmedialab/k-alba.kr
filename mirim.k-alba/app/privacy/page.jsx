@@ -131,7 +131,7 @@ export default function PrivacyPage() {
         </p>
         <table style={tableStyle}>
           <tbody>
-            <tr><th style={thLabel}>제공받는 자</th><td style={tdStyle}>미림미디어랩 주식회사가 운영하는 플랫폼 — TRAX(trax.mirimmedialab.co.kr), K-UNIV(k-univ.kr), E-7(e-7.kr)</td></tr>
+            <tr><th style={thLabel}>제공받는 자</th><td style={tdStyle}>미림미디어랩 주식회사가 운영하는 플랫폼 — <span style={{ whiteSpace: "nowrap" }}>TRAX(trax.mirimmedialab.co.kr)</span>, <span style={{ whiteSpace: "nowrap" }}>K-UNIV(k-univ.kr)</span>, <span style={{ whiteSpace: "nowrap" }}>E-7(e-7.kr)</span></td></tr>
             <tr><th style={thLabel}>제공 목적</th><td style={tdStyle}>계열 플랫폼 간 통합 회원 관리, 연계 서비스 제공</td></tr>
             <tr><th style={thLabel}>제공 항목</th><td style={tdStyle}>이름, 이메일 주소, 비자 유형, 서비스 이용 이력</td></tr>
             <tr><th style={thLabel}>보유·이용 기간</th><td style={tdStyle}>회원 탈퇴 시 또는 제공 목적 달성 시까지</td></tr>
@@ -231,9 +231,9 @@ export default function PrivacyPage() {
         </p>
         <table style={tableStyle}>
           <tbody>
-            <tr><th style={thLabel}>개인정보 보호책임자</th><td style={tdStyle}>남기환 (대표이사 겸임)</td></tr>
+            <tr><th style={thLabel}>개인정보 보호책임자</th><td style={tdStyle}>남기환 (대표이사)</td></tr>
             <tr><th style={thLabel}>소속</th><td style={tdStyle}>미림미디어랩 주식회사</td></tr>
-            <tr><th style={thLabel}>이메일</th><td style={tdStyle}><a href="mailto:k-alba@naver.com" style={linkStyle}>k-alba@naver.com</a></td></tr>
+            <tr><th style={thLabel}>연락처</th><td style={tdStyle}><a href="mailto:k-alba@naver.com" style={linkStyle}>k-alba@naver.com</a></td></tr>
           </tbody>
         </table>
       </Section>
@@ -259,7 +259,7 @@ export default function PrivacyPage() {
       <Section title="제13조 (개인정보 처리방침의 변경)">
         <p>
           이 개인정보 처리방침은 2026년 6월 22일부터 적용되며, 법령 및 방침에 따른 변경 내용의 추가·삭제
-          및 정정이 있는 경우에는 변경사항의 시행 7일 전부터 서비스 공지사항을 통하여 고지합니다.
+          및 정정이 있는 경우에는 변경사항의 시행 7일 전부터 서비스 공지사항을 통하여 고지할 것입니다.
         </p>
       </Section>
 
