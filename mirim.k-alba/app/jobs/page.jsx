@@ -111,6 +111,7 @@ function DesktopJobCard({ job, tr, onSelect, showDistance }) {
   const korLoc = [shortSido(job.sido), job.sigungu].filter(Boolean).join(" ") || job.address || "";
   const loc = locale !== "ko" ? romanizeRegion(korLoc) : korLoc;
   const workTime = shortWorkTime(job);
+  const companyName = job.company_name || job.employer?.company_name || job.employer_external_name || job.employer?.name || "";
   return (
     <div
       onClick={() => onSelect(job.id)}
@@ -142,7 +143,7 @@ function DesktopJobCard({ job, tr, onSelect, showDistance }) {
 
       {/* 회사명 (위치 분리) */}
       <div style={{ fontSize: 12.5, color: D.ink2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-        {locale !== "ko" && job.company_name ? `${job.company_name} (${romanizeCompany(job.company_name)})` : job.company_name}
+        {locale !== "ko" && companyName ? `${companyName} (${romanizeCompany(companyName)})` : companyName}
       </div>
 
       {/* 회사명 다음 구분선 */}
@@ -207,11 +208,12 @@ function MobileListItem({ job, tr, last, onClick }) {
   const korLoc = [shortSido(job.sido), job.sigungu].filter(Boolean).join(" ") || job.address || "";
   const loc = locale !== "ko" ? romanizeRegion(korLoc) : korLoc;
   const workTime = shortWorkTime(job);
+  const companyName = job.company_name || job.employer?.company_name || job.employer_external_name || job.employer?.name || "";
   return (
     <div onClick={onClick} style={{ display: "flex", gap: 12, padding: "14px", borderBottom: last ? "none" : `1px solid ${D.border}`, cursor: "pointer" }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: D.navy, lineHeight: 1.3, marginBottom: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{(tr && tr.title) || job.title}</div>
-        <div style={{ fontSize: 12, color: D.ink2, marginBottom: workTime ? 3 : 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{locale !== "ko" && job.company_name ? `${job.company_name} (${romanizeCompany(job.company_name)})` : job.company_name}{loc ? ` · ${loc}` : ""}</div>
+        <div style={{ fontSize: 12, color: D.ink2, marginBottom: workTime ? 3 : 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{locale !== "ko" && companyName ? `${companyName} (${romanizeCompany(companyName)})` : companyName}{loc ? ` · ${loc}` : ""}</div>
         {workTime && (
           <div style={{ fontSize: 11.5, color: D.ink3, marginBottom: 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>🕐 {locale !== "ko" ? localizeWorkText(workTime, t) : workTime}</div>
         )}

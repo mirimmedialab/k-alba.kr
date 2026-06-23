@@ -59,7 +59,9 @@ export default function SignupPage() {
     email: "",
     password: "",
     password2: "",
-    agree: false,
+    agreeTerms: false,
+    agreePrivacy: false,
+    agreeMarketing: false,
   });
   const [error, setError] = useState("");
 
@@ -182,18 +184,26 @@ export default function SignupPage() {
     if (!form.name || !form.email || !form.password) return setError(t("auth.errAllFields"));
     if (form.password !== form.password2) return setError(t("auth.errPasswordMatch"));
     if (form.password.length < 8) return setError(t("auth.errPasswordLen"));
-    if (!form.agree) return setError(t("auth.errAgree"));
+    if (!form.agreeTerms) return setError(t("auth.errAgreeTerms"));
+    if (!form.agreePrivacy) return setError(t("auth.errAgreePrivacy"));
 
     if (role === "employer" && !bizVerified) {
       return setError(t("auth.bizVerifyRequired"));
     }
 
     setLoading(true);
+    const nowIso = new Date().toISOString();
+    const consent = {
+      agreed_terms_at: nowIso,
+      agreed_privacy_at: nowIso,
+      agreed_marketing_at: form.agreeMarketing ? nowIso : null,
+    };
     const extra = role === "employer" ? {
       // 위 handleVerifyBusiness(국세청 NTS 검증) 통과 후에만 제출 가능 → verified 저장
       business_number: bizForm.businessNumber.replace(/-/g, ""),
       verified: true,
-    } : {};
+      ...consent,
+    } : { ...consent };
     const { error } = await signUp(form.email, form.password, role, form.name, extra);
     setLoading(false);
     if (error) {
@@ -692,56 +702,27 @@ export default function SignupPage() {
           </div>
         )}
 
-        {/* 약관 동의 */}
-        <label
-          style={{
-            padding: "12px 14px",
-            background: T.cream,
-            border: `1px solid ${T.border}`,
-            borderRadius: 4,
-            marginBottom: 16,
-            display: "flex",
-            alignItems: "start",
-            gap: 10,
-            cursor: "pointer",
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={form.agree}
-            onChange={(e) => setForm({ ...form, agree: e.target.checked })}
-            style={{ marginTop: 3, accentColor: T.n9, width: 15, height: 15, flexShrink: 0 }}
-          />
-          <div style={{ fontSize: 12, color: T.ink2, lineHeight: 1.6 }}>
-            {t("auth.termsRequired")}{" "}
-            <Link
-              href="/terms"
-              target="_blank"
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                color: T.ink,
-                fontWeight: 600,
-                borderBottom: `1px solid ${T.ink}`,
-              }}
-            >
-              {t("auth.termsOfService")}
-            </Link>
-            {" " + t("common.and") + " "}
-            <Link
-              href="/privacy"
-              target="_blank"
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                color: T.ink,
-                fontWeight: 600,
-                borderBottom: `1px solid ${T.ink}`,
-              }}
-            >
-              {t("auth.privacyPolicy")}
-            </Link>
-            {t("auth.termsAgreeSuffix")}
-          </div>
-        </label>
+        {/* 약관 동의 (필수 2종 분리 + 선택) */}
+        <div style={{ background: T.cream, border: `1px solid ${T.border}`, borderRadius: 6, padding: "12px 14px", marginBottom: 16 }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", paddingBottom: 10, marginBottom: 6, borderBottom: `1px solid ${T.border}` }}>
+            <input type="checkbox" checked={form.agreeTerms && form.agreePrivacy && form.agreeMarketing} onChange={(e) => { const v = e.target.checked; setForm({ ...form, agreeTerms: v, agreePrivacy: v, agreeMarketing: v }); }} style={{ width: 16, height: 16, accentColor: T.n9, flexShrink: 0 }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: T.ink }}>{t("auth.agreeAll")}</span>
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "5px 0" }}>
+            <input type="checkbox" checked={form.agreeTerms} onChange={(e) => setForm({ ...form, agreeTerms: e.target.checked })} style={{ width: 15, height: 15, accentColor: T.n9, flexShrink: 0 }} />
+            <span style={{ fontSize: 12.5, color: T.ink2, flex: 1 }}>{t("auth.agreeTermsRequired")}</span>
+            <Link href="/terms" target="_blank" onClick={(e) => e.stopPropagation()} style={{ fontSize: 11.5, color: T.ink3, textDecoration: "underline", flexShrink: 0 }}>{t("auth.view")}</Link>
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "5px 0" }}>
+            <input type="checkbox" checked={form.agreePrivacy} onChange={(e) => setForm({ ...form, agreePrivacy: e.target.checked })} style={{ width: 15, height: 15, accentColor: T.n9, flexShrink: 0 }} />
+            <span style={{ fontSize: 12.5, color: T.ink2, flex: 1 }}>{t("auth.agreePrivacyRequired")}</span>
+            <Link href="/privacy" target="_blank" onClick={(e) => e.stopPropagation()} style={{ fontSize: 11.5, color: T.ink3, textDecoration: "underline", flexShrink: 0 }}>{t("auth.view")}</Link>
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "5px 0" }}>
+            <input type="checkbox" checked={form.agreeMarketing} onChange={(e) => setForm({ ...form, agreeMarketing: e.target.checked })} style={{ width: 15, height: 15, accentColor: T.n9, flexShrink: 0 }} />
+            <span style={{ fontSize: 12.5, color: T.ink3, flex: 1 }}>{t("auth.agreeMarketing")}</span>
+          </label>
+        </div>
 
         {error && (
           <div

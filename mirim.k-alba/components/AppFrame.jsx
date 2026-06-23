@@ -14,13 +14,13 @@ import { I18nProvider } from "@/lib/i18n";
  */
 
 // NavBar를 숨길 경로 (랜딩 페이지만 자체 히어로가 있어 숨김)
-const HIDE_NAVBAR_ON = ["/login/admin", "/auth/callback"];
+const HIDE_NAVBAR_ON = ["/login/admin", "/auth/callback", "/consent"];
 // Footer를 숨길 경로 (자체 푸터가 있는 페이지)
-const HIDE_FOOTER_ON = ["/", "/m", "/login/admin", "/auth/callback"];
+const HIDE_FOOTER_ON = ["/", "/m", "/login/admin", "/auth/callback", "/consent"];
 // DesktopMobileFrame(데스크톱 440px 카드)을 사용하지 않을 경로
-const NO_FRAME_ON = ["/", "/m", "/privacy", "/terms", "/login/admin", "/auth/callback"];
+const NO_FRAME_ON = ["/", "/m", "/privacy", "/terms", "/login/admin", "/auth/callback", "/consent"];
 // KakaoFloatingButton 을 숨길 경로 (랜딩만 자체 CTA 가짐)
-const NO_KAKAO_ON = ["/", "/m", "/login/admin", "/auth/callback"];
+const NO_KAKAO_ON = ["/", "/m", "/login/admin", "/auth/callback", "/consent"];
 // 데스크탑 웹 레이아웃을 자체 구현해 440px 폰 프레임을 적용하지 않을 페이지(점진 추가)
 const WIDE_PAGES = ["/my/applications", "/my/favorites", "/my/contracts", "/partwork", "/profile", "/my/jobs", "/jobs/post", "/applicants", "/contracts/new"];
 
