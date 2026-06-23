@@ -251,6 +251,10 @@ export default function TermsPage() {
       <Section title="부칙">
         <p>이 약관은 2026년 6월 22일부터 시행합니다.</p>
       </Section>
+
+      <p style={{ marginTop: 32, textAlign: "center", fontSize: 13, color: T.ink2 }}>
+        문의: <a href="mailto:k-alba@naver.com" style={linkStyle}>k-alba@naver.com</a>
+      </p>
       </div>
     </div>
   );
