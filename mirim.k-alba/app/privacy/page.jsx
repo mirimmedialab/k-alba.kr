@@ -55,7 +55,7 @@ export default function PrivacyPage() {
       </div>
 
       {/* 시행일 */}
-      <p style={{ marginBottom: 24, color: T.ink2 }}>시행일: 2026년 6월 22일</p>
+      <p style={{ marginBottom: 24, color: T.ink2, textAlign: "right" }}>시행일: 2026년 6월 22일</p>
 
       <Section title="제1조 (개인정보의 처리 목적)">
         <p>

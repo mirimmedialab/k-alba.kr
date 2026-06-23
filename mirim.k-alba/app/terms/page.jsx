@@ -50,12 +50,12 @@ export default function TermsPage() {
       {/* 헤더 */}
       <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontSize: 28, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: "-0.02em" }}>
-          이용약관
+          서비스 이용약관
         </h1>
       </div>
 
       {/* 시행일 */}
-      <p style={{ marginBottom: 24, color: T.ink2 }}>시행일: 2026년 6월 22일</p>
+      <p style={{ marginBottom: 24, color: T.ink2, textAlign: "right" }}>시행일: 2026년 6월 22일</p>
 
       <Section title="제1장 총칙">
         <Article num={1} title="목적">
@@ -85,46 +85,31 @@ export default function TermsPage() {
         </Article>
       </Section>
 
-      <Section title="제2장 회원가입 및 계정 관리">
-        <Article num={4} title="회원가입">
+      <Section title="제2장 이용계약">
+        <Article num={4} title="이용계약의 체결">
           <ol style={olStyle}>
-            <li>회원가입은 이용자가 본 약관과 개인정보처리방침에 동의하고, 회사가 정한 절차에 따라 가입 신청을 완료한 시점에 성립합니다.</li>
-            <li>회사는 다음의 경우 가입을 거절하거나 사후 해지할 수 있습니다.
+            <li>이용계약은 이용자가 되고자 하는 자가 약관의 내용에 동의한 후 회원가입을 신청하고, 회사가 이를 승낙함으로써 체결됩니다.</li>
+            <li>회사는 다음 각 호에 해당하는 경우 이용 신청을 거부하거나 사후에 이용계약을 해지할 수 있습니다.
               <ul className="terms-sub">
-                <li>타인의 명의를 도용한 경우</li>
-                <li>허위 정보를 기재하거나 회사가 제시한 내용을 기재하지 않은 경우</li>
-                <li>고용주 회원이 사업자등록번호 진위 확인에 실패한 경우</li>
-                <li>이전에 본 약관 위반으로 회원자격이 상실된 적이 있는 경우</li>
-                <li>법령 또는 사회질서에 위반될 우려가 있는 경우</li>
+                <li>가입 신청자가 이전에 이 약관에 의하여 자격을 상실한 적이 있는 경우</li>
+                <li>실명이 아니거나 타인의 명의를 이용한 경우</li>
+                <li>허위의 정보를 기재하거나 회사가 요구하는 내용을 기재하지 않은 경우</li>
+                <li>기타 회사가 정한 이용 요건을 충족하지 않은 경우</li>
               </ul>
             </li>
           </ol>
         </Article>
 
-        <Article num={5} title="회원 정보의 변경">
-          <p>
-            이용자는 회원가입 시 입력한 정보가 변경된 경우 즉시 서비스 내에서 수정해야 하며,
-            정보 미변경으로 인한 불이익에 대해 회사는 책임지지 않습니다.
-          </p>
-        </Article>
-
-        <Article num={6} title="회원 탈퇴 및 자격 상실">
+        <Article num={5} title="이용계약의 해지">
           <ol style={olStyle}>
-            <li>이용자는 언제든지 서비스 내 "프로필 → 계정 관리"에서 탈퇴를 요청할 수 있습니다.</li>
-            <li>회사는 다음의 경우 회원 자격을 제한·정지·상실시킬 수 있습니다.
-              <ul className="terms-sub">
-                <li>본 약관을 위반한 경우</li>
-                <li>다른 이용자의 권리나 명예, 신용을 침해한 경우</li>
-                <li>허위 공고를 게시하거나 비자 요건에 부적합한 채용을 시도한 경우</li>
-                <li>금전 사기, 명의 도용 등 불법 행위를 한 경우</li>
-              </ul>
-            </li>
+            <li>이용자는 언제든지 서비스 내 "프로필 → 계정 관리" 또는 고객센터를 통해 이용계약 해지(회원 탈퇴)를 신청할 수 있으며, 회사는 관련 법령이 정하는 바에 따라 이를 즉시 처리합니다.</li>
+            <li>이용자가 제8조(이용자의 의무)를 위반하거나 서비스의 정상적인 운영을 방해한 경우, 회사는 이용계약을 해지하거나 서비스 이용을 제한할 수 있습니다.</li>
           </ol>
         </Article>
       </Section>
 
       <Section title="제3장 서비스">
-        <Article num={7} title="서비스의 제공">
+        <Article num={6} title="서비스의 제공">
           <p>회사는 다음과 같은 서비스를 제공합니다.</p>
           <ul style={{ ...ulStyle, listStyle: "none", paddingLeft: 0 }}>
             <li><strong>구인·구직 정보 제공 (직업정보제공사업)</strong>: 외국인 대상 구인 공고 게시 및 검색</li>
@@ -141,14 +126,15 @@ export default function TermsPage() {
           </ul>
         </Article>
 
-        <Article num={8} title="서비스의 운영시간">
-          <p>
-            서비스는 연중무휴 24시간 이용 가능한 것을 원칙으로 합니다. 다만 시스템 점검, 통신장애,
-            천재지변 등 불가항력적인 사유로 일시 중단될 수 있으며, 회사는 사전 또는 사후에 이를 공지합니다.
-          </p>
+        <Article num={7} title="서비스의 변경 및 중단">
+          <ol style={olStyle}>
+            <li>회사는 운영상·기술상의 필요에 따라 제공하고 있는 서비스의 전부 또는 일부를 변경할 수 있습니다.</li>
+            <li>회사는 시스템 점검·보수·교체, 통신 두절, 천재지변, 외부 AI 제공자의 장애 등 부득이한 사유가 있는 경우 서비스의 전부 또는 일부를 제한하거나 중단할 수 있습니다.</li>
+            <li>서비스 중단의 경우 회사는 사전 공지함을 원칙으로 하되, 부득이한 경우 사후에 통지할 수 있습니다.</li>
+          </ol>
         </Article>
 
-        <Article num={9} title="이용자의 의무">
+        <Article num={8} title="이용자의 의무">
           <p>이용자는 다음 행위를 하여서는 안 됩니다.</p>
           <ul className="terms-sub">
             <li>회원가입 시 또는 정보 변경 시 허위 사실을 기재하는 행위</li>
@@ -166,7 +152,7 @@ export default function TermsPage() {
       </Section>
 
       <Section title="제4장 고용주 회원의 의무">
-        <Article num={10} title="공고 등록 시 준수사항">
+        <Article num={9} title="공고 등록 시 준수사항">
           <ol style={olStyle}>
             <li>고용주 회원은 「근로기준법」, 「출입국관리법」, 「외국인근로자의 고용 등에 관한 법률」 및 관련 법령을 준수하여 공고를 등록하여야 합니다.</li>
             <li>공고에는 다음 사항이 정확히 기재되어야 합니다.
@@ -181,7 +167,7 @@ export default function TermsPage() {
           </ol>
         </Article>
 
-        <Article num={11} title="채용 후 의무">
+        <Article num={10} title="채용 후 의무">
           <ol style={olStyle}>
             <li>고용주 회원은 채용 확정 후 합법적인 근로계약서를 체결하여야 합니다.</li>
             <li>회사가 제공하는 표준 다국어 근로계약서를 활용할 수 있으나, 구체적 조건은 양 당사자 간 합의에 따릅니다.</li>
@@ -191,7 +177,7 @@ export default function TermsPage() {
       </Section>
 
       <Section title="제5장 구직회원의 의무">
-        <Article num={12} title="비자 정보의 정확성">
+        <Article num={11} title="비자 정보의 정확성">
           <ol style={olStyle}>
             <li>구직회원은 본인의 실제 비자 유형을 정확히 입력해야 하며, 허위 정보 기재로 인한 불이익은 본인이 부담합니다.</li>
             <li>비자별 합법 취업 가능 업종에 대해서는 회사가 제공하는 안내를 참고하되, 최종 확인 책임은 구직회원에게 있습니다.</li>
@@ -201,7 +187,7 @@ export default function TermsPage() {
       </Section>
 
       <Section title="제6장 수수료 및 환불">
-        <Article num={13} title="수수료 정책">
+        <Article num={12} title="수수료 정책">
           <ol style={olStyle}>
             <li><strong>구직회원</strong>: 회원가입 및 알바 검색·지원은 전액 무료입니다.</li>
             <li><strong>고용주 회원</strong>: 공고 등록은 무료이며, 매칭 성사 시 별도의 수수료 정책이 적용될 수 있습니다.</li>
@@ -209,7 +195,7 @@ export default function TermsPage() {
           </ol>
         </Article>
 
-        <Article num={14} title="환불 정책">
+        <Article num={13} title="환불 정책">
           <p>
             유료 서비스 결제 후 환불 정책은 「전자상거래 등에서의 소비자보호에 관한 법률」 및
             「콘텐츠산업진흥법」을 따르며, 구체적인 사항은 별도 환불 정책을 통해 공지합니다.
@@ -218,7 +204,7 @@ export default function TermsPage() {
       </Section>
 
       <Section title="제7장 책임 및 분쟁">
-        <Article num={15} title="면책사항">
+        <Article num={14} title="면책사항">
           <ol style={olStyle}>
             <li>회사는 천재지변, 전쟁 등 불가항력적인 사유로 인해 서비스를 제공할 수 없는 경우 책임을 지지 않습니다.</li>
             <li>회사는 이용자 간에 발생한 분쟁(예: 근로조건 불이행, 임금 미지급 등)에 대해 직접적인 당사자가 아니므로 분쟁 해결의 의무를 지지 않습니다. 다만 이용자 보호를 위한 중재 역할을 수행할 수 있습니다.</li>
@@ -227,7 +213,7 @@ export default function TermsPage() {
           </ol>
         </Article>
 
-        <Article num={16} title="분쟁의 해결">
+        <Article num={15} title="분쟁의 해결">
           <ol style={olStyle}>
             <li>이용자 간 분쟁이 발생한 경우 당사자 간의 합의로 해결함을 원칙으로 합니다.</li>
             <li>합의가 이루어지지 않을 경우 회사는 분쟁 조정을 위한 자료(채팅 기록, 계약서 등)를 제공할 수 있으며, 필요 시 관련 기관(고용노동부, 외국인노동자지원센터 등)에 안내합니다.</li>
@@ -236,14 +222,14 @@ export default function TermsPage() {
       </Section>
 
       <Section title="제8장 기타">
-        <Article num={17} title="저작권의 귀속">
+        <Article num={16} title="저작권의 귀속">
           <ol style={olStyle}>
             <li>회사가 작성한 저작물에 대한 저작권은 회사에 귀속됩니다.</li>
             <li>이용자가 서비스 내에 게시한 게시물에 대한 저작권은 이용자에게 귀속되나, 회사는 서비스 운영·홍보 등을 위해 이를 무상으로 사용할 수 있습니다.</li>
           </ol>
         </Article>
 
-        <Article num={18} title="준거법 및 관할">
+        <Article num={17} title="준거법 및 관할">
           <ol style={olStyle}>
             <li>본 약관의 해석 및 회사와 이용자 간의 분쟁에 대해서는 대한민국 법령을 적용합니다.</li>
             <li>분쟁 발생 시 관할 법원은 민사소송법에 따라 정합니다.</li>
