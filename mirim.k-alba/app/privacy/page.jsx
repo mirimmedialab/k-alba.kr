@@ -48,14 +48,12 @@ export default function PrivacyPage() {
       `}</style>
 
       {/* 헤더 */}
-      <div style={{ marginBottom: 8 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: "-0.02em" }}>
+      <div style={{ marginBottom: 28 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 900, color: T.navy, marginBottom: 4, letterSpacing: "-0.02em" }}>
           개인정보처리방침
         </h1>
+        <p style={{ margin: 0, color: T.ink2, fontSize: 13 }}>시행일: 2026년 6월 22일</p>
       </div>
-
-      {/* 시행일 */}
-      <p style={{ marginBottom: 24, color: T.ink2, textAlign: "right" }}>시행일: 2026년 6월 22일</p>
 
       <Section title="제1조 (개인정보의 처리 목적)">
         <p>
@@ -139,10 +137,6 @@ export default function PrivacyPage() {
             <tr><th style={thLabel}>보유·이용 기간</th><td style={tdStyle}>회원 탈퇴 시 또는 제공 목적 달성 시까지</td></tr>
           </tbody>
         </table>
-        <p style={{ marginTop: 12, fontSize: 13, color: T.ink2 }}>
-          이용자는 위 제공에 동의하지 않을 권리가 있으며, 거부 시에도 K-ALBA 서비스 이용에는 제한이
-          없습니다. 다만 계열 플랫폼 간 연계 기능은 이용이 제한될 수 있습니다.
-        </p>
       </Section>
 
       <Section title="제5조 (개인정보 처리의 위탁)">

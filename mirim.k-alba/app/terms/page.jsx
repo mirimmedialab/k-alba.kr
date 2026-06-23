@@ -48,14 +48,12 @@ export default function TermsPage() {
       `}</style>
 
       {/* 헤더 */}
-      <div style={{ marginBottom: 8 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: "-0.02em" }}>
+      <div style={{ marginBottom: 28 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 900, color: T.navy, marginBottom: 4, letterSpacing: "-0.02em" }}>
           서비스 이용약관
         </h1>
+        <p style={{ margin: 0, color: T.ink2, fontSize: 13 }}>시행일: 2026년 6월 22일</p>
       </div>
-
-      {/* 시행일 */}
-      <p style={{ marginBottom: 24, color: T.ink2, textAlign: "right" }}>시행일: 2026년 6월 22일</p>
 
       <Section title="제1장 총칙">
         <Article num={1} title="목적">
