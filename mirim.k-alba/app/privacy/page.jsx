@@ -43,11 +43,9 @@ export default function PrivacyPage() {
         }}
       >
       <style>{`
-        .terms-sub { list-style: none; margin: 10px 0 14px; padding: 12px 16px; border-left: 3px solid ${T.gold}; background: ${T.cream}; border-radius: 8px; }
-        .terms-sub li { position: relative; padding-left: 16px; margin: 5px 0; }
-        .terms-sub li:first-child { margin-top: 0; }
-        .terms-sub li:last-child { margin-bottom: 0; }
-        .terms-sub li::before { content: "–"; position: absolute; left: 2px; color: ${T.gold}; font-weight: 700; }
+        .terms-sub { list-style: disc; margin: 8px 0 12px; padding-left: 22px; }
+        .terms-sub li { margin: 4px 0; }
+        .terms-sub li::marker { color: ${T.gold}; }
       `}</style>
 
       {/* 헤더 */}

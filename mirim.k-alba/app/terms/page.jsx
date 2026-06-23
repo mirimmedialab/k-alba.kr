@@ -42,11 +42,9 @@ export default function TermsPage() {
         }}
       >
       <style>{`
-        .terms-sub { list-style: none; margin: 10px 0 14px; padding: 12px 16px; border-left: 3px solid ${T.gold}; background: ${T.cream}; border-radius: 8px; }
-        .terms-sub li { position: relative; padding-left: 16px; margin: 5px 0; }
-        .terms-sub li:first-child { margin-top: 0; }
-        .terms-sub li:last-child { margin-bottom: 0; }
-        .terms-sub li::before { content: "–"; position: absolute; left: 2px; color: ${T.gold}; font-weight: 700; }
+        .terms-sub { list-style: disc; margin: 8px 0 12px; padding-left: 22px; }
+        .terms-sub li { margin: 4px 0; }
+        .terms-sub li::marker { color: ${T.gold}; }
       `}</style>
 
       {/* 헤더 */}
@@ -127,11 +125,16 @@ export default function TermsPage() {
           <p>회사는 다음과 같은 서비스를 제공합니다.</p>
           <ul style={{ ...ulStyle, listStyle: "none", paddingLeft: 0 }}>
             <li><strong>구인·구직 정보 제공 (직업정보제공사업)</strong>: 외국인 대상 구인 공고 게시 및 검색</li>
-            <li><strong>매칭 서비스</strong>: 비자·언어·지역 기반 자동 매칭, 챗봇 기반 지원 흐름</li>
-            <li style={svcDescStyle}><span aria-hidden="true" style={svcIndentStyle}><strong>매칭 서비스</strong>: </span>다국어(한국어, 영어, 중국어, 베트남어, 우즈벡어, 몽골어, 일본어) 근로계약서 자동 생성 및 전자 서명</li>
-            <li style={svcDescStyle}><span aria-hidden="true" style={svcIndentStyle}><strong>매칭 서비스</strong>: </span>D-2/D-4 비자 유학생을 위한 시간제취업 신청서 자동 작성 및 학교 담당자 검토</li>
-            <li style={svcDescStyle}><span aria-hidden="true" style={svcIndentStyle}><strong>매칭 서비스</strong>: </span>지원 결과·계약 진행 상황 등에 관한 카카오톡 알림</li>
-            <li style={svcDescStyle}><span aria-hidden="true" style={svcIndentStyle}><strong>매칭 서비스</strong>: </span>1:1 채팅 및 평가 시스템</li>
+            <li>
+              <strong>매칭 서비스</strong>:
+              <ul className="terms-sub">
+                <li>비자·언어·지역 기반 자동 매칭, 챗봇 기반 지원 흐름</li>
+                <li>다국어(한국어, 영어, 중국어, 베트남어, 우즈벡어, 몽골어, 일본어) 근로계약서 자동 생성 및 전자 서명</li>
+                <li>D-2/D-4 비자 유학생을 위한 시간제취업 신청서 자동 작성 및 학교 담당자 검토</li>
+                <li>지원 결과·계약 진행 상황 등에 관한 카카오톡 알림</li>
+                <li>1:1 채팅 및 평가 시스템</li>
+              </ul>
+            </li>
           </ul>
         </Article>
 
@@ -252,8 +255,6 @@ export default function TermsPage() {
 // ─── 스타일 ───
 const ulStyle = { paddingLeft: 20, marginTop: 8, marginBottom: 12 };
 const olStyle = { paddingLeft: 20, marginTop: 8, marginBottom: 12 };
-const svcDescStyle = { paddingLeft: "6em", textIndent: "-6em" };
-const svcIndentStyle = { visibility: "hidden" };
 const linkStyle = { color: "#1A56F0", textDecoration: "none" };
 
 // ─── 섹션 컴포넌트 ───
