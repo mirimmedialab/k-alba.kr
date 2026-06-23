@@ -139,7 +139,15 @@ export default function AuthCallbackPage() {
           return;
         }
 
-        router.replace(userType === "employer" ? "/my/jobs" : "/jobs");
+        // 약관 동의 게이트(OAuth 가입자): 동의 기록이 없으면 동의 페이지로 보냄
+        const dest = userType === "employer" ? "/my/jobs" : "/jobs";
+        const { data: consentProf } = await supabase
+          .from("profiles").select("agreed_terms_at, agreed_privacy_at").eq("id", user.id).maybeSingle();
+        if (!consentProf?.agreed_terms_at || !consentProf?.agreed_privacy_at) {
+          router.replace(`/consent?next=${encodeURIComponent(dest)}`);
+          return;
+        }
+        router.replace(dest);
       } catch (e) {
         console.error("[auth/callback]", e);
         setStatus("error");
