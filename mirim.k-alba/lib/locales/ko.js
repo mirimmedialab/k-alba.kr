@@ -1,5 +1,5 @@
 export const ko = {
-  siteFooter: { terms: "이용약관", privacy: "개인정보처리방침", ceo: "대표", bizNo: "사업자등록번호", jobInfoNo: "직업정보제공사업 신고번호", company: "미림미디어랩 주식회사" },
+  siteFooter: { terms: "서비스 이용약관", privacy: "개인정보처리방침", ceo: "대표", bizNo: "사업자등록번호", jobInfoNo: "직업정보제공사업 신고번호", company: "미림미디어랩 주식회사" },
   wh: { am: "오전", pm: "오후", everyday: "매일", weekday: "평일", weekend: "주말", workHours: "근무시간", avgWeeklyHours: "평균근무시간", breakTime: "휴게시간", negotiable: "협의", daysPerWeek: "주 {n}일" },
   pay: { hour: "시간", day: "일", month: "월", year: "년", won: "원" },
   kr: { none: "한국어 무관", beginner: "한국어 초급", intermediate: "한국어 중급", advanced: "한국어 고급" },
@@ -845,31 +845,4 @@ export const ko = {
     importantBullet2_html: "D-4 비자는 입국 후 <strong>6개월 경과</strong>해야 신청할 수 있습니다",
     importantBullet3_html: "교육부 <strong>인증대학 재학생</strong>만 대상입니다",
     importantBullet4_html: "신청 후 국제처 담당자가 <strong>24시간 내</strong> 확인합니다",
-    emptyTitle: "아직 신청 내역이 없습니다",
-    emptyDescription: "알바계약 완료 후 시간제취업을 신청해 보세요",
-    loading: "잠시만 기다려주세요",
-    topikNone: "없음",
-    topikSuffix: "급",
-    weeklyHours: "주 {hours}시간",
-    allowedHours: "허용 {hours}h",
-    allowedUnlimited: "허용 무제한",
-    status: {
-      draft: "작성 중",
-      submitted: "제출됨",
-      reviewing: "검토 중",
-      documents_needed: "서류 보완 필요",
-      approved: "승인됨",
-      rejected: "반려됨",
-      cancelled: "취소됨"
-    }
-  },
-  chat: {
-    title: "채팅",
-    conversationsCount: "대화 {count}개",
-    online: "온라인",
-    inputPlaceholder: "메시지를 입력하세요...",
-    yesterday: "어제",
-    daysAgo: "{n}일 전",
-    empty: "아직 대화가 없습니다"
-  },
-};
+    emptyTitle: "

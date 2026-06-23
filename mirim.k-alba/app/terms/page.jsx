@@ -48,7 +48,7 @@ export default function TermsPage() {
       `}</style>
 
       {/* 헤더 */}
-      <div style={{ marginBottom: 32 }}>
+      <div style={{ marginBottom: 8 }}>
         <h1 style={{ fontSize: 28, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: "-0.02em" }}>
           서비스 이용약관
         </h1>

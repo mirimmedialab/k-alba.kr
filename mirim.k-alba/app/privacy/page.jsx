@@ -48,7 +48,7 @@ export default function PrivacyPage() {
       `}</style>
 
       {/* 헤더 */}
-      <div style={{ marginBottom: 32 }}>
+      <div style={{ marginBottom: 8 }}>
         <h1 style={{ fontSize: 28, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: "-0.02em" }}>
           개인정보처리방침
         </h1>
@@ -127,6 +127,22 @@ export default function PrivacyPage() {
           <li>법령의 규정에 의하거나 수사 목적으로 법령에 정해진 절차와 방법에 따라 수사기관의 요구가 있는 경우</li>
           <li>유학생 시간제취업 신청 시 소속 대학 담당자에게 신청서 정보 제공 (이용자 동의 후)</li>
         </ul>
+        <p style={{ marginTop: 12 }}>
+          또한 회사는 동일 운영사(미림미디어랩) 계열 플랫폼과의 연계 서비스 제공을 위해 아래와 같이
+          개인정보를 제공합니다.
+        </p>
+        <table style={tableStyle}>
+          <tbody>
+            <tr><th style={thLabel}>제공받는 자</th><td style={tdStyle}>미림미디어랩 주식회사가 운영하는 플랫폼 (TRAX, K-UNIV, E-7)</td></tr>
+            <tr><th style={thLabel}>제공 목적</th><td style={tdStyle}>계열 플랫폼 간 통합 회원 관리, 연계 서비스 제공</td></tr>
+            <tr><th style={thLabel}>제공 항목</th><td style={tdStyle}>이름, 이메일 주소, 비자 유형, 서비스 이용 이력</td></tr>
+            <tr><th style={thLabel}>보유·이용 기간</th><td style={tdStyle}>회원 탈퇴 시 또는 제공 목적 달성 시까지</td></tr>
+          </tbody>
+        </table>
+        <p style={{ marginTop: 12, fontSize: 13, color: T.ink2 }}>
+          이용자는 위 제공에 동의하지 않을 권리가 있으며, 거부 시에도 K-ALBA 서비스 이용에는 제한이
+          없습니다. 다만 계열 플랫폼 간 연계 기능은 이용이 제한될 수 있습니다.
+        </p>
       </Section>
 
       <Section title="제5조 (개인정보 처리의 위탁)">
