@@ -54,6 +54,9 @@ export default function TermsPage() {
         </h1>
       </div>
 
+      {/* 시행일 */}
+      <p style={{ marginBottom: 24, color: T.ink2 }}>시행일: 2026년 6월 22일</p>
+
       <Section title="제1장 총칙">
         <Article num={1} title="목적">
           <p>

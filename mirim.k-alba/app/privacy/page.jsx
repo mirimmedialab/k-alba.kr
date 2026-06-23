@@ -48,7 +48,7 @@ export default function PrivacyPage() {
       `}</style>
 
       {/* 헤더 */}
-      <div style={{ marginBottom: 32, borderBottom: `2px solid ${T.gold}`, paddingBottom: 20 }}>
+      <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontSize: 28, fontWeight: 900, color: T.navy, marginBottom: 8, letterSpacing: "-0.02em" }}>
           개인정보처리방침
         </h1>
