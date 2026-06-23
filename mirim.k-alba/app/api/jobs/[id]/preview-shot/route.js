@@ -33,6 +33,11 @@ const CHROMIUM_PACK =
   process.env.CHROMIUM_PACK_URL ||
   "https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar";
 
+// 컬러 이모지 폰트 — 없으면 💼 📍 등이 네모(tofu)로 깨짐
+const EMOJI_FONT_URL =
+  process.env.EMOJI_FONT_URL ||
+  "https://cdn.jsdelivr.net/gh/googlefonts/noto-emoji/fonts/NotoColorEmoji.ttf";
+
 const VIEWPORTS = {
   desktop: { width: 1280, height: 900, deviceScaleFactor: 2, isMobile: false },
   mobile: { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
@@ -48,8 +53,13 @@ async function launchBrowser() {
       defaultViewport: null,
     });
   }
+  try {
+    await chromium.font(EMOJI_FONT_URL);
+  } catch (e) {
+    // 폰트 로드 실패해도 캡처는 진행
+  }
   return puppeteer.launch({
-    args: [...chromium.args, "--lang=ko-KR"],
+    args: [...chromium.args, "--lang=ko-KR", "--font-render-hinting=none"],
     executablePath: await chromium.executablePath(CHROMIUM_PACK),
     headless: chromium.headless,
     defaultViewport: null,
@@ -85,21 +95,45 @@ export async function GET(request, { params }) {
       .waitForFunction(() => /근무\s*조건/.test(document.body.innerText), { timeout: 20000 })
       .catch(() => {});
 
-    // 카카오 지도 타일이 실제로 로드될 때까지 대기 (안 기다리면 지도 자리가 빈칸으로 찍힘)
+    // 카카오 지도: "불러오는 중"이 사라지고 실제 타일이 뜰 때까지 대기
     await page
       .waitForFunction(
-        () => [...document.querySelectorAll("img")].some(
-          (i) => /daumcdn|kakao|map/i.test(i.src) && i.complete && i.naturalWidth > 0
-        ),
-        { timeout: 12000 }
+        () => {
+          const loading = /불러오는\s*중/.test(document.body.innerText);
+          const tile = [...document.querySelectorAll("img")].some(
+            (i) => /daumcdn|kakao|map/i.test(i.src) && i.complete && i.naturalWidth > 0
+          );
+          return !loading && tile;
+        },
+        { timeout: 16000 }
       )
       .catch(() => {});
 
     await page.addStyleTag({ content: `[style*="position:fixed"]{display:none !important}` });
 
-    await new Promise((r) => setTimeout(r, 2000)); // 지도 타일 추가 로드 여유
+    await new Promise((r) => setTimeout(r, 2500)); // 지도 타일 추가 로드 여유
 
-    const png = await page.screenshot({ type: "png", fullPage: true });
+    // 상단 핵심부(제목+근무조건+지도+지원하기)만 크롭 — "상세 설명" 위에서 자른다. ?full=1 이면 전체.
+    const full = sp.get("full") === "1";
+    let png;
+    if (full) {
+      png = await page.screenshot({ type: "png", fullPage: true });
+    } else {
+      const cut = await page.evaluate(() => {
+        const els = [...document.querySelectorAll("div,h1,h2,h3,h4,span,p")];
+        const h = els.find(
+          (e) => e.childElementCount === 0 && /^상세\s*설명$/.test((e.textContent || "").trim())
+        );
+        return h ? Math.round(h.getBoundingClientRect().top + window.scrollY) : null;
+      });
+      png = cut
+        ? await page.screenshot({
+            type: "png",
+            clip: { x: 0, y: 0, width: vp.width, height: cut - 10 },
+            captureBeyondViewport: true,
+          })
+        : await page.screenshot({ type: "png", fullPage: true });
+    }
 
     await browser.close();
     browser = null;
