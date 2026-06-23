@@ -62,3 +62,5 @@ DEPLOYMENT.md
 # claude cowork
 CLAUDE.md
 docs/TEST_ENVIRONMENT_SETUP.md
+docs/DRIFT_RECONCILE.md
+supabase/migrations/.ddlgen/
