@@ -63,7 +63,7 @@ export default function TermsPage() {
           </p>
         </Article>
 
-        <Article num={2} title="용어의 정의">
+        <Article num={2} title="정의">
           <ul className="terms-sub">
             <li><strong>"서비스"</strong>: 회사가 제공하는 K-ALBA 웹사이트(k-alba.kr), 카카오톡 채널, 모바일 앱 등 K-ALBA 브랜드로 제공되는 모든 서비스를 의미합니다.</li>
             <li><strong>"이용자"</strong>: 회사의 서비스에 접속하여 본 약관에 따라 회사가 제공하는 서비스를 받는 회원 및 비회원을 말합니다.</li>
@@ -73,7 +73,7 @@ export default function TermsPage() {
           </ul>
         </Article>
 
-        <Article num={3} title="약관의 효력과 변경">
+        <Article num={3} title="약관의 효력 및 변경">
           <ol style={olStyle}>
             <li>본 약관은 서비스 화면에 게시하거나 기타 방법으로 이용자에게 공지함으로써 효력이 발생합니다.</li>
             <li>회사는 합리적인 사유가 발생할 경우 관련 법령에 위배되지 않는 범위에서 본 약관을 변경할 수 있으며, 변경된 약관은 적용일자 7일 전부터 서비스 내 공지사항을 통해 고지합니다.</li>
@@ -120,8 +120,8 @@ export default function TermsPage() {
         </Article>
       </Section>
 
-      <Section title="제3장 서비스 이용">
-        <Article num={7} title="서비스의 내용">
+      <Section title="제3장 서비스">
+        <Article num={7} title="서비스의 제공">
           <p>회사는 다음과 같은 서비스를 제공합니다.</p>
           <ul style={{ ...ulStyle, listStyle: "none", paddingLeft: 0 }}>
             <li><strong>구인·구직 정보 제공 (직업정보제공사업)</strong>: 외국인 대상 구인 공고 게시 및 검색</li>
@@ -214,8 +214,8 @@ export default function TermsPage() {
         </Article>
       </Section>
 
-      <Section title="제7장 책임의 제한">
-        <Article num={15} title="회사의 면책">
+      <Section title="제7장 책임 및 분쟁">
+        <Article num={15} title="면책사항">
           <ol style={olStyle}>
             <li>회사는 천재지변, 전쟁 등 불가항력적인 사유로 인해 서비스를 제공할 수 없는 경우 책임을 지지 않습니다.</li>
             <li>회사는 이용자 간에 발생한 분쟁(예: 근로조건 불이행, 임금 미지급 등)에 대해 직접적인 당사자가 아니므로 분쟁 해결의 의무를 지지 않습니다. 다만 이용자 보호를 위한 중재 역할을 수행할 수 있습니다.</li>
@@ -224,7 +224,7 @@ export default function TermsPage() {
           </ol>
         </Article>
 
-        <Article num={16} title="이용자 간 분쟁 해결">
+        <Article num={16} title="분쟁의 해결">
           <ol style={olStyle}>
             <li>이용자 간 분쟁이 발생한 경우 당사자 간의 합의로 해결함을 원칙으로 합니다.</li>
             <li>합의가 이루어지지 않을 경우 회사는 분쟁 조정을 위한 자료(채팅 기록, 계약서 등)를 제공할 수 있으며, 필요 시 관련 기관(고용노동부, 외국인노동자지원센터 등)에 안내합니다.</li>
@@ -246,6 +246,10 @@ export default function TermsPage() {
             <li>분쟁 발생 시 관할 법원은 민사소송법에 따라 정합니다.</li>
           </ol>
         </Article>
+      </Section>
+
+      <Section title="부칙">
+        <p>이 약관은 2026년 6월 22일부터 시행합니다.</p>
       </Section>
       </div>
     </div>
