@@ -16,11 +16,13 @@ export const metadata = {
     siteName: "K-ALBA",
     locale: "ko_KR",
     type: "website",
+    images: [{ url: "/img/og-default.png", width: 1200, height: 630, alt: "K-ALBA · 외국인을 위한 통합 알바 플랫폼" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "K-ALBA · 외국인을 위한 통합 알바 플랫폼",
     description: "비자별 알바 매칭 + 시간제취업 자동 신청",
+    images: ["/img/og-default.png"],
   },
   robots: {
     index: true,
