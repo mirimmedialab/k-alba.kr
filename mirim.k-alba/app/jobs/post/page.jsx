@@ -410,6 +410,11 @@ export default function PostJobPage() {
     const field = { marginBottom: 22 };
     const rowS = { display: "flex", gap: 8, flexWrap: "wrap" };
     const req = <span style={{ color: T.accent }}>*</span>;
+    // 다국어 문구의 {req} 자리에 빨간 * 를 JSX로 렌더 (문자열 보간 시 [object Object] 방지)
+    const withReq = (key) => {
+      const parts = String(t(`postJob.${key}`)).split("{req}");
+      return parts.length > 1 ? <>{parts[0]}{req}{parts[1]}</> : <>{parts[0]}</>;
+    };
     const setF = (k, v) => setForm((f) => ({ ...f, [k]: v }));
     const toggle = (k, v) => setForm((f) => ({ ...f, [k]: f[k].includes(v) ? f[k].filter((x) => x !== v) : [...f[k], v] }));
     const preset = JOB_PRESETS[form.jobType] || JOB_PRESETS["기타"];
@@ -419,25 +424,25 @@ export default function PostJobPage() {
         <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 18 }} />
         <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>{t("postJob.webEyebrow")}</div>
         <h1 style={{ fontSize: 30, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.2 }}>{t("postJob.title")}</h1>
-        <p style={{ color: T.ink2, fontSize: 14, marginBottom: 30, lineHeight: 1.6 }}>{t("postJob.webIntro", { req })}</p>
+        <p style={{ color: T.ink2, fontSize: 14, marginBottom: 30, lineHeight: 1.6 }}>{withReq("webIntro")}</p>
 
         <div style={field}>
-          <label style={lab}>{t("postJob.labelJobType", { req })}</label>
+          <label style={lab}>{withReq("labelJobType")}</label>
           <div style={rowS}>{getStepOptions(1).map((o) => <button key={o} type="button" onClick={() => setF("jobType", o)} style={chip(form.jobType === o)}>{o}</button>)}</div>
         </div>
 
         <div style={field}>
-          <label style={lab}>{t("postJob.labelTitle", { req })}</label>
+          <label style={lab}>{withReq("labelTitle")}</label>
           <input value={form.title} onChange={(e) => setF("title", e.target.value)} placeholder={preset.title} style={inp} />
         </div>
 
         <div style={field}>
-          <label style={lab}>{t("postJob.labelWorkType", { req })} <span style={{ color: T.ink3, fontWeight: 500 }}>{t("postJob.multipleAllowed")}</span></label>
+          <label style={lab}>{withReq("labelWorkType")} <span style={{ color: T.ink3, fontWeight: 500 }}>{t("postJob.multipleAllowed")}</span></label>
           <div style={rowS}>{getStepOptions(3).map((o) => <button key={o} type="button" onClick={() => toggle("workType", o)} style={chip(form.workType.includes(o))}>{o}</button>)}</div>
         </div>
 
         <div style={field}>
-          <label style={lab}>{t("postJob.labelAddress", { req })}</label>
+          <label style={lab}>{withReq("labelAddress")}</label>
           <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
             <input value={form.address} readOnly placeholder={t("postJob.phAddressSearch")} style={{ ...inp, flex: 1, background: T.cream }} />
             <button type="button" onClick={() => setWebAddrOpen(true)} style={{ padding: "11px 16px", borderRadius: 8, background: "#FEE500", color: "#3C1E1E", border: "none", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>{t("postJob.webAddrSearchBtn")}</button>
@@ -446,7 +451,7 @@ export default function PostJobPage() {
         </div>
 
         <div style={field}>
-          <label style={lab}>{t("postJob.labelPay", { req })}</label>
+          <label style={lab}>{withReq("labelPay")}</label>
           <div style={{ ...rowS, marginBottom: 8 }}>{getStepOptions(6).map((o) => <button key={o} type="button" onClick={() => setF("payType", o)} style={chip(form.payType === o)}>{o}</button>)}</div>
           <input value={form.payAmount} onChange={(e) => setF("payAmount", e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder={t("postJob.phPayAmount")} style={inp} />
           <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 6 }}>{t("postJob.minWage2026")}</div>
@@ -469,7 +474,7 @@ export default function PostJobPage() {
         </div>
 
         <div style={field}>
-          <label style={lab}>{t("postJob.labelVisa", { req })} <span style={{ color: T.ink3, fontWeight: 500 }}>{t("postJob.multipleAllowed")}</span></label>
+          <label style={lab}>{withReq("labelVisa")} <span style={{ color: T.ink3, fontWeight: 500 }}>{t("postJob.multipleAllowed")}</span></label>
           <div style={rowS}>{getStepOptions(11).map((o) => <button key={o} type="button" onClick={() => toggle("visa", o)} style={chip(form.visa.includes(o))}>{o}</button>)}</div>
         </div>
 

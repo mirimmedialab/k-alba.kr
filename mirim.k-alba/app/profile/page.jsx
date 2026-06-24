@@ -122,7 +122,7 @@ export default function ProfilePage() {
     return (
       <div style={pageStyle}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <h2 style={{ fontSize: 22, fontWeight: 800, color: T.navy }}>💼 {t("profile.employerProfile")}</h2>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: T.navy }}>💼 {t("profile.myProfile")}</h2>
           {!editing ? (
             <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>{t("common.edit")}</Button>
           ) : (
