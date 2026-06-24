@@ -69,7 +69,12 @@ export default function SignupPage() {
     const { error } = await signUp(form.email, form.password, role, form.name, extra);
     setLoading(false);
     if (error) {
-      setError(error.message);
+      const m = (error.message || "").toLowerCase();
+      if (m.includes("already") && m.includes("regist")) {
+        setError(t("auth.errEmailTaken", null, "이미 가입된 이메일이에요. 로그인해 주세요."));
+      } else {
+        setError(error.message);
+      }
     } else {
       router.push(role === "worker" ? "/jobs" : "/my/jobs");
     }

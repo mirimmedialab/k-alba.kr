@@ -213,6 +213,7 @@ export const vi = {
     startAsEmployer: "💼 Bắt đầu với vai trò Nhà tuyển dụng",
   },
   auth: {
+    errEmailTaken: "Email này đã được đăng ký. Vui lòng đăng nhập.",
     agreeAll: "Đồng ý tất cả",
     agreeTermsRequired: "(Bắt buộc) Đồng ý Điều khoản dịch vụ",
     agreePrivacyRequired: "(Bắt buộc) Đồng ý thu thập và sử dụng thông tin cá nhân",

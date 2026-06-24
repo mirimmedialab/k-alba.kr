@@ -213,6 +213,7 @@ export const zh = {
     startAsEmployer: "💼 以雇主身份开始",
   },
   auth: {
+    errEmailTaken: "该邮箱已注册，请登录。",
     agreeAll: "全部同意",
     agreeTermsRequired: "(必填) 同意服务条款",
     agreePrivacyRequired: "(必填) 同意收集和使用个人信息",

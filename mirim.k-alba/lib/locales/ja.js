@@ -213,6 +213,7 @@ export const ja = {
     startAsEmployer: "💼 経営者として始める",
   },
   auth: {
+    errEmailTaken: "このメールはすでに登録されています。ログインしてください。",
     agreeAll: "すべてに同意します",
     agreeTermsRequired: "(必須) 利用規約に同意",
     agreePrivacyRequired: "(必須) 個人情報の収集・利用に同意",

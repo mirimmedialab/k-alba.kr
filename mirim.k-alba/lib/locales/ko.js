@@ -233,6 +233,7 @@ export const ko = {
     startAsEmployer: "💼 사장님으로 시작",
   },
   auth: {
+    errEmailTaken: "이미 가입된 이메일이에요. 로그인해 주세요.",
     agreeAll: "전체 동의합니다",
     agreeTermsRequired: "(필수) 서비스 이용약관 동의",
     agreePrivacyRequired: "(필수) 개인정보 수집·이용 동의",

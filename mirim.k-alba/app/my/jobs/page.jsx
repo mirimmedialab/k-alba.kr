@@ -29,16 +29,10 @@ import { useIsDesktop } from "@/lib/useIsDesktop";
  *   - 다국어 (useT)
  */
 
-const DEMO_JOBS = [
-  { id: 1, title: "카페 바리스타", job_type: "카페", pay_type: "시급", pay_amount: 12000, address: "서울 강남구 테헤란로 152", applicant_count: 12, status: "active", created_at: "2026-04-10" },
-  { id: 2, title: "딸기 수확 작업자", job_type: "농업", pay_type: "일급", pay_amount: 150000, address: "충남 논산시 강경읍", applicant_count: 28, status: "active", created_at: "2026-04-08" },
-  { id: 3, title: "한식당 서빙", job_type: "식당", pay_type: "시급", pay_amount: 11500, address: "서울 용산구 이태원로 200", applicant_count: 7, status: "closed", created_at: "2026-04-01" },
-];
-
 export default function MyJobsPage() {
   const router = useRouter();
   const t = useT();
-  const [jobs, setJobs] = useState(DEMO_JOBS);
+  const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const isDesktop = useIsDesktop();
 
@@ -49,7 +43,7 @@ export default function MyJobsPage() {
         return;
       }
       const data = await getMyJobs(u.id);
-      if (data && data.length > 0) setJobs(data);
+      setJobs(data || []);
       setLoading(false);
     });
   }, [router]);
