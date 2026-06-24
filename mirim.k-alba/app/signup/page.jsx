@@ -8,6 +8,7 @@ import { useT } from "@/lib/i18n";
 import { Button, Input, Select, KWordmark, ButtonLoading } from "@/components/ui";
 import KakaoLogo from "@/components/KakaoLogo";
 import { VISA_OPTIONS } from "@/data/marketData";
+import EmailField, { isValidEmail } from "@/components/ui/EmailField";
 
 /**
  * /signup 회원가입 (BI v2)
@@ -189,6 +190,7 @@ export default function SignupPage() {
     e?.preventDefault?.();
     setError("");
     if (!form.name || !form.email || !form.password) return setError(t("auth.errAllFields"));
+    if (!isValidEmail(form.email)) return setError(t("auth.errEmailFormat", null, "올바른 이메일 주소를 입력해 주세요 (예: name@example.com)"));
     if (form.password !== form.password2) return setError(t("auth.errPasswordMatch"));
     if (form.password.length < 8) return setError(t("auth.errPasswordLen"));
     if (role === "worker" && !form.visa) {
@@ -549,12 +551,10 @@ export default function SignupPage() {
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             required
           />
-          <Input
+          <EmailField
             label={t("auth.email")}
-            type="email"
-            placeholder="email@example.com"
             value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            onChange={(v) => setForm({ ...form, email: v })}
             required
           />
           <Input
