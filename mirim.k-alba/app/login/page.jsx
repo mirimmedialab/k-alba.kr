@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
 import { Btn, Inp } from "@/components/UI";
-import { signIn, signInWithOAuth, isAccountDeactivated, signOut } from "@/lib/supabase";
+import { signIn, signInWithOAuth, isAccountDeactivated, signOut, supabase } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 import KakaoLogo from "@/components/KakaoLogo";
 
@@ -41,8 +41,18 @@ export default function LoginPage() {
       setError("탈퇴했거나 존재하지 않는 계정이에요. 새로 가입해 주세요.");
       return;
     }
-    setLoading(false);
     const userType = data?.user?.user_metadata?.user_type || "worker";
+    // 알바생: 약관 동의/비자 미입력 시 /consent 게이트로 (기존 알바생 커버)
+    if (userType !== "employer" && data?.user?.id && supabase) {
+      const { data: prof } = await supabase
+        .from("profiles").select("agreed_terms_at, agreed_privacy_at, visa").eq("id", data.user.id).maybeSingle();
+      if (!prof?.agreed_terms_at || !prof?.agreed_privacy_at || !prof?.visa) {
+        setLoading(false);
+        router.push(`/consent?next=${encodeURIComponent("/jobs")}`);
+        return;
+      }
+    }
+    setLoading(false);
     router.push(userType === "employer" ? "/my/jobs" : "/jobs");
   };
 

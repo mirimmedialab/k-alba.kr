@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { T, COMPANY } from "@/lib/theme";
 import { signUp, signInWithOAuth } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
-import { Button, Input, KWordmark, ButtonLoading } from "@/components/ui";
+import { Button, Input, Select, KWordmark, ButtonLoading } from "@/components/ui";
 import KakaoLogo from "@/components/KakaoLogo";
+import { VISA_OPTIONS } from "@/data/marketData";
 
 /**
  * /signup 회원가입 (BI v2)
@@ -48,6 +49,11 @@ function formatOpeningDate(raw) {
   return `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6)}`;
 }
 
+/** 알바생 비자 선택 옵션 (필수 입력 — "비공개" 제외) */
+const WORKER_VISA_OPTIONS = VISA_OPTIONS
+  .filter((o) => o.v !== "private")
+  .map((o) => ({ value: o.v, label: o.l }));
+
 export default function SignupPage() {
   const router = useRouter();
   const t = useT();
@@ -59,6 +65,7 @@ export default function SignupPage() {
     email: "",
     password: "",
     password2: "",
+    visa: "",
     agreeTerms: false,
     agreePrivacy: false,
     agreeMarketing: false,
@@ -184,6 +191,9 @@ export default function SignupPage() {
     if (!form.name || !form.email || !form.password) return setError(t("auth.errAllFields"));
     if (form.password !== form.password2) return setError(t("auth.errPasswordMatch"));
     if (form.password.length < 8) return setError(t("auth.errPasswordLen"));
+    if (role === "worker" && !form.visa) {
+      return setError(t("auth.errVisaRequired", null, "비자 종류를 선택해 주세요."));
+    }
     if (!form.agreeTerms) return setError(t("auth.errAgreeTerms"));
     if (!form.agreePrivacy) return setError(t("auth.errAgreePrivacy"));
 
@@ -203,7 +213,11 @@ export default function SignupPage() {
       business_number: bizForm.businessNumber.replace(/-/g, ""),
       verified: true,
       ...consent,
-    } : { ...consent };
+    } : {
+      // 알바생: 비자 정보 필수 저장
+      visa: form.visa,
+      ...consent,
+    };
     const { error } = await signUp(form.email, form.password, role, form.name, extra);
     setLoading(false);
     if (error) {
@@ -560,6 +574,21 @@ export default function SignupPage() {
             required
           />
         </div>
+
+        {/* 비자 정보 — 알바생만 (필수) */}
+        {role === "worker" && (
+          <div style={{ marginBottom: 16 }}>
+            <Select
+              label={t("auth.visaLabelRequired", null, "비자 종류 (필수)")}
+              required
+              options={WORKER_VISA_OPTIONS}
+              value={form.visa}
+              onChange={(v) => setForm({ ...form, visa: v })}
+              placeholder={t("auth.visaSelectPlaceholder", null, "비자 종류를 선택하세요")}
+              hint={t("auth.visaWhyNote", null, "비자에 맞는 합법 알바만 안내해 드리기 위해 필요해요.")}
+            />
+          </div>
+        )}
 
         {/* 사업자 인증 — 사장님만 */}
         {role === "employer" && (

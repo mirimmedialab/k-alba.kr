@@ -139,11 +139,15 @@ export default function AuthCallbackPage() {
           return;
         }
 
-        // 약관 동의 게이트(OAuth 가입자): 동의 기록이 없으면 동의 페이지로 보냄
+        // 약관 동의 + (알바생) 비자 게이트: 미충족 시 /consent 로 보냄
+        // 알바생은 비자 정보가 필수 → 약관을 이미 동의한 기존 알바생이라도 비자가 없으면 게이트.
         const dest = userType === "employer" ? "/my/jobs" : "/jobs";
         const { data: consentProf } = await supabase
-          .from("profiles").select("agreed_terms_at, agreed_privacy_at").eq("id", user.id).maybeSingle();
-        if (!consentProf?.agreed_terms_at || !consentProf?.agreed_privacy_at) {
+          .from("profiles").select("agreed_terms_at, agreed_privacy_at, user_type, visa").eq("id", user.id).maybeSingle();
+        const isWorker = (consentProf?.user_type || userType) !== "employer";
+        const needsConsent = !consentProf?.agreed_terms_at || !consentProf?.agreed_privacy_at;
+        const needsVisa = isWorker && !consentProf?.visa;
+        if (needsConsent || needsVisa) {
           router.replace(`/consent?next=${encodeURIComponent(dest)}`);
           return;
         }
