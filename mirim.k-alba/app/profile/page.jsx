@@ -11,6 +11,7 @@ import LocationPicker from "@/components/LocationPicker";
 import { useT } from "@/lib/i18n";
 import { Button, Card, ButtonLoading, PageLoading } from "@/components/ui";
 import { useIsDesktop } from "@/lib/useIsDesktop";
+import BusinessVerify from "@/components/ui/BusinessVerify";
 
 /**
  * /profile 프로필 (BI v2)
@@ -183,12 +184,18 @@ export default function ProfilePage() {
               </div>
             </div>
           ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 14, background: T.cream, border: `1px solid ${T.border}`, borderRadius: 10 }}>
-              <span style={{ fontSize: 24 }}>⚠️</span>
-              <div>
-                <div style={{ fontWeight: 700, color: T.ink2 }}>{t("profile.notVerified")}</div>
-                <div style={{ fontSize: 12, color: T.ink3 }}>{t("profile.notVerifiedDesc")}</div>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 14, background: T.cream, border: `1px solid ${T.border}`, borderRadius: 10, marginBottom: 14 }}>
+                <span style={{ fontSize: 24 }}>⚠️</span>
+                <div>
+                  <div style={{ fontWeight: 700, color: T.ink2 }}>{t("profile.notVerified")}</div>
+                  <div style={{ fontSize: 12, color: T.ink3 }}>{t("profile.notVerifiedDesc")}</div>
+                </div>
               </div>
+              <BusinessVerify
+                userId={user.id}
+                onVerified={({ business_number }) => setProfile({ ...profile, verified: true, business_number })}
+              />
             </div>
           )}
         </Card>

@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
 import { AddressSearchModal } from "@/components/AddressSearch";
 import { JOB_PRESETS, getMarketPay } from "@/data/marketData";
-import { createJob, getCurrentUser } from "@/lib/supabase";
+import { createJob, getCurrentUser, getProfile } from "@/lib/supabase";
+import BusinessVerify from "@/components/ui/BusinessVerify";
 import { Button, KIcon } from "@/components/ui";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 import { useT } from "@/lib/i18n";
@@ -53,6 +54,16 @@ export default function PostJobPage() {
   const [webAddrOpen, setWebAddrOpen] = useState(false);
   const [webErr, setWebErr] = useState("");
   const [webBusy, setWebBusy] = useState(false);
+  // 사업자 인증 게이트 상태 (미인증 사장님은 공고 작성 전 인증 먼저)
+  const [bizGate, setBizGate] = useState({ loading: true, verified: false, userId: null });
+
+  useEffect(() => {
+    getCurrentUser().then(async (u) => {
+      if (!u) { setBizGate({ loading: false, verified: false, userId: null }); return; }
+      const p = await getProfile(u.id);
+      setBizGate({ loading: false, verified: !!p?.verified, userId: u.id });
+    });
+  }, []);
 
   // 스텝: 1=업종, 2=제목, 3=근무형태, 4=주소, 5=상세주소, 6=급여형태, 7=금액, 8=시간, 9=요일, 10=한국어, 11=비자, 12=인원, 13=복리후생, 14=설명
   const TOTAL_STEPS = 14;
@@ -345,6 +356,27 @@ export default function PostJobPage() {
   const currentType = getStepType(step);
   const currentOptions = getStepOptions(step);
   const currentPlaceholder = getPlaceholder(step, answers);
+
+  // ── 사업자 인증 게이트: 미인증 사장님은 공고 작성 전 인증 먼저 ──
+  if (bizGate.loading) {
+    return <div style={{ padding: "60px 20px", textAlign: "center", color: T.ink3 }}>{t("common.pleaseWait")}</div>;
+  }
+  if (!bizGate.verified) {
+    return (
+      <div style={{ maxWidth: 460, margin: "0 auto", padding: isDesktop ? "48px 28px" : "32px 20px" }}>
+        <h1 style={{ fontSize: 22, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", marginBottom: 8 }}>
+          {t("postJob.verifyGateTitle", null, "사업자 인증이 필요해요")}
+        </h1>
+        <p style={{ fontSize: 14, color: T.ink2, lineHeight: 1.6, marginBottom: 20 }}>
+          {t("postJob.verifyGateDesc", null, "공고를 등록하려면 먼저 사업자 인증을 완료해 주세요. 국세청 데이터로 실시간 확인됩니다.")}
+        </p>
+        <BusinessVerify
+          userId={bizGate.userId}
+          onVerified={() => setBizGate((g) => ({ ...g, verified: true }))}
+        />
+      </div>
+    );
+  }
 
   // 등록 완료 화면 — Step 3-A Button (primaryDark = 사장님 페이지 일관성)
   if (posted) {
