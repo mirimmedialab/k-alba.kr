@@ -39,8 +39,10 @@ export default function AppFrame({ children }) {
     (/^\/jobs\/[^/]+$/.test(pathname) &&
       pathname !== "/jobs/post" &&
       pathname !== "/jobs/map");
+  // /my/jobs/[id] 공고 관리 페이지도 PC 전용 와이드(폰 프레임 미적용)
+  const isJobManage = /^\/my\/jobs\/[^/]+$/.test(pathname);
   const useFrame =
-    !isAdmin && !NO_FRAME_ON.includes(pathname) && !isJobsBrowse && !WIDE_PAGES.includes(pathname);
+    !isAdmin && !NO_FRAME_ON.includes(pathname) && !isJobsBrowse && !isJobManage && !WIDE_PAGES.includes(pathname);
   const showKakao = !NO_KAKAO_ON.includes(pathname) && !isAdmin;
 
   return (

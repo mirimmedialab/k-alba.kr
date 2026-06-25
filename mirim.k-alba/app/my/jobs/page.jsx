@@ -104,7 +104,7 @@ export default function MyJobsPage() {
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             {jobs.map((j) => (
-              <Link key={j.id} href={`/applicants?jobId=${j.id}`} style={{ textDecoration: "none" }}>
+              <Link key={j.id} href={`/my/jobs/${j.id}`} style={{ textDecoration: "none" }}>
                 <div
                   style={{ border: `1px solid ${T.border}`, borderRadius: 12, padding: "18px 20px", background: T.paper, height: "100%", boxSizing: "border-box", transition: "box-shadow 0.15s, border-color 0.15s" }}
                   onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(10,22,40,0.08)"; e.currentTarget.style.borderColor = T.ink3; }}
@@ -164,7 +164,7 @@ export default function MyJobsPage() {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
           {jobs.map((j, idx) => (
-            <Link key={j.id} href={`/applicants?jobId=${j.id}`} style={{ textDecoration: "none" }}>
+            <Link key={j.id} href={`/my/jobs/${j.id}`} style={{ textDecoration: "none" }}>
               <div
                 style={{ padding: "18px 0", borderBottom: `1px solid ${T.border}`, cursor: "pointer", transition: "background 0.15s" }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = T.cream)}

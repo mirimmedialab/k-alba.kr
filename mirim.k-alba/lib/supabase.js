@@ -141,8 +141,19 @@ export async function createJob(jobData) {
 
 export async function getMyJobs(employerId) {
   if (!supabase) return [];
-  const { data } = await supabase.from("jobs").select("*").eq("employer_id", employerId).order("created_at", { ascending: false });
+  const { data } = await supabase.from("jobs").select("*").eq("employer_id", employerId).neq("status", "deleted").order("created_at", { ascending: false });
   return data || [];
+}
+
+export async function updateJob(id, updates) {
+  if (!supabase) return { error: { message: "Supabase not configured" } };
+  return await supabase.from("jobs").update(updates).eq("id", id).select().single();
+}
+
+export async function deleteJob(id) {
+  // 소프트 삭제: status를 'deleted'로 변경 (지원/계약 데이터 보존, 복구 가능)
+  if (!supabase) return { error: { message: "Supabase not configured" } };
+  return await supabase.from("jobs").update({ status: "deleted" }).eq("id", id);
 }
 
 // ────────────────────────────────
