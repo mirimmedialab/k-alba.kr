@@ -166,7 +166,7 @@ export default function ProfilePage() {
             <div style={{ lineHeight: 2 }}>
               <div><strong>{t("profile.companyNameLabel")}</strong> {form.company_name || "-"}</div>
               <div><strong>{t("profile.ceoNameLabel")}</strong> {form.name || "-"}</div>
-              <div><strong>{t("profile.businessNumberLabel")}</strong> {form.business_number || "-"}</div>
+              <div><strong>{t("profile.businessNumberLabel")}</strong> {form.business_number ? String(form.business_number).replace(/-/g, "").replace(/^(\d{3})(\d{2})(\d{5})$/, "$1-$2-$3") : "-"}</div>
               <div><strong>{t("profile.phoneDisplayLabel")}</strong> {form.phone || "-"}</div>
               <div><strong>{t("profile.addressDisplayLabel")}</strong> {form.business_address || "-"}</div>
             </div>
