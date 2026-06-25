@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { T } from "@/lib/theme";
-import { getCurrentUser, getJob, updateJob, deleteJob, getJobApplicants } from "@/lib/supabase";
+import { getCurrentUser, getJob, updateJob, deleteJob, getJobApplicants, updateApplicationStatus } from "@/lib/supabase";
 import { Button, Badge, PageLoading } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 import { JOB_TYPES, WORK_TYPES, KOREAN_LEVELS, BENEFITS, VISA_OPTIONS } from "@/data/marketData";
@@ -106,6 +106,12 @@ export default function JobManagePage() {
     router.push("/my/jobs");
   };
 
+  // 지원자 합격/불합격 처리 (탭 안에서 바로)
+  const setApplicantStatus = async (appId, status) => {
+    setApplicants((prev) => prev.map((a) => (a.id === appId ? { ...a, status } : a)));
+    await updateApplicationStatus(appId, status);
+  };
+
   if (loading) return <PageLoading message={t("common.pleaseWait")} minHeight={400} />;
   if (forbidden) {
     return (
@@ -160,6 +166,10 @@ export default function JobManagePage() {
       {tab === "info" && !editing && (
         <div>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginBottom: 12 }}>
+            <a href={`/jobs/${id}`} target="_blank" rel="noopener noreferrer"
+              style={{ padding: "8px 14px", borderRadius: 8, border: `1px solid ${T.border}`, background: "#fff", color: T.ink2, fontSize: 13, fontWeight: 700, cursor: "pointer", textDecoration: "none" }}>
+              공고 페이지 보기 ↗
+            </a>
             <Button variant="secondary" size="sm" onClick={startEdit}>수정</Button>
             <button type="button" onClick={onDelete}
               style={{ padding: "8px 14px", borderRadius: 8, border: `1px solid ${T.accent}`, background: "#fff", color: T.accent, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
@@ -248,23 +258,37 @@ export default function JobManagePage() {
 
       {tab === "applicants" && (
         <div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-            <div style={{ fontSize: 14, color: T.ink2 }}>총 <strong>{applicants.length}</strong>명 지원</div>
-            <Link href={`/applicants?jobId=${id}`} style={{ fontSize: 13, color: T.accent, fontWeight: 700, textDecoration: "none" }}>지원자 상세 관리 →</Link>
-          </div>
+          <div style={{ fontSize: 14, color: T.ink2, marginBottom: 14 }}>총 <strong>{applicants.length}</strong>명 지원</div>
           {applicants.length === 0 ? (
             <div style={{ padding: "40px 0", textAlign: "center", color: T.ink3, fontSize: 14 }}>아직 지원자가 없습니다.</div>
           ) : (
             <div>
               {applicants.map((a) => (
-                <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 0", borderBottom: `1px solid ${T.border}` }}>
+                <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 0", borderBottom: `1px solid ${T.border}` }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, color: T.ink, fontSize: 14 }}>{a.applicant?.name || "지원자"}</div>
-                    <div style={{ fontSize: 12.5, color: T.ink3 }}>{a.applicant?.nationality || a.applicant?.country || ""}{a.applicant?.visa ? ` · ${a.applicant.visa}` : ""}</div>
+                    <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: a.message ? 6 : 0 }}>
+                      {a.applicant?.nationality || a.applicant?.country || ""}{a.applicant?.visa ? ` · ${a.applicant.visa}` : ""}
+                      {a.applicant?.korean_level ? ` · 한국어 ${a.applicant.korean_level}` : ""}
+                    </div>
+                    {a.message ? <div style={{ fontSize: 13, color: T.ink2, lineHeight: 1.5, background: T.cream, padding: "8px 10px", borderRadius: 8 }}>{a.message}</div> : null}
                   </div>
-                  <Badge variant={a.status === "accepted" ? "success" : a.status === "rejected" ? "neutral" : "warning"} size="sm">
-                    {a.status === "accepted" ? "합격" : a.status === "rejected" ? "불합격" : "검토 중"}
-                  </Badge>
+                  <div style={{ flexShrink: 0 }}>
+                    {a.status === "pending" ? (
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button type="button" onClick={() => setApplicantStatus(a.id, "accepted")}
+                          style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: T.green, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>합격</button>
+                        <button type="button" onClick={() => setApplicantStatus(a.id, "rejected")}
+                          style={{ padding: "8px 14px", borderRadius: 8, border: `1px solid ${T.border}`, background: "#fff", color: T.ink2, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>불합격</button>
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <Badge variant={a.status === "accepted" ? "success" : "neutral"} size="sm">{a.status === "accepted" ? "합격" : "불합격"}</Badge>
+                        <button type="button" onClick={() => setApplicantStatus(a.id, "pending")}
+                          style={{ padding: "4px 8px", borderRadius: 6, border: "none", background: "none", color: T.ink3, fontSize: 12, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline" }}>되돌리기</button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
