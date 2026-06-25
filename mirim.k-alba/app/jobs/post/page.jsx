@@ -65,6 +65,13 @@ export default function PostJobPage() {
     });
   }, []);
 
+  // 데스크탑 미인증자는 별도 게이트 대신 '내 공고'의 인라인 인증으로 유도
+  useEffect(() => {
+    if (!bizGate.loading && !bizGate.verified && isDesktop) {
+      router.replace("/my/jobs?verify=1");
+    }
+  }, [bizGate.loading, bizGate.verified, isDesktop, router]);
+
   // 스텝: 1=업종, 2=제목, 3=근무형태, 4=주소, 5=상세주소, 6=급여형태, 7=금액, 8=시간, 9=요일, 10=한국어, 11=비자, 12=인원, 13=복리후생, 14=설명
   const TOTAL_STEPS = 14;
 
@@ -362,8 +369,12 @@ export default function PostJobPage() {
     return <div style={{ padding: "60px 20px", textAlign: "center", color: T.ink3 }}>{t("common.pleaseWait")}</div>;
   }
   if (!bizGate.verified) {
+    if (isDesktop) {
+      // 위 useEffect가 /my/jobs?verify=1 로 리다이렉트하는 동안 잠시 표시
+      return <div style={{ padding: "60px 20px", textAlign: "center", color: T.ink3 }}>{t("common.pleaseWait")}</div>;
+    }
     return (
-      <div style={{ maxWidth: 460, margin: "0 auto", padding: isDesktop ? "48px 28px" : "32px 20px" }}>
+      <div style={{ maxWidth: 460, margin: "0 auto", padding: "32px 20px" }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", marginBottom: 8 }}>
           {t("postJob.verifyGateTitle", null, "사업자 인증이 필요해요")}
         </h1>

@@ -38,6 +38,10 @@ export default function MyJobsPage() {
       const [data, prof] = await Promise.all([getMyJobs(u.id), getProfile(u.id)]);
       setJobs(data || []);
       setVerified(!!prof?.verified);
+      // /jobs/post 에서 미인증으로 넘어온 경우(?verify=1) 인라인 인증 자동 오픈
+      if (!prof?.verified && typeof window !== "undefined" && new URLSearchParams(window.location.search).get("verify") === "1") {
+        setShowVerify(true);
+      }
       setLoading(false);
     });
   }, [router]);
@@ -85,6 +89,7 @@ export default function MyJobsPage() {
                 userId={userId}
                 bare
                 horizontal
+                continueLabel={t("postJob.verifyGo", null, "공고 등록하러 가기 →")}
                 onVerified={() => { setVerified(true); setShowVerify(false); router.push("/jobs/post"); }}
               />
             </div>

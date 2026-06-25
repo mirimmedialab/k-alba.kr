@@ -191,7 +191,7 @@ export async function POST(req) {
           if (uid) {
             const { error: upErr } = await svc
               .from("profiles")
-              .update({ verified: true, business_number: cleanNumber })
+              .update({ verified: true, business_number: cleanNumber, name: representativeName })
               .eq("id", uid);
             persisted = !upErr;
           }

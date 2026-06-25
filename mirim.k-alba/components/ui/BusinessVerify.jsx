@@ -31,7 +31,7 @@ function formatOpeningDate(raw) {
   return `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6)}`;
 }
 
-export default function BusinessVerify({ userId, onVerified, showPrompt = true, horizontal = false, bare = false }) {
+export default function BusinessVerify({ userId, onVerified, showPrompt = true, horizontal = false, bare = false, continueLabel }) {
   const t = useT();
   const [businessNumber, setBusinessNumber] = useState("");
   const [representativeName, setRepresentativeName] = useState("");
@@ -74,7 +74,7 @@ export default function BusinessVerify({ userId, onVerified, showPrompt = true, 
       const data = await res.json();
       if (data.valid === true) {
         if (!data.persisted && supabase && userId) {
-          try { await supabase.from("profiles").update({ business_number: bn, verified: true }).eq("id", userId); } catch (_) {}
+          try { await supabase.from("profiles").update({ business_number: bn, verified: true, name: representativeName.trim() }).eq("id", userId); } catch (_) {}
         }
         setLoading(false);
         setDone({ business_number: bn, status: data.status || t("auth.bizStatusNormal", null, "정상"), taxType: data.taxType || "" });
@@ -96,12 +96,12 @@ export default function BusinessVerify({ userId, onVerified, showPrompt = true, 
           {t("auth.bizVerifiedTitle", null, "✓ 사업자 인증이 완료되었습니다")}
         </div>
         <div style={{ fontSize: 12.5, color: T.ink2, lineHeight: 1.8, marginBottom: 14 }}>
-          <div>{t("auth.bizNumber", null, "사업자등록번호")} · <strong style={{ color: T.ink }}>{done.business_number}</strong></div>
+          <div>{t("auth.bizNumber", null, "사업자등록번호")} · <strong style={{ color: T.ink }}>{formatBusinessNumber(done.business_number)}</strong></div>
           <div>{t("profile.verificationStatus", null, "상태")} · <strong style={{ color: T.ink }}>{done.status}</strong>{done.taxType ? ` · ${done.taxType}` : ""}</div>
         </div>
         <button type="button" onClick={() => onVerified?.(done)}
           style={{ width: "100%", padding: 12, borderRadius: 6, border: "none", background: T.green, color: T.paper, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: TYPE.family }}>
-          {t("auth.bizContinue", null, "계속하기 →")}
+          {continueLabel || t("auth.bizContinue", null, "계속하기 →")}
         </button>
       </div>
     );
