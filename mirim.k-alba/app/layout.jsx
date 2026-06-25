@@ -1,5 +1,6 @@
 import "./globals.css";
 import AppFrame from "@/components/AppFrame";
+import NativeBridge from "@/components/NativeBridge";
 
 export const metadata = {
   title: "K-ALBA",
@@ -66,6 +67,7 @@ export default function RootLayout({ children }) {
         {/* Pretendard 폰트는 globals.css에서 import */}
       </head>
       <body className="font-sans antialiased bg-p text-ink">
+        <NativeBridge />
         <AppFrame>{children}</AppFrame>
       </body>
     </html>
