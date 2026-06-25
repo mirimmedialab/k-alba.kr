@@ -368,7 +368,7 @@ export default function PostJobPage() {
           {t("postJob.verifyGateTitle", null, "사업자 인증이 필요해요")}
         </h1>
         <p style={{ fontSize: 14, color: T.ink2, lineHeight: 1.6, marginBottom: 20 }}>
-          {t("postJob.verifyGateDesc", null, "공고를 등록하려면 먼저 사업자 인증을 완료해 주세요. 국세청 데이터로 실시간 확인됩니다.")}
+          {t("postJob.verifyGateDesc", null, "최초 1회만 사업자 인증을 하면 공고를 등록할 수 있어요.")}
         </p>
         <BusinessVerify
           userId={bizGate.userId}

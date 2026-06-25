@@ -198,11 +198,13 @@ export default function LoginPage() {
               <div style={{ flex: 1, height: 1, background: T.border }} />
             </div>
 
-            <EmailField
-              label={t("auth.email")}
-              value={form.email}
-              onChange={(v) => setForm({ ...form, email: v })}
-            />
+            <div style={{ marginBottom: 14 }}>
+              <EmailField
+                label={t("auth.email")}
+                value={form.email}
+                onChange={(v) => setForm({ ...form, email: v })}
+              />
+            </div>
             <Inp
               label={t("auth.password")}
               type="password"

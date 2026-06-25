@@ -71,13 +71,13 @@ export default function MyJobsPage() {
         </div>
 
         {showVerify && !verified ? (
-          <div style={{ border: `1.5px dashed ${T.borderStrong}`, borderRadius: 12, padding: "28px 24px" }}>
-            <div style={{ textAlign: "center", marginBottom: 18 }}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: T.ink, marginBottom: 6, letterSpacing: "-0.02em" }}>
+          <div style={{ border: `1.5px dashed ${T.borderStrong}`, borderRadius: 12, padding: "34px 28px" }}>
+            <div style={{ textAlign: "center", marginBottom: 26 }}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: T.ink, marginBottom: 8, letterSpacing: "-0.02em" }}>
                 {t("postJob.verifyGateTitle", null, "사업자 인증이 필요해요")}
               </div>
               <p style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.6 }}>
-                {t("postJob.verifyGateDesc", null, "공고를 등록하려면 먼저 사업자 인증을 완료해 주세요. 국세청 데이터로 실시간 확인됩니다.")}
+                {t("postJob.verifyGateDesc", null, "최초 1회만 사업자 인증을 하면 공고를 등록할 수 있어요.")}
               </p>
             </div>
             <div style={{ maxWidth: 820, margin: "0 auto" }}>

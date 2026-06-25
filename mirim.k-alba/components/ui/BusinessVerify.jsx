@@ -110,7 +110,7 @@ export default function BusinessVerify({ userId, onVerified, showPrompt = true, 
   // 입력 폼 본문
   const inner = (
     <div style={{ textAlign: "left" }}>
-      <div style={{ display: "flex", flexDirection: horizontal ? "row" : "column", flexWrap: "wrap", gap: 8 }}>
+      <div style={{ display: "flex", flexDirection: horizontal ? "row" : "column", flexWrap: "wrap", gap: 10 }}>
         <input type="text" inputMode="numeric" autoComplete="off" value={businessNumber}
           onChange={(e) => setBusinessNumber(formatBusinessNumber(e.target.value))}
           placeholder={t("auth.bizNumberPlaceholder", null, "사업자등록번호 (예: 119-75-73333)")} maxLength={12} style={cellStyle} />
@@ -127,7 +127,7 @@ export default function BusinessVerify({ userId, onVerified, showPrompt = true, 
         </div>
       )}
       <button type="button" onClick={verify} disabled={loading}
-        style={{ width: "100%", marginTop: 10, padding: 12, borderRadius: 6, border: "none", background: loading ? T.borderStrong : T.navy, color: T.paper, fontSize: 14, fontWeight: 700, cursor: loading ? "wait" : "pointer", fontFamily: TYPE.family }}>
+        style={{ width: "100%", marginTop: 16, padding: 13, borderRadius: 6, border: "none", background: loading ? T.borderStrong : T.navy, color: T.paper, fontSize: 14, fontWeight: 700, cursor: loading ? "wait" : "pointer", fontFamily: TYPE.family }}>
         {loading ? t("auth.bizVerifying", null, "인증 중...") : t("auth.bizVerifyBtn", null, "사업자번호 인증하기 →")}
       </button>
     </div>
