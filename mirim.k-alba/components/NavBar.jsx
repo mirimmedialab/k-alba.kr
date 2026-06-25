@@ -72,7 +72,7 @@ export default function NavBar() {
     { href: "/jobs/post", label: t("nav.postJob") },
     { href: "/my/jobs", label: t("nav.myJobs") },
     { href: "/my/contracts", label: t("nav.contracts") },
-    { href: "/profile", label: t("nav.employerProfile") },
+    { href: "/profile", label: t("nav.profile") },
   ];
 
   // 관리자용 추가 링크

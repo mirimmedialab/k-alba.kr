@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 /**
  * POST /api/verify-business
@@ -174,9 +178,44 @@ export async function POST(req) {
       );
     }
 
+    // 국세청 인증 통과 → (로그인 토큰이 있으면) 서버에서 verified 저장.
+    // 서비스롤로 직접 기록하므로 RLS/세션 타이밍 영향 없이 확실히 저장되고, 프론트 우회도 방지된다.
+    let persisted = false;
+    const authHeader = req.headers.get("authorization") || "";
+    const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+    if (token) {
+      const sbUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (sbUrl && serviceKey) {
+        try {
+          const svc = createClient(sbUrl, serviceKey, { auth: { persistSession: false } });
+          const { data: userData } = await svc.auth.getUser(token);
+          const uid = userData?.user?.id;
+          if (uid) {
+            // upsert: profiles 행이 없을 수도 있어 update면 0건으로 조용히 실패한다(link-kakao와 동일 패턴)
+            const { error: upErr } = await svc
+              .from("profiles")
+              .upsert(
+                {
+                  id: uid,
+                  email: userData.user.email,
+                  user_type: "employer",
+                  verified: true,
+                  business_number: cleanNumber,
+                  name: representativeName,
+                },
+                { onConflict: "id" }
+              );
+            persisted = !upErr;
+          }
+        } catch (_) { /* 저장 실패해도 검증 결과는 반환 */ }
+      }
+    }
+
     // 성공
     return NextResponse.json({
       valid: true,
+      persisted,
       businessNumber: cleanNumber,
       representativeName: representativeName,
       openingDate: cleanDate,

@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
 import { AddressSearchModal } from "@/components/AddressSearch";
 import { JOB_PRESETS, getMarketPay } from "@/data/marketData";
-import { createJob, getCurrentUser } from "@/lib/supabase";
+import { createJob, getCurrentUser, getProfile } from "@/lib/supabase";
+import BusinessVerify from "@/components/ui/BusinessVerify";
 import { Button, KIcon } from "@/components/ui";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 import { useT } from "@/lib/i18n";
@@ -53,6 +54,23 @@ export default function PostJobPage() {
   const [webAddrOpen, setWebAddrOpen] = useState(false);
   const [webErr, setWebErr] = useState("");
   const [webBusy, setWebBusy] = useState(false);
+  // 사업자 인증 게이트 상태 (미인증 사장님은 공고 작성 전 인증 먼저)
+  const [bizGate, setBizGate] = useState({ loading: true, verified: false, userId: null });
+
+  useEffect(() => {
+    getCurrentUser().then(async (u) => {
+      if (!u) { setBizGate({ loading: false, verified: false, userId: null }); return; }
+      const p = await getProfile(u.id);
+      setBizGate({ loading: false, verified: !!p?.verified, userId: u.id });
+    });
+  }, []);
+
+  // 데스크탑 미인증자는 별도 게이트 대신 '내 공고'의 인라인 인증으로 유도
+  useEffect(() => {
+    if (!bizGate.loading && !bizGate.verified && isDesktop) {
+      router.replace("/my/jobs?verify=1");
+    }
+  }, [bizGate.loading, bizGate.verified, isDesktop, router]);
 
   // 스텝: 1=업종, 2=제목, 3=근무형태, 4=주소, 5=상세주소, 6=급여형태, 7=금액, 8=시간, 9=요일, 10=한국어, 11=비자, 12=인원, 13=복리후생, 14=설명
   const TOTAL_STEPS = 14;
@@ -346,6 +364,31 @@ export default function PostJobPage() {
   const currentOptions = getStepOptions(step);
   const currentPlaceholder = getPlaceholder(step, answers);
 
+  // ── 사업자 인증 게이트: 미인증 사장님은 공고 작성 전 인증 먼저 ──
+  if (bizGate.loading) {
+    return <div style={{ padding: "60px 20px", textAlign: "center", color: T.ink3 }}>{t("common.pleaseWait")}</div>;
+  }
+  if (!bizGate.verified) {
+    if (isDesktop) {
+      // 위 useEffect가 /my/jobs?verify=1 로 리다이렉트하는 동안 잠시 표시
+      return <div style={{ padding: "60px 20px", textAlign: "center", color: T.ink3 }}>{t("common.pleaseWait")}</div>;
+    }
+    return (
+      <div style={{ maxWidth: 460, margin: "0 auto", padding: "32px 20px" }}>
+        <h1 style={{ fontSize: 22, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", marginBottom: 8 }}>
+          {t("postJob.verifyGateTitle", null, "사업자 인증이 필요해요")}
+        </h1>
+        <p style={{ fontSize: 14, color: T.ink2, lineHeight: 1.6, marginBottom: 20 }}>
+          {t("postJob.verifyGateDesc", null, "최초 1회만 사업자 인증을 하면 공고를 등록할 수 있어요.")}
+        </p>
+        <BusinessVerify
+          userId={bizGate.userId}
+          onVerified={() => setBizGate((g) => ({ ...g, verified: true }))}
+        />
+      </div>
+    );
+  }
+
   // 등록 완료 화면 — Step 3-A Button (primaryDark = 사장님 페이지 일관성)
   if (posted) {
     return (
@@ -378,6 +421,11 @@ export default function PostJobPage() {
     const field = { marginBottom: 22 };
     const rowS = { display: "flex", gap: 8, flexWrap: "wrap" };
     const req = <span style={{ color: T.accent }}>*</span>;
+    // 다국어 문구의 {req} 자리에 빨간 * 를 JSX로 렌더 (문자열 보간 시 [object Object] 방지)
+    const withReq = (key) => {
+      const parts = String(t(`postJob.${key}`)).split("{req}");
+      return parts.length > 1 ? <>{parts[0]}{req}{parts[1]}</> : <>{parts[0]}</>;
+    };
     const setF = (k, v) => setForm((f) => ({ ...f, [k]: v }));
     const toggle = (k, v) => setForm((f) => ({ ...f, [k]: f[k].includes(v) ? f[k].filter((x) => x !== v) : [...f[k], v] }));
     const preset = JOB_PRESETS[form.jobType] || JOB_PRESETS["기타"];
@@ -387,25 +435,25 @@ export default function PostJobPage() {
         <div style={{ width: 40, height: 3, background: T.gold, marginBottom: 18 }} />
         <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>{t("postJob.webEyebrow")}</div>
         <h1 style={{ fontSize: 30, fontWeight: 800, color: T.ink, letterSpacing: "-0.025em", marginBottom: 6, lineHeight: 1.2 }}>{t("postJob.title")}</h1>
-        <p style={{ color: T.ink2, fontSize: 14, marginBottom: 30, lineHeight: 1.6 }}>{t("postJob.webIntro", { req })}</p>
+        <p style={{ color: T.ink2, fontSize: 14, marginBottom: 30, lineHeight: 1.6 }}>{withReq("webIntro")}</p>
 
         <div style={field}>
-          <label style={lab}>{t("postJob.labelJobType", { req })}</label>
+          <label style={lab}>{withReq("labelJobType")}</label>
           <div style={rowS}>{getStepOptions(1).map((o) => <button key={o} type="button" onClick={() => setF("jobType", o)} style={chip(form.jobType === o)}>{o}</button>)}</div>
         </div>
 
         <div style={field}>
-          <label style={lab}>{t("postJob.labelTitle", { req })}</label>
+          <label style={lab}>{withReq("labelTitle")}</label>
           <input value={form.title} onChange={(e) => setF("title", e.target.value)} placeholder={preset.title} style={inp} />
         </div>
 
         <div style={field}>
-          <label style={lab}>{t("postJob.labelWorkType", { req })} <span style={{ color: T.ink3, fontWeight: 500 }}>{t("postJob.multipleAllowed")}</span></label>
+          <label style={lab}>{withReq("labelWorkType")} <span style={{ color: T.ink3, fontWeight: 500 }}>{t("postJob.multipleAllowed")}</span></label>
           <div style={rowS}>{getStepOptions(3).map((o) => <button key={o} type="button" onClick={() => toggle("workType", o)} style={chip(form.workType.includes(o))}>{o}</button>)}</div>
         </div>
 
         <div style={field}>
-          <label style={lab}>{t("postJob.labelAddress", { req })}</label>
+          <label style={lab}>{withReq("labelAddress")}</label>
           <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
             <input value={form.address} readOnly placeholder={t("postJob.phAddressSearch")} style={{ ...inp, flex: 1, background: T.cream }} />
             <button type="button" onClick={() => setWebAddrOpen(true)} style={{ padding: "11px 16px", borderRadius: 8, background: "#FEE500", color: "#3C1E1E", border: "none", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>{t("postJob.webAddrSearchBtn")}</button>
@@ -414,7 +462,7 @@ export default function PostJobPage() {
         </div>
 
         <div style={field}>
-          <label style={lab}>{t("postJob.labelPay", { req })}</label>
+          <label style={lab}>{withReq("labelPay")}</label>
           <div style={{ ...rowS, marginBottom: 8 }}>{getStepOptions(6).map((o) => <button key={o} type="button" onClick={() => setF("payType", o)} style={chip(form.payType === o)}>{o}</button>)}</div>
           <input value={form.payAmount} onChange={(e) => setF("payAmount", e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder={t("postJob.phPayAmount")} style={inp} />
           <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 6 }}>{t("postJob.minWage2026")}</div>
@@ -437,7 +485,7 @@ export default function PostJobPage() {
         </div>
 
         <div style={field}>
-          <label style={lab}>{t("postJob.labelVisa", { req })} <span style={{ color: T.ink3, fontWeight: 500 }}>{t("postJob.multipleAllowed")}</span></label>
+          <label style={lab}>{withReq("labelVisa")} <span style={{ color: T.ink3, fontWeight: 500 }}>{t("postJob.multipleAllowed")}</span></label>
           <div style={rowS}>{getStepOptions(11).map((o) => <button key={o} type="button" onClick={() => toggle("visa", o)} style={chip(form.visa.includes(o))}>{o}</button>)}</div>
         </div>
 

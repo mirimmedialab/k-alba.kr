@@ -213,6 +213,7 @@ export const uz = {
     startAsEmployer: "💼 Ish beruvchi sifatida boshlash",
   },
   auth: {
+    errEmailTaken: "Bu e-pochta allaqachon ro'yxatdan o'tgan. Iltimos, tizimga kiring.",
     agreeAll: "Hammasiga roziman",
     agreeTermsRequired: "(Majburiy) Foydalanish shartlariga rozilik",
     agreePrivacyRequired: "(Majburiy) Shaxsiy ma'lumotlarni yig'ish va ishlatishga rozilik",

@@ -233,6 +233,7 @@ export const en = {
     startAsEmployer: "💼 Start as Employer",
   },
   auth: {
+    errEmailTaken: "This email is already registered. Please log in.",
     agreeAll: "I agree to all",
     agreeTermsRequired: "(Required) Agree to Terms of Service",
     agreePrivacyRequired: "(Required) Agree to collection and use of personal information",

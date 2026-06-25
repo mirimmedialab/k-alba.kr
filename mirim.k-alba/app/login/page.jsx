@@ -7,6 +7,7 @@ import { Btn, Inp } from "@/components/UI";
 import { signIn, signInWithOAuth, isAccountDeactivated, signOut, supabase } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 import KakaoLogo from "@/components/KakaoLogo";
+import EmailField, { isValidEmail } from "@/components/ui/EmailField";
 
 /**
  * 로그인 페이지 — McKinsey 에디토리얼 스타일
@@ -27,6 +28,10 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    if (!isValidEmail(form.email)) {
+      setError(t("auth.errEmailFormat", null, "올바른 이메일 주소를 입력해 주세요 (예: name@example.com)"));
+      return;
+    }
     setLoading(true);
     const { data, error } = await signIn(form.email, form.password);
     if (error) {
@@ -193,13 +198,13 @@ export default function LoginPage() {
               <div style={{ flex: 1, height: 1, background: T.border }} />
             </div>
 
-            <Inp
-              label={t("auth.email")}
-              type="email"
-              placeholder="email@example.com"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-            />
+            <div style={{ marginBottom: 14 }}>
+              <EmailField
+                label={t("auth.email")}
+                value={form.email}
+                onChange={(v) => setForm({ ...form, email: v })}
+              />
+            </div>
             <Inp
               label={t("auth.password")}
               type="password"

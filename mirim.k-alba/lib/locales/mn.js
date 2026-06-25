@@ -213,6 +213,7 @@ export const mn = {
     startAsEmployer: "💼 Ажил олгогчоор эхлэх",
   },
   auth: {
+    errEmailTaken: "Энэ имэйл аль хэдийн бүртгэгдсэн байна. Нэвтэрнэ үү.",
     agreeAll: "Бүгдийг зөвшөөрөх",
     agreeTermsRequired: "(Заавал) Үйлчилгээний нөхцөлд зөвшөөрөх",
     agreePrivacyRequired: "(Заавал) Хувийн мэдээлэл цуглуулах, ашиглахыг зөвшөөрөх",
