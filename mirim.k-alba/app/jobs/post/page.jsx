@@ -404,7 +404,14 @@ export default function PostJobPage() {
           <Button variant="primaryDark" fullWidth onClick={() => router.push("/my/jobs")}>
             {t("postJob.viewMyJobs")}
           </Button>
-          <Button variant="secondary" fullWidth onClick={() => { setPosted(false); resetChat(); }}>
+          <Button variant="secondary" fullWidth onClick={() => {
+            setPosted(false);
+            resetChat();
+            // 데스크탑 폼 상태도 초기화 (이전 입력/제출 상태가 남지 않도록)
+            setForm({ jobType: "", title: "", workType: [], address: "", addressDetail: "", payType: "시급", payAmount: "", workHours: "", workDays: "", korean: "", visa: [], headcount: "", benefits: [], description: "" });
+            setWebErr("");
+            setWebBusy(false);
+          }}>
             {t("postJob.postAnother")}
           </Button>
         </div>

@@ -39,10 +39,41 @@ export async function signIn(email, password) {
   return await supabase.auth.signInWithPassword({ email, password });
 }
 
+// 네이티브 앱(Capacitor)에서 실행 중인지
+function isNativePlatform() {
+  if (typeof window === "undefined") return false;
+  return window.Capacitor?.isNativePlatform?.() === true;
+}
+
+// 네이티브 OAuth 복귀용 딥링크 (AndroidManifest intent-filter + Supabase Redirect URLs에 등록 필요)
+export const NATIVE_OAUTH_REDIRECT = "kr.co.mirimmedialab.kalba://auth/callback";
+
 export async function signInWithOAuth(provider, options = {}) {
   if (!supabase) return { error: { message: "Supabase not configured" } };
 
-  // OAuth 콜백을 /auth/callback으로 받아서 거기서 user_type 처리 후 분기
+  // ── 네이티브 앱: 시스템 브라우저(Custom Tab)로 인증 → 딥링크로 앱 복귀 → 같은 웹뷰에서 코드 교환 ──
+  // (구글은 임베디드 웹뷰 내 OAuth를 차단하므로 외부 브라우저 + 딥링크가 정석)
+  if (isNativePlatform()) {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: NATIVE_OAUTH_REDIRECT,
+          skipBrowserRedirect: true, // 직접 URL을 받아 Custom Tab으로 연다
+          ...(options.scopes ? { scopes: options.scopes } : {}),
+        },
+      });
+      if (error) return { error };
+      if (!data?.url) return { error: { message: "OAuth URL을 받지 못했습니다." } };
+      const { Browser } = await import("@capacitor/browser");
+      await Browser.open({ url: data.url });
+      return { data };
+    } catch (e) {
+      return { error: { message: e?.message || "OAuth를 시작할 수 없습니다." } };
+    }
+  }
+
+  // ── 웹: 기존 동작 (콜백을 /auth/callback에서 처리) ──
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   return await supabase.auth.signInWithOAuth({
     provider,
@@ -141,8 +172,19 @@ export async function createJob(jobData) {
 
 export async function getMyJobs(employerId) {
   if (!supabase) return [];
-  const { data } = await supabase.from("jobs").select("*").eq("employer_id", employerId).order("created_at", { ascending: false });
+  const { data } = await supabase.from("jobs").select("*").eq("employer_id", employerId).neq("status", "deleted").order("created_at", { ascending: false });
   return data || [];
+}
+
+export async function updateJob(id, updates) {
+  if (!supabase) return { error: { message: "Supabase not configured" } };
+  return await supabase.from("jobs").update(updates).eq("id", id).select().single();
+}
+
+export async function deleteJob(id) {
+  // 소프트 삭제: status를 'deleted'로 변경 (지원/계약 데이터 보존, 복구 가능)
+  if (!supabase) return { error: { message: "Supabase not configured" } };
+  return await supabase.from("jobs").update({ status: "deleted" }).eq("id", id);
 }
 
 // ────────────────────────────────
