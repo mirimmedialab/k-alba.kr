@@ -22,6 +22,22 @@ export default function NativeBridge() {
     if (!isNativePlatform()) return;
 
     let appListener = null;
+    let splashFallback = null;
+
+    // 앱 식별 훅: 네이티브 앱에서만 body에 클래스 부여 (웹 레이아웃 영향 없음)
+    try { document.body.classList.add("is-native-app"); } catch (_) {}
+
+    // 스플래시 강제 숨김 헬퍼 (중복 호출 안전)
+    const hideSplash = async () => {
+      try {
+        const { SplashScreen } = await import("@capacitor/splash-screen");
+        await SplashScreen.hide();
+      } catch (_) {}
+    };
+
+    // 안전망: 어떤 이유로든 아래 async가 실패해도 스플래시가 영영 안 사라지는 일 방지.
+    // (capacitor.config의 launchAutoHide=false 이므로 직접 숨겨야 함)
+    splashFallback = setTimeout(() => { hideSplash(); }, 4000);
 
     (async () => {
       // 1) 상태바: 웹뷰 위 오버레이 해제 → 콘텐츠가 상태바 아래에서 시작
@@ -33,10 +49,12 @@ export default function NativeBridge() {
       } catch (_) {}
 
       // 2) 스플래시 숨김 (이 컴포넌트가 마운트됐다 = 웹 준비됨)
+      //    다음 페인트까지 한 프레임 기다린 뒤 숨겨 흰 깜빡임 최소화
       try {
-        const { SplashScreen } = await import("@capacitor/splash-screen");
-        try { await SplashScreen.hide(); } catch (_) {}
+        await new Promise((r) => requestAnimationFrame(() => r()));
       } catch (_) {}
+      await hideSplash();
+      if (splashFallback) { clearTimeout(splashFallback); splashFallback = null; }
 
       // 3) OAuth 딥링크 복귀 핸들러
       try {
@@ -75,6 +93,7 @@ export default function NativeBridge() {
 
     return () => {
       try { appListener?.remove?.(); } catch (_) {}
+      try { if (splashFallback) clearTimeout(splashFallback); } catch (_) {}
     };
   }, []);
 
