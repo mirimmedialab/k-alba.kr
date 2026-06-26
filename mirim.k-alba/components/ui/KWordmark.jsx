@@ -43,6 +43,9 @@ export default function KWordmark({
         lineHeight: 1,
         display: "inline-flex",
         alignItems: "baseline",
+        // 좁은 네브바 등에서 하이픈(-) 지점에 줄바꿈되어 "K-/ALBA"로 깨지는 것 방지
+        whiteSpace: "nowrap",
+        flexShrink: 0,
         ...style,
       }}
     >
