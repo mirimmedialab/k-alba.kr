@@ -13,10 +13,22 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- Android 15(타깃 SDK 35) edge-to-edge 강제 해제 →
+             웹뷰 콘텐츠가 상태바(시계·배터리) 아래에서 시작하도록 함 (겹침 방지) -->
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+        <!-- 상태바: 네이비 배경 + 흰색 아이콘 -->
+        <item name="android:statusBarColor">@color/splash_background</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 
 
+    <!-- 런치(스플래시) 테마 -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <!-- Android 12+(API 31+) 시스템 스플래시 API -->
+        <item name="android:windowSplashScreenBackground">@color/splash_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+        <!-- Android 11 이하(레거시) 스플래시 -->
         <item name="android:background">@drawable/splash</item>
     </style>
 </resources>

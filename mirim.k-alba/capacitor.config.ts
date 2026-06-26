@@ -10,7 +10,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
  *
  * 개발 모드 vs 프로덕션 모드:
  * - 개발: webDir 비우고 server.url 을 localhost로 (핫리로드)
- * - 프로덕션: server.url 을 https://k-alba.kr 로
+ * - 프로덕션: server.url 을 https://www.k-alba.kr 로
  */
 const config: CapacitorConfig = {
   appId: 'kr.co.mirimmedialab.kalba',
@@ -20,8 +20,12 @@ const config: CapacitorConfig = {
   webDir: 'public',
 
   server: {
-    // 프로덕션: Vercel 배포된 웹을 바로 로드
-    url: 'https://k-alba.kr',
+    // ⚠️ 반드시 "리다이렉트가 일어나지 않는 최종 주소"를 사용한다.
+    //    apex(k-alba.kr)는 www로 301 리다이렉트되는데, Capacitor는 server.url 로드 직후
+    //    리다이렉트가 발생하면 네이티브 브리지를 다시 주입하지 않아 getPlatform()이 'web'이 된다
+    //    (이슈 #7454). 그러면 @capacitor/browser 등이 웹 구현으로 동작해 OAuth가 외부 브라우저로
+    //    빠지고 딥링크 복귀가 안 됨. → 처음부터 www 정규 도메인으로 로드해 리다이렉트를 없앤다.
+    url: 'https://www.k-alba.kr',
     cleartext: false, // HTTPS 강제
     androidScheme: 'https',
 
@@ -46,7 +50,11 @@ const config: CapacitorConfig = {
       presentationOptions: ['badge', 'sound', 'alert'],
     },
     SplashScreen: {
-      launchShowDuration: 1500,
+      // ⚠️ 반드시 자동 숨김 ON. (false로 두면 hide() 미호출 시 스플래시가 웹뷰를 덮어 앱이 멈춤)
+      // 네이티브가 launchShowDuration 후 자동으로 숨기고, 웹 준비 시 NativeBridge가 더 일찍 숨김.
+      launchAutoHide: true,
+      launchShowDuration: 3000, // 자동 숨김까지 최대 대기(원격 웹 로드 여유). 준비되면 더 빨리 숨겨짐.
+      launchFadeOutDuration: 200,
       backgroundColor: '#0A1628', // McKinsey 네이비 — 브랜드 일관성
       androidScaleType: 'CENTER_CROP',
       showSpinner: false,
@@ -69,7 +77,7 @@ const config: CapacitorConfig = {
   android: {
     allowMixedContent: false,
     captureInput: true,
-    webContentsDebuggingEnabled: false, // 프로덕션에서는 false
+    webContentsDebuggingEnabled: true, // 임시: 디버깅용(원인 확인 후 false로 되돌림)
     backgroundColor: '#0A1628',
   },
 };
