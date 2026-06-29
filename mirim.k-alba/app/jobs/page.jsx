@@ -6,7 +6,7 @@ import { getJobs } from "@/lib/supabase";
 import { useT, useLocale } from "@/lib/i18n";
 import { useNearbyJobs } from "@/lib/useNearbyJobs";
 import { useRecommendedJobs } from "@/lib/useRecommendedJobs";
-import { formatDistance } from "@/lib/geolocation";
+import { formatDistance, checkLocationPermission, requestLocationPermission } from "@/lib/geolocation";
 import { formatPay, shortWorkTime, localizeWorkText, formatPostedAt } from "@/lib/format";
 import { romanizeRegion, romanizeCompany } from "@/lib/koroman";
 import { getCurrentUser, getProfile } from "@/lib/supabase";
@@ -332,6 +332,23 @@ export default function JobsPage() {
 
   const loading = sortMode === "recommended" ? recLoading : nearLoading;
 
+  // 정렬 변경 핸들러: '가까운순' 선택 시 위치 권한 요청(OS 팝업) + [임시 진단] 표시
+  const handleSortChange = async (value) => {
+    setSortMode(value);
+    if (value === "nearest") {
+      const cap = typeof window !== "undefined" ? window.Capacitor : null;
+      if (cap) {
+        const platform = cap.getPlatform?.() || "web";
+        const native = cap.isNativePlatform?.() === true;
+        let permBefore = "?";
+        try { permBefore = (await checkLocationPermission())?.status; } catch (_) {}
+        let reqResult = "?";
+        try { reqResult = (await requestLocationPermission())?.status; } catch (e) { reqResult = "err:" + (e?.message || e); }
+        try { window.alert(`[위치 진단]\nplatform: ${platform}\nnative: ${native}\nperm(before): ${permBefore}\nrequest result: ${reqResult}`); } catch (_) {}
+      }
+    }
+  };
+
   // 실제 DB 공고 조회 (최신순/급여순 + 비로그인 추천 fallback)
   const [fallbackJobs, setFallbackJobs] = useState([]);
   const [fallbackLoading, setFallbackLoading] = useState(true);
@@ -523,7 +540,7 @@ export default function JobsPage() {
       <div style={{ padding: "10px 16px 0" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: D.navy }}>{t("jobs.totalJobs").replace("{count}", displayJobs.length)}</div>
-          <select value={sortMode} onChange={(e) => setSortMode(e.target.value)} style={{ border: `1px solid ${D.border}`, borderRadius: 8, padding: "6px 8px", fontSize: 12.5, color: D.ink2, fontFamily: "inherit", background: D.card }}>
+          <select value={sortMode} onChange={(e) => handleSortChange(e.target.value)} style={{ border: `1px solid ${D.border}`, borderRadius: 8, padding: "6px 8px", fontSize: 12.5, color: D.ink2, fontFamily: "inherit", background: D.card }}>
             <option value="recommended">{t("jobs.sortRecommended")}</option>
             <option value="nearest">{t("jobs.sortNearest")}</option>
             <option value="latest">{t("jobs.sortLatest")}</option>
@@ -572,7 +589,7 @@ export default function JobsPage() {
           <div style={{ marginTop: -26, marginBottom: 24, background: D.card, border: `1px solid ${D.border}`, borderRadius: 14, padding: "10px 14px", display: "flex", gap: 12, alignItems: "center", boxShadow: "0 6px 20px rgba(2,6,23,0.07)", position: "relative", zIndex: 1 }}>
             <span style={{ fontSize: 16, color: D.ink3 }}>🔍</span>
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("jobs.searchPlaceholder")} style={{ flex: 1, border: "none", outline: "none", fontSize: 14, color: D.ink, background: "transparent", fontFamily: "inherit" }} />
-            <select value={sortMode} onChange={(e) => setSortMode(e.target.value)} style={{ border: `1px solid ${D.border}`, borderRadius: 8, padding: "8px 10px", fontSize: 13, color: D.ink2, fontFamily: "inherit", cursor: "pointer" }}>
+            <select value={sortMode} onChange={(e) => handleSortChange(e.target.value)} style={{ border: `1px solid ${D.border}`, borderRadius: 8, padding: "8px 10px", fontSize: 13, color: D.ink2, fontFamily: "inherit", cursor: "pointer" }}>
               <option value="recommended">{t("jobs.sortRecommended")}</option>
               <option value="nearest">{t("jobs.sortNearest")}</option>
               <option value="latest">{t("jobs.sortLatest")}</option>
