@@ -43,6 +43,7 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [workHistory, setWorkHistory] = useState([]);
+  const [bizResult, setBizResult] = useState(false); // BusinessVerify가 인증 결과 카드를 띄우는 중인지
   const isDesktop = useIsDesktop();
 
   const TRANSPORT_MODES = [
@@ -185,16 +186,25 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 14, background: T.cream, border: `1px solid ${T.border}`, borderRadius: 10, marginBottom: 14 }}>
-                <span style={{ fontSize: 24 }}>⚠️</span>
-                <div>
-                  <div style={{ fontWeight: 700, color: T.ink2 }}>{t("profile.notVerified")}</div>
-                  <div style={{ fontSize: 12, color: T.ink3 }}>{t("profile.notVerifiedDesc")}</div>
+              {/* 인증 결과 카드(완료)가 뜨는 중에는 '미완료' 경고 카드를 숨김 */}
+              {!bizResult && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 14, background: T.cream, border: `1px solid ${T.border}`, borderRadius: 10, marginBottom: 14 }}>
+                  <span style={{ fontSize: 24 }}>⚠️</span>
+                  <div>
+                    <div style={{ fontWeight: 700, color: T.ink2 }}>{t("profile.notVerified")}</div>
+                    <div style={{ fontSize: 12, color: T.ink3 }}>{t("profile.notVerifiedDesc")}</div>
+                  </div>
                 </div>
-              </div>
+              )}
               <BusinessVerify
                 userId={user.id}
-                onVerified={({ business_number }) => setProfile({ ...profile, verified: true, business_number })}
+                continueLabel={t("common.confirm", null, "확인")}
+                onResult={() => setBizResult(true)}
+                onVerified={({ business_number }) => {
+                  setProfile({ ...profile, verified: true, business_number });
+                  setForm((f) => ({ ...f, business_number })); // 업체정보에 즉시 노출
+                  setBizResult(false);
+                }}
               />
             </div>
           )}

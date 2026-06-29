@@ -17,10 +17,25 @@ import { JOB_TYPES, WORK_TYPES, KOREAN_LEVELS, BENEFITS, VISA_OPTIONS } from "@/
 
 const PAY_TYPES = ["시급", "일급", "월급"];
 
+// 값이 배열/문자열/중첩 JSON문자열(["\"[...\"]) 무엇이든 깨끗한 문자열 배열로 정규화
 function toArr(v) {
-  if (Array.isArray(v)) return v;
-  if (!v) return [];
-  return String(v).split(",").map((s) => s.trim()).filter(Boolean);
+  if (v == null) return [];
+  let val = v;
+  // 과거 버그로 배열이 텍스트 컬럼에 중첩 JSON으로 저장된 경우 반복 파싱
+  for (let i = 0; i < 3 && typeof val === "string" && /^\s*\[/.test(val); i++) {
+    try { val = JSON.parse(val); } catch { break; }
+  }
+  const out = [];
+  const push = (s) => {
+    const t = String(s).replace(/[\[\]"\\]/g, "").trim(); // 잔여 []"\ 기호 제거
+    if (t) out.push(t);
+  };
+  if (Array.isArray(val)) {
+    val.forEach((x) => (Array.isArray(x) ? x.forEach(push) : String(x).split(",").forEach(push)));
+  } else {
+    String(val).split(",").forEach(push);
+  }
+  return out;
 }
 
 export default function JobManagePage() {
@@ -80,7 +95,8 @@ export default function JobManagePage() {
     const updates = {
       title: form.title.trim(),
       job_type: form.job_type,
-      work_type: form.work_type,
+      // work_type/benefits는 DB가 text 컬럼 → 배열을 쉼표 문자열로 저장(중첩 JSON 깨짐 방지)
+      work_type: Array.isArray(form.work_type) ? form.work_type.join(", ") : (form.work_type || ""),
       pay_type: form.pay_type,
       pay_amount: String(form.pay_amount).trim() ? Number(String(form.pay_amount).replace(/[^0-9]/g, "")) : null,
       work_hours: form.work_hours,
@@ -88,7 +104,7 @@ export default function JobManagePage() {
       korean_level: form.korean_level,
       visa_types: form.visa_types,
       headcount: form.headcount,
-      benefits: form.benefits,
+      benefits: Array.isArray(form.benefits) ? form.benefits.join(", ") : (form.benefits || ""),
       description: form.description,
       status: form.status,
     };
@@ -100,7 +116,7 @@ export default function JobManagePage() {
   };
 
   const onDelete = async () => {
-    if (typeof window !== "undefined" && !window.confirm("이 공고를 삭제할까요? 목록과 구직자 화면에서 숨겨집니다. (지원자 데이터는 보존됩니다)")) return;
+    if (typeof window !== "undefined" && !window.confirm("이 공고를 삭제할까요?")) return;
     const { error } = await deleteJob(id);
     if (error) { setErr(error.message); return; }
     router.push("/my/jobs");

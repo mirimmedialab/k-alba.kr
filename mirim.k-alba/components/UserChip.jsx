@@ -6,7 +6,7 @@ import { signOut } from "@/lib/supabase";
 /**
  * UserChip — 우측 상단 사용자 정보 칩
  *
- * 로그인한 사용자의 이름과 로그아웃 버튼을 표시합니다.
+ * 로그아웃 버튼을 표시합니다. (이름 표시는 인사 제목과 중복되어 제거)
  * 랜딩 페이지 HERO 섹션에서 사용됩니다.
  */
 export function UserChip({ user, style = {} }) {
@@ -19,12 +19,6 @@ export function UserChip({ user, style = {} }) {
     router.refresh();
   };
 
-  const userName =
-    user?.user_metadata?.name ||
-    user?.user_metadata?.full_name ||
-    user?.email?.split("@")[0] ||
-    "사용자";
-
   return (
     <div
       style={{
@@ -34,23 +28,7 @@ export function UserChip({ user, style = {} }) {
         ...style,
       }}
     >
-      {/* 이름 표시 */}
-      <div
-        style={{
-          padding: "7px 14px",
-          borderRadius: 8,
-          background: "rgba(255,255,255,0.95)",
-          border: `1px solid ${T.g200}`,
-          fontSize: 13,
-          fontWeight: 600,
-          color: T.navy,
-          letterSpacing: "-0.01em",
-        }}
-      >
-        {userName}님
-      </div>
-
-      {/* 로그아웃 버튼 */}
+      {/* 로그아웃 버튼 (이름 칩은 인사말과 중복되어 제거됨) */}
       <button
         onClick={handleLogout}
         style={{

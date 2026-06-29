@@ -28,6 +28,20 @@ const D = {
   green: "#16A34A", greenBg: "#ECFDF5", greenBorder: "#86EFAC",
 };
 const D_KOREAN = { none: "한국어 무관", beginner: "한국어 초급", intermediate: "한국어 중급", advanced: "한국어 고급" };
+
+// 배열/문자열/중첩 JSON문자열(["\"[...\"])을 깨끗한 "a, b, c" 문자열로 정규화 (과거 인코딩 버그 표시 보정)
+function cleanList(v) {
+  if (v == null) return "";
+  let val = v;
+  for (let i = 0; i < 3 && typeof val === "string" && /^\s*\[/.test(val); i++) {
+    try { val = JSON.parse(val); } catch { break; }
+  }
+  const out = [];
+  const push = (s) => { const t = String(s).replace(/[\[\]"\\]/g, "").trim(); if (t) out.push(t); };
+  if (Array.isArray(val)) val.forEach((x) => (Array.isArray(x) ? x.forEach(push) : String(x).split(",").forEach(push)));
+  else String(val).split(",").forEach(push);
+  return out.join(", ");
+}
 const VISA_MEANING = {
   "D-2": "유학", "D-4": "어학연수", "D-10": "구직", "D-8": "투자",
   "E-7": "특정활동", "E-8": "계절근로", "E-9": "비전문취업",
@@ -120,7 +134,7 @@ export default function JobDetail({ jobId, embedded = false }) {
           korean: data.korean || data.korean_level || "",
           visa: data.visa || data.visa_types || [],
           desc: data.desc || data.description || "",
-          benefits: data.benefits || "",
+          benefits: cleanList(data.benefits),
           headcount: data.headcount || "",
         });
         // 워크넷 공고: 목록 API 제목이 30자로 잘리고 상세설명이 없음
@@ -139,7 +153,7 @@ export default function JobDetail({ jobId, embedded = false }) {
                   company: d.company || prev.company,
                   desc: d.description || prev.desc,
                   hours: d.work_hours || prev.hours,
-                  benefits: d.welfare || prev.benefits,
+                  benefits: cleanList(d.welfare) || prev.benefits,
                   headcount: d.headcount || prev.headcount,
                 }));
               }

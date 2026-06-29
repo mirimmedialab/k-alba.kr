@@ -31,7 +31,7 @@ function formatOpeningDate(raw) {
   return `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6)}`;
 }
 
-export default function BusinessVerify({ userId, onVerified, showPrompt = true, horizontal = false, bare = false, continueLabel }) {
+export default function BusinessVerify({ userId, onVerified, onResult, showPrompt = true, horizontal = false, bare = false, continueLabel }) {
   const t = useT();
   const [businessNumber, setBusinessNumber] = useState("");
   const [representativeName, setRepresentativeName] = useState("");
@@ -78,6 +78,8 @@ export default function BusinessVerify({ userId, onVerified, showPrompt = true, 
         }
         setLoading(false);
         setDone({ business_number: bn, status: data.status || t("auth.bizStatusNormal", null, "정상"), taxType: data.taxType || "" });
+        // 부모에 "결과 표시 중" 알림 → 부모의 '미완료' 카드 숨김 처리용
+        onResult?.({ business_number: bn });
       } else {
         setLoading(false);
         setError(data.error || t("auth.bizMismatch", null, "입력하신 정보가 국세청 자료와 일치하지 않아요. 사업자등록증에 적힌 내용 그대로 다시 확인해 주세요."));

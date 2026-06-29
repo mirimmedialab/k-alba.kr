@@ -262,11 +262,17 @@ export default function PostJobPage() {
       }
     }
 
+    // work_type/benefits는 DB가 text 컬럼 → 배열이면 쉼표 문자열로 (중첩 JSON 깨짐 방지)
+    const toStr = (x) => (Array.isArray(x) ? x.filter(Boolean).join(", ") : (x || ""));
+    const benefitsArr = Array.isArray(a.benefits)
+      ? a.benefits
+      : String(a.benefits || "").split(",").map((s) => s.trim()).filter(Boolean);
+
     const jobData = {
       employer_id: user.id,
       title: a.title,
       job_type: a.jobType,
-      work_type: a.workType,
+      work_type: toStr(a.workType),
       pay_type: a.payType,
       pay_amount: Number(String(a.payAmount || "0").replace(/[^0-9]/g, "")),
       address: a.address,
@@ -278,17 +284,20 @@ export default function PostJobPage() {
         ? a.visa.split(",").map(s => s.trim()).filter(Boolean)
         : (Array.isArray(a.visa) ? a.visa : []),
       headcount: a.headcount,
-      benefits: a.benefits,
+      benefits: benefitsArr.join(", "),
       description: a.description,
       ...geoData,
-      provides_housing: Array.isArray(a.benefits)
-        ? a.benefits.some(b => b.includes("숙식") || b.includes("기숙사"))
-        : false,
-      provides_shuttle: Array.isArray(a.benefits)
-        ? a.benefits.some(b => b.includes("통근") || b.includes("셔틀"))
-        : false,
+      provides_housing: benefitsArr.some((b) => b.includes("숙식") || b.includes("기숙사")),
+      provides_shuttle: benefitsArr.some((b) => b.includes("통근") || b.includes("셔틀")),
     };
-    const { data: newJob } = await createJob(jobData);
+    // ⚠️ 에러를 반드시 확인 — 실패해도 성공화면(setPosted)으로 넘어가던 버그 수정
+    const { data: newJob, error: postErr } = await createJob(jobData);
+    if (postErr || !newJob) {
+      const msg = postErr?.message || t("postJob.errSubmit", null, "공고 등록에 실패했어요. 입력값을 확인하고 다시 시도해 주세요.");
+      setWebErr(msg);
+      if (typeof window !== "undefined") window.alert(msg);
+      return; // 실패 시 여기서 중단 (성공화면 표시 안 함)
+    }
 
     // 푸시 알림 (fire-and-forget)
     if (newJob?.id) {
