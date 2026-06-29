@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 네이티브 스플래시 아이콘을 투명 처리 → 네이티브는 네이비 배경만 표시.
+     실제 로고/애니메이션은 웹 오버레이(AppSplash)에서만 보여준다. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@android:color/transparent" />
+</shape>
