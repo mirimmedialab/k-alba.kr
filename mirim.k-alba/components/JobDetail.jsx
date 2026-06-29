@@ -436,7 +436,7 @@ export default function JobDetail({ jobId, embedded = false }) {
   ].filter(Boolean);
   const checklist = [
     t("jobDetail.check1"),
-    "주당 근무 시간이 비자 허용 범위 내인지 확인하세요.",
+    t("jobDetail.check2"),
     t("jobDetail.check3"),
     t("jobDetail.check4"),
   ];

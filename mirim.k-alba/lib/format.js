@@ -19,6 +19,24 @@ export function formatPay(amount, payType) {
   return s + "원";
 }
 
+/**
+ * 등록 일시 표기 (최신순 목록용). 모든 언어 공통으로 안전한 숫자 포맷.
+ * - 올해: "MM.DD HH:mm" (예: "06.29 14:30")
+ * - 작년 이전: "YYYY.MM.DD HH:mm"
+ */
+export function formatPostedAt(value) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return "";
+  const now = new Date();
+  const p = (x) => String(x).padStart(2, "0");
+  const datePart =
+    d.getFullYear() === now.getFullYear()
+      ? `${p(d.getMonth() + 1)}.${p(d.getDate())}`
+      : `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())}`;
+  return `${datePart} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
 // "(오전) 8시 00분" / "8시" / "08:00" / "17:00" -> "(오전) 8:00" / "(오후) 5:00"
 // 오전/오후 표기가 없으면 24시간제로 보고 오전·오후 + 12시간제로 변환
 function normalizeTime(t) {

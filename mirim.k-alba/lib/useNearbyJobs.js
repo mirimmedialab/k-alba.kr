@@ -29,6 +29,7 @@ export function useNearbyJobs(options = {}) {
     visaFilter = null,      // ['D-2', ...]
     limit = 50,
     useProfileFallback = true,
+    enabled = true,         // false면 GPS/조회를 돌리지 않음(정렬이 '가까운순'일 때만 켜기)
   } = options;
 
   const [jobs, setJobs] = useState([]);
@@ -43,7 +44,12 @@ export function useNearbyJobs(options = {}) {
     try {
       const perm = await checkLocationPermission();
       if (forceGps || perm?.status === "granted") {
-        const loc = await getCurrentLocation({ timeoutMs: 10000 });
+        // 타임아웃 가드: 권한 요청/위치 획득이 응답을 안 줘도 12초 후 강제 실패시켜
+        // 무한 로딩을 방지하고 프로필/기본값으로 넘어가게 한다.
+        const loc = await Promise.race([
+          getCurrentLocation({ timeoutMs: 10000 }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 12000)),
+        ]);
         if (loc?.latitude && loc?.longitude) {
           setLocationSource("gps");
           return { latitude: loc.latitude, longitude: loc.longitude };
@@ -100,13 +106,14 @@ export function useNearbyJobs(options = {}) {
     }
   }, [radius, visaFilter, limit]);
 
-  // 최초 진입 시: 바로 GPS 요청(권한 팝업)해서 위치 결정 + 조회
+  // enabled일 때만: GPS 요청해서 위치 결정 + 조회 (가까운순 선택 시점에 실행)
   useEffect(() => {
+    if (!enabled) { setLoading(false); return; }
     let cancelled = false;
     (async () => {
       setLoading(true);
       setError(null);
-      const loc = await determineUserLocation(true); // 들어가자마자 GPS 요청
+      const loc = await determineUserLocation(true); // GPS 요청(타임아웃 가드 있음)
       if (cancelled) return;
       setUserLocation(loc);
       const list = await fetchNearby(loc);
@@ -115,9 +122,8 @@ export function useNearbyJobs(options = {}) {
       setLoading(false);
     })();
     return () => { cancelled = true; };
-    // 최초 1회만 실행
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [enabled]);
 
   // 반경/비자 필터 변경 시: 위치는 유지하고 재조회만
   useEffect(() => {

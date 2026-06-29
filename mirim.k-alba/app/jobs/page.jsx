@@ -7,7 +7,7 @@ import { useT, useLocale } from "@/lib/i18n";
 import { useNearbyJobs } from "@/lib/useNearbyJobs";
 import { useRecommendedJobs } from "@/lib/useRecommendedJobs";
 import { formatDistance } from "@/lib/geolocation";
-import { formatPay, shortWorkTime, localizeWorkText } from "@/lib/format";
+import { formatPay, shortWorkTime, localizeWorkText, formatPostedAt } from "@/lib/format";
 import { romanizeRegion, romanizeCompany } from "@/lib/koroman";
 import { getCurrentUser, getProfile } from "@/lib/supabase";
 import { Input, VisaBadge, PageLoading, Empty } from "@/components/ui";
@@ -101,7 +101,7 @@ function Chip({ children, green }) {
  * 데스크톱(PC) 좌측 리스트 카드 — 외국인 구직자용 정보 밀도
  * (모바일은 기존 JobListItem 을 그대로 사용; 이 컴포넌트는 PC 마스터-디테일에서만 렌더)
  */
-function DesktopJobCard({ job, tr, onSelect, showDistance }) {
+function DesktopJobCard({ job, tr, onSelect, showDistance, showPostedAt }) {
   const t = useT();
   const { locale } = useLocale();
   const payType = job.pay_type || "시급";
@@ -184,6 +184,13 @@ function DesktopJobCard({ job, tr, onSelect, showDistance }) {
         </div>
       )}
 
+      {/* 등록일시 (최신순 정렬 시) */}
+      {showPostedAt && job.created_at && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: D.ink3, marginBottom: 5 }}>
+          <span>🆕</span><span>{formatPostedAt(job.created_at)}</span>
+        </div>
+      )}
+
       {/* 급여 — 시급/월급/연봉 자동 */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, fontWeight: 700, color: D.ink }}>
         <span>💰</span><span>{locale === "ko" ? `${payType} ${formatPay(job.pay_amount, payType)}` : `${(Number(job.pay_amount) || 0).toLocaleString()} ${t("pay.won")} / ${t("pay." + (({ "시급": "hour", "일급": "day", "월급": "month", "연봉": "year" })[payType] || "hour"))}`}</span>
@@ -201,7 +208,7 @@ function DesktopJobCard({ job, tr, onSelect, showDistance }) {
 }
 
 // 모바일 컴팩트 리스트 행 (674개를 빠르게 훑기 위한 리스트형)
-function MobileListItem({ job, tr, last, onClick }) {
+function MobileListItem({ job, tr, last, onClick, showPostedAt }) {
   const t = useT();
   const { locale } = useLocale();
   const visas = (job.visa_types || []).slice(0, 3);
@@ -222,6 +229,9 @@ function MobileListItem({ job, tr, last, onClick }) {
             <span key={v} style={{ fontSize: 10.5, fontWeight: 600, padding: "2px 6px", borderRadius: 5, background: "#EEF4FF", color: "#1D4ED8" }}>{v}</span>
           ))}
         </div>
+        {showPostedAt && job.created_at && (
+          <div style={{ fontSize: 10.5, color: D.ink3, marginTop: 4 }}>🆕 {formatPostedAt(job.created_at)}</div>
+        )}
       </div>
       <div style={{ textAlign: "right", flexShrink: 0 }}>
         <div style={{ fontSize: 14, fontWeight: 800, color: D.navy, letterSpacing: "-0.01em" }}>{locale === "ko" ? formatPay(job.pay_amount, job.pay_type) : `${(Number(job.pay_amount) || 0).toLocaleString()} ${t("pay.won")}`}</div>
@@ -502,7 +512,7 @@ export default function JobsPage() {
           <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "0 16px 8px", scrollSnapType: "x mandatory" }}>
             {recommended.map((j) => (
               <div key={"rec-" + j.id} style={{ flex: "0 0 84%", scrollSnapAlign: "start", display: "flex" }}>
-                <DesktopJobCard job={j} tr={listTr[`${locale}:${j.id}`]} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} />
+                <DesktopJobCard job={j} tr={listTr[`${locale}:${j.id}`]} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} showPostedAt={sortMode === "latest"} />
               </div>
             ))}
           </div>
@@ -526,7 +536,7 @@ export default function JobsPage() {
         ) : (
           <div style={{ background: D.card, border: `1px solid ${D.border}`, borderRadius: 14, overflow: "hidden" }}>
             {pageJobs.map((j, idx) => (
-              <MobileListItem key={j.id} job={j} tr={listTr[`${locale}:${j.id}`]} last={idx === pageJobs.length - 1} onClick={() => router.push(`/jobs/${j.id}`)} />
+              <MobileListItem key={j.id} job={j} tr={listTr[`${locale}:${j.id}`]} last={idx === pageJobs.length - 1} onClick={() => router.push(`/jobs/${j.id}`)} showPostedAt={sortMode === "latest"} />
             ))}
           </div>
         )}
@@ -624,7 +634,7 @@ export default function JobsPage() {
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 16, alignItems: "stretch" }}>
                   {pageJobs.map((j) => (
-                    <DesktopJobCard key={j.id} job={j} tr={listTr[`${locale}:${j.id}`]} selected={false} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={sortMode === "nearest" || sortMode === "recommended"} />
+                    <DesktopJobCard key={j.id} job={j} tr={listTr[`${locale}:${j.id}`]} selected={false} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={sortMode === "nearest" || sortMode === "recommended"} showPostedAt={sortMode === "latest"} />
                   ))}
                 </div>
               )}
@@ -651,7 +661,7 @@ export default function JobsPage() {
               <div ref={recRef} style={{ display: "flex", gap: 16, overflowX: "hidden", scrollBehavior: "smooth", scrollSnapType: "x mandatory" }}>
                 {recommended.map((j) => (
                   <div key={"rec-" + j.id} style={{ width: "calc((100% - 48px) / 4)", minHeight: 322, flexShrink: 0, display: "flex", scrollSnapAlign: "start" }}>
-                    <DesktopJobCard job={j} tr={listTr[`${locale}:${j.id}`]} selected={false} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} />
+                    <DesktopJobCard job={j} tr={listTr[`${locale}:${j.id}`]} selected={false} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} showPostedAt={sortMode === "latest"} />
                   </div>
                 ))}
               </div>
