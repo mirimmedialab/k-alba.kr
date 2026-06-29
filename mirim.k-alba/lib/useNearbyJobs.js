@@ -4,6 +4,7 @@ import { supabase, getJobs } from "@/lib/supabase";
 import {
   getCurrentLocation,
   checkLocationPermission,
+  requestLocationPermission,
   calculateDistanceMeters,
 } from "@/lib/geolocation";
 
@@ -135,6 +136,10 @@ export function useNearbyJobs(options = {}) {
   const requestLocation = useCallback(async () => {
     setLoading(true);
     setError(null);
+    // 이전에 거부했던 경우에도 권한 팝업을 다시 띄운다.
+    // (한 번 거부 → 재요청 시 다시 물어봄. "다시 묻지 않음" 영구 거부면 OS가 팝업을 막으므로
+    //  이 경우엔 폰 설정 > 앱 > K-ALBA > 권한에서 위치를 허용해야 함)
+    try { await requestLocationPermission(); } catch (_) {}
     const loc = await determineUserLocation(true);
     setUserLocation(loc);
     const list = await fetchNearby(loc);
