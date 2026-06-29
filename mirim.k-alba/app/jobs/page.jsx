@@ -335,18 +335,16 @@ export default function JobsPage() {
   // 정렬 변경 핸들러: '가까운순' 선택 시 위치 권한 요청(OS 팝업) + [임시 진단] 표시
   const handleSortChange = async (value) => {
     setSortMode(value);
-    if (value === "nearest") {
-      const cap = typeof window !== "undefined" ? window.Capacitor : null;
-      if (cap) {
-        const platform = cap.getPlatform?.() || "web";
-        const native = cap.isNativePlatform?.() === true;
-        let permBefore = "?";
-        try { permBefore = (await checkLocationPermission())?.status; } catch (_) {}
-        let reqResult = "?";
-        try { reqResult = (await requestLocationPermission())?.status; } catch (e) { reqResult = "err:" + (e?.message || e); }
-        try { window.alert(`[위치 진단]\nplatform: ${platform}\nnative: ${native}\nperm(before): ${permBefore}\nrequest result: ${reqResult}`); } catch (_) {}
-      }
-    }
+    if (value !== "nearest") return;
+    // [임시 진단] 무조건 표시 — window.Capacitor 존재/플랫폼/권한 상태를 확인
+    const cap = typeof window !== "undefined" ? window.Capacitor : null;
+    const platform = (cap && cap.getPlatform && cap.getPlatform()) || (cap ? "(cap, no getPlatform)" : "(no window.Capacitor)");
+    const native = cap && cap.isNativePlatform ? cap.isNativePlatform() : "n/a";
+    let permBefore = "?";
+    try { permBefore = (await checkLocationPermission())?.status; } catch (e) { permBefore = "err:" + (e?.message || e); }
+    let reqResult = "?";
+    try { reqResult = (await requestLocationPermission())?.status; } catch (e) { reqResult = "err:" + (e?.message || e); }
+    try { window.alert(`[위치 진단]\nplatform: ${platform}\nnative: ${native}\nperm(before): ${permBefore}\nrequest result: ${reqResult}`); } catch (_) {}
   };
 
   // 실제 DB 공고 조회 (최신순/급여순 + 비로그인 추천 fallback)
