@@ -76,8 +76,10 @@ const config: CapacitorConfig = {
   // Android 전용 설정
   android: {
     allowMixedContent: false,
-    captureInput: true,
-    webContentsDebuggingEnabled: true, // 임시: 디버깅용(원인 확인 후 false로 되돌림)
+    // captureInput: 대체 InputConnection으로 키를 가로채는 옵션인데,
+    // 한글(CJK) IME 조합(composition)을 깨뜨려 입력 버벅임/누락을 유발 → 반드시 false.
+    captureInput: false,
+    webContentsDebuggingEnabled: true, // 임시: 디버깅용(스토어 출시 전 false로)
     backgroundColor: '#0A1628',
   },
 };
