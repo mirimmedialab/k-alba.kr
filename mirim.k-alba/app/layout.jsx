@@ -1,6 +1,7 @@
 import "./globals.css";
 import AppFrame from "@/components/AppFrame";
 import NativeBridge from "@/components/NativeBridge";
+import AppSplash from "@/components/AppSplash";
 
 export const metadata = {
   title: "K-ALBA",
@@ -71,6 +72,7 @@ export default function RootLayout({ children }) {
       <body className="font-sans antialiased bg-p text-ink">
         <NativeBridge />
         <AppFrame>{children}</AppFrame>
+        <AppSplash />
       </body>
     </html>
   );
