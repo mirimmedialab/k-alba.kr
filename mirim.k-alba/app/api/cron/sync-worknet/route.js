@@ -414,6 +414,7 @@ function transformWorknetItem(item) {
     headcount: "1", // 목록 API 응답에 모집인원 필드 없음 → 기본 1 (컬럼 타입 text)
     apply_url: item.wantedInfoUrl || null,
     expires_at: parseWorknetDate(item.closeDt),
+    posted_at: parseWorknetPostedAt(item),
     status: "active",
     fetched_at: new Date().toISOString(),
     // 고용24 원본 응답 26필드를 통째로 보관 (현재 매핑 안 한 busino/career/jobsCd/maxSal 등 포함).
@@ -445,5 +446,19 @@ function parseWorknetDate(value) {
   m = /(\d{2})-(\d{2})-(\d{2})/.exec(s);
   if (m) return `20${m[1]}-${m[2]}-${m[3]}T23:59:59+09:00`;
 
+  return null;
+}
+
+// 실제 등록일시(posted_at): 수정일시(smodifyDtm, YYYYMMDDHHmm) 우선 → 없으면 등록일자(regDt, YY-MM-DD). KST.
+function parseWorknetPostedAt(item) {
+  const sm = item && typeof item.smodifyDtm === "string" ? item.smodifyDtm.trim() : "";
+  if (/^\d{12}$/.test(sm)) {
+    return `${sm.slice(0, 4)}-${sm.slice(4, 6)}-${sm.slice(6, 8)}T${sm.slice(8, 10)}:${sm.slice(10, 12)}:00+09:00`;
+  }
+  const rg = item && typeof item.regDt === "string" ? item.regDt.trim() : "";
+  if (/^\d{2}-\d{2}-\d{2}$/.test(rg)) {
+    const [yy, mm, dd] = rg.split("-");
+    return `20${yy}-${mm}-${dd}T00:00:00+09:00`;
+  }
   return null;
 }

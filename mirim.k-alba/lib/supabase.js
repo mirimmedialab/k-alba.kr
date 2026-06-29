@@ -140,7 +140,7 @@ export async function updateProfile(userId, updates) {
 const JOB_LIST_COLUMNS =
   "id, employer_id, employer_external_name, title, job_type, work_type, pay_type, pay_amount, " +
   "address, address_detail, address_road, address_jibun, sido, sigungu, dong, work_hours, work_days, " +
-  "korean_level, visa_types, headcount, benefits, description, status, created_at, updated_at, " +
+  "korean_level, visa_types, headcount, benefits, description, status, created_at, posted_at, updated_at, " +
   "latitude, longitude, transit_info, provides_housing, provides_shuttle, nearest_station, " +
   "walk_to_station_min, source_type, source_id, apply_url, expires_at, fetched_at, " +
   "employer:profiles(name, company_name)";

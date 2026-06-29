@@ -184,10 +184,10 @@ function DesktopJobCard({ job, tr, onSelect, showDistance, showPostedAt }) {
         </div>
       )}
 
-      {/* 등록일시 (최신순 정렬 시) */}
-      {showPostedAt && job.created_at && (
+      {/* 등록일시 (최신순 정렬 시) — 실제 등록일시 posted_at 우선 */}
+      {showPostedAt && (job.posted_at || job.created_at) && (
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: D.ink3, marginBottom: 5 }}>
-          <span>🆕</span><span>{formatPostedAt(job.created_at)}</span>
+          <span>🆕</span><span>{formatPostedAt(job.posted_at || job.created_at)}</span>
         </div>
       )}
 
@@ -229,8 +229,8 @@ function MobileListItem({ job, tr, last, onClick, showPostedAt }) {
             <span key={v} style={{ fontSize: 10.5, fontWeight: 600, padding: "2px 6px", borderRadius: 5, background: "#EEF4FF", color: "#1D4ED8" }}>{v}</span>
           ))}
         </div>
-        {showPostedAt && job.created_at && (
-          <div style={{ fontSize: 10.5, color: D.ink3, marginTop: 4 }}>🆕 {formatPostedAt(job.created_at)}</div>
+        {showPostedAt && (job.posted_at || job.created_at) && (
+          <div style={{ fontSize: 10.5, color: D.ink3, marginTop: 4 }}>🆕 {formatPostedAt(job.posted_at || job.created_at)}</div>
         )}
       </div>
       <div style={{ textAlign: "right", flexShrink: 0 }}>
@@ -388,8 +388,9 @@ export default function JobsPage() {
 
   // 정렬
   if (sortMode === "latest") {
+    // 실제 등록일시(posted_at) 기준 — 없으면 크롤링 시각(created_at)으로 폴백
     displayJobs = [...displayJobs].sort((a, b) =>
-      new Date(b.created_at) - new Date(a.created_at)
+      new Date(b.posted_at || b.created_at) - new Date(a.posted_at || a.created_at)
     );
   } else if (sortMode === "pay") {
     displayJobs = [...displayJobs].sort((a, b) =>
