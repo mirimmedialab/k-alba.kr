@@ -47,7 +47,12 @@ next-env.d.ts
 /android/.gradle
 /android/build
 /android/app/build
+/android/app/release
 /android/local.properties
+
+# 서명키 (절대 커밋 금지)
+*.jks
+*.keystore
 
 # Capacitor sync (생성 파일)
 /ios/App/App/public
@@ -64,3 +69,7 @@ CLAUDE.md
 docs/TEST_ENVIRONMENT_SETUP.md
 docs/DRIFT_RECONCILE.md
 supabase/migrations/.ddlgen/
+
+K-ALBA_비자별_취업가능업종_레퍼런스.xlsx
+K-ALBA_앱출시_로드맵.docx
+앱출시_체크리스트.md
