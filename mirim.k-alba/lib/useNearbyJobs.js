@@ -40,20 +40,25 @@ export function useNearbyJobs(options = {}) {
 
   // 위치 결정. forceGps=true 면 권한 팝업을 띄워서라도 GPS 시도(버튼 클릭 시).
   const determineUserLocation = useCallback(async (forceGps = false) => {
-    // 1) GPS
+    // 1) GPS — 권한 체크/요청/위치획득 "전체"를 타임아웃으로 감싼다.
+    //    (네이티브 호출이 응답을 안 줘도 9초 뒤 null로 떨어져 무한 로딩 방지 → 프로필/기본값으로)
     try {
-      const perm = await checkLocationPermission();
-      if (forceGps || perm?.status === "granted") {
-        // 타임아웃 가드: 권한 요청/위치 획득이 응답을 안 줘도 12초 후 강제 실패시켜
-        // 무한 로딩을 방지하고 프로필/기본값으로 넘어가게 한다.
-        const loc = await Promise.race([
-          getCurrentLocation({ timeoutMs: 10000 }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 12000)),
-        ]);
-        if (loc?.latitude && loc?.longitude) {
-          setLocationSource("gps");
-          return { latitude: loc.latitude, longitude: loc.longitude };
-        }
+      const gpsLoc = await Promise.race([
+        (async () => {
+          const perm = await checkLocationPermission();
+          if (forceGps || perm?.status === "granted") {
+            const loc = await getCurrentLocation({ timeoutMs: 8000 });
+            if (loc?.latitude && loc?.longitude) {
+              return { latitude: loc.latitude, longitude: loc.longitude };
+            }
+          }
+          return null;
+        })(),
+        new Promise((resolve) => setTimeout(() => resolve(null), 9000)),
+      ]);
+      if (gpsLoc) {
+        setLocationSource("gps");
+        return gpsLoc;
       }
     } catch (_) { /* GPS 실패 → 다음 단계 */ }
 
