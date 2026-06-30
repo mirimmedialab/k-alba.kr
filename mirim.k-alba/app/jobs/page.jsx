@@ -102,6 +102,9 @@ function Chip({ children, green }) {
  * 데스크톱(PC) 좌측 리스트 카드 — 외국인 구직자용 정보 밀도
  * (모바일은 기존 JobListItem 을 그대로 사용; 이 컴포넌트는 PC 마스터-디테일에서만 렌더)
  */
+// 워크넷 목록 제목이 앞부분을 "..."로 잘라 저장된 경우 → 앞 말줄임 제거
+const cleanTitle = (s) => String(s || "").replace(/^[.…]+\s*/, "");
+
 function DesktopJobCard({ job, tr, onSelect, showDistance, showPostedAt }) {
   const t = useT();
   const { locale } = useLocale();
@@ -139,7 +142,7 @@ function DesktopJobCard({ job, tr, onSelect, showDistance, showPostedAt }) {
 
       {/* 제목 (2줄 고정) */}
       <div style={{ fontWeight: 700, fontSize: 15.5, color: D.navy, lineHeight: 1.35, letterSpacing: "-0.01em", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", minHeight: 42, marginBottom: 6 }}>
-        {(tr && tr.title) || job.title}
+        {cleanTitle((tr && tr.title) || job.title)}
       </div>
 
       {/* 회사명 (위치 분리) */}
@@ -220,7 +223,7 @@ function MobileListItem({ job, tr, last, onClick, showPostedAt }) {
   return (
     <div onClick={onClick} style={{ display: "flex", gap: 12, padding: "14px", borderBottom: last ? "none" : `1px solid ${D.border}`, cursor: "pointer" }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: D.navy, lineHeight: 1.3, marginBottom: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{(tr && tr.title) || job.title}</div>
+        <div style={{ fontSize: 14, fontWeight: 700, color: D.navy, lineHeight: 1.3, marginBottom: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{cleanTitle((tr && tr.title) || job.title)}</div>
         <div style={{ fontSize: 12, color: D.ink2, marginBottom: workTime ? 3 : 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{locale !== "ko" && companyName ? `${companyName} (${romanizeCompany(companyName)})` : companyName}{loc ? ` · ${loc}` : ""}</div>
         {workTime && (
           <div style={{ fontSize: 11.5, color: D.ink3, marginBottom: 7, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>🕐 {locale !== "ko" ? localizeWorkText(workTime, t) : workTime}</div>
@@ -516,7 +519,7 @@ export default function JobsPage() {
       {recommended.length > 0 && (
         <div style={{ marginTop: 4, marginBottom: 6 }}>
           <div style={{ padding: "4px 16px 10px", fontSize: 15, fontWeight: 800, color: D.navy }}>🔥 {t("jobs.todayRec")}</div>
-          <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "0 16px 8px", scrollSnapType: "x mandatory" }}>
+          <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "0 16px 8px", scrollSnapType: "x mandatory", justifyContent: "safe center" }}>
             {recommended.map((j) => (
               <div key={"rec-" + j.id} style={{ flex: "0 0 84%", scrollSnapAlign: "start", display: "flex" }}>
                 <DesktopJobCard job={j} tr={listTr[`${locale}:${j.id}`]} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} showPostedAt={sortMode === "latest"} />

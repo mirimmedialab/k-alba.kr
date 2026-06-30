@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { T, COMPANY } from "@/lib/theme";
 import { useT, useLocale } from "@/lib/i18n";
@@ -517,6 +517,13 @@ export default function LandingPage() {
   const [user, setUser] = useState(null);
   const [userType, setUserType] = useState(null);
   const [activeAudience, setActiveAudience] = useState("workers");
+  // 히어로 좌우 스와이프(모바일)로 대상(구직자/사장님/학교담당자) 전환
+  const audTouchX = useRef(0);
+  const cycleAudience = (dir) => {
+    const ids = AUDIENCE_TABS.map((tb) => tb.id);
+    const i = Math.max(0, ids.indexOf(activeAudience));
+    setActiveAudience(ids[(i + dir + ids.length) % ids.length]);
+  };
 
   // 세션 체크
   useEffect(() => {
@@ -1194,6 +1201,11 @@ export default function LandingPage() {
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={activeAudience}
+              onTouchStart={(e) => { audTouchX.current = e.touches[0].clientX; }}
+              onTouchEnd={(e) => {
+                const dx = e.changedTouches[0].clientX - audTouchX.current;
+                if (Math.abs(dx) > 50) cycleAudience(dx < 0 ? 1 : -1);
+              }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
