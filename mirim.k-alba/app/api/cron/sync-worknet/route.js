@@ -162,10 +162,26 @@ export async function GET(req) {
 
         const { data: existing } = await supabase
           .from("jobs")
-          .select("id")
+          .select("id, title")
           .eq("source_type", "worknet")
           .eq("source_id", job.source_id)
           .maybeSingle();
+
+        // 목록 API는 제목이 길면 앞을 잘라 "..."로 시작시켜 보낸다.
+        // 잘린 제목이거나 신규 공고면 상세 API에서 전체 제목·상세설명을 받아온다(공고는 항상 유지, 제외하지 않음).
+        const listTruncated = /^[\s.·…‥・]/.test(job.title || "");
+        if (listTruncated || !existing) {
+          const detail = await fetchWorknetDetail(job.source_id);
+          if (detail) {
+            if (detail.title) job.title = detail.title;
+            if (detail.description) job.description = detail.description;
+            if (detail.work_hours) job.work_hours = detail.work_hours;
+          }
+        }
+        // 상세 보강까지 실패한 경우의 안전장치: 앞쪽 말줄임만 제거(내용 자체는 유지)
+        job.title = String(job.title || "").replace(/^[\s.·…‥・]+/, "");
+        // 비자: 보강된 전체 제목+상세설명에서 명시 코드만 재추출
+        job.visa_types = extractVisaCodes(`${job.title} ${job.description || ""}`);
 
         if (existing) {
           const { error: updErr } = await supabase
@@ -181,15 +197,6 @@ export async function GET(req) {
             job.latitude = coords.lat;
             job.longitude = coords.lng;
           }
-          // 상세 API로 전체 제목·상세설명 보강 (목록 API 제목은 30자로 잘림)
-          const detail = await fetchWorknetDetail(job.source_id);
-          if (detail) {
-            if (detail.title) job.title = detail.title;
-            if (detail.description) job.description = detail.description;
-            if (detail.work_hours) job.work_hours = detail.work_hours;
-          }
-          // 비자: 보강된 전체 제목+상세설명에서 명시 코드만 재추출
-          job.visa_types = extractVisaCodes(`${job.title} ${job.description || ""}`);
           const { error: insErr } = await supabase.from("jobs").insert(job);
           if (insErr) throw insErr;
           itemsNew++;
@@ -333,7 +340,7 @@ async function fetchWorknetDetail(authNo) {
       return unescapeXml(m[1].trim()).replace(/&#xd;/gi, "\n").replace(/&#xa;/gi, "\n").trim();
     };
     return {
-      title: f("wantedTitle").replace(/^[\s.·…‥・]+/, ""),
+      title: f("wantedTitle"),
       description: f("jobCont"),
       work_hours: f("workdayWorkhrCont"),
     };
@@ -396,7 +403,7 @@ function transformWorknetItem(item) {
     source_type: "worknet",
     source_id: item.wantedAuthNo,
     title:
-      (item.title || `${item.company || "외국인 채용"} - ${item.jobsCd || "채용"}`).replace(/^[\s.·…‥・]+/, ""),
+      item.title || `${item.company || "외국인 채용"} - ${item.jobsCd || "채용"}`,
     // job_type 은 NOT NULL — 업종명을 카테고리로 사용 (없으면 '기타')
     job_type: item.indTpNm || "기타",
     description,
