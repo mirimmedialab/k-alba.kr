@@ -333,7 +333,7 @@ async function fetchWorknetDetail(authNo) {
       return unescapeXml(m[1].trim()).replace(/&#xd;/gi, "\n").replace(/&#xa;/gi, "\n").trim();
     };
     return {
-      title: f("wantedTitle"),
+      title: f("wantedTitle").replace(/^[\s.·…‥・]+/, ""),
       description: f("jobCont"),
       work_hours: f("workdayWorkhrCont"),
     };
@@ -396,7 +396,7 @@ function transformWorknetItem(item) {
     source_type: "worknet",
     source_id: item.wantedAuthNo,
     title:
-      item.title || `${item.company || "외국인 채용"} - ${item.jobsCd || "채용"}`,
+      (item.title || `${item.company || "외국인 채용"} - ${item.jobsCd || "채용"}`).replace(/^[\s.·…‥・]+/, ""),
     // job_type 은 NOT NULL — 업종명을 카테고리로 사용 (없으면 '기타')
     job_type: item.indTpNm || "기타",
     description,

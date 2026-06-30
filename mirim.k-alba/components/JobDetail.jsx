@@ -247,8 +247,8 @@ export default function JobDetail({ jobId, embedded = false }) {
       </div>
     );
 
-  // 번역본이 있으면 그것으로 표시(없으면 한국어 원본)
-  const displayTitle = (locale !== "ko" && tr?.title) ? tr.title : job.title;
+  // 번역본이 있으면 그것으로 표시(없으면 한국어 원본). 앞쪽 말줄임(...) 제거
+  const displayTitle = String(((locale !== "ko" && tr?.title) ? tr.title : job.title) || "").replace(/^[\s.·…‥・]+/, "");
   const displayDesc = (locale !== "ko" && tr?.description) ? tr.description : job.desc;
 
   const translatingOverlay = (

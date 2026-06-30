@@ -103,7 +103,7 @@ function Chip({ children, green }) {
  * (모바일은 기존 JobListItem 을 그대로 사용; 이 컴포넌트는 PC 마스터-디테일에서만 렌더)
  */
 // 워크넷 목록 제목이 앞부분을 "..."로 잘라 저장된 경우 → 앞 말줄임 제거
-const cleanTitle = (s) => String(s || "").replace(/^[.…]+\s*/, "");
+const cleanTitle = (s) => String(s || "").replace(/^[\s.·…‥・]+/, "");
 
 function DesktopJobCard({ job, tr, onSelect, showDistance, showPostedAt }) {
   const t = useT();
@@ -519,9 +519,9 @@ export default function JobsPage() {
       {recommended.length > 0 && (
         <div style={{ marginTop: 4, marginBottom: 6 }}>
           <div style={{ padding: "4px 16px 10px", fontSize: 15, fontWeight: 800, color: D.navy }}>🔥 {t("jobs.todayRec")}</div>
-          <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "0 16px 8px", scrollSnapType: "x mandatory", justifyContent: "safe center" }}>
+          <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "0 10% 8px", scrollSnapType: "x mandatory", scrollPaddingInline: "10%" }}>
             {recommended.map((j) => (
-              <div key={"rec-" + j.id} style={{ flex: "0 0 84%", scrollSnapAlign: "start", display: "flex" }}>
+              <div key={"rec-" + j.id} style={{ flex: "0 0 80%", scrollSnapAlign: "center", display: "flex" }}>
                 <DesktopJobCard job={j} tr={listTr[`${locale}:${j.id}`]} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} showPostedAt={sortMode === "latest"} />
               </div>
             ))}
@@ -860,7 +860,7 @@ function JobListItem({ job, index, showDistance, showReason, onSelect, selected 
               fontWeight: 800, fontSize: 15, color: T.ink,
               letterSpacing: "-0.02em", lineHeight: 1.35,
             }}>
-              {job.title}
+              {cleanTitle(job.title)}
             </div>
             {showDistance && job.distance_km != null && (
               <span style={{
