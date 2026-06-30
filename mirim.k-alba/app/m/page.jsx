@@ -125,6 +125,16 @@ export default function MobileLandingPage() {
   const [user, setUser] = useState(null);
   const [userType, setUserType] = useState(null);
   const [heroIdx, setHeroIdx] = useState(0);
+  const heroTouchX = useRef(0);
+  const heroLastInteract = useRef(0); // 수동 스와이프 후 자동순환 잠시 멈춤
+  const goHero = (dir) => {
+    heroLastInteract.current = Date.now();
+    setHeroIdx((p) => (p + dir + 3) % 3);
+  };
+  const jumpHero = (i) => {
+    heroLastInteract.current = Date.now();
+    setHeroIdx(i);
+  };
   // ───────── Audience 캐러셀: Clone 노드 기반 무한 루프 ─────────
   // 트랙: [cloneLast, ...AUDIENCE_TABS_M, cloneFirst]  → 길이 N+2
   // audienceSlide: 1..N (canonical) — 0 / N+1 은 클론을 잠깐 보여주고 점프
@@ -198,6 +208,21 @@ export default function MobileLandingPage() {
 
   const [testimonialIdx, setTestimonialIdx] = useState(0);
   const testimonialTrackRef = useRef(null);
+  const testiTouchX = useRef(0);
+  const testiLastInteract = useRef(0); // 수동 조작 후 자동회전 잠시 멈춤
+
+  // 후기 수동 이동 (스와이프/점 클릭)
+  const goTestimonial = (dir) => {
+    testiLastInteract.current = Date.now();
+    setTestimonialIdx((i) => {
+      const n = TESTIMONIALS_M.length;
+      return dir < 0 ? (i - 1 + n) % n : (i + 1) % n;
+    });
+  };
+  const jumpTestimonial = (i) => {
+    testiLastInteract.current = Date.now();
+    setTestimonialIdx(i);
+  };
 
   // 세션 체크
   useEffect(() => {
@@ -228,13 +253,17 @@ export default function MobileLandingPage() {
 
   // 8초마다 hero 3개 패널 (구직자 → 사장님 → 학교 담당자) 사이클
   useEffect(() => {
-    const id = setInterval(() => setHeroIdx((p) => (p + 1) % 3), 8000);
+    const id = setInterval(() => {
+      if (Date.now() - heroLastInteract.current < 10000) return;
+      setHeroIdx((p) => (p + 1) % 3);
+    }, 8000);
     return () => clearInterval(id);
   }, []);
 
-  // 후기 자동 회전 (4초 간격, 무한 루프)
+  // 후기 자동 회전 (4초 간격, 무한 루프) — 수동 조작 직후 6초간은 멈춤
   useEffect(() => {
     const id = setInterval(() => {
+      if (Date.now() - testiLastInteract.current < 6000) return;
       setTestimonialIdx((i) => (i + 1) % TESTIMONIALS_M.length);
     }, 4000);
     return () => clearInterval(id);
@@ -256,7 +285,14 @@ export default function MobileLandingPage() {
           // 비로그인 — 8초마다 구직자/사장님 슬라이드 (좌우 트랙)
           <div style={{ marginBottom: 28 }}>
             {/* Hero text slide track (3 panels) */}
-            <div style={{ overflow: "hidden" }}>
+            <div
+              style={{ overflow: "hidden", touchAction: "pan-y" }}
+              onTouchStart={(e) => { heroTouchX.current = e.touches[0].clientX; }}
+              onTouchEnd={(e) => {
+                const dx = e.changedTouches[0].clientX - heroTouchX.current;
+                if (Math.abs(dx) > 40) goHero(dx < 0 ? 1 : -1);
+              }}
+            >
               <div
                 style={{
                   display: "flex",
@@ -369,7 +405,7 @@ export default function MobileLandingPage() {
               {[0, 1, 2].map((i) => (
                 <button
                   key={i}
-                  onClick={() => setHeroIdx(i)}
+                  onClick={() => jumpHero(i)}
                   aria-label={i === 0 ? t("landing.mDotSeeker") : i === 1 ? t("landing.mDotEmployer") : t("landing.mDotUni")}
                   style={{
                     width: i === heroIdx ? 24 : 8,
@@ -1015,8 +1051,14 @@ export default function MobileLandingPage() {
             marginTop: 22,
             padding: "0 20px",
             overflow: "hidden",
+            touchAction: "pan-y",
           }}
           className="testimonial-viewport"
+          onTouchStart={(e) => { testiTouchX.current = e.touches[0].clientX; }}
+          onTouchEnd={(e) => {
+            const dx = e.changedTouches[0].clientX - testiTouchX.current;
+            if (Math.abs(dx) > 40) goTestimonial(dx < 0 ? 1 : -1);
+          }}
         >
           <div
             ref={testimonialTrackRef}
@@ -1114,7 +1156,7 @@ export default function MobileLandingPage() {
               key={tItem.name}
               type="button"
               aria-label={t("landing.mViewTesti", { n: i + 1 })}
-              onClick={() => setTestimonialIdx(i)}
+              onClick={() => jumpTestimonial(i)}
               style={{
                 width: i === testimonialIdx ? 22 : 7,
                 height: 7,
