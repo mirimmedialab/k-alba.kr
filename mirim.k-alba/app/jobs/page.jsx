@@ -516,7 +516,7 @@ export default function JobsPage() {
         </div>
       </div>
 
-      {recommended.length > 0 && (
+      {recommended.length > 0 && !search.trim() && (
         <div style={{ marginTop: 4, marginBottom: 6 }}>
           <div style={{ padding: "4px 16px 10px", fontSize: 15, fontWeight: 800, color: D.navy }}>🔥 {t("jobs.todayRec")}</div>
           <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "0 10% 8px", scrollSnapType: "x mandatory", scrollPaddingInline: "10%" }}>
@@ -658,8 +658,8 @@ export default function JobsPage() {
             </main>
           </div>
 
-          {/* 하단 추천 섹션 (좌우 화살표 캐러셀; 컨테이너 폭 안에 고정) */}
-          {recommended.length > 0 && (
+          {/* 하단 추천 섹션 (좌우 화살표 캐러셀; 컨테이너 폭 안에 고정) — 검색 중엔 숨김 */}
+          {recommended.length > 0 && !search.trim() && (
             <div style={{ marginTop: 44, paddingBottom: 56 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                 <div style={{ fontSize: 18, fontWeight: 800, color: D.navy }}>🔥 {t("jobs.weeklyRec")}</div>
