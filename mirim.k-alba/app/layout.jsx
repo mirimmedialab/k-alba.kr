@@ -2,6 +2,7 @@ import "./globals.css";
 import AppFrame from "@/components/AppFrame";
 import NativeBridge from "@/components/NativeBridge";
 import AppSplash from "@/components/AppSplash";
+import AttributionTracker from "@/components/AttributionTracker";
 
 export const metadata = {
   title: {
@@ -112,6 +113,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className="font-sans antialiased bg-p text-ink">
         <NativeBridge />
+        <AttributionTracker />
         <AppFrame>{children}</AppFrame>
         <AppSplash />
       </body>

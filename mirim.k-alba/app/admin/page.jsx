@@ -4,6 +4,7 @@ import Link from "next/link";
 import { T } from "@/lib/theme";
 import { adminGet } from "@/lib/adminApi";
 import { Panel, Stat, fmtDateTime } from "./_ui";
+import { channelLabel } from "@/lib/attribution";
 
 /**
  * /admin — 관리자 대시보드
@@ -49,6 +50,36 @@ export default function AdminDashboard() {
             <Stat label="근로계약서" value={data.contracts.toLocaleString()} accent={T.mint} />
             <Stat label="시간제취업 신청" value={data.partwork.toLocaleString()} accent={T.gold} />
           </div>
+
+          {/* 유입경로 (가입 채널) */}
+          <Panel title="가입 유입경로" right={<span style={{ fontSize: 12, color: T.ink3 }}>지금부터 가입자 기준</span>}>
+            {(() => {
+              const entries = Object.entries(data.channels || {}).sort((a, b) => b[1] - a[1]);
+              const tracked = entries.filter(([k]) => k !== "unknown");
+              const totalTracked = tracked.reduce((s, [, v]) => s + v, 0);
+              if (totalTracked === 0) {
+                return <div style={{ padding: "28px 18px", textAlign: "center", color: T.ink3 }}>아직 추적된 가입 데이터가 없습니다. (지금부터 가입하는 회원만 집계)</div>;
+              }
+              return entries.map(([code, count], i) => {
+                const pct = totalTracked > 0 && code !== "unknown" ? Math.round((count / totalTracked) * 100) : null;
+                return (
+                  <div key={code} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "11px 18px", borderTop: i === 0 ? "none" : `1px solid ${T.border}` }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: code === "unknown" ? T.ink3 : T.ink }}>{channelLabel(code === "unknown" ? null : code)}</div>
+                    <div style={{ fontSize: 13, color: T.ink2 }}>
+                      {count.toLocaleString()}명{pct != null ? <span style={{ color: T.ink3, marginLeft: 8 }}>{pct}%</span> : null}
+                    </div>
+                  </div>
+                );
+              });
+            })()}
+            {data.platforms && (
+              <div style={{ display: "flex", gap: 16, padding: "11px 18px", borderTop: `1px solid ${T.border}`, fontSize: 12.5, color: T.ink2 }}>
+                <span>앱 {(data.platforms.app || 0).toLocaleString()}</span>
+                <span>웹 {(data.platforms.web || 0).toLocaleString()}</span>
+                {data.platforms.unknown ? <span style={{ color: T.ink3 }}>미상 {data.platforms.unknown.toLocaleString()}</span> : null}
+              </div>
+            )}
+          </Panel>
 
           {/* 처리 대기 알림 */}
           {data.pendingStaff > 0 && (

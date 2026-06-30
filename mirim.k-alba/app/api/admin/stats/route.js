@@ -29,6 +29,7 @@ export async function GET(request) {
     partwork,
     recentSync,
     pendingStaff,
+    channelRows,
   ] = await Promise.all([
     svc.from("profiles").select("id", head),
     svc.from("profiles").select("id", head).eq("user_type", "worker"),
@@ -46,7 +47,18 @@ export async function GET(request) {
       .order("started_at", { ascending: false })
       .limit(60),
     svc.from("staff_registrations").select("id", head).eq("status", "pending"),
+    svc.from("profiles").select("signup_channel, signup_platform"),
   ]);
+
+  // 유입경로(채널)·플랫폼 집계
+  const channelCounts = {};
+  const platformCounts = {};
+  for (const r of channelRows.data || []) {
+    const ch = r.signup_channel || "unknown";
+    channelCounts[ch] = (channelCounts[ch] || 0) + 1;
+    const pf = r.signup_platform || "unknown";
+    platformCounts[pf] = (platformCounts[pf] || 0) + 1;
+  }
 
   // 소스별 최신 동기화 결과 요약 (대시보드용)
   const STALE_MS = 30 * 60 * 1000;
@@ -83,5 +95,7 @@ export async function GET(request) {
     partwork: partwork.count || 0,
     syncSummary,
     pendingStaff: pendingStaff.count || 0,
+    channels: channelCounts,
+    platforms: platformCounts,
   });
 }

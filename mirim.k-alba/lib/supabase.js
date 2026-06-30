@@ -1,4 +1,5 @@
 import { createBrowserClient } from "@supabase/ssr";
+import { getAttributionForSignup } from "@/lib/attribution";
 
 // 브라우저/클라이언트 컴포넌트용 Supabase 클라이언트
 // SSR 쿠키 기반 세션 관리
@@ -26,6 +27,7 @@ export async function signUp(email, password, userType, name, extra = {}) {
       email,
       name,
       user_type: userType,
+      ...getAttributionForSignup(), // 가입 유입경로(첫방문 first-touch)
       ...extra,
     }, { onConflict: "id" });
     // profiles insert 실패도 에러로 리턴

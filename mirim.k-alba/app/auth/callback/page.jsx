@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { getAttributionForSignup } from "@/lib/attribution";
 
 /**
  * /auth/callback
@@ -105,12 +106,14 @@ export default function AuthCallbackPage() {
             await supabase.auth.updateUser({ data: { user_type: intendedRole } });
             userType = intendedRole;
           }
+          const attribution = getAttributionForSignup(); // 가입 유입경로(첫방문 first-touch)
           const { error: upErr } = await supabase
             .from("profiles")
             .update({
               user_type: intendedRole,
               email: user.email,
               name: user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split("@")[0],
+              ...attribution,
             })
             .eq("id", user.id);
           if (upErr) {
@@ -119,6 +122,7 @@ export default function AuthCallbackPage() {
               email: user.email,
               name: user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split("@")[0],
               user_type: intendedRole,
+              ...attribution,
             });
           }
         } else if (!userType) {
