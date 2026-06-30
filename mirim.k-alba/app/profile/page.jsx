@@ -59,6 +59,7 @@ export default function ProfilePage() {
     home_experience: "", korea_experience: "",
     company_name: "", business_number: "", business_address: "",
     home_latitude: null, home_longitude: null, home_address_road: "",
+    home_address_detail: "",
     home_sido: "", home_sigungu: "", home_dong: "",
     search_radius_km: 10, transport_modes: ["transit", "walk"],
     max_commute_min: 60, location_opted_in: false,
@@ -88,6 +89,7 @@ export default function ProfilePage() {
           home_latitude: p.home_latitude || null,
           home_longitude: p.home_longitude || null,
           home_address_road: p.home_address_road || "",
+          home_address_detail: p.home_address_detail || "",
           home_sido: p.home_sido || "",
           home_sigungu: p.home_sigungu || "",
           home_dong: p.home_dong || "",
@@ -147,6 +149,7 @@ export default function ProfilePage() {
                   latitude: form.home_latitude,
                   longitude: form.home_longitude,
                   address_road: form.business_address,
+                  address_detail: form.home_address_detail,
                   sido: form.home_sido,
                   sigungu: form.home_sigungu,
                   dong: form.home_dong,
@@ -154,6 +157,7 @@ export default function ProfilePage() {
                 onChange={(v) => setForm({
                   ...form,
                   business_address: v.address_road || "",
+                  home_address_detail: v.address_detail || "",
                   home_latitude: v.latitude,
                   home_longitude: v.longitude,
                   home_sido: v.sido,
@@ -169,7 +173,7 @@ export default function ProfilePage() {
               <div><strong>{t("profile.ceoNameLabel")}</strong> {form.name || "-"}</div>
               <div><strong>{t("profile.businessNumberLabel")}</strong> {form.business_number ? String(form.business_number).replace(/-/g, "").replace(/^(\d{3})(\d{2})(\d{5})$/, "$1-$2-$3") : "-"}</div>
               <div><strong>{t("profile.phoneDisplayLabel")}</strong> {form.phone || "-"}</div>
-              <div><strong>{t("profile.addressDisplayLabel")}</strong> {form.business_address || "-"}</div>
+              <div><strong>{t("profile.addressDisplayLabel")}</strong> {form.business_address ? `${form.business_address}${form.home_address_detail ? " " + form.home_address_detail : ""}` : "-"}</div>
             </div>
           )}
         </Card>
@@ -293,6 +297,7 @@ export default function ProfilePage() {
                 latitude: form.home_latitude,
                 longitude: form.home_longitude,
                 address_road: form.home_address_road,
+                address_detail: form.home_address_detail,
                 sido: form.home_sido,
                 sigungu: form.home_sigungu,
                 dong: form.home_dong,
@@ -302,6 +307,7 @@ export default function ProfilePage() {
                 home_latitude: v.latitude,
                 home_longitude: v.longitude,
                 home_address_road: v.address_road,
+                home_address_detail: v.address_detail || "",
                 home_sido: v.sido,
                 home_sigungu: v.sigungu,
                 home_dong: v.dong,
