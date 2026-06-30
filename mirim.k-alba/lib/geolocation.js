@@ -77,24 +77,9 @@ export function getPlatform() {
  * @returns 현재 권한 상태
  */
 export async function checkLocationPermission() {
-  // 네이티브 앱
-  if (isNativePlatform()) {
-    const geo = await loadCapacitorModules();
-    if (!geo) return { status: "unavailable" };
-
-    try {
-      const perm = await geo.checkPermissions();
-      // Capacitor는 "granted" | "denied" | "prompt" | "prompt-with-rationale"
-      const status = perm.location === "granted" ? "granted"
-                   : perm.location === "denied" ? "denied"
-                   : "prompt";
-      return { status };
-    } catch {
-      return { status: "unavailable" };
-    }
-  }
-
-  // 웹
+  // 네이티브 앱도 WebView의 navigator API를 사용한다.
+  // (Capacitor Geolocation 플러그인의 checkPermissions가 일부 기기에서 hang 되는 문제 회피.
+  //  앱의 OS 위치 권한은 MainActivity에서 네이티브로 요청·부여됨)
   if (typeof navigator === "undefined" || !navigator.geolocation) {
     return { status: "unavailable" };
   }
@@ -117,23 +102,9 @@ export async function checkLocationPermission() {
  * 위치 권한 요청 (네이티브 전용 — 웹은 getCurrentLocation 호출 시 자동 요청)
  */
 export async function requestLocationPermission() {
-  if (isNativePlatform()) {
-    const geo = await loadCapacitorModules();
-    if (!geo) return { status: "unavailable" };
-
-    try {
-      const result = await geo.requestPermissions();
-      const status = result.location === "granted" ? "granted"
-                   : result.location === "denied" ? "denied"
-                   : "prompt";
-      return { status };
-    } catch {
-      return { status: "unavailable" };
-    }
-  }
-
-  // 웹은 권한 요청을 별도로 하지 않고, getCurrentLocation 호출 시 자동 프롬프트
-  return { status: "prompt" };
+  // 네이티브 OS 권한은 MainActivity(앱 시작 시 ActivityCompat)에서 요청·부여한다.
+  // (플러그인 requestPermissions가 hang 되는 문제 회피) → 현재 상태만 반환.
+  return await checkLocationPermission();
 }
 
 /**
@@ -147,41 +118,9 @@ export async function getCurrentLocation(options) {
   const highAccuracy = options?.highAccuracy ?? true;
   const timeoutMs = options?.timeoutMs ?? 10000;
 
-  // 네이티브 앱
-  if (isNativePlatform()) {
-    const geo = await loadCapacitorModules();
-    if (!geo) throw new Error("NOT_SUPPORTED");
-
-    try {
-      // 권한 먼저 체크
-      const permCheck = await geo.checkPermissions();
-      if (permCheck.location !== "granted") {
-        const req = await geo.requestPermissions();
-        if (req.location !== "granted") {
-          throw new Error("PERMISSION_DENIED");
-        }
-      }
-
-      const pos = await geo.getCurrentPosition({
-        enableHighAccuracy: highAccuracy,
-        timeout: timeoutMs,
-      });
-
-      return {
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude,
-        accuracy: pos.coords.accuracy,
-        timestamp: pos.timestamp,
-      };
-    } catch (e) {
-      const msg = e?.message || "";
-      if (msg.includes("denied") || msg.includes("DENIED")) throw new Error("PERMISSION_DENIED");
-      if (msg.includes("timeout") || msg.includes("TIMEOUT")) throw new Error("TIMEOUT");
-      throw new Error("POSITION_UNAVAILABLE");
-    }
-  }
-
-  // 웹
+  // 네이티브 앱도 WebView의 navigator.geolocation 사용.
+  // (앱 권한은 MainActivity에서 네이티브로 요청·부여됨. Capacitor Geolocation 플러그인의
+  //  getCurrentPosition이 일부 기기에서 hang 되는 문제를 회피)
   if (typeof navigator === "undefined" || !navigator.geolocation) {
     throw new Error("NOT_SUPPORTED");
   }

@@ -6,7 +6,7 @@ import { getJobs } from "@/lib/supabase";
 import { useT, useLocale } from "@/lib/i18n";
 import { useNearbyJobs } from "@/lib/useNearbyJobs";
 import { useRecommendedJobs } from "@/lib/useRecommendedJobs";
-import { formatDistance, checkLocationPermission, requestLocationPermission } from "@/lib/geolocation";
+import { formatDistance } from "@/lib/geolocation";
 import { formatPay, shortWorkTime, localizeWorkText, formatPostedAt } from "@/lib/format";
 import { romanizeRegion, romanizeCompany } from "@/lib/koroman";
 import { getCurrentUser, getProfile } from "@/lib/supabase";
@@ -333,26 +333,9 @@ export default function JobsPage() {
   const loading = sortMode === "recommended" ? recLoading : nearLoading;
 
   // 정렬 변경 핸들러: '가까운순' 선택 시 위치 권한 요청(OS 팝업) + [임시 진단] 표시
-  const handleSortChange = (value) => {
-    setSortMode(value);
-    if (value !== "nearest") return;
-    // [임시 진단] 멈출 수 있는 네이티브 호출을 기다리지 않고 platform 값을 "즉시" 표시
-    const cap = typeof window !== "undefined" ? window.Capacitor : null;
-    const platform = (cap && cap.getPlatform && cap.getPlatform()) || (cap ? "(cap,no getPlatform)" : "(no window.Capacitor)");
-    const native = cap && cap.isNativePlatform ? String(cap.isNativePlatform()) : "n/a";
-    try { window.alert(`[위치 진단 1/2]\nplatform: ${platform}\nnative: ${native}`); } catch (_) {}
-    // 권한 요청은 별도로(멈춰도 위 알림은 이미 뜸). 응답 오면 결과 표시.
-    (async () => {
-      let reqResult = "?";
-      try {
-        reqResult = await Promise.race([
-          requestLocationPermission().then((r) => r?.status),
-          new Promise((res) => setTimeout(() => res("(응답없음/타임아웃)"), 8000)),
-        ]);
-      } catch (e) { reqResult = "err:" + (e?.message || e); }
-      try { window.alert(`[위치 진단 2/2]\nrequest result: ${reqResult}`); } catch (_) {}
-    })();
-  };
+  // '가까운순' 선택 시 useNearbyJobs(enabled)가 위치 조회를 트리거함.
+  // OS 위치 권한은 앱 시작 시 MainActivity에서 요청·부여됨.
+  const handleSortChange = (value) => setSortMode(value);
 
   // 실제 DB 공고 조회 (최신순/급여순 + 비로그인 추천 fallback)
   const [fallbackJobs, setFallbackJobs] = useState([]);

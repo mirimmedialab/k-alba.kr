@@ -4,7 +4,7 @@ import Link from "next/link";
 import { T } from "@/lib/theme";
 import KakaoMap from "@/components/KakaoMap";
 import { useNearbyJobs } from "@/lib/useNearbyJobs";
-import { formatDistance, checkLocationPermission, requestLocationPermission } from "@/lib/geolocation";
+import { formatDistance } from "@/lib/geolocation";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 import { useT } from "@/lib/i18n";
 
@@ -40,21 +40,6 @@ export default function JobsMapPage() {
     visaFilter,
     limit: 100, // 지도 뷰는 더 많이 로드
   });
-
-  // [임시 진단] "내 위치 허용" 시 platform/권한 상태를 알림으로 보여주고 네이티브 권한요청 강제 호출
-  const requestLocWithDiag = async () => {
-    const cap = typeof window !== "undefined" ? window.Capacitor : null;
-    if (cap) {
-      const platform = cap.getPlatform?.() || "web";
-      const native = cap.isNativePlatform?.() === true;
-      let permBefore = "?";
-      try { permBefore = (await checkLocationPermission())?.status; } catch (_) {}
-      let reqResult = "?";
-      try { reqResult = (await requestLocationPermission())?.status; } catch (e) { reqResult = "err:" + (e?.message || e); }
-      try { window.alert(`[위치 진단]\nplatform: ${platform}\nnative: ${native}\nperm(before): ${permBefore}\nrequest result: ${reqResult}`); } catch (_) {}
-    }
-    requestLocation();
-  };
 
   // 좌표 있는 공고만 (없으면 마커 표시 불가)
   const jobsWithCoords = useMemo(
@@ -388,7 +373,7 @@ export default function JobsMapPage() {
         {/* 위치 허용 버튼 (기본값일 때만) */}
         {locationSource === "default" && !loading && (
           <button
-            onClick={requestLocWithDiag}
+            onClick={requestLocation}
             style={{
               position: "absolute",
               bottom: 16,
