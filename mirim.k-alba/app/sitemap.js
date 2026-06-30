@@ -10,7 +10,7 @@
  */
 
 export default function sitemap() {
-  const baseUrl = "https://k-alba.kr";
+  const baseUrl = "https://www.k-alba.kr";
   const lastmod = new Date();
 
   const staticRoutes = [

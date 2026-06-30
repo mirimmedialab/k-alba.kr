@@ -30,7 +30,7 @@ export default function robots() {
         allow: ["/", "/about", "/jobs", "/signup"],
       },
     ],
-    sitemap: "https://k-alba.kr/sitemap.xml",
-    host: "https://k-alba.kr",
+    sitemap: "https://www.k-alba.kr/sitemap.xml",
+    host: "https://www.k-alba.kr",
   };
 }
