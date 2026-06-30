@@ -7,6 +7,7 @@ import { useT, useLocale } from "@/lib/i18n";
 import { useNearbyJobs } from "@/lib/useNearbyJobs";
 import { useRecommendedJobs } from "@/lib/useRecommendedJobs";
 import { formatDistance } from "@/lib/geolocation";
+import { visaMeaning } from "@/lib/jobI18n";
 import { formatPay, shortWorkTime, localizeWorkText, formatPostedAt } from "@/lib/format";
 import { romanizeRegion, romanizeCompany } from "@/lib/koroman";
 import { getCurrentUser, getProfile } from "@/lib/supabase";
@@ -154,7 +155,7 @@ function DesktopJobCard({ job, tr, onSelect, showDistance, showPostedAt }) {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
           {visas.map((v) => (
             <span key={v} style={{ fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: 6, background: "#EEF4FF", color: "#1D4ED8", border: "1px solid #DBE5FF", whiteSpace: "nowrap" }}>
-              {v}{VISA_MEANING[v] ? `(${VISA_MEANING[v]})` : ""}
+              {v}{visaMeaning(v, locale) ? `(${visaMeaning(v, locale)})` : ""}
             </span>
           ))}
         </div>

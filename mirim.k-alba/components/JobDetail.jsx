@@ -12,6 +12,7 @@ import LastTransitCard from "@/components/LastTransitCard";
 import { formatDistance, calculateDistanceMeters } from "@/lib/geolocation";
 import { formatPay, formatWorkHours, localizeWorkText } from "@/lib/format";
 import { romanizeRegion, romanizeCompany } from "@/lib/koroman";
+import { visaMeaning, jobNotice } from "@/lib/jobI18n";
 import {
   Button,
   Card,
@@ -348,7 +349,7 @@ export default function JobDetail({ jobId, embedded = false }) {
                 <Section title="외국인 지원 정보" id="foreigner-info">
                   {foreignerRows.map(([k, v]) => <Row key={k} k={k} v={v} />)}
                   <div style={{ marginTop: 14, padding: "12px 14px", background: D.greenBg, border: `1px solid ${D.greenBorder}`, borderRadius: 10, fontSize: 12.5, color: D.green, fontWeight: 600, lineHeight: 1.6 }}>
-                    ✓ K-ALBA는 비자에 맞는 합법 알바만 안내합니다. 위 비자 뱃지로 지원 가능 여부를 먼저 확인하세요.
+                    ✓ {jobNotice("legalOnly", locale)} {jobNotice("legalCheckBadge", locale)}
                   </div>
                 </Section>
               )}
@@ -471,7 +472,7 @@ export default function JobDetail({ jobId, embedded = false }) {
           {(job.visa || []).length > 0 && (
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 12 }}>
               {(job.visa || []).map((v) => (
-                <span key={v} style={{ fontSize: 12, fontWeight: 600, padding: "3px 9px", borderRadius: 6, background: "#EEF4FF", color: "#1D4ED8", border: "1px solid #DBE5FF", whiteSpace: "nowrap" }}>{v}{VISA_MEANING[v] ? `(${VISA_MEANING[v]})` : ""}</span>
+                <span key={v} style={{ fontSize: 12, fontWeight: 600, padding: "3px 9px", borderRadius: 6, background: "#EEF4FF", color: "#1D4ED8", border: "1px solid #DBE5FF", whiteSpace: "nowrap" }}>{v}{visaMeaning(v, locale) ? `(${visaMeaning(v, locale)})` : ""}</span>
               ))}
             </div>
           )}
@@ -485,7 +486,7 @@ export default function JobDetail({ jobId, embedded = false }) {
           <Section title="외국인 지원 정보">
             {foreignerRows.map(([k, v]) => <Row key={k} k={k} v={v} />)}
             <div style={{ marginTop: 12, padding: "11px 13px", background: D.greenBg, border: `1px solid ${D.greenBorder}`, borderRadius: 10, fontSize: 12, color: D.green, fontWeight: 600, lineHeight: 1.6 }}>
-              ✓ K-ALBA는 비자에 맞는 합법 알바만 안내합니다.
+              ✓ {jobNotice("legalOnly", locale)}
             </div>
           </Section>
         )}
