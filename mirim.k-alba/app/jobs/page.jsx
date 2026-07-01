@@ -5,6 +5,7 @@ import { T } from "@/lib/theme";
 import { getJobs } from "@/lib/supabase";
 import { useT, useLocale } from "@/lib/i18n";
 import { useNearbyJobs } from "@/lib/useNearbyJobs";
+import JobsViewToggle from "@/components/JobsViewToggle";
 import { useRecommendedJobs } from "@/lib/useRecommendedJobs";
 import { formatDistance } from "@/lib/geolocation";
 import { visaMeaning, nearestNotice } from "@/lib/jobI18n";
@@ -521,6 +522,7 @@ export default function JobsPage() {
           <span style={{ fontSize: 15, color: D.ink3 }}>🔍</span>
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("jobs.searchPlaceholder")} style={{ flex: 1, border: "none", outline: "none", fontSize: 14, color: D.ink, background: "transparent", fontFamily: "inherit" }} />
         </div>
+        <JobsViewToggle current="list" />
       </div>
 
       {recommended.length > 0 && !search.trim() && (
@@ -596,6 +598,8 @@ export default function JobsPage() {
               <option value="pay">{t("jobs.sortPay")}</option>
             </select>
           </div>
+
+          <JobsViewToggle current="list" style={{ maxWidth: 260, marginBottom: 16 }} />
 
           <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
             {/* 좌측 필터 사이드바 */}

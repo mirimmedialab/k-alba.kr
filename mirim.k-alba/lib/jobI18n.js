@@ -71,3 +71,15 @@ export function nearestNotice(locale, km = 50) {
   const n = NEARBY_NOTICE[locale] || NEARBY_NOTICE[FALLBACK];
   return n.replace("{km}", km);
 }
+
+// 목록/지도 전환 토글 라벨
+const VIEW_LABELS = {
+  list: { ko: "목록", en: "List", vi: "Danh sách", zh: "列表", uz: "Ro‘yxat", mn: "Жагсаалт", ja: "リスト" },
+  map:  { ko: "지도", en: "Map",  vi: "Bản đồ",    zh: "地图", uz: "Xarita",  mn: "Газрын зураг", ja: "地図" },
+};
+/** 목록/지도 라벨을 현재 언어로 반환 */
+export function viewLabel(key, locale) {
+  const m = VIEW_LABELS[key];
+  if (!m) return "";
+  return m[locale] || m[FALLBACK] || "";
+}

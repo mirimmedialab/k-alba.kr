@@ -7,6 +7,7 @@ import { useNearbyJobs } from "@/lib/useNearbyJobs";
 import { formatDistance } from "@/lib/geolocation";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 import { useT } from "@/lib/i18n";
+import JobsViewToggle from "@/components/JobsViewToggle";
 
 /**
  * 지도 탐색 뷰 — 반경 내 공고들을 지도에 마커로 표시
@@ -100,6 +101,7 @@ export default function JobsMapPage() {
 
     return (
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "24px 28px 28px" }}>
+        <JobsViewToggle current="map" style={{ maxWidth: 260, marginBottom: 16 }} />
         {/* 헤더 */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 14 }}>
           <div>
@@ -208,6 +210,9 @@ export default function JobsMapPage() {
       height: "calc(100vh - 56px)",
       background: T.paper,
     }}>
+      <div style={{ padding: "12px 16px 0", background: T.paper, flexShrink: 0 }}>
+        <JobsViewToggle current="map" />
+      </div>
       {/* 상단 필터 */}
       <div style={{
         padding: "12px 16px",
