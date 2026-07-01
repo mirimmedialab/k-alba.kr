@@ -7,7 +7,7 @@ import { useT, useLocale } from "@/lib/i18n";
 import { useNearbyJobs } from "@/lib/useNearbyJobs";
 import { useRecommendedJobs } from "@/lib/useRecommendedJobs";
 import { formatDistance } from "@/lib/geolocation";
-import { visaMeaning } from "@/lib/jobI18n";
+import { visaMeaning, nearestNotice } from "@/lib/jobI18n";
 import { formatPay, shortWorkTime, localizeWorkText, formatPostedAt } from "@/lib/format";
 import { romanizeRegion, romanizeCompany } from "@/lib/koroman";
 import { getCurrentUser, getProfile } from "@/lib/supabase";
@@ -270,7 +270,7 @@ export default function JobsPage() {
   const { locale } = useLocale();
   const router = useRouter();
   const [sortMode, setSortMode] = useState("recommended");
-  const [radius, setRadius] = useState(10);
+  const [radius, setRadius] = useState(50); // 가까운순 반경(km)
   const [visaFilter, setVisaFilter] = useState(null);
   const [koreanFilter, setKoreanFilter] = useState("");
   const [search, setSearch] = useState("");
@@ -500,6 +500,13 @@ export default function JobsPage() {
     </div>
   ) : null;
 
+  // '가까운순' 안내 배너 (반경 50km · 가까운 순 · 7개국어) — 모바일/데스크탑 공용
+  const nearestBanner = sortMode === "nearest" ? (
+    <div style={{ marginBottom: 12, padding: "10px 13px", background: T.accentBg, border: `1px solid ${T.border}`, borderLeft: `3px solid ${T.accent}`, borderRadius: 8, fontSize: 12.5, color: D.ink2, lineHeight: 1.55 }}>
+      {nearestNotice(locale, 50)}
+    </div>
+  ) : null;
+
   // 모바일(친근형): 히어로 + 검색 + 빠른필터 칩 + 추천 peek 캐러셀 + 1열 리스트
   const mobileLayout = (
     <div style={{ background: D.bg, minHeight: "100vh", paddingBottom: 28 }}>
@@ -530,6 +537,7 @@ export default function JobsPage() {
       )}
 
       <div style={{ padding: "10px 16px 0" }}>
+        {nearestBanner}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: D.navy }}>{t("jobs.totalJobs").replace("{count}", displayJobs.length)}</div>
           <select value={sortMode} onChange={(e) => handleSortChange(e.target.value)} style={{ border: `1px solid ${D.border}`, borderRadius: 8, padding: "6px 8px", fontSize: 12.5, color: D.ink2, fontFamily: "inherit", background: D.card }}>
@@ -637,6 +645,7 @@ export default function JobsPage() {
                   {t("jobs.totalJobs").replace("{count}", displayJobs.length)}
                 </div>
               </div>
+              {nearestBanner}
               {listLoading ? (
                 <PageLoading message={t("jobs.loading")} minHeight={240} />
               ) : displayJobs.length === 0 ? (

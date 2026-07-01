@@ -54,3 +54,20 @@ export function jobNotice(key, locale) {
   if (!n) return "";
   return n[locale] || n[FALLBACK] || "";
 }
+
+// '가까운순' 안내 문구 (반경 km는 {km}로 치환)
+const NEARBY_NOTICE = {
+  ko: "📍 내 위치에서 반경 {km}km 이내 공고를 가까운 순으로 보여드려요. 더 많은 공고는 ‘최신순’에서 볼 수 있어요.",
+  en: "📍 Showing jobs within {km} km of your location, nearest first. For more listings, choose ‘Latest’.",
+  vi: "📍 Đang hiển thị việc làm trong bán kính {km} km quanh bạn, gần nhất trước. Xem thêm ở mục ‘Mới nhất’.",
+  zh: "📍 正在显示您所在位置 {km} 公里内的职位，由近到远。查看更多请选择“最新”。",
+  uz: "📍 Joylashuvingizdan {km} km radiusdagi ishlar, eng yaqini birinchi. Ko‘proq uchun ‘Eng yangi’ni tanlang.",
+  mn: "📍 Таны байршлаас {km} км доторх ажлыг ойрын дарааллаар харуулж байна. Илүү ихийг ‘Шинэ’-ээс үзнэ үү.",
+  ja: "📍 現在地から半径{km}km以内の求人を近い順に表示しています。もっと見るには「新着順」を選んでください。",
+};
+
+/** '가까운순' 안내 문구를 현재 언어로 반환 */
+export function nearestNotice(locale, km = 50) {
+  const n = NEARBY_NOTICE[locale] || NEARBY_NOTICE[FALLBACK];
+  return n.replace("{km}", km);
+}
