@@ -330,7 +330,7 @@ export default function JobsPage() {
   } = useNearbyJobs({
     radius,
     visaFilter,
-    limit: 50,
+    limit: 1000, // 리스트는 페이지네이션되므로 상한을 넉넉히(가까운 순 전체 표시). 지도용 훅의 기존 50은 지도에서만 적용.
     enabled: sortMode === "nearest",
   });
 
