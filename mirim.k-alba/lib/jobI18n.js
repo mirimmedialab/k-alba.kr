@@ -83,3 +83,18 @@ export function viewLabel(key, locale) {
   if (!m) return "";
   return m[locale] || m[FALLBACK] || "";
 }
+
+// 주소 검색 안내 (Daum 위젯은 한국어 전용 → 우리가 언어별 안내 제공)
+const ADDRESS_GUIDE = {
+  ko: "한국어로 검색해 주세요. 예: 양천로 583 · 역삼동 737 (영어·로마자 검색은 아직 지원되지 않아요)",
+  en: "Please search in Korean. e.g. 양천로 583 · 역삼동 737 (English/Roman-letter search isn’t supported yet)",
+  vi: "Vui lòng tìm bằng tiếng Hàn. VD: 양천로 583 · 역삼동 737 (chưa hỗ trợ tìm bằng chữ La-tinh)",
+  zh: "请用韩语搜索。例：양천로 583 · 역삼동 737（暂不支持英文/罗马字搜索）",
+  uz: "Iltimos, koreyscha qidiring. Masalan: 양천로 583 · 역삼동 737 (lotin/inglizcha qidiruv hozircha ishlamaydi)",
+  mn: "Солонгосоор хайна уу. Жишээ: 양천로 583 · 역삼동 737 (латин/англи хайлт одоогоор дэмжигдэхгүй)",
+  ja: "韓国語で検索してください。例：양천로 583 · 역삼동 737（英語・ローマ字検索は未対応です）",
+};
+/** 주소 검색 안내 문구 */
+export function addressSearchGuide(locale) {
+  return ADDRESS_GUIDE[locale] || ADDRESS_GUIDE[FALLBACK];
+}

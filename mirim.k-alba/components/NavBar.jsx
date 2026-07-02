@@ -93,6 +93,7 @@ export default function NavBar() {
   const employerLinks = [
     { href: "/jobs/post", label: t("nav.postJob") },
     { href: "/my/jobs", label: t("nav.myJobs") },
+    { href: "/jobs", label: t("nav.findJob") }, // 사장님도 다른 공고 열람(시세·조건 비교)
     { href: "/my/contracts", label: t("nav.contracts") },
     { href: "/profile", label: t("nav.profile") },
   ];

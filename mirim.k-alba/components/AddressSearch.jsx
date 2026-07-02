@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { T } from "@/lib/theme";
-import { useT } from "@/lib/i18n";
+import { useT, useLocale } from "@/lib/i18n";
+import { addressSearchGuide } from "@/lib/jobI18n";
 
 // Daum Postcode 스크립트 로더
 let scriptLoading = null;
@@ -52,6 +53,7 @@ export function AddressSearchModal({ open, onClose, onSelect }) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const t = useT();
+  const { locale } = useLocale();
 
   useEffect(() => {
     if (!open) return;
@@ -110,6 +112,10 @@ export function AddressSearchModal({ open, onClose, onSelect }) {
             <div style={{ fontSize: 16, fontWeight: 800, color: T.navy }}>{t("address.search")}</div>
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 20, color: T.g500, cursor: "pointer", padding: 4 }}>✕</button>
+        </div>
+
+        <div style={{ padding: "10px 16px", background: "#FFF8E5", borderBottom: `1px solid ${T.g200}`, fontSize: 12, color: T.navy, lineHeight: 1.5 }}>
+          💡 {addressSearchGuide(locale)}
         </div>
 
         <div style={{ flex: 1, position: "relative" }}>

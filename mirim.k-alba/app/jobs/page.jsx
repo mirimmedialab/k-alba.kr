@@ -388,8 +388,9 @@ export default function JobsPage() {
   // 표시할 공고 결정
   let displayJobs;
   if (sortMode === "recommended") {
-    // 비로그인 사용자는 일반 공고 표시
-    displayJobs = userProfile ? recommendedJobs : fallbackJobs;
+    // 비로그인/사장님은 일반 공고 표시(추천은 알바생 비자 매칭 기반이라 사장님은 비어버림)
+    const isWorkerProfile = userProfile && userProfile.user_type !== "employer";
+    displayJobs = isWorkerProfile ? recommendedJobs : fallbackJobs;
   } else if (sortMode === "nearest") {
     displayJobs = nearbyJobs;
   } else {
