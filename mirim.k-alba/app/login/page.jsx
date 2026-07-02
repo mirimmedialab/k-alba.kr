@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
 import { Btn, Inp } from "@/components/UI";
 import { signIn, signInWithOAuth, isAccountDeactivated, signOut, supabase } from "@/lib/supabase";
-import { useT } from "@/lib/i18n";
+import { useT, useLocale } from "@/lib/i18n";
+import { authErrorMessage } from "@/lib/authErrors";
 import KakaoLogo from "@/components/KakaoLogo";
 import EmailField, { isValidEmail } from "@/components/ui/EmailField";
 
@@ -19,6 +20,7 @@ import EmailField, { isValidEmail } from "@/components/ui/EmailField";
 export default function LoginPage() {
   const router = useRouter();
   const t = useT();
+  const { locale } = useLocale();
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -36,7 +38,7 @@ export default function LoginPage() {
     const { data, error } = await signIn(form.email, form.password);
     if (error) {
       setLoading(false);
-      setError(error.message);
+      setError(authErrorMessage(error.message, locale));
       return;
     }
     // 탈퇴(비활성화)된 계정 차단
@@ -85,7 +87,7 @@ export default function LoginPage() {
     setLoading(true);
     const { error } = await signInWithOAuth(provider);
     if (error) {
-      setError(error.message);
+      setError(authErrorMessage(error.message, locale));
       setLoading(false);
     }
   };

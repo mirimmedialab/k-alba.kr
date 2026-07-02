@@ -84,7 +84,7 @@ export const vi = {
     mViewTesti: "Xem đánh giá {n}",
     mCtaTitle1: "Từ tuyển dụng người nước ngoài đến giấy tờ hành chính,",
     mCtaTitle2Pre: "giờ giải quyết tất cả với ",
-    mCtaTitle2Post: " K-ALBA cùng lúc.",
+    mCtaTitle2Post: " cùng lúc.",
     mCtaSub1: "Đừng lo lắng vì thủ tục phức tạp nữa.",
     mCtaSub2: "Chúng tôi giúp tuyển dụng, tìm việc và giấy tờ thiết yếu dễ và nhanh nhất.",
     mStartAsUni: "🏫 Bắt đầu với tư cách cán bộ trường",

@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { T, COMPANY } from "@/lib/theme";
 import { signUp, signInWithOAuth } from "@/lib/supabase";
-import { useT } from "@/lib/i18n";
+import { useT, useLocale } from "@/lib/i18n";
+import { authErrorMessage } from "@/lib/authErrors";
 import { Button, Input, Select, KWordmark, ButtonLoading } from "@/components/ui";
 import KakaoLogo from "@/components/KakaoLogo";
 import { VISA_OPTIONS } from "@/data/marketData";
@@ -27,6 +28,7 @@ const WORKER_VISA_OPTIONS = VISA_OPTIONS
 export default function SignupPage() {
   const router = useRouter();
   const t = useT();
+  const { locale } = useLocale();
   const [step, setStep] = useState(0);
   const [role, setRole] = useState("");
   const [loading, setLoading] = useState(false);
@@ -69,12 +71,7 @@ export default function SignupPage() {
     const { error } = await signUp(form.email, form.password, role, form.name, extra);
     setLoading(false);
     if (error) {
-      const m = (error.message || "").toLowerCase();
-      if (m.includes("already") && m.includes("regist")) {
-        setError(t("auth.errEmailTaken", null, "이미 가입된 이메일이에요. 로그인해 주세요."));
-      } else {
-        setError(error.message);
-      }
+      setError(authErrorMessage(error.message, locale));
     } else {
       router.push(role === "worker" ? "/jobs" : "/my/jobs");
     }
@@ -92,7 +89,7 @@ export default function SignupPage() {
     setLoading(true);
     const { error } = await signInWithOAuth(provider);
     if (error) {
-      setError(error.message);
+      setError(authErrorMessage(error.message, locale));
       setLoading(false);
     }
   };

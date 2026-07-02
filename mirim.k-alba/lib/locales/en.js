@@ -104,7 +104,7 @@ export const en = {
     mViewTesti: "View review {n}",
     mCtaTitle1: "From hiring foreigners to admin documents,",
     mCtaTitle2Pre: "now solve it all with ",
-    mCtaTitle2Post: "at once.",
+    mCtaTitle2Post: " at once.",
     mCtaSub1: "No more worrying over complicated procedures.",
     mCtaSub2: "We make hiring, job-seeking, and essential paperwork the easiest and fastest.",
     mStartAsUni: "🏫 Start as school staff",

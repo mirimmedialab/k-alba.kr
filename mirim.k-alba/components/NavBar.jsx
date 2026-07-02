@@ -131,6 +131,8 @@ export default function NavBar() {
             alignItems: "center",
             justifyContent: "space-between",
             gap: 16,
+            flexWrap: "wrap",
+            rowGap: 8,
           }}
         >
           {/* 브랜드 로고 — 타이포 기반 (이모지 X) */}
@@ -269,9 +271,9 @@ export default function NavBar() {
               <button
                 onClick={() => router.push("/login")}
                 style={{
-                  padding: "8px 14px",
+                  padding: "8px 12px",
                   borderRadius: 4,
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: 600,
                   color: T.ink,
                   background: "transparent",
@@ -279,6 +281,8 @@ export default function NavBar() {
                   letterSpacing: "-0.01em",
                   cursor: "pointer",
                   fontFamily: "inherit",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
                 }}
               >
                 {t("nav.login")}
@@ -286,9 +290,9 @@ export default function NavBar() {
               <button
                 onClick={() => router.push("/signup")}
                 style={{
-                  padding: "8px 14px",
+                  padding: "8px 12px",
                   borderRadius: 4,
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: 600,
                   color: T.paper,
                   background: T.n9,
@@ -296,6 +300,8 @@ export default function NavBar() {
                   letterSpacing: "-0.01em",
                   cursor: "pointer",
                   fontFamily: "inherit",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
                 }}
               >
                 {t("nav.signup")}

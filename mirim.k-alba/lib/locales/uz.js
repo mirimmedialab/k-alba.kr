@@ -84,7 +84,7 @@ export const uz = {
     mViewTesti: "Sharh {n} ko'rish",
     mCtaTitle1: "Chet elliklarni yollashdan ma'muriy hujjatlargacha,",
     mCtaTitle2Pre: "endi hammasini ",
-    mCtaTitle2Post: " K-ALBA bilan birdan hal qiling.",
+    mCtaTitle2Post: " bilan birdan hal qiling.",
     mCtaSub1: "Endi murakkab jarayonlardan tashvishlanmang.",
     mCtaSub2: "Ish berish, ish izlash va zarur hujjatlarni eng oson va tez qilamiz.",
     mStartAsUni: "🏫 Maktab xodimi sifatida boshlash",
