@@ -71,9 +71,11 @@ export default function NavBar() {
     }
   }, [menuOpen, isDesktop]);
 
+  const [loggingOut, setLoggingOut] = useState(false);
   const handleLogout = async () => {
     setMenuOpen(false);
-    await signOut();
+    setLoggingOut(true);
+    try { await signOut(); } catch (_) {}
     router.push("/");
   };
 
@@ -93,7 +95,7 @@ export default function NavBar() {
   const employerLinks = [
     { href: "/jobs/post", label: t("nav.postJob") },
     { href: "/my/jobs", label: t("nav.myJobs") },
-    { href: "/jobs", label: t("nav.findJob") }, // 사장님도 다른 공고 열람(시세·조건 비교)
+    { href: "/jobs", label: t("jobs.jobList") }, // 사장님도 다른 공고 열람(시세·조건 비교)
     { href: "/my/contracts", label: t("nav.contracts") },
     { href: "/profile", label: t("nav.profile") },
   ];
@@ -112,6 +114,13 @@ export default function NavBar() {
 
   return (
     <>
+      {loggingOut && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 3000, background: "rgba(255,255,255,0.92)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14 }}>
+          <div style={{ width: 34, height: 34, border: `3px solid ${T.border}`, borderTopColor: T.accent, borderRadius: "50%", animation: "kalbaLogoutSpin 0.8s linear infinite" }} />
+          <div style={{ fontSize: 14, fontWeight: 600, color: T.ink2 }}>{t("nav.loggingOut", null, "로그아웃 중입니다")}</div>
+          <style>{"@keyframes kalbaLogoutSpin{to{transform:rotate(360deg)}}"}</style>
+        </div>
+      )}
       <nav
         style={{
           background: onLanding ? "rgba(255,255,255,0.96)" : T.paper,
@@ -138,7 +147,7 @@ export default function NavBar() {
         >
           {/* 브랜드 로고 — 타이포 기반 (이모지 X) */}
           <Link href={logoHref} style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
-            <KWordmark size={30} />
+            <KWordmark size={24} />
           </Link>
 
           {/* 랜딩 페이지: 심플하게 언어 + CTA 만 */}

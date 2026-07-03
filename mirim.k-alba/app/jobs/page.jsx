@@ -524,7 +524,6 @@ export default function JobsPage() {
           <span style={{ fontSize: 15, color: D.ink3 }}>🔍</span>
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("jobs.searchPlaceholder")} style={{ flex: 1, border: "none", outline: "none", fontSize: 14, color: D.ink, background: "transparent", fontFamily: "inherit" }} />
         </div>
-        <JobsViewToggle current="list" />
       </div>
 
       {recommended.length > 0 && !search.trim() && (
@@ -541,6 +540,7 @@ export default function JobsPage() {
       )}
 
       <div style={{ padding: "10px 16px 0" }}>
+        <JobsViewToggle current="list" style={{ marginBottom: 12 }} />
         {nearestBanner}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: D.navy }}>{t("jobs.totalJobs").replace("{count}", displayJobs.length)}</div>

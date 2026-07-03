@@ -26,9 +26,7 @@ export default function GoodbyePage() {
         더 나은 모습으로 준비하고 있을 테니,<br />
         언젠가 다시 필요하실 때 또 찾아주세요.
       </p>
-      <p style={{ fontSize: 12.5, color: T.ink3, lineHeight: 1.7, maxWidth: 420, marginBottom: 28 }}>
-        계정 정보는 일정 기간 보관되며, 다시 이용하고 싶으시면 고객센터를 통해 복구하실 수 있어요.
-      </p>
+      <div style={{ marginBottom: 28 }} />
       <Link href="/" style={{ textDecoration: "none" }}>
         <span style={{
           display: "inline-block",

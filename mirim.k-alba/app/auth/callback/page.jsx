@@ -195,7 +195,7 @@ export default function AuthCallbackPage() {
   return (
     <div style={{ minHeight: "60vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
       <div style={{ width: 36, height: 36, border: "3px solid #EDEAE6", borderTopColor: "#FF6B5A", borderRadius: "50%", animation: "spin 0.8s linear infinite", marginBottom: 20 }} />
-      <p style={{ fontSize: 14, color: "#4A4640" }}>로그인 처리 중...</p>
+      <p style={{ fontSize: 14, color: "#4A4640" }}>로그인 중...</p>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );

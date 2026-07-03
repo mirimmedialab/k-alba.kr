@@ -114,8 +114,9 @@ export function AddressSearchModal({ open, onClose, onSelect }) {
           <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 20, color: T.g500, cursor: "pointer", padding: 4 }}>✕</button>
         </div>
 
-        <div style={{ padding: "10px 16px", background: "#FFF8E5", borderBottom: `1px solid ${T.g200}`, fontSize: 12, color: T.navy, lineHeight: 1.5 }}>
-          💡 {addressSearchGuide(locale)}
+        <div style={{ padding: "10px 16px", background: "#FFF8E5", borderBottom: `1px solid ${T.g200}`, fontSize: 12.5, color: T.navy, lineHeight: 1.6 }}>
+          <div>💡 한국어로 검색해주세요.</div>
+          <div>Please search in Korean.</div>
         </div>
 
         <div style={{ flex: 1, position: "relative" }}>

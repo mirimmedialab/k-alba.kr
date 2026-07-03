@@ -157,29 +157,27 @@ export default function LocationPicker({
         </button>
       </div>
 
-      {/* 상세주소 입력 (도로명 검색 후 동·호수 등 직접 입력) */}
-      {value?.address_road && (
-        <input
-          type="text"
-          value={value?.address_detail || ""}
-          onChange={(e) => onChange({ ...value, address_detail: e.target.value })}
-          placeholder="상세주소 (동·호수 등)"
-          style={{
-            width: "100%",
-            marginTop: 8,
-            padding: "11px 14px",
-            borderRadius: 4,
-            border: `1px solid ${T.border}`,
-            background: T.paper,
-            fontSize: 14,
-            color: T.ink,
-            letterSpacing: "-0.01em",
-            boxSizing: "border-box",
-            fontFamily: "inherit",
-            outline: "none",
-          }}
-        />
-      )}
+      {/* 상세주소 입력 (동·호수 등 직접 입력) — 항상 표시 */}
+      <input
+        type="text"
+        value={value?.address_detail || ""}
+        onChange={(e) => onChange({ ...value, address_detail: e.target.value })}
+        placeholder="상세주소 (동·호수 등)"
+        style={{
+          width: "100%",
+          marginTop: 8,
+          padding: "11px 14px",
+          borderRadius: 4,
+          border: `1px solid ${T.border}`,
+          background: T.paper,
+          fontSize: 14,
+          color: T.ink,
+          letterSpacing: "-0.01em",
+          boxSizing: "border-box",
+          fontFamily: "inherit",
+          outline: "none",
+        }}
+      />
 
       {/* 힌트 */}
       {helperText && !hasCoords && (

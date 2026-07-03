@@ -24,12 +24,15 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // 인증 에러 원본(언어 변경 시 렌더에서 재번역되도록 raw로 보관)
+  const [authErrRaw, setAuthErrRaw] = useState("");
   // 어드민(/admin)으로 redirect되어 온 경우: 소셜 로그인만 노출
   const [adminLogin, setAdminLogin] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setAuthErrRaw("");
     if (!isValidEmail(form.email)) {
       setError(t("auth.errEmailFormat", null, "올바른 이메일 주소를 입력해 주세요 (예: name@example.com)"));
       return;
@@ -38,7 +41,7 @@ export default function LoginPage() {
     const { data, error } = await signIn(form.email, form.password);
     if (error) {
       setLoading(false);
-      setError(authErrorMessage(error.message, locale));
+      setAuthErrRaw(error.message);
       return;
     }
     // 탈퇴(비활성화)된 계정 차단
@@ -87,7 +90,7 @@ export default function LoginPage() {
     setLoading(true);
     const { error } = await signInWithOAuth(provider);
     if (error) {
-      setError(authErrorMessage(error.message, locale));
+      setAuthErrRaw(error.message);
       setLoading(false);
     }
   };
@@ -217,7 +220,7 @@ export default function LoginPage() {
           </>
         )}
 
-        {error && (
+        {(authErrRaw || error) && (
           <div
             style={{
               padding: "10px 12px",
@@ -230,7 +233,7 @@ export default function LoginPage() {
               letterSpacing: "-0.01em",
             }}
           >
-            {error}
+            {authErrRaw ? authErrorMessage(authErrRaw, locale) : error}
           </div>
         )}
 
