@@ -63,6 +63,7 @@ export default function ProfilePage() {
     home_sido: "", home_sigungu: "", home_dong: "",
     search_radius_km: 10, transport_modes: ["transit", "walk"],
     max_commute_min: 60, location_opted_in: false,
+    agreed_marketing_at: null,
   });
 
   useEffect(() => {
@@ -97,6 +98,7 @@ export default function ProfilePage() {
           transport_modes: p.transport_modes || ["transit", "walk"],
           max_commute_min: p.max_commute_min ?? 60,
           location_opted_in: p.location_opted_in || false,
+          agreed_marketing_at: p.agreed_marketing_at || null,
         });
       }
       const wh = await getWorkHistory(u.id);
@@ -447,6 +449,26 @@ export default function ProfilePage() {
             </div>
           ))
         )}
+      </Card>
+
+      {/* 마케팅 수신 동의 (프로필에서 언제든 켜고 끄기 — 변경 즉시 저장) */}
+      <Card style={{ marginBottom: 16 }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={!!form.agreed_marketing_at}
+            onChange={async (e) => {
+              const val = e.target.checked ? (form.agreed_marketing_at || new Date().toISOString()) : null;
+              setForm((f) => ({ ...f, agreed_marketing_at: val }));
+              if (user) { try { await updateProfile(user.id, { agreed_marketing_at: val }); } catch (_) {} }
+            }}
+            style={{ width: 16, height: 16, accentColor: T.n9, flexShrink: 0 }}
+          />
+          <span style={{ fontSize: 13.5, fontWeight: 600, color: T.ink }}>{t("auth.agreeMarketing")}</span>
+        </label>
+        <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 6, lineHeight: 1.6 }}>
+          이벤트·혜택 등 마케팅 정보 수신 동의(선택) · You can change this anytime.
+        </div>
       </Card>
 
       <DangerZone />

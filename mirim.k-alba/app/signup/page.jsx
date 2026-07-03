@@ -43,6 +43,7 @@ export default function SignupPage() {
     agreeMarketing: false,
   });
   const [error, setError] = useState("");
+  const [verifyPending, setVerifyPending] = useState(false); // 가입 후 이메일 인증 대기 화면
 
   const handleSubmit = async (e) => {
     e?.preventDefault?.();
@@ -68,42 +69,48 @@ export default function SignupPage() {
     const extra = role === "employer"
       ? { ...consent }
       : { visa: form.visa, ...consent };
-    const { error } = await signUp(form.email, form.password, role, form.name, extra);
-    if (error) {
-      const raw = (error.message || "").toLowerCase();
-      const alreadyRegistered =
-        raw.includes("already") || raw.includes("registered") || raw.includes("exists") || raw.includes("duplicate");
-      if (alreadyRegistered) {
-        // 탈퇴(비활성화) 계정이면 재활성화(정책 A) 시도 — 이전 데이터는 숨기고 새 계정처럼
-        try {
-          const res = await fetch("/api/account/reactivate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: form.email,
-              password: form.password,
-              userType: role,
-              name: form.name,
-              visa: role === "worker" ? form.visa : null,
-              consent,
-            }),
-          });
-          const j = await res.json().catch(() => ({}));
-          if (res.ok && j?.ok) {
-            const { error: siErr } = await signIn(form.email, form.password);
-            setLoading(false);
-            if (siErr) return setError(authErrorMessage(siErr.message, locale));
-            router.push(role === "worker" ? "/jobs" : "/my/jobs");
-            return;
-          }
-        } catch (_) { /* 아래 공통 안내로 폴백 */ }
+
+    // 1) 탈퇴(비활성화) 계정 재활성화 대상인지 "먼저" 확인/처리(정책 A).
+    //    (이메일 인증이 켜져 있어, 이미 있는 이메일로 signUp하면 에러·인증메일 없이 조용히 넘어가므로 사전 확인 필수)
+    try {
+      const res = await fetch("/api/account/reactivate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+          userType: role,
+          name: form.name,
+          visa: role === "worker" ? form.visa : null,
+          consent,
+        }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (res.ok && j?.ok) {
+        // 재활성화 완료(이메일 확정 처리됨) → 바로 로그인
+        const { error: siErr } = await signIn(form.email, form.password);
+        setLoading(false);
+        if (siErr) return setError(authErrorMessage(siErr.message, locale));
+        router.push(role === "worker" ? "/jobs" : "/my/jobs");
+        return;
       }
-      setLoading(false);
+      if (j?.error === "active") {
+        // 이미 가입된(활성) 이메일 → 로그인 안내
+        setLoading(false);
+        return setError(authErrorMessage("already registered", locale));
+      }
+      // j.error === "not_found" → 신규 이메일 → 아래 신규 가입 진행
+    } catch (_) { /* 네트워크 실패 시 신규 가입 시도 */ }
+
+    // 2) 신규 가입
+    const { error } = await signUp(form.email, form.password, role, form.name, extra);
+    setLoading(false);
+    if (error) {
       setError(authErrorMessage(error.message, locale));
       return;
     }
-    setLoading(false);
-    router.push(role === "worker" ? "/jobs" : "/my/jobs");
+    // 3) 이메일 인증 필수(Confirm email ON) → 세션 없음 → 인증 안내 화면으로(로그인 유도). /jobs로 보내지 않음.
+    setVerifyPending(true);
   };
 
   const handleSocial = async (provider) => {
@@ -122,6 +129,41 @@ export default function SignupPage() {
       setLoading(false);
     }
   };
+
+  // ──────────────── 가입 후: 이메일 인증 안내 ────────────────
+  if (verifyPending) {
+    return (
+      <div style={{ padding: "40px 20px", position: "relative", minHeight: "70vh" }}>
+        {/* 상단 '로그인' 버튼을 가리키는 힌트 */}
+        <div style={{ position: "absolute", top: 2, right: 14, display: "flex", alignItems: "center", gap: 6, color: T.accent, fontSize: 13, fontWeight: 800 }}>
+          <span>위 ‘로그인’ 버튼</span>
+          <span style={{ fontSize: 20, display: "inline-block", animation: "kalbaArrowBounce 1s ease-in-out infinite" }}>↗</span>
+        </div>
+        <div style={{ maxWidth: 420, margin: "56px auto 0", textAlign: "center" }}>
+          <div style={{ fontSize: 46, marginBottom: 16 }}>✉️</div>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: T.ink, letterSpacing: "-0.02em", marginBottom: 12 }}>
+            이메일을 확인해 주세요<br />
+            <span style={{ fontSize: 15, fontWeight: 600, color: T.ink2 }}>Verify your email</span>
+          </h1>
+          <p style={{ fontSize: 14.5, color: T.ink2, lineHeight: 1.8, marginBottom: 10 }}>
+            <strong>{form.email}</strong> 로 인증 메일을 보냈어요.<br />
+            <span style={{ color: T.ink3 }}>We sent a verification email.</span>
+          </p>
+          <p style={{ fontSize: 14.5, color: T.ink2, lineHeight: 1.8, marginBottom: 28 }}>
+            이메일 인증 완료 후 상단 <strong>‘로그인’</strong> 버튼을 눌러 회원가입을 완료해주세요.<br />
+            <span style={{ color: T.ink3 }}>After verifying, tap “Login” at the top to finish.</span>
+          </p>
+          <button
+            onClick={() => router.push("/login")}
+            style={{ padding: "13px 30px", background: T.n9, color: T.paper, border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+          >
+            로그인 하러 가기 · Go to login
+          </button>
+        </div>
+        <style>{"@keyframes kalbaArrowBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}"}</style>
+      </div>
+    );
+  }
 
   // ──────────────── Step 0: 역할 선택 ────────────────
   if (step === 0) {
