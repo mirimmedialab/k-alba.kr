@@ -3,7 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { T, COMPANY } from "@/lib/theme";
-import { signUp, signInWithOAuth } from "@/lib/supabase";
+import { signUp, signIn, signInWithOAuth } from "@/lib/supabase";
 import { useT, useLocale } from "@/lib/i18n";
 import { authErrorMessage } from "@/lib/authErrors";
 import { Button, Input, Select, KWordmark, ButtonLoading } from "@/components/ui";
@@ -69,12 +69,41 @@ export default function SignupPage() {
       ? { ...consent }
       : { visa: form.visa, ...consent };
     const { error } = await signUp(form.email, form.password, role, form.name, extra);
-    setLoading(false);
     if (error) {
+      const raw = (error.message || "").toLowerCase();
+      const alreadyRegistered =
+        raw.includes("already") || raw.includes("registered") || raw.includes("exists") || raw.includes("duplicate");
+      if (alreadyRegistered) {
+        // 탈퇴(비활성화) 계정이면 재활성화(정책 A) 시도 — 이전 데이터는 숨기고 새 계정처럼
+        try {
+          const res = await fetch("/api/account/reactivate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: form.email,
+              password: form.password,
+              userType: role,
+              name: form.name,
+              visa: role === "worker" ? form.visa : null,
+              consent,
+            }),
+          });
+          const j = await res.json().catch(() => ({}));
+          if (res.ok && j?.ok) {
+            const { error: siErr } = await signIn(form.email, form.password);
+            setLoading(false);
+            if (siErr) return setError(authErrorMessage(siErr.message, locale));
+            router.push(role === "worker" ? "/jobs" : "/my/jobs");
+            return;
+          }
+        } catch (_) { /* 아래 공통 안내로 폴백 */ }
+      }
+      setLoading(false);
       setError(authErrorMessage(error.message, locale));
-    } else {
-      router.push(role === "worker" ? "/jobs" : "/my/jobs");
+      return;
     }
+    setLoading(false);
+    router.push(role === "worker" ? "/jobs" : "/my/jobs");
   };
 
   const handleSocial = async (provider) => {

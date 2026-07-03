@@ -5,7 +5,8 @@ export const dynamic = "force-dynamic";
 
 const COLUMNS =
   "id, email, name, phone, user_type, visa, nationality, country, company_name, " +
-  "business_number, verified, korean_level, organization, deactivated_at, created_at";
+  "business_number, verified, korean_level, organization, deactivated_at, created_at, " +
+  "resignup_count, reactivated_at";
 
 /**
  * GET /api/admin/users — 회원 목록

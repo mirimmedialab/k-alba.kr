@@ -103,7 +103,17 @@ export default function AdminUsers() {
           <>
             <Table
               columns={[
-                { header: "이름", cell: (r) => <strong>{r.name || "-"}</strong> },
+                { header: "이름", cell: (r) => (
+                  <span>
+                    <strong>{r.name || "-"}</strong>
+                    {r.resignup_count > 0 && (
+                      <span title={r.reactivated_at ? `재활성화 ${r.reactivated_at}` : "재가입 계정"}
+                            style={{ marginLeft: 6, fontSize: 11, fontWeight: 700, color: "#993C1D", background: "#FAECE7", padding: "1px 6px", borderRadius: 4 }}>
+                        재가입{r.resignup_count > 1 ? ` ${r.resignup_count}회` : ""}
+                      </span>
+                    )}
+                  </span>
+                ) },
                 { header: "유형", cell: (r) => userTypeBadge(r.user_type) },
                 { header: "이메일", key: "email", maxWidth: 200 },
                 { header: "연락처", cell: (r) => r.phone || "-" },

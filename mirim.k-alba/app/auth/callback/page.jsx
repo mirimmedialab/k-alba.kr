@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getAttributionForSignup } from "@/lib/attribution";
+import { reactivationFields } from "@/lib/reactivation";
 
 /**
  * /auth/callback
@@ -53,14 +54,27 @@ export default function AuthCallbackPage() {
 
         const user = session.user;
 
-        // 탈퇴(비활성화)된 계정이면 차단하고 로그인으로 (없는 계정 안내)
+        // 탈퇴(비활성화) 계정 처리:
+        //  - 가입(signup) 의도로 다시 온 경우 → 재활성화(정책 A). 이전 데이터는 숨기고 새 계정처럼 초기화.
+        //  - 그 외(로그인) → 기존대로 차단하고 "새로 가입" 안내.
         try {
           const { data: prof } = await supabase
-            .from("profiles").select("deactivated_at").eq("id", user.id).maybeSingle();
+            .from("profiles").select("deactivated_at, resignup_count").eq("id", user.id).maybeSingle();
           if (prof?.deactivated_at) {
-            await supabase.auth.signOut();
-            router.replace("/login?reason=deactivated");
-            return;
+            const reIntent = sessionStorage.getItem("k-alba-oauth-intent") || "login";
+            const reRole = sessionStorage.getItem("k-alba-oauth-role");
+            if (reIntent === "signup" && (reRole === "worker" || reRole === "employer")) {
+              await supabase.from("profiles").update({
+                ...reactivationFields((prof.resignup_count || 0) + 1),
+                user_type: reRole,
+                name: user.user_metadata?.name || user.user_metadata?.full_name || user.email?.split("@")[0],
+              }).eq("id", user.id);
+              // 아래 일반 흐름 계속 → 약관 동의 게이트(재동의)로 이어짐
+            } else {
+              await supabase.auth.signOut();
+              router.replace("/login?reason=deactivated");
+              return;
+            }
           }
         } catch (_) {}
 

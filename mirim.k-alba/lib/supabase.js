@@ -15,24 +15,14 @@ export const supabase = typeof window !== "undefined"
 // ────────────────────────────────
 export async function signUp(email, password, userType, name, extra = {}) {
   if (!supabase) return { error: { message: "Supabase not configured" } };
+  // 프로필 행은 DB 트리거 handle_new_user()가 user_metadata에서 생성한다.
+  // (클라이언트 profiles.upsert는 RLS INSERT 정책에 막혀 에러를 유발하므로 제거 — #2)
+  // 가입 유입경로(first-touch)도 user_metadata에 실어 트리거가 함께 저장하게 한다.
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { user_type: userType, name, ...extra } },
+    options: { data: { user_type: userType, name, ...extra, ...getAttributionForSignup() } },
   });
-  // ✅ 널 안전성: data가 null일 수 있음
-  if (data?.user && !error) {
-    const { error: profileError } = await supabase.from("profiles").upsert({
-      id: data.user.id,
-      email,
-      name,
-      user_type: userType,
-      ...getAttributionForSignup(), // 가입 유입경로(첫방문 first-touch)
-      ...extra,
-    }, { onConflict: "id" });
-    // profiles insert 실패도 에러로 리턴
-    if (profileError) return { data, error: profileError };
-  }
   return { data, error };
 }
 
@@ -223,13 +213,27 @@ export async function removeFavorite(userId, jobId) {
 }
 
 // 내 관심공고 목록 (공고 정보 조인)
+// 재가입(재활성화) 사용자: data_reset_at 이후 데이터만 노출(이전 것은 DB 보관하되 화면에서 숨김)
+async function _dataResetCut(userId) {
+  if (!supabase || !userId) return null;
+  try {
+    const { data } = await supabase.from("profiles").select("data_reset_at").eq("id", userId).maybeSingle();
+    return data?.data_reset_at || null;
+  } catch (_) {
+    return null;
+  }
+}
+
 export async function getMyFavorites(userId) {
   if (!supabase) return [];
-  const { data } = await supabase
+  const cut = await _dataResetCut(userId);
+  let q = supabase
     .from("job_favorites")
     .select("id, created_at, job_id, job:jobs(*, employer:profiles(name, company_name))")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
+  if (cut) q = q.gte("created_at", cut);
+  const { data } = await q;
   return data || [];
 }
 
@@ -248,11 +252,14 @@ export async function applyJob(jobId, applicantId, message) {
 
 export async function getMyApplications(userId) {
   if (!supabase) return [];
-  const { data } = await supabase
+  const cut = await _dataResetCut(userId);
+  let q = supabase
     .from("applications")
     .select("*, job:jobs(*)")
     .eq("applicant_id", userId)
     .order("created_at", { ascending: false });
+  if (cut) q = q.gte("created_at", cut);
+  const { data } = await q;
   return data || [];
 }
 
@@ -343,11 +350,14 @@ export async function updateContract(id, updates) {
 export async function getMyContracts(userId, role = "worker") {
   if (!supabase) return [];
   const column = role === "employer" ? "employer_id" : "worker_id";
-  const { data } = await supabase
+  const cut = await _dataResetCut(userId);
+  let q = supabase
     .from("contracts")
     .select("*, job:jobs(title, job_type), employer:profiles!contracts_employer_id_fkey(name, company_name), worker:profiles!contracts_worker_id_fkey(name)")
     .eq(column, userId)
     .order("created_at", { ascending: false });
+  if (cut) q = q.gte("created_at", cut);
+  const { data } = await q;
   return data || [];
 }
 
