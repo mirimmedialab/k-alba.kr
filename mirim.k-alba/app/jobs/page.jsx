@@ -133,6 +133,7 @@ function DesktopJobCard({ job, tr, onSelect, showDistance, showPostedAt }) {
         flexDirection: "column",
         boxSizing: "border-box",
         overflow: "hidden",
+        minWidth: 0,
       }}
       onMouseEnter={(e) => { e.currentTarget.style.borderColor = D.green; }}
       onMouseLeave={(e) => { e.currentTarget.style.borderColor = D.border; }}
@@ -531,7 +532,7 @@ export default function JobsPage() {
           <div style={{ padding: "4px 16px 10px", fontSize: 15, fontWeight: 800, color: D.navy }}>🔥 {t("jobs.todayRec")}</div>
           <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "0 10% 8px", scrollSnapType: "x mandatory", scrollPaddingInline: "10%" }}>
             {recommended.map((j) => (
-              <div key={"rec-" + j.id} style={{ flex: "0 0 80%", scrollSnapAlign: "center", display: "flex" }}>
+              <div key={"rec-" + j.id} style={{ flex: "0 0 80%", minWidth: 0, maxWidth: "80%", scrollSnapAlign: "center", display: "flex" }}>
                 <DesktopJobCard job={j} tr={listTr[`${locale}:${j.id}`]} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} showPostedAt={sortMode === "latest"} />
               </div>
             ))}
@@ -684,7 +685,7 @@ export default function JobsPage() {
               </div>
               <div ref={recRef} style={{ display: "flex", gap: 16, overflowX: "hidden", scrollBehavior: "smooth", scrollSnapType: "x mandatory" }}>
                 {recommended.map((j) => (
-                  <div key={"rec-" + j.id} style={{ width: "calc((100% - 48px) / 4)", minHeight: 322, flexShrink: 0, display: "flex", scrollSnapAlign: "start" }}>
+                  <div key={"rec-" + j.id} style={{ width: "calc((100% - 48px) / 4)", minWidth: 0, minHeight: 322, flexShrink: 0, display: "flex", scrollSnapAlign: "start" }}>
                     <DesktopJobCard job={j} tr={listTr[`${locale}:${j.id}`]} selected={false} onSelect={(id) => router.push(`/jobs/${id}`)} showDistance={false} showPostedAt={sortMode === "latest"} />
                   </div>
                 ))}
