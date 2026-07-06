@@ -43,6 +43,44 @@ function Stat({ label, value, sub, accent }) {
   );
 }
 
+function LinkStat({ href, label, value, sub }) {
+  const color = CORAL; // 클릭 가능한 카드는 모두 '발행 콘텐츠'와 동일한 스타일
+  return (
+    <a
+      href={href}
+      style={{ flex: "1 1 150px", minWidth: 150, textDecoration: "none", cursor: "pointer" }}
+    >
+      <Card
+        style={{
+          border: `1.5px solid ${color}`,
+          height: "100%",
+          boxSizing: "border-box",
+          boxShadow: "0 2px 10px rgba(255,107,94,0.12)",
+        }}
+      >
+        <div style={{ fontSize: 13, color: MUTED, fontWeight: 600 }}>{label}</div>
+        <div style={{ fontSize: 30, fontWeight: 800, color, marginTop: 6, lineHeight: 1.1 }}>
+          {value === null || value === undefined ? "–" : Number(value).toLocaleString()}
+        </div>
+        <div
+          style={{
+            display: "inline-block",
+            marginTop: 8,
+            background: color,
+            color: "#fff",
+            fontSize: 12,
+            fontWeight: 700,
+            padding: "5px 12px",
+            borderRadius: 20,
+          }}
+        >
+          {sub || "상세 보기"} →
+        </div>
+      </Card>
+    </a>
+  );
+}
+
 function WeeklyBars({ title, series, color }) {
   const data = series || [];
   const max = Math.max(1, ...data.map((d) => d.count));
@@ -280,7 +318,7 @@ export default function Dashboard() {
 
       {/* ① 성장 */}
       <Section title="① 성장 · 사용자" sub="Supabase 실DB 자동 집계">
-        <Stat label="전체 가입자" value={u.total} accent />
+        <LinkStat href="/users" label="전체 가입자" value={u.total} accent sub="달력·명단 보기" />
         <Stat label="알바생 (worker)" value={u.workers} />
         <Stat label="사장님 (employer)" value={u.employers} />
         <Stat label="탈퇴(비활성화)" value={u.deactivations} />
@@ -292,8 +330,8 @@ export default function Dashboard() {
       <Section title="② 공급 · 공고" sub="jobs 테이블">
         <Stat label="활성 공고" value={j.active} accent />
         <Stat label="누적 공고" value={j.total} />
-        <Stat label="직접 등록" value={j.bySource ? j.bySource.direct : null} sub="사장님 웹 등록" />
-        <Stat label="챗봇 등록" value={j.bySource ? j.bySource.chatbot : null} sub="카카오 알비 경유" />
+        <LinkStat href="/jobs-manual?src=direct" label="직접 등록" value={j.bySource ? j.bySource.direct : null} sub="공고 목록" />
+        <LinkStat href="/jobs-manual?src=chatbot" label="챗봇 등록" value={j.bySource ? j.bySource.chatbot : null} sub="공고 목록" />
         <WeeklyBars title="주간 신규 공고" series={j.weeklyNew} color={NAVY} />
         <HBars
           title="공고 소스 비중"
@@ -305,8 +343,8 @@ export default function Dashboard() {
 
       {/* ③ 매칭 */}
       <Section title="③ 매칭 · 핵심 성과" sub="지원 → 계약 퍼널">
-        <Stat label="누적 지원" value={m.applications} accent />
-        <Stat label="관심공고 저장" value={m.favorites} />
+        <LinkStat href="/applications" label="누적 지원" value={m.applications} accent sub="지원 내역" />
+        <LinkStat href="/favorites" label="관심공고 저장" value={m.favorites} sub="저장 목록" />
         <Stat label="계약 체결" value={m.contracts} />
         <Stat label="시간제취업 신청" value={m.partwork} />
         <WeeklyBars title="주간 지원 수" series={m.weeklyApplications} color={CORAL} />
@@ -316,38 +354,13 @@ export default function Dashboard() {
       <Section title="④ 마케팅 채널" sub="구글시트 [K-ABLA]Content · [K-ALBA]성과 탭 자동 연동">
         <ErrorNote msg={data.contentError} />
         <ErrorNote msg={data.metricsError} />
-        <a
+        <LinkStat
           href="/marketing"
-          style={{ flex: "1 1 150px", minWidth: 150, textDecoration: "none", cursor: "pointer" }}
-        >
-          <Card
-            style={{
-              border: `1.5px solid ${CORAL}`,
-              height: "100%",
-              boxSizing: "border-box",
-              boxShadow: "0 2px 10px rgba(255,107,94,0.12)",
-            }}
-          >
-            <div style={{ fontSize: 13, color: MUTED, fontWeight: 600 }}>발행 콘텐츠</div>
-            <div style={{ fontSize: 30, fontWeight: 800, color: CORAL, marginTop: 6, lineHeight: 1.1 }}>
-              {c ? Number(c.published).toLocaleString() : "–"}
-            </div>
-            <div
-              style={{
-                display: "inline-block",
-                marginTop: 8,
-                background: CORAL,
-                color: "#fff",
-                fontSize: 12,
-                fontWeight: 700,
-                padding: "5px 12px",
-                borderRadius: 20,
-              }}
-            >
-              전체 리스트 보기 →
-            </div>
-          </Card>
-        </a>
+          label="발행 콘텐츠"
+          value={c ? c.published : null}
+          accent
+          sub="전체 리스트 보기"
+        />
         <Stat label="총 조회수" value={mk ? mk.totalViews : null} sub="게시물별 최신 조회수 합" />
         <Stat label="총 좋아요" value={mk ? mk.totalLikes : null} />
         <Stat label="총 댓글" value={mk ? mk.totalComments : null} />
