@@ -40,7 +40,7 @@ function Stat({ label, value, sub }) {
 function LinkStat({ href, label, value, sub }) {
   return (
     <a className="cardlink" href={href}>
-      <Card style={{ position: "relative" }}>
+      <Card style={{ position: "relative", border: "1.5px solid #c8d0da" }}>
         <span
           className="arrow"
           style={{ position: "absolute", top: 16, right: 18, color: MUTED, fontSize: 15 }}
@@ -66,22 +66,82 @@ function LinkStat({ href, label, value, sub }) {
   );
 }
 
-function TrendChart({ title, series, color }) {
+const DOW = ["일", "월", "화", "수", "목", "금", "토"];
+
+function fmtMD(dateStr) {
+  return `${+dateStr.slice(5, 7)}/${+dateStr.slice(8, 10)}`;
+}
+
+function DailyChart({ title, series, color }) {
+  const [offset, setOffset] = useState(0);
   const data = series || [];
-  const max = Math.max(1, ...data.map((d) => d.count));
+  const maxOffset = Math.max(0, Math.floor(data.length / 7) - 1);
+  const end = data.length - offset * 7;
+  const win = data.slice(Math.max(0, end - 7), end);
+  const max = Math.max(1, ...win.map((d) => d.count));
   const W = 560;
-  const H = 170;
-  const P = { t: 24, r: 12, b: 26, l: 12 };
+  const H = 180;
+  const P = { t: 26, r: 16, b: 34, l: 16 };
   const iw = W - P.l - P.r;
   const ih = H - P.t - P.b;
-  const x = (i) => P.l + (data.length > 1 ? (i / (data.length - 1)) * iw : iw / 2);
+  const x = (i) => P.l + (win.length > 1 ? (i / (win.length - 1)) * iw : iw / 2);
   const y = (v) => P.t + ih - (v / max) * ih;
-  const pts = data.map((d, i) => `${x(i)},${y(d.count)}`).join(" ");
-  const area = `M ${P.l},${P.t + ih} L ${pts.split(" ").join(" L ")} L ${P.l + iw},${P.t + ih} Z`;
+  const pts = win.map((d, i) => `${x(i)},${y(d.count)}`).join(" ");
+  const area = `M ${P.l},${P.t + ih} L ${pts.split(" ").join(" L ")} L ${x(win.length - 1)},${
+    P.t + ih
+  } Z`;
+  const range = win.length ? `${fmtMD(win[0].date)} – ${fmtMD(win[win.length - 1].date)}` : "";
+  const navBtn = (disabled) => ({
+    border: `1px solid ${BORDER}`,
+    background: "#fff",
+    color: disabled ? "#d3d9e0" : MUTED,
+    borderRadius: 7,
+    width: 24,
+    height: 24,
+    fontSize: 13,
+    lineHeight: 1,
+    cursor: disabled ? "default" : "pointer",
+    padding: 0,
+  });
   return (
     <Card>
-      <div style={{ fontSize: 13.5, fontWeight: 600, color: INK, marginBottom: 10 }}>
-        {title} <span style={{ color: MUTED, fontWeight: 400, fontSize: 12 }}>최근 12주</span>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
+          marginBottom: 10,
+        }}
+      >
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: INK }}>{title}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <button
+            style={navBtn(offset >= maxOffset)}
+            disabled={offset >= maxOffset}
+            onClick={() => setOffset((o) => Math.min(maxOffset, o + 1))}
+          >
+            ‹
+          </button>
+          <span
+            style={{
+              fontSize: 12,
+              color: MUTED,
+              minWidth: 86,
+              textAlign: "center",
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
+            {range}
+          </span>
+          <button
+            style={navBtn(offset <= 0)}
+            disabled={offset <= 0}
+            onClick={() => setOffset((o) => Math.max(0, o - 1))}
+          >
+            ›
+          </button>
+        </div>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
         {[0, 0.5, 1].map((r) => (
@@ -95,7 +155,7 @@ function TrendChart({ title, series, color }) {
             strokeWidth="1"
           />
         ))}
-        {data.length > 0 && (
+        {win.length > 0 && (
           <>
             <path d={area} fill={color} opacity="0.08" />
             <polyline
@@ -106,15 +166,15 @@ function TrendChart({ title, series, color }) {
               strokeLinejoin="round"
               strokeLinecap="round"
             />
-            {data.map((d, i) =>
+            {win.map((d, i) =>
               d.count > 0 ? (
-                <g key={`v${d.week}`}>
+                <g key={`v${d.date}`}>
                   <circle cx={x(i)} cy={y(d.count)} r="3" fill={color} />
                   <text
-                    x={Math.max(P.l + 10, Math.min(x(i), P.l + iw - 10))}
+                    x={Math.max(P.l + 12, Math.min(x(i), P.l + iw - 12))}
                     y={y(d.count) - 9}
                     textAnchor="middle"
-                    fontSize="12"
+                    fontSize="12.5"
                     fontWeight="600"
                     fill={INK}
                   >
@@ -123,20 +183,32 @@ function TrendChart({ title, series, color }) {
                 </g>
               ) : null
             )}
-            {data.map((d, i) =>
-              i % 2 === 0 ? (
-                <text
-                  key={d.week}
-                  x={x(i)}
-                  y={H - 7}
-                  textAnchor="middle"
-                  fontSize="11.5"
-                  fill={MUTED}
-                >
-                  {d.week.slice(5)}
-                </text>
-              ) : null
-            )}
+            {win.map((d, i) => {
+              const dow = new Date(d.date).getUTCDay();
+              return (
+                <g key={`x${d.date}`}>
+                  <text
+                    x={x(i)}
+                    y={H - 19}
+                    textAnchor="middle"
+                    fontSize="11.5"
+                    fill={INK}
+                    fontWeight="500"
+                  >
+                    {fmtMD(d.date)}
+                  </text>
+                  <text
+                    x={x(i)}
+                    y={H - 5}
+                    textAnchor="middle"
+                    fontSize="10.5"
+                    fill={dow === 0 ? ACCENT : MUTED}
+                  >
+                    {DOW[dow]}
+                  </text>
+                </g>
+              );
+            })}
           </>
         )}
       </svg>
@@ -150,30 +222,41 @@ function MiniGrid({ title, entries, vertical }) {
       <div style={{ fontSize: 13.5, fontWeight: 600, color: INK, marginBottom: 14 }}>{title}</div>
       {vertical ? (
         <div>
-          {entries.map(([label, value], i) => (
-            <div
-              key={label}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "baseline",
-                padding: "10px 2px",
-                borderBottom: i < entries.length - 1 ? `1px solid ${BORDER}` : "none",
-              }}
-            >
-              <span style={{ fontSize: 13, color: MUTED }}>{label}</span>
-              <span
+          {entries.map(([label, value, href], i) => {
+            const row = (
+              <div
                 style={{
-                  fontSize: 17,
-                  fontWeight: 700,
-                  color: INK,
-                  fontVariantNumeric: "tabular-nums",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  padding: "10px 2px",
+                  borderBottom: i < entries.length - 1 ? `1px solid ${BORDER}` : "none",
                 }}
               >
-                {value === null || value === undefined ? "–" : Number(value).toLocaleString()}
-              </span>
-            </div>
-          ))}
+                <span style={{ fontSize: 13, color: MUTED }}>
+                  {label}
+                  {href && <span style={{ marginLeft: 6, fontSize: 12 }}>→</span>}
+                </span>
+                <span
+                  style={{
+                    fontSize: 17,
+                    fontWeight: 700,
+                    color: INK,
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {value === null || value === undefined ? "–" : Number(value).toLocaleString()}
+                </span>
+              </div>
+            );
+            return href ? (
+              <a key={label} href={href} style={{ textDecoration: "none", color: "inherit" }}>
+                {row}
+              </a>
+            ) : (
+              <div key={label}>{row}</div>
+            );
+          })}
         </div>
       ) : (
         <div
@@ -415,38 +498,24 @@ export default function Dashboard() {
           <Stat label="탈퇴" value={u.deactivations} />
         </StatGrid>
         <div className="row-1-1" style={{ marginTop: 12 }}>
-          <TrendChart title="주간 신규 알바생" series={u.weeklyWorkers} color={ACCENT} />
-          <TrendChart title="주간 신규 사장님" series={u.weeklyEmployers} color={INK} />
+          <DailyChart title="신규 알바생" series={u.dailyWorkers} color={ACCENT} />
+          <DailyChart title="신규 사장님" series={u.dailyEmployers} color={INK} />
         </div>
       </Section>
 
       <Section title="② 공급 · 공고">
-        <StatGrid>
-          <Stat label="활성 공고" value={j.active} sub={`(누적 ${n(j.total)})`} />
-          <LinkStat
-            href="/jobs-manual?src=direct"
-            label="직접 등록"
-            value={j.bySource ? j.bySource.direct : null}
-            sub="공고 목록"
-          />
-          <LinkStat
-            href="/jobs-manual?src=chatbot"
-            label="챗봇 등록"
-            value={j.bySource ? j.bySource.chatbot : null}
-            sub="공고 목록"
-          />
-        </StatGrid>
-        <div className="row-1-2" style={{ marginTop: 12 }}>
+        <div className="row-1-2">
           <MiniGrid
-            title="공고 소스"
+            title="공고"
             vertical
             entries={[
-              ["고용24 자동 수집", j.bySource ? j.bySource.worknet : null],
-              ["직접 등록", j.bySource ? j.bySource.direct : null],
-              ["챗봇 등록", j.bySource ? j.bySource.chatbot : null],
+              ["활성 공고", j.active],
+              ["누적 공고", j.total],
+              ["직접 등록", j.bySource ? j.bySource.direct : null, "/jobs-manual?src=direct"],
+              ["챗봇 등록", j.bySource ? j.bySource.chatbot : null, "/jobs-manual?src=chatbot"],
             ]}
           />
-          <TrendChart title="주간 신규 공고" series={j.weeklyNew} color={ACCENT} />
+          <DailyChart title="신규 공고" series={j.dailyNew} color={ACCENT} />
         </div>
       </Section>
 
@@ -458,7 +527,7 @@ export default function Dashboard() {
             <Stat label="계약 체결" value={m.contracts} />
             <Stat label="시간제취업 신청" value={m.partwork} />
           </div>
-          <TrendChart title="주간 지원 수" series={m.weeklyApplications} color={ACCENT} />
+          <DailyChart title="지원 수" series={m.dailyApplications} color={ACCENT} />
         </div>
       </Section>
 
@@ -477,7 +546,7 @@ export default function Dashboard() {
           <Stat label="총 댓글" value={mk ? mk.totalComments : null} />
         </StatGrid>
         <div className="row-2-1" style={{ marginTop: 12 }}>
-          {mk && <TrendChart title="주간 조회수" series={mk.weeklyViews} color={ACCENT} />}
+          {mk && <DailyChart title="일별 조회수" series={mk.dailyViews} color={ACCENT} />}
           {mk && <BestList items={mk.items} />}
         </div>
         <div style={{ marginTop: 12 }}>

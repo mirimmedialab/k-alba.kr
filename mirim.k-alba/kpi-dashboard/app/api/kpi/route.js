@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 export const dynamic = "force-dynamic";
 
 const WEEKS = 12;
+const DAYS = 84; // 12주치 일별 데이터 (그래프 좌우 넘김용)
 const DEFAULT_SHEET_ID = "1cgYYoJk5O7mJsmA-maZAMbNE8z6PV750-22hjDZvpYw";
 const DEFAULT_CONTENT_GID = "1923809566"; // [K-ABLA]Content 탭
 const DEFAULT_METRICS_GID = "1912359929"; // [K-ALBA]성과 탭
@@ -33,6 +34,33 @@ function buildWeeklySeries(rows, weeks) {
     d.setUTCDate(d.getUTCDate() - i * 7);
     const k = d.toISOString().slice(0, 10);
     out.push({ week: k, count: map[k] || 0 });
+  }
+  return out;
+}
+
+/* ---------- 일별 시계열 (KST 기준) ---------- */
+function kstKey(t) {
+  return new Date(new Date(t).getTime() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+}
+function kstToday() {
+  const d = new Date(Date.now() + 9 * 3600 * 1000);
+  d.setUTCHours(0, 0, 0, 0);
+  return d;
+}
+function buildDailySeries(rows, days) {
+  const map = {};
+  for (const r of rows || []) {
+    if (!r || !r.created_at) continue;
+    const k = kstKey(r.created_at);
+    map[k] = (map[k] || 0) + 1;
+  }
+  const out = [];
+  const today = kstToday();
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setUTCDate(d.getUTCDate() - i);
+    const k = d.toISOString().slice(0, 10);
+    out.push({ date: k, count: map[k] || 0 });
   }
   return out;
 }
@@ -250,21 +278,21 @@ export async function GET() {
         workers,
         employers,
         deactivations,
-        weeklyWorkers: buildWeeklySeries(recentWorkers, WEEKS),
-        weeklyEmployers: buildWeeklySeries(recentEmployers, WEEKS),
+        dailyWorkers: buildDailySeries(recentWorkers, DAYS),
+        dailyEmployers: buildDailySeries(recentEmployers, DAYS),
       };
       result.jobs = {
         total: jobsTotal,
         active: jobsActive,
         bySource: { worknet: jobsWorknet, direct: jobsDirect, chatbot: jobsChatbot },
-        weeklyNew: buildWeeklySeries(recentJobs, WEEKS),
+        dailyNew: buildDailySeries(recentJobs, DAYS),
       };
       result.matching = {
         applications,
         favorites,
         contracts,
         partwork,
-        weeklyApplications: buildWeeklySeries(recentApps, WEEKS),
+        dailyApplications: buildDailySeries(recentApps, DAYS),
       };
     } catch (e) {
       result.dbError = String((e && e.message) || e);
@@ -323,24 +351,20 @@ export async function GET() {
       });
     items.sort((a, b) => b.ts - a.ts);
     const sum = (k) => items.reduce((a, it) => a + (typeof it[k] === "number" ? it[k] : 0), 0);
-    const weeklyPublished = buildWeeklySeries(
-      items.filter((it) => it.ts).map((it) => ({ created_at: new Date(it.ts).toISOString() })),
-      WEEKS
-    );
-    const weeklyViews = (() => {
+    const dailyViews = (() => {
       const map = {};
       for (const it of items) {
         if (!it.ts || typeof it.views !== "number") continue;
-        const k = weekKey(new Date(it.ts));
+        const k = new Date(it.ts).toISOString().slice(0, 10);
         map[k] = (map[k] || 0) + it.views;
       }
       const out = [];
-      const now = weekStart(new Date());
-      for (let i = WEEKS - 1; i >= 0; i--) {
-        const d = new Date(now);
-        d.setUTCDate(d.getUTCDate() - i * 7);
+      const today = kstToday();
+      for (let i = DAYS - 1; i >= 0; i--) {
+        const d = new Date(today);
+        d.setUTCDate(d.getUTCDate() - i);
         const k = d.toISOString().slice(0, 10);
-        out.push({ week: k, count: map[k] || 0 });
+        out.push({ date: k, count: map[k] || 0 });
       }
       return out;
     })();
@@ -354,8 +378,7 @@ export async function GET() {
       totalLikes: sum("likes"),
       totalComments: sum("comments"),
       totalShares: sum("shares"),
-      weeklyPublished,
-      weeklyViews,
+      dailyViews,
       best,
       items,
     };

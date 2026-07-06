@@ -159,7 +159,7 @@ export default function UsersDetail() {
           ← KPI
         </a>
         <div style={{ fontSize: 18, fontWeight: 700, color: INK, marginTop: 10 }}>
-          가입자{" "}
+          {tab === "active" ? "가입자" : "탈퇴자"}{" "}
           <span style={{ fontVariantNumeric: "tabular-nums" }}>{filtered.length}</span>
           <span style={{ color: MUTED, fontWeight: 400, fontSize: 14 }}>명</span>
         </div>
