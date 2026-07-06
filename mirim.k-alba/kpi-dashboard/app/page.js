@@ -255,7 +255,9 @@ export default function Dashboard() {
         <ErrorNote msg={data.contentError} />
         {c && (
           <>
-            <Stat label="발행 콘텐츠" value={c.published} accent sub="발행완료만 집계" />
+            <a href="/marketing" style={{ flex: "1 1 150px", minWidth: 150, textDecoration: "none", cursor: "pointer" }}>
+              <Stat label="발행 콘텐츠 →" value={c.published} accent sub="클릭하면 발행 리스트" />
+            </a>
             <HBars title="채널별 발행 콘텐츠" data={c.byChannel} color={NAVY} />
             <HBars title="발행 콘텐츠 분류" data={c.byCategory} color={CORAL} />
           </>
@@ -264,7 +266,7 @@ export default function Dashboard() {
         {met && met.rows && met.rows.length > 0 && (
           <Card style={{ flex: "1 1 100%", overflowX: "auto" }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: NAVY, marginBottom: 12 }}>
-              채널 성과 수치 <span style={{ color: MUTED, fontWeight: 500 }}>· 시트 수기 입력</span>
+              채널 성과 수치 <span style={{ color: MUTED, fontWeight: 500 }}>· 시트 [K-ALBA]성과 탭 자동 연동</span>
             </div>
             <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 13 }}>
               <thead>
@@ -307,15 +309,6 @@ export default function Dashboard() {
                 ))}
               </tbody>
             </table>
-          </Card>
-        )}
-        {!met && !data.metricsError && (
-          <Card style={{ flex: "1 1 100%" }}>
-            <div style={{ fontSize: 13, color: MUTED, lineHeight: 1.7 }}>
-              💡 조회수·팔로워 등 <b>채널 성과 수치</b>를 보려면 구글시트에 <b>KPI 입력 탭</b>을
-              만들고 (헤더: 날짜 | 채널 | 팔로워 | 조회수 | 좋아요 | 클릭), 해당 탭의 gid를
-              Vercel 환경변수 <code>SHEET_GID_METRICS</code>에 넣어주세요.
-            </div>
           </Card>
         )}
       </Section>

@@ -5,7 +5,8 @@ export const dynamic = "force-dynamic";
 
 const WEEKS = 12;
 const DEFAULT_SHEET_ID = "1cgYYoJk5O7mJsmA-maZAMbNE8z6PV750-22hjDZvpYw";
-const DEFAULT_CONTENT_GID = "1923809566";
+const DEFAULT_CONTENT_GID = "1923809566"; // [K-ABLA]Content 탭
+const DEFAULT_METRICS_GID = "1912359929"; // [K-ALBA]성과 탭
 
 /* ---------- 주간 시계열 ---------- */
 function weekStart(d) {
@@ -96,6 +97,9 @@ function analyzeContent(rows) {
   const stI = idx("발행상태");
   const catI = idx("분류");
   const dateI = idx("날짜");
+  const subjI = idx("주제");
+  const titleI = idx("제목");
+  const linkI = idx("게시물링크");
   // 발행완료된 콘텐츠만 집계 (아이디어/계획/미발행 백로그는 KPI에서 제외)
   const posts = [];
   for (const r of rows.slice(hi + 1)) {
@@ -105,10 +109,15 @@ function analyzeContent(rows) {
     if (status !== "발행완료") continue;
     // K-univ 계정 콘텐츠(인스타그램)은 K-ALBA KPI에서 제외
     if (ch.includes("인스타")) continue;
+    const linkCell = linkI >= 0 ? String(r[linkI] || "") : "";
+    const urlMatch = linkCell.match(/https?:\/\/[^\s"',]+/);
     posts.push({
       channel: ch,
       category: catI >= 0 ? String(r[catI] || "").trim() : "",
       date: dateI >= 0 ? String(r[dateI] || "").trim() : "",
+      subject: subjI >= 0 ? String(r[subjI] || "").trim() : "",
+      title: titleI >= 0 ? String(r[titleI] || "").trim() : "",
+      url: urlMatch ? urlMatch[0] : "",
     });
   }
   const groupBy = (key) =>
@@ -121,7 +130,7 @@ function analyzeContent(rows) {
     published: posts.length,
     byChannel: groupBy("channel"),
     byCategory: groupBy("category"),
-    recentDates: posts.map((p) => p.date).filter(Boolean).slice(-10),
+    posts,
   };
 }
 
@@ -138,7 +147,7 @@ function analyzeMetrics(rows) {
     const n = parseFloat(String(v).replace(/[,\s]/g, ""));
     return Number.isFinite(n) ? n : null;
   };
-  const numericCols = ["팔로워", "조회수", "좋아요", "클릭"];
+  const numericRe = /(조회|좋아요|댓글|공유|클릭|팔로워)/;
   const out = [];
   for (const r of rows.slice(hi + 1)) {
     const rec = {};
@@ -146,8 +155,8 @@ function analyzeMetrics(rows) {
       if (h) rec[h] = norm(r[i]);
     });
     if (!rec["날짜"] && !rec["채널"]) continue;
-    for (const k of numericCols) {
-      if (k in rec) rec[k] = toNum(rec[k]);
+    for (const k of Object.keys(rec)) {
+      if (numericRe.test(k)) rec[k] = toNum(rec[k]);
     }
     out.push(rec);
   }
@@ -160,7 +169,7 @@ export async function GET() {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const sheetId = process.env.SHEET_ID || DEFAULT_SHEET_ID;
   const contentGid = process.env.SHEET_GID_CONTENT || DEFAULT_CONTENT_GID;
-  const metricsGid = process.env.SHEET_GID_METRICS || "";
+  const metricsGid = process.env.SHEET_GID_METRICS || DEFAULT_METRICS_GID;
 
   const result = { generatedAt: new Date().toISOString() };
 
