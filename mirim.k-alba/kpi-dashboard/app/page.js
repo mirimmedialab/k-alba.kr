@@ -231,7 +231,9 @@ function DailyChart({ title, series, color, pointHref, wide }) {
 function MiniGrid({ title, entries, vertical }) {
   return (
     <Card>
-      <div style={{ fontSize: 13.5, fontWeight: 600, color: INK, marginBottom: 14 }}>{title}</div>
+      {title && (
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: INK, marginBottom: 14 }}>{title}</div>
+      )}
       {vertical ? (
         <div>
           {entries.map(([label, value, href, valueColor], i) => {
@@ -411,7 +413,7 @@ function BestList({ items }) {
             <div
               style={{
                 width: `${Math.round(((it[metric] || 0) / max) * 100)}%`,
-                background: ACCENT,
+                background: INK,
                 height: 4,
                 borderRadius: 4,
               }}
@@ -549,7 +551,7 @@ export default function Dashboard() {
         <MiniGrid
           title="가입 현황"
           entries={[
-            ["전체 가입자", u.total, "/users", BLUE],
+            ["전체 가입자", u.total, "/users", GREEN],
             ["알바생", u.workers],
             ["사장님", u.employers],
             ["탈퇴", u.deactivations],
@@ -564,13 +566,12 @@ export default function Dashboard() {
       <Section num="2" title="공고">
         <div className="row-1-2">
           <MiniGrid
-            title="공고"
             vertical
             entries={[
-              ["고용24 공고", j.bySource ? j.bySource.worknet : null],
-              ["직접 등록 공고", j.bySource ? j.bySource.direct : null, "/jobs-manual?src=direct", BLUE],
-              ["챗봇 등록 공고", j.bySource ? j.bySource.chatbot : null, "/jobs-manual?src=chatbot", GREEN],
-              ["누적 공고", j.total],
+              ["직접 등록", j.bySource ? j.bySource.direct : null, "/jobs-manual?src=direct", BLUE],
+              ["챗봇 등록", j.bySource ? j.bySource.chatbot : null, "/jobs-manual?src=chatbot", GREEN],
+              ["고용24", j.bySource ? j.bySource.worknet : null],
+              ["누적", j.total],
             ]}
           />
           <DailyChart title="신규 공고" series={j.dailyNew} color={ACCENT} wide />
