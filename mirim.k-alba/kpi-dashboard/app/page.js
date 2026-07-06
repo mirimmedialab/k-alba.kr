@@ -70,15 +70,14 @@ function TrendChart({ title, series, color }) {
   const data = series || [];
   const max = Math.max(1, ...data.map((d) => d.count));
   const W = 560;
-  const H = 150;
-  const P = { t: 16, r: 10, b: 22, l: 10 };
+  const H = 170;
+  const P = { t: 24, r: 12, b: 26, l: 12 };
   const iw = W - P.l - P.r;
   const ih = H - P.t - P.b;
   const x = (i) => P.l + (data.length > 1 ? (i / (data.length - 1)) * iw : iw / 2);
   const y = (v) => P.t + ih - (v / max) * ih;
   const pts = data.map((d, i) => `${x(i)},${y(d.count)}`).join(" ");
   const area = `M ${P.l},${P.t + ih} L ${pts.split(" ").join(" L ")} L ${P.l + iw},${P.t + ih} Z`;
-  const last = data.length - 1;
   return (
     <Card>
       <div style={{ fontSize: 13.5, fontWeight: 600, color: INK, marginBottom: 10 }}>
@@ -107,29 +106,31 @@ function TrendChart({ title, series, color }) {
               strokeLinejoin="round"
               strokeLinecap="round"
             />
-            {data[last] && data[last].count > 0 && (
-              <>
-                <circle cx={x(last)} cy={y(data[last].count)} r="3.5" fill={color} />
-                <text
-                  x={Math.min(x(last), P.l + iw - 8)}
-                  y={y(data[last].count) - 8}
-                  textAnchor="end"
-                  fontSize="11"
-                  fontWeight="600"
-                  fill={INK}
-                >
-                  {data[last].count.toLocaleString()}
-                </text>
-              </>
+            {data.map((d, i) =>
+              d.count > 0 ? (
+                <g key={`v${d.week}`}>
+                  <circle cx={x(i)} cy={y(d.count)} r="3" fill={color} />
+                  <text
+                    x={Math.max(P.l + 10, Math.min(x(i), P.l + iw - 10))}
+                    y={y(d.count) - 9}
+                    textAnchor="middle"
+                    fontSize="12"
+                    fontWeight="600"
+                    fill={INK}
+                  >
+                    {d.count.toLocaleString()}
+                  </text>
+                </g>
+              ) : null
             )}
             {data.map((d, i) =>
               i % 2 === 0 ? (
                 <text
                   key={d.week}
                   x={x(i)}
-                  y={H - 6}
+                  y={H - 7}
                   textAnchor="middle"
-                  fontSize="9.5"
+                  fontSize="11.5"
                   fill={MUTED}
                 >
                   {d.week.slice(5)}
@@ -143,34 +144,63 @@ function TrendChart({ title, series, color }) {
   );
 }
 
-function MiniGrid({ title, entries }) {
+function MiniGrid({ title, entries, vertical }) {
   return (
     <Card>
       <div style={{ fontSize: 13.5, fontWeight: 600, color: INK, marginBottom: 14 }}>{title}</div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: `repeat(${Math.min(entries.length, 4)}, 1fr)`,
-          gap: 10,
-        }}
-      >
-        {entries.map(([label, value]) => (
-          <div key={label} style={{ borderLeft: `2px solid ${BORDER}`, paddingLeft: 10 }}>
-            <div style={{ fontSize: 12, color: MUTED }}>{label}</div>
+      {vertical ? (
+        <div>
+          {entries.map(([label, value], i) => (
             <div
+              key={label}
               style={{
-                fontSize: 19,
-                fontWeight: 700,
-                color: INK,
-                marginTop: 3,
-                fontVariantNumeric: "tabular-nums",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                padding: "10px 2px",
+                borderBottom: i < entries.length - 1 ? `1px solid ${BORDER}` : "none",
               }}
             >
-              {value === null || value === undefined ? "–" : Number(value).toLocaleString()}
+              <span style={{ fontSize: 13, color: MUTED }}>{label}</span>
+              <span
+                style={{
+                  fontSize: 17,
+                  fontWeight: 700,
+                  color: INK,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {value === null || value === undefined ? "–" : Number(value).toLocaleString()}
+              </span>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: `repeat(${Math.min(entries.length, 4)}, 1fr)`,
+            gap: 10,
+          }}
+        >
+          {entries.map(([label, value]) => (
+            <div key={label} style={{ borderLeft: `2px solid ${BORDER}`, paddingLeft: 10 }}>
+              <div style={{ fontSize: 12, color: MUTED }}>{label}</div>
+              <div
+                style={{
+                  fontSize: 19,
+                  fontWeight: 700,
+                  color: INK,
+                  marginTop: 3,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {value === null || value === undefined ? "–" : Number(value).toLocaleString()}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </Card>
   );
 }
@@ -305,21 +335,6 @@ function StatGrid({ children }) {
   );
 }
 
-function ChartGrid({ children }) {
-  return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-        gap: 12,
-        marginTop: 12,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
 function ErrorNote({ msg }) {
   if (!msg) return null;
   return (
@@ -367,6 +382,7 @@ export default function Dashboard() {
   const c = data.content || null;
   const mk = data.marketing || null;
   const ch = (c && c.byChannel) || {};
+  const n = (v) => (typeof v === "number" ? v.toLocaleString() : "–");
 
   return (
     <div style={{ maxWidth: 1040, margin: "0 auto", padding: "32px 20px 64px" }}>
@@ -398,16 +414,15 @@ export default function Dashboard() {
           <Stat label="사장님" value={u.employers} />
           <Stat label="탈퇴" value={u.deactivations} />
         </StatGrid>
-        <ChartGrid>
+        <div className="row-1-1" style={{ marginTop: 12 }}>
           <TrendChart title="주간 신규 알바생" series={u.weeklyWorkers} color={ACCENT} />
           <TrendChart title="주간 신규 사장님" series={u.weeklyEmployers} color={INK} />
-        </ChartGrid>
+        </div>
       </Section>
 
       <Section title="② 공급 · 공고">
         <StatGrid>
-          <Stat label="활성 공고" value={j.active} />
-          <Stat label="누적 공고" value={j.total} />
+          <Stat label="활성 공고" value={j.active} sub={`(누적 ${n(j.total)})`} />
           <LinkStat
             href="/jobs-manual?src=direct"
             label="직접 등록"
@@ -421,29 +436,30 @@ export default function Dashboard() {
             sub="공고 목록"
           />
         </StatGrid>
-        <ChartGrid>
-          <TrendChart title="주간 신규 공고" series={j.weeklyNew} color={ACCENT} />
+        <div className="row-1-2" style={{ marginTop: 12 }}>
           <MiniGrid
             title="공고 소스"
+            vertical
             entries={[
-              ["고용24", j.bySource ? j.bySource.worknet : null],
+              ["고용24 자동 수집", j.bySource ? j.bySource.worknet : null],
               ["직접 등록", j.bySource ? j.bySource.direct : null],
               ["챗봇 등록", j.bySource ? j.bySource.chatbot : null],
             ]}
           />
-        </ChartGrid>
+          <TrendChart title="주간 신규 공고" series={j.weeklyNew} color={ACCENT} />
+        </div>
       </Section>
 
       <Section title="③ 매칭 · 핵심 성과">
-        <StatGrid>
-          <LinkStat href="/applications" label="누적 지원" value={m.applications} sub="지원 내역" />
-          <LinkStat href="/favorites" label="관심공고 저장" value={m.favorites} sub="저장 목록" />
-          <Stat label="계약 체결" value={m.contracts} />
-          <Stat label="시간제취업 신청" value={m.partwork} />
-        </StatGrid>
-        <ChartGrid>
+        <div className="row-1-1">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <LinkStat href="/applications" label="누적 지원" value={m.applications} sub="지원 내역" />
+            <LinkStat href="/favorites" label="관심공고 저장" value={m.favorites} sub="저장 목록" />
+            <Stat label="계약 체결" value={m.contracts} />
+            <Stat label="시간제취업 신청" value={m.partwork} />
+          </div>
           <TrendChart title="주간 지원 수" series={m.weeklyApplications} color={ACCENT} />
-        </ChartGrid>
+        </div>
       </Section>
 
       <Section title="④ 마케팅 채널">
@@ -460,9 +476,11 @@ export default function Dashboard() {
           <Stat label="총 좋아요" value={mk ? mk.totalLikes : null} />
           <Stat label="총 댓글" value={mk ? mk.totalComments : null} />
         </StatGrid>
-        <ChartGrid>
+        <div className="row-2-1" style={{ marginTop: 12 }}>
           {mk && <TrendChart title="주간 조회수" series={mk.weeklyViews} color={ACCENT} />}
           {mk && <BestList items={mk.items} />}
+        </div>
+        <div style={{ marginTop: 12 }}>
           <MiniGrid
             title="채널별 발행"
             entries={[
@@ -472,7 +490,7 @@ export default function Dashboard() {
               ["스레드", ch["스레드"] || 0],
             ]}
           />
-        </ChartGrid>
+        </div>
       </Section>
     </div>
   );

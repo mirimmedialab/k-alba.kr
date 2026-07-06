@@ -50,3 +50,26 @@ a.cardlink:hover .arrow {
   transform: translateX(2px);
   color: #191f28;
 }
+
+.row-1-1 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.row-1-2 {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 12px;
+}
+.row-2-1 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 840px) {
+  .row-1-1,
+  .row-1-2,
+  .row-2-1 {
+    grid-template-columns: 1fr;
+  }
+}
