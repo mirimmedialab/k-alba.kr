@@ -96,13 +96,17 @@ function analyzeContent(rows) {
   const stI = idx("발행상태");
   const catI = idx("분류");
   const dateI = idx("날짜");
+  // 발행완료된 콘텐츠만 집계 (아이디어/계획/미발행 백로그는 KPI에서 제외)
   const posts = [];
   for (const r of rows.slice(hi + 1)) {
     const ch = String(r[chI] || "").trim();
     if (!ch) continue;
+    const status = String(r[stI] || "").trim();
+    if (status !== "발행완료") continue;
+    // K-univ 계정 콘텐츠(인스타그램)은 K-ALBA KPI에서 제외
+    if (ch.includes("인스타")) continue;
     posts.push({
       channel: ch,
-      status: String(r[stI] || "").trim() || "계획",
       category: catI >= 0 ? String(r[catI] || "").trim() : "",
       date: dateI >= 0 ? String(r[dateI] || "").trim() : "",
     });
@@ -113,14 +117,11 @@ function analyzeContent(rows) {
       acc[k] = (acc[k] || 0) + 1;
       return acc;
     }, {});
-  const published = posts.filter((p) => p.status === "발행완료").length;
   return {
-    total: posts.length,
-    published,
-    publishRate: posts.length ? Math.round((published / posts.length) * 100) : 0,
+    published: posts.length,
     byChannel: groupBy("channel"),
-    byStatus: groupBy("status"),
     byCategory: groupBy("category"),
+    recentDates: posts.map((p) => p.date).filter(Boolean).slice(-10),
   };
 }
 

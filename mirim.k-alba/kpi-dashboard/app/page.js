@@ -255,12 +255,9 @@ export default function Dashboard() {
         <ErrorNote msg={data.contentError} />
         {c && (
           <>
-            <Stat label="계획 콘텐츠" value={c.total} />
-            <Stat label="발행 완료" value={c.published} accent />
-            <Stat label="발행률" value={c.publishRate} sub="% (발행완료/전체)" />
-            <HBars title="채널별 콘텐츠" data={c.byChannel} color={NAVY} />
-            <HBars title="발행 상태" data={c.byStatus} color={CORAL} />
-            <HBars title="콘텐츠 분류" data={c.byCategory} color={NAVY} />
+            <Stat label="발행 콘텐츠" value={c.published} accent sub="발행완료만 집계" />
+            <HBars title="채널별 발행 콘텐츠" data={c.byChannel} color={NAVY} />
+            <HBars title="발행 콘텐츠 분류" data={c.byCategory} color={CORAL} />
           </>
         )}
         <ErrorNote msg={data.metricsError} />
