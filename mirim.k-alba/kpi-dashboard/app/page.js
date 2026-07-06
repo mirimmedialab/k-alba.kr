@@ -420,12 +420,39 @@ function BestList({ items }) {
   );
 }
 
-function Section({ title, children }) {
+function Section({ num, title, first, children }) {
   return (
-    <div style={{ marginBottom: 40 }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: INK, marginBottom: 12 }}>{title}</div>
+    <section
+      style={{
+        marginBottom: 48,
+        paddingTop: first ? 0 : 36,
+        borderTop: first ? "none" : `1px solid ${BORDER}`,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+        <span
+          style={{
+            width: 26,
+            height: 26,
+            borderRadius: 8,
+            background: INK,
+            color: "#fff",
+            fontSize: 13,
+            fontWeight: 700,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          {num}
+        </span>
+        <span style={{ fontSize: 19, fontWeight: 700, color: INK, letterSpacing: "-0.01em" }}>
+          {title}
+        </span>
+      </div>
       {children}
-    </div>
+    </section>
   );
 }
 
@@ -515,20 +542,23 @@ export default function Dashboard() {
 
       <ErrorNote msg={data.dbError} />
 
-      <Section title="① 성장 · 사용자">
-        <StatGrid>
-          <LinkStat href="/users" label="전체 가입자" value={u.total} sub="달력 · 명단" />
-          <Stat label="알바생" value={u.workers} />
-          <Stat label="사장님" value={u.employers} />
-          <Stat label="탈퇴" value={u.deactivations} />
-        </StatGrid>
+      <Section num="1" title="성장 · 사용자" first>
+        <MiniGrid
+          title="가입 현황"
+          entries={[
+            ["전체 가입자", u.total, "/users"],
+            ["알바생", u.workers],
+            ["사장님", u.employers],
+            ["탈퇴", u.deactivations],
+          ]}
+        />
         <div className="row-1-1" style={{ marginTop: 12 }}>
           <DailyChart title="신규 알바생" series={u.dailyWorkers} color={ACCENT} />
           <DailyChart title="신규 사장님" series={u.dailyEmployers} color={INK} />
         </div>
       </Section>
 
-      <Section title="② 공급 · 공고">
+      <Section num="2" title="공급 · 공고">
         <div className="row-1-2">
           <MiniGrid
             title="공고"
@@ -544,7 +574,7 @@ export default function Dashboard() {
         </div>
       </Section>
 
-      <Section title="③ 매칭 · 핵심 성과">
+      <Section num="3" title="매칭 · 핵심 성과">
         <div className="row-1-1">
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <LinkStat href="/applications" label="누적 지원" value={m.applications} sub="지원 내역" />
@@ -556,20 +586,18 @@ export default function Dashboard() {
         </div>
       </Section>
 
-      <Section title="④ 마케팅 채널">
+      <Section num="4" title="마케팅 채널">
         <ErrorNote msg={data.contentError} />
         <ErrorNote msg={data.metricsError} />
-        <StatGrid>
-          <LinkStat
-            href="/marketing"
-            label="발행 콘텐츠"
-            value={c ? c.published : null}
-            sub="전체 리스트"
-          />
-          <Stat label="총 조회수" value={mk ? mk.totalViews : null} />
-          <Stat label="총 좋아요" value={mk ? mk.totalLikes : null} />
-          <Stat label="총 댓글" value={mk ? mk.totalComments : null} />
-        </StatGrid>
+        <MiniGrid
+          title="콘텐츠 성과"
+          entries={[
+            ["발행 콘텐츠", c ? c.published : null, "/marketing"],
+            ["총 조회수", mk ? mk.totalViews : null],
+            ["총 좋아요", mk ? mk.totalLikes : null],
+            ["총 댓글", mk ? mk.totalComments : null],
+          ]}
+        />
         <div className="row-2-1" style={{ marginTop: 12 }}>
           {mk && <DailyChart title="일별 조회수" series={mk.dailyViews} color={ACCENT} pointHref={(d) => `/marketing?date=${d.date}`} />}
           {mk && <BestList items={mk.items} />}
