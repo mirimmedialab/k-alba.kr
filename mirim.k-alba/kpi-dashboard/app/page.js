@@ -363,7 +363,7 @@ export default function Dashboard() {
       <ErrorNote msg={data.dbError} />
 
       {/* ① 성장 */}
-      <Section title="① 성장 · 사용자" sub="Supabase 실DB 자동 집계">
+      <Section title="① 성장 · 사용자">
         <LinkStat href="/users" label="전체 가입자" value={u.total} accent sub="달력·명단 보기" />
         <Stat label="알바생 (worker)" value={u.workers} />
         <Stat label="사장님 (employer)" value={u.employers} />
@@ -373,7 +373,7 @@ export default function Dashboard() {
       </Section>
 
       {/* ② 공급 */}
-      <Section title="② 공급 · 공고" sub="jobs 테이블">
+      <Section title="② 공급 · 공고">
         <Stat label="활성 공고" value={j.active} accent />
         <Stat label="누적 공고" value={j.total} />
         <LinkStat href="/jobs-manual?src=direct" label="직접 등록" value={j.bySource ? j.bySource.direct : null} sub="공고 목록" />
@@ -388,7 +388,7 @@ export default function Dashboard() {
       </Section>
 
       {/* ③ 매칭 */}
-      <Section title="③ 매칭 · 핵심 성과" sub="지원 → 계약 퍼널">
+      <Section title="③ 매칭 · 핵심 성과">
         <LinkStat href="/applications" label="누적 지원" value={m.applications} accent sub="지원 내역" />
         <LinkStat href="/favorites" label="관심공고 저장" value={m.favorites} sub="저장 목록" />
         <Stat label="계약 체결" value={m.contracts} />
@@ -397,7 +397,7 @@ export default function Dashboard() {
       </Section>
 
       {/* ④ 마케팅 */}
-      <Section title="④ 마케팅 채널" sub="구글시트 [K-ABLA]Content · [K-ALBA]성과 탭 자동 연동">
+      <Section title="④ 마케팅 채널">
         <ErrorNote msg={data.contentError} />
         <ErrorNote msg={data.metricsError} />
         <LinkStat
