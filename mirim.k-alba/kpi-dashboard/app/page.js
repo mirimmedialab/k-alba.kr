@@ -24,7 +24,7 @@ function Stat({ label, value, sub }) {
       <div style={{ fontSize: 12.5, color: MUTED, fontWeight: 500 }}>{label}</div>
       <div
         style={{
-          fontSize: 26,
+          fontSize: 17,
           fontWeight: 700,
           color: INK,
           marginTop: 6,
@@ -52,7 +52,7 @@ function LinkStat({ href, label, value, sub }) {
         <div style={{ fontSize: 12.5, color: MUTED, fontWeight: 500 }}>{label}</div>
         <div
           style={{
-            fontSize: 26,
+            fontSize: 17,
             fontWeight: 700,
             color: INK,
             marginTop: 6,
