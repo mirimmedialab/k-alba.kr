@@ -86,7 +86,7 @@ export default function UsersDetail() {
     const n = new Date();
     return new Date(n.getFullYear(), n.getMonth(), 1);
   });
-  const [selectedDay, setSelectedDay] = useState("");
+  const [selectedDay, setSelectedDay] = useState(() => dkey(new Date().toISOString())); // 기본: 오늘
 
   useEffect(() => {
     fetch("/api/detail?type=users")

@@ -40,7 +40,7 @@ function Stat({ label, value, sub }) {
 function LinkStat({ href, label, value, sub }) {
   return (
     <a className="cardlink" href={href}>
-      <Card style={{ position: "relative", border: `2px solid ${INK}` }}>
+      <Card style={{ position: "relative", border: "2px solid #c8d0da" }}>
         <span
           className="arrow"
           style={{ position: "absolute", top: 16, right: 18, color: MUTED, fontSize: 15 }}
