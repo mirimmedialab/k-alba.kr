@@ -1,0 +1,327 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+const NAVY = "#1a2340";
+const CORAL = "#ff6b5e";
+const MUTED = "#8a93a8";
+const BORDER = "#e6eaf2";
+
+function Card({ children, style }) {
+  return (
+    <div
+      style={{
+        background: "#fff",
+        borderRadius: 14,
+        border: `1px solid ${BORDER}`,
+        padding: 20,
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Stat({ label, value, sub, accent }) {
+  return (
+    <Card style={{ flex: "1 1 150px", minWidth: 150 }}>
+      <div style={{ fontSize: 13, color: MUTED, fontWeight: 600 }}>{label}</div>
+      <div
+        style={{
+          fontSize: 30,
+          fontWeight: 800,
+          color: accent ? CORAL : NAVY,
+          marginTop: 6,
+          lineHeight: 1.1,
+        }}
+      >
+        {value === null || value === undefined ? "–" : Number(value).toLocaleString()}
+      </div>
+      {sub && <div style={{ fontSize: 12, color: MUTED, marginTop: 6 }}>{sub}</div>}
+    </Card>
+  );
+}
+
+function WeeklyBars({ title, series, color }) {
+  const data = series || [];
+  const max = Math.max(1, ...data.map((d) => d.count));
+  const W = 560;
+  const H = 120;
+  const bw = data.length ? W / data.length : W;
+  return (
+    <Card style={{ flex: "1 1 340px", minWidth: 300 }}>
+      <div style={{ fontSize: 14, fontWeight: 700, color: NAVY, marginBottom: 12 }}>
+        {title} <span style={{ color: MUTED, fontWeight: 500 }}>· 최근 12주</span>
+      </div>
+      <svg viewBox={`0 0 ${W} ${H + 24}`} style={{ width: "100%", height: "auto", display: "block" }}>
+        {data.map((d, i) => {
+          const h = Math.round((d.count / max) * (H - 16));
+          return (
+            <g key={d.week}>
+              <rect
+                x={i * bw + bw * 0.18}
+                y={H - h}
+                width={bw * 0.64}
+                height={Math.max(h, d.count > 0 ? 3 : 1)}
+                rx={3}
+                fill={d.count > 0 ? color : "#eef1f7"}
+              />
+              {d.count > 0 && (
+                <text
+                  x={i * bw + bw / 2}
+                  y={H - h - 5}
+                  textAnchor="middle"
+                  fontSize="11"
+                  fontWeight="700"
+                  fill={NAVY}
+                >
+                  {d.count}
+                </text>
+              )}
+              <text
+                x={i * bw + bw / 2}
+                y={H + 16}
+                textAnchor="middle"
+                fontSize="9"
+                fill={MUTED}
+              >
+                {d.week.slice(5)}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </Card>
+  );
+}
+
+function HBars({ title, data, color, note }) {
+  const entries = Object.entries(data || {}).sort((a, b) => b[1] - a[1]);
+  const max = Math.max(1, ...entries.map(([, v]) => v));
+  return (
+    <Card style={{ flex: "1 1 260px", minWidth: 240 }}>
+      <div style={{ fontSize: 14, fontWeight: 700, color: NAVY, marginBottom: 12 }}>{title}</div>
+      {entries.length === 0 && <div style={{ fontSize: 13, color: MUTED }}>데이터 없음</div>}
+      {entries.map(([k, v]) => (
+        <div key={k} style={{ marginBottom: 10 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: 13,
+              marginBottom: 4,
+            }}
+          >
+            <span style={{ color: NAVY, fontWeight: 600 }}>{k}</span>
+            <span style={{ color: MUTED, fontWeight: 700 }}>{v.toLocaleString()}</span>
+          </div>
+          <div style={{ background: "#eef1f7", borderRadius: 6, height: 8 }}>
+            <div
+              style={{
+                width: `${Math.round((v / max) * 100)}%`,
+                background: color,
+                height: 8,
+                borderRadius: 6,
+              }}
+            />
+          </div>
+        </div>
+      ))}
+      {note && <div style={{ fontSize: 12, color: MUTED, marginTop: 8 }}>{note}</div>}
+    </Card>
+  );
+}
+
+function Section({ title, sub, children }) {
+  return (
+    <div style={{ marginBottom: 36 }}>
+      <div style={{ marginBottom: 14 }}>
+        <span style={{ fontSize: 18, fontWeight: 800, color: NAVY }}>{title}</span>
+        {sub && <span style={{ fontSize: 13, color: MUTED, marginLeft: 10 }}>{sub}</span>}
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>{children}</div>
+    </div>
+  );
+}
+
+function ErrorNote({ msg }) {
+  if (!msg) return null;
+  return (
+    <div
+      style={{
+        background: "#fff4f3",
+        border: "1px solid #ffd6d2",
+        color: "#c0392b",
+        borderRadius: 10,
+        padding: "10px 14px",
+        fontSize: 13,
+        marginBottom: 14,
+        width: "100%",
+      }}
+    >
+      ⚠️ {msg}
+    </div>
+  );
+}
+
+export default function Dashboard() {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch("/api/kpi")
+      .then((r) => r.json())
+      .then(setData)
+      .catch((e) => setError(String(e)));
+  }, []);
+
+  if (error) {
+    return <div style={{ padding: 40, color: "#c0392b" }}>불러오기 실패: {error}</div>;
+  }
+  if (!data) {
+    return (
+      <div style={{ padding: 60, textAlign: "center", color: MUTED, fontSize: 15 }}>
+        KPI 데이터를 불러오는 중…
+      </div>
+    );
+  }
+
+  const u = data.users || {};
+  const j = data.jobs || {};
+  const m = data.matching || {};
+  const c = data.content || null;
+  const met = data.metrics || null;
+
+  return (
+    <div style={{ maxWidth: 1080, margin: "0 auto", padding: "28px 20px 60px" }}>
+      {/* 헤더 */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 8,
+          marginBottom: 28,
+        }}
+      >
+        <div style={{ fontSize: 24, fontWeight: 800, color: NAVY }}>
+          K-ALBA <span style={{ color: CORAL }}>KPI</span> 대시보드
+        </div>
+        <div style={{ fontSize: 12, color: MUTED }}>
+          업데이트: {new Date(data.generatedAt).toLocaleString("ko-KR")}
+        </div>
+      </div>
+
+      <ErrorNote msg={data.dbError} />
+
+      {/* ① 성장 */}
+      <Section title="① 성장 · 사용자" sub="Supabase 실DB 자동 집계">
+        <Stat label="전체 가입자" value={u.total} accent />
+        <Stat label="알바생 (worker)" value={u.workers} />
+        <Stat label="사장님 (employer)" value={u.employers} />
+        <Stat label="탈퇴(비활성화)" value={u.deactivations} />
+        <WeeklyBars title="주간 신규 알바생" series={u.weeklyWorkers} color={NAVY} />
+        <WeeklyBars title="주간 신규 사장님" series={u.weeklyEmployers} color={CORAL} />
+      </Section>
+
+      {/* ② 공급 */}
+      <Section title="② 공급 · 공고" sub="jobs 테이블">
+        <Stat label="활성 공고" value={j.active} accent />
+        <Stat label="누적 공고" value={j.total} />
+        <Stat label="직접 등록" value={j.bySource ? j.bySource.direct : null} sub="사장님 웹 등록" />
+        <Stat label="챗봇 등록" value={j.bySource ? j.bySource.chatbot : null} sub="카카오 알비 경유" />
+        <WeeklyBars title="주간 신규 공고" series={j.weeklyNew} color={NAVY} />
+        <HBars
+          title="공고 소스 비중"
+          data={j.bySource || {}}
+          color={CORAL}
+          note="worknet=고용24 연동 · direct=직접 등록 · chatbot=카카오 챗봇"
+        />
+      </Section>
+
+      {/* ③ 매칭 */}
+      <Section title="③ 매칭 · 핵심 성과" sub="지원 → 계약 퍼널">
+        <Stat label="누적 지원" value={m.applications} accent />
+        <Stat label="관심공고 저장" value={m.favorites} />
+        <Stat label="계약 체결" value={m.contracts} />
+        <Stat label="시간제취업 신청" value={m.partwork} />
+        <WeeklyBars title="주간 지원 수" series={m.weeklyApplications} color={CORAL} />
+      </Section>
+
+      {/* ④ 마케팅 */}
+      <Section title="④ 마케팅 채널" sub="구글시트 (Tiktok/reel Content 관리) 자동 연동">
+        <ErrorNote msg={data.contentError} />
+        {c && (
+          <>
+            <Stat label="계획 콘텐츠" value={c.total} />
+            <Stat label="발행 완료" value={c.published} accent />
+            <Stat label="발행률" value={c.publishRate} sub="% (발행완료/전체)" />
+            <HBars title="채널별 콘텐츠" data={c.byChannel} color={NAVY} />
+            <HBars title="발행 상태" data={c.byStatus} color={CORAL} />
+            <HBars title="콘텐츠 분류" data={c.byCategory} color={NAVY} />
+          </>
+        )}
+        <ErrorNote msg={data.metricsError} />
+        {met && met.rows && met.rows.length > 0 && (
+          <Card style={{ flex: "1 1 100%", overflowX: "auto" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: NAVY, marginBottom: 12 }}>
+              채널 성과 수치 <span style={{ color: MUTED, fontWeight: 500 }}>· 시트 수기 입력</span>
+            </div>
+            <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 13 }}>
+              <thead>
+                <tr>
+                  {met.columns.map((col) => (
+                    <th
+                      key={col}
+                      style={{
+                        textAlign: "left",
+                        padding: "8px 10px",
+                        borderBottom: `2px solid ${BORDER}`,
+                        color: MUTED,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {col}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {met.rows.map((row, i) => (
+                  <tr key={i}>
+                    {met.columns.map((col) => (
+                      <td
+                        key={col}
+                        style={{
+                          padding: "8px 10px",
+                          borderBottom: `1px solid ${BORDER}`,
+                          color: NAVY,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {typeof row[col] === "number"
+                          ? row[col].toLocaleString()
+                          : row[col] || ""}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        )}
+        {!met && !data.metricsError && (
+          <Card style={{ flex: "1 1 100%" }}>
+            <div style={{ fontSize: 13, color: MUTED, lineHeight: 1.7 }}>
+              💡 조회수·팔로워 등 <b>채널 성과 수치</b>를 보려면 구글시트에 <b>KPI 입력 탭</b>을
+              만들고 (헤더: 날짜 | 채널 | 팔로워 | 조회수 | 좋아요 | 클릭), 해당 탭의 gid를
+              Vercel 환경변수 <code>SHEET_GID_METRICS</code>에 넣어주세요.
+            </div>
+          </Card>
+        )}
+      </Section>
+    </div>
+  );
+}
