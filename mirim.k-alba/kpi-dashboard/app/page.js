@@ -74,14 +74,15 @@ function fmtMD(dateStr) {
   return `${+dateStr.slice(5, 7)}/${+dateStr.slice(8, 10)}`;
 }
 
-function DailyChart({ title, series, color, pointHref }) {
+function DailyChart({ title, series, color, pointHref, wide }) {
   const [offset, setOffset] = useState(0);
   const data = series || [];
   const maxOffset = Math.max(0, Math.floor(data.length / 7) - 1);
   const end = data.length - offset * 7;
   const win = data.slice(Math.max(0, end - 7), end);
   const max = Math.max(1, ...win.map((d) => d.count));
-  const W = 560;
+  // 렌더링 폭에 좌표계를 맞춰 1~4번 그래프의 글씨 크기를 동일하게 유지
+  const W = wide ? 620 : 454;
   const H = 180;
   const P = { t: 26, r: 16, b: 34, l: 16 };
   const iw = W - P.l - P.r;
@@ -572,7 +573,7 @@ export default function Dashboard() {
               ["누적 공고", j.total],
             ]}
           />
-          <DailyChart title="신규 공고" series={j.dailyNew} color={ACCENT} />
+          <DailyChart title="신규 공고" series={j.dailyNew} color={ACCENT} wide />
         </div>
       </Section>
 
@@ -601,7 +602,7 @@ export default function Dashboard() {
           ]}
         />
         <div className="row-2-1" style={{ marginTop: 12 }}>
-          {mk && <DailyChart title="일별 조회수" series={mk.dailyViews} color={ACCENT} pointHref={(d) => `/marketing?date=${d.date}`} />}
+          {mk && <DailyChart title="일별 조회수" series={mk.dailyViews} color={ACCENT} pointHref={(d) => `/marketing?date=${d.date}`} wide />}
           {mk && <BestList items={mk.items} />}
         </div>
         <div style={{ marginTop: 12 }}>
