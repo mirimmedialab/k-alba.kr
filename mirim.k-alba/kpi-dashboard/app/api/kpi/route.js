@@ -100,6 +100,7 @@ function analyzeContent(rows) {
   const subjI = idx("주제");
   const titleI = idx("제목");
   const linkI = idx("게시물링크");
+  const numI = idx("번호");
   // 발행완료된 콘텐츠만 집계 (아이디어/계획/미발행 백로그는 KPI에서 제외)
   const posts = [];
   for (const r of rows.slice(hi + 1)) {
@@ -112,6 +113,7 @@ function analyzeContent(rows) {
     const linkCell = linkI >= 0 ? String(r[linkI] || "") : "";
     const urlMatch = linkCell.match(/https?:\/\/[^\s"',]+/);
     posts.push({
+      num: numI >= 0 ? String(r[numI] || "").trim() : "",
       channel: ch,
       category: catI >= 0 ? String(r[catI] || "").trim() : "",
       date: dateI >= 0 ? String(r[dateI] || "").trim() : "",
@@ -132,6 +134,13 @@ function analyzeContent(rows) {
     byCategory: groupBy("category"),
     posts,
   };
+}
+
+/* ---------- 한국식 날짜 파싱: "2026. 7. 2(목)" ---------- */
+function parseKDate(s) {
+  const m = String(s || "").match(/(\d{4})\s*[.\-\/]\s*(\d{1,2})\s*[.\-\/]\s*(\d{1,2})/);
+  if (!m) return null;
+  return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
 }
 
 /* ---------- 채널 성과 수치 탭 분석 (수기 입력) ---------- */
@@ -282,6 +291,59 @@ export async function GET() {
     } catch (e) {
       result.metricsError = String((e && e.message) || e);
     }
+  }
+
+  /* --- 마케팅 병합 요약 (성과 탭 + Content 탭 링크, 번호 매칭) --- */
+  if (result.metrics && result.metrics.rows) {
+    const posts = (result.content && result.content.posts) || [];
+    const byNum = {};
+    for (const p of posts) if (p.num) byNum[p.num] = p;
+    const items = result.metrics.rows
+      .map((r) => {
+        const num = String(r["번호"] || "").trim();
+        const p = byNum[num] || null;
+        const d1 = r["조회 수(D+1)"];
+        const d3 = r["조회 수(D+3)"];
+        const d7 = r["조회 수(D+7)"];
+        const latest = [d7, d3, d1].find((v) => typeof v === "number");
+        const dateObj = parseKDate(r["날짜"]);
+        return {
+          num,
+          date: String(r["날짜"] || ""),
+          channel: String(r["채널"] || ""),
+          title: String(r["제목"] || "") || (p ? p.subject : ""),
+          viewsD1: typeof d1 === "number" ? d1 : null,
+          viewsD3: typeof d3 === "number" ? d3 : null,
+          viewsD7: typeof d7 === "number" ? d7 : null,
+          views: typeof latest === "number" ? latest : null,
+          likes: typeof r["좋아요 수(D+7)"] === "number" ? r["좋아요 수(D+7)"] : null,
+          comments: typeof r["댓글 수(D+7)"] === "number" ? r["댓글 수(D+7)"] : null,
+          shares: typeof r["공유 수(D+7)"] === "number" ? r["공유 수(D+7)"] : null,
+          url: p ? p.url : "",
+          ts: dateObj ? dateObj.getTime() : 0,
+        };
+      })
+      .filter((it) => !it.channel.includes("인스타"));
+    items.sort((a, b) => b.ts - a.ts);
+    const sum = (k) => items.reduce((a, it) => a + (typeof it[k] === "number" ? it[k] : 0), 0);
+    const weeklyPublished = buildWeeklySeries(
+      items.filter((it) => it.ts).map((it) => ({ created_at: new Date(it.ts).toISOString() })),
+      WEEKS
+    );
+    const best = items
+      .filter((it) => typeof it.views === "number")
+      .slice()
+      .sort((a, b) => b.views - a.views)
+      .slice(0, 10);
+    result.marketing = {
+      totalViews: sum("views"),
+      totalLikes: sum("likes"),
+      totalComments: sum("comments"),
+      totalShares: sum("shares"),
+      weeklyPublished,
+      best,
+      items,
+    };
   }
 
   return NextResponse.json(result);

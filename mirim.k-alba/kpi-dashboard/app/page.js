@@ -145,6 +145,68 @@ function Section({ title, sub, children }) {
   );
 }
 
+function BestList({ items }) {
+  const list = (items || []).slice(0, 5);
+  const max = Math.max(1, ...list.map((it) => it.views || 0));
+  return (
+    <Card style={{ flex: "1 1 340px", minWidth: 300 }}>
+      <div style={{ fontSize: 14, fontWeight: 700, color: NAVY, marginBottom: 12 }}>
+        BEST 콘텐츠 <span style={{ color: MUTED, fontWeight: 500 }}>· 조회수 기준 TOP 5</span>
+      </div>
+      {list.length === 0 && <div style={{ fontSize: 13, color: MUTED }}>데이터 없음</div>}
+      {list.map((it, i) => (
+        <div key={i} style={{ marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+            <span
+              style={{
+                width: 20,
+                height: 20,
+                borderRadius: 6,
+                background: i === 0 ? CORAL : "#eef1f7",
+                color: i === 0 ? "#fff" : MUTED,
+                fontSize: 11,
+                fontWeight: 800,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              {i + 1}
+            </span>
+            <span
+              style={{
+                fontSize: 13,
+                color: NAVY,
+                fontWeight: 600,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                flex: 1,
+              }}
+            >
+              {it.title || "(제목 없음)"}
+            </span>
+            <span style={{ fontSize: 13, color: MUTED, fontWeight: 700, flexShrink: 0 }}>
+              {(it.views || 0).toLocaleString()}회
+            </span>
+          </div>
+          <div style={{ background: "#eef1f7", borderRadius: 6, height: 6, marginLeft: 28 }}>
+            <div
+              style={{
+                width: `${Math.round(((it.views || 0) / max) * 100)}%`,
+                background: NAVY,
+                height: 6,
+                borderRadius: 6,
+              }}
+            />
+          </div>
+        </div>
+      ))}
+    </Card>
+  );
+}
+
 function ErrorNote({ msg }) {
   if (!msg) return null;
   return (
@@ -191,7 +253,7 @@ export default function Dashboard() {
   const j = data.jobs || {};
   const m = data.matching || {};
   const c = data.content || null;
-  const met = data.metrics || null;
+  const mk = data.marketing || null;
 
   return (
     <div style={{ maxWidth: 1080, margin: "0 auto", padding: "28px 20px 60px" }}>
@@ -251,66 +313,26 @@ export default function Dashboard() {
       </Section>
 
       {/* ④ 마케팅 */}
-      <Section title="④ 마케팅 채널" sub="구글시트 (Tiktok/reel Content 관리) 자동 연동">
+      <Section title="④ 마케팅 채널" sub="구글시트 [K-ABLA]Content · [K-ALBA]성과 탭 자동 연동">
         <ErrorNote msg={data.contentError} />
-        {c && (
-          <>
-            <a href="/marketing" style={{ flex: "1 1 150px", minWidth: 150, textDecoration: "none", cursor: "pointer" }}>
-              <Stat label="발행 콘텐츠 →" value={c.published} accent sub="클릭하면 발행 리스트" />
-            </a>
-            <HBars title="채널별 발행 콘텐츠" data={c.byChannel} color={NAVY} />
-            <HBars title="발행 콘텐츠 분류" data={c.byCategory} color={CORAL} />
-          </>
-        )}
         <ErrorNote msg={data.metricsError} />
-        {met && met.rows && met.rows.length > 0 && (
-          <Card style={{ flex: "1 1 100%", overflowX: "auto" }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: NAVY, marginBottom: 12 }}>
-              채널 성과 수치 <span style={{ color: MUTED, fontWeight: 500 }}>· 시트 [K-ALBA]성과 탭 자동 연동</span>
-            </div>
-            <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 13 }}>
-              <thead>
-                <tr>
-                  {met.columns.map((col) => (
-                    <th
-                      key={col}
-                      style={{
-                        textAlign: "left",
-                        padding: "8px 10px",
-                        borderBottom: `2px solid ${BORDER}`,
-                        color: MUTED,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {col}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {met.rows.map((row, i) => (
-                  <tr key={i}>
-                    {met.columns.map((col) => (
-                      <td
-                        key={col}
-                        style={{
-                          padding: "8px 10px",
-                          borderBottom: `1px solid ${BORDER}`,
-                          color: NAVY,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {typeof row[col] === "number"
-                          ? row[col].toLocaleString()
-                          : row[col] || ""}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </Card>
-        )}
+        <a
+          href="/marketing"
+          style={{ flex: "1 1 150px", minWidth: 150, textDecoration: "none", cursor: "pointer" }}
+        >
+          <Stat
+            label="발행 콘텐츠 →"
+            value={c ? c.published : null}
+            accent
+            sub="클릭하면 전체 리스트"
+          />
+        </a>
+        <Stat label="총 조회수" value={mk ? mk.totalViews : null} sub="게시물별 최신 조회수 합" />
+        <Stat label="총 좋아요" value={mk ? mk.totalLikes : null} />
+        <Stat label="총 댓글" value={mk ? mk.totalComments : null} />
+        {mk && <WeeklyBars title="주간 발행 콘텐츠" series={mk.weeklyPublished} color={CORAL} />}
+        {mk && <BestList items={mk.best} />}
+        {c && <HBars title="채널별 발행" data={c.byChannel} color={NAVY} />}
       </Section>
     </div>
   );

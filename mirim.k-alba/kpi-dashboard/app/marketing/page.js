@@ -7,6 +7,18 @@ const CORAL = "#ff6b5e";
 const MUTED = "#8a93a8";
 const BORDER = "#e6eaf2";
 
+const td = {
+  padding: "10px 12px",
+  borderBottom: `1px solid ${BORDER}`,
+  whiteSpace: "nowrap",
+  color: NAVY,
+};
+const tdNum = { ...td, textAlign: "right", fontVariantNumeric: "tabular-nums" };
+
+function n(v) {
+  return typeof v === "number" ? v.toLocaleString() : "–";
+}
+
 export default function MarketingDetail() {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
@@ -29,19 +41,20 @@ export default function MarketingDetail() {
     );
   }
 
-  const posts = (data.content && data.content.posts) || [];
+  const mk = data.marketing || null;
+  const items = (mk && mk.items) || [];
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 20px 60px" }}>
+    <div style={{ maxWidth: 1080, margin: "0 auto", padding: "28px 20px 60px" }}>
       <div style={{ marginBottom: 24 }}>
         <a href="/" style={{ fontSize: 13, color: MUTED, textDecoration: "none" }}>
           ← KPI 대시보드로
         </a>
         <div style={{ fontSize: 22, fontWeight: 800, color: NAVY, marginTop: 8 }}>
-          발행 콘텐츠 <span style={{ color: CORAL }}>{posts.length}</span>건
+          발행 콘텐츠 <span style={{ color: CORAL }}>{items.length}</span>건
         </div>
         <div style={{ fontSize: 13, color: MUTED, marginTop: 4 }}>
-          구글시트 [K-ABLA]Content 탭 · 발행완료만 (K-univ 제외)
+          구글시트 [K-ALBA]성과 탭 · 최신순 · K-univ 제외
         </div>
       </div>
 
@@ -54,23 +67,34 @@ export default function MarketingDetail() {
           overflowX: "auto",
         }}
       >
-        {posts.length === 0 ? (
+        {items.length === 0 ? (
           <div style={{ fontSize: 14, color: MUTED }}>
-            {data.contentError ? `⚠️ ${data.contentError}` : "발행완료된 콘텐츠가 없습니다."}
+            {data.metricsError ? `⚠️ ${data.metricsError}` : "발행된 콘텐츠가 없습니다."}
           </div>
         ) : (
-          <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 14 }}>
+          <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 13.5 }}>
             <thead>
               <tr>
-                {["날짜", "채널", "주제", "게시물 링크"].map((h) => (
+                {[
+                  ["날짜", "left"],
+                  ["채널", "left"],
+                  ["제목", "left"],
+                  ["조회(D+1)", "right"],
+                  ["조회(D+3)", "right"],
+                  ["조회(D+7)", "right"],
+                  ["좋아요", "right"],
+                  ["댓글", "right"],
+                  ["공유", "right"],
+                  ["링크", "left"],
+                ].map(([h, align]) => (
                   <th
                     key={h}
                     style={{
-                      textAlign: "left",
+                      textAlign: align,
                       padding: "10px 12px",
                       borderBottom: `2px solid ${BORDER}`,
                       color: MUTED,
-                      fontSize: 13,
+                      fontSize: 12.5,
                       whiteSpace: "nowrap",
                     }}
                   >
@@ -80,12 +104,10 @@ export default function MarketingDetail() {
               </tr>
             </thead>
             <tbody>
-              {posts.map((p, i) => (
+              {items.map((it, i) => (
                 <tr key={i}>
-                  <td style={{ padding: "10px 12px", borderBottom: `1px solid ${BORDER}`, whiteSpace: "nowrap", color: NAVY }}>
-                    {p.date || "–"}
-                  </td>
-                  <td style={{ padding: "10px 12px", borderBottom: `1px solid ${BORDER}`, whiteSpace: "nowrap" }}>
+                  <td style={td}>{it.date || "–"}</td>
+                  <td style={td}>
                     <span
                       style={{
                         background: "#ffe9e6",
@@ -96,24 +118,38 @@ export default function MarketingDetail() {
                         borderRadius: 20,
                       }}
                     >
-                      {p.channel}
+                      {it.channel}
                     </span>
                   </td>
-                  <td style={{ padding: "10px 12px", borderBottom: `1px solid ${BORDER}`, color: NAVY, maxWidth: 420 }}>
-                    {p.subject || p.title || "–"}
+                  <td
+                    style={{
+                      ...td,
+                      whiteSpace: "normal",
+                      minWidth: 200,
+                      maxWidth: 340,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {it.title || "(제목 없음)"}
                   </td>
-                  <td style={{ padding: "10px 12px", borderBottom: `1px solid ${BORDER}`, whiteSpace: "nowrap" }}>
-                    {p.url ? (
+                  <td style={tdNum}>{n(it.viewsD1)}</td>
+                  <td style={tdNum}>{n(it.viewsD3)}</td>
+                  <td style={tdNum}>{n(it.viewsD7)}</td>
+                  <td style={tdNum}>{n(it.likes)}</td>
+                  <td style={tdNum}>{n(it.comments)}</td>
+                  <td style={tdNum}>{n(it.shares)}</td>
+                  <td style={td}>
+                    {it.url ? (
                       <a
-                        href={p.url}
+                        href={it.url}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{ color: "#2b6cb0", fontWeight: 600 }}
                       >
-                        게시물 보기 ↗
+                        보기 ↗
                       </a>
                     ) : (
-                      <span style={{ color: MUTED }}>링크 없음</span>
+                      <span style={{ color: MUTED }}>–</span>
                     )}
                   </td>
                 </tr>
@@ -121,6 +157,11 @@ export default function MarketingDetail() {
             </tbody>
           </table>
         )}
+      </div>
+
+      <div style={{ fontSize: 12, color: MUTED, marginTop: 12, lineHeight: 1.6 }}>
+        · 성과 수치는 구글시트 <b>[K-ALBA]성과</b> 탭에서 자동으로 읽어옵니다. 링크는{" "}
+        <b>[K-ABLA]Content</b> 탭의 게시물 링크를 번호 기준으로 연결합니다.
       </div>
     </div>
   );
