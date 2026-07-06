@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 
-const NAVY = "#1a2340";
+const NAVY = "#191f28";
 const CORAL = "#ff6b5e";
-const MUTED = "#8a93a8";
-const BORDER = "#e6eaf2";
+const MUTED = "#8b95a1";
+const BORDER = "#eceef1";
 
 const td = {
   padding: "10px 12px",
@@ -176,7 +176,7 @@ export default function MarketingDetail() {
             textDecoration: "none",
           }}
         >
-          📄 원본 시트 바로가기 ↗
+          원본 시트 열기 ↗
         </a>
       </div>
     </div>

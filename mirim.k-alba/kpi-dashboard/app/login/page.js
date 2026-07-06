@@ -54,10 +54,10 @@ export default function LoginPage() {
           textAlign: "center",
         }}
       >
-        <div style={{ fontSize: 26, fontWeight: 800, color: "#1a2340" }}>
+        <div style={{ fontSize: 26, fontWeight: 800, color: "#191f28" }}>
           K-ALBA <span style={{ color: "#ff6b5e" }}>KPI</span>
         </div>
-        <div style={{ fontSize: 14, color: "#8a93a8", marginTop: 6, marginBottom: 28 }}>
+        <div style={{ fontSize: 14, color: "#8b95a1", marginTop: 6, marginBottom: 28 }}>
           내부 대시보드 — 비밀번호를 입력하세요
         </div>
         <input
@@ -89,7 +89,7 @@ export default function LoginPage() {
             fontSize: 15,
             fontWeight: 700,
             color: "#fff",
-            background: loading || !password ? "#b8c0d4" : "#1a2340",
+            background: loading || !password ? "#b8c0d4" : "#191f28",
             border: "none",
             borderRadius: 10,
             cursor: loading || !password ? "default" : "pointer",

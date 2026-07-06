@@ -108,8 +108,6 @@ function analyzeContent(rows) {
     if (!ch) continue;
     const status = String(r[stI] || "").trim();
     if (status !== "발행완료") continue;
-    // K-univ 계정 콘텐츠(인스타그램)은 K-ALBA KPI에서 제외
-    if (ch.includes("인스타")) continue;
     const linkCell = linkI >= 0 ? String(r[linkI] || "") : "";
     const urlMatch = linkCell.match(/https?:\/\/[^\s"',]+/);
     posts.push({
@@ -322,8 +320,7 @@ export async function GET() {
           url: p ? p.url : "",
           ts: dateObj ? dateObj.getTime() : 0,
         };
-      })
-      .filter((it) => !it.channel.includes("인스타"));
+      });
     items.sort((a, b) => b.ts - a.ts);
     const sum = (k) => items.reduce((a, it) => a + (typeof it[k] === "number" ? it[k] : 0), 0);
     const weeklyPublished = buildWeeklySeries(

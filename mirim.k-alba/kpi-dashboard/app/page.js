@@ -2,196 +2,187 @@
 
 import { useEffect, useState } from "react";
 
-const NAVY = "#1a2340";
-const CORAL = "#ff6b5e";
-const MUTED = "#8a93a8";
-const BORDER = "#e6eaf2";
+const INK = "#191f28";
+const MUTED = "#8b95a1";
+const BORDER = "#eceef1";
+const ACCENT = "#ff6b5e";
+const FILL = "#f2f4f6";
 
 function Card({ children, style }) {
   return (
-    <div
-      style={{
-        background: "#fff",
-        borderRadius: 14,
-        border: `1px solid ${BORDER}`,
-        padding: 20,
-        ...style,
-      }}
-    >
+    <div className="card" style={style}>
       {children}
     </div>
   );
 }
 
-function Stat({ label, value, sub, accent }) {
+function Stat({ label, value, sub }) {
   return (
-    <Card style={{ flex: "1 1 150px", minWidth: 150 }}>
-      <div style={{ fontSize: 13, color: MUTED, fontWeight: 600 }}>{label}</div>
+    <Card>
+      <div style={{ fontSize: 12.5, color: MUTED, fontWeight: 500 }}>{label}</div>
       <div
         style={{
-          fontSize: 30,
-          fontWeight: 800,
-          color: accent ? CORAL : NAVY,
+          fontSize: 26,
+          fontWeight: 700,
+          color: INK,
           marginTop: 6,
-          lineHeight: 1.1,
+          lineHeight: 1.15,
+          fontVariantNumeric: "tabular-nums",
         }}
       >
         {value === null || value === undefined ? "–" : Number(value).toLocaleString()}
       </div>
-      {sub && <div style={{ fontSize: 12, color: MUTED, marginTop: 6 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 12, color: MUTED, marginTop: 5 }}>{sub}</div>}
     </Card>
   );
 }
 
 function LinkStat({ href, label, value, sub }) {
-  const color = CORAL; // 클릭 가능한 카드는 모두 '발행 콘텐츠'와 동일한 스타일
   return (
-    <a
-      href={href}
-      style={{ flex: "1 1 150px", minWidth: 150, textDecoration: "none", cursor: "pointer" }}
-    >
-      <Card
-        style={{
-          border: `1.5px solid ${color}`,
-          height: "100%",
-          boxSizing: "border-box",
-          boxShadow: "0 2px 10px rgba(255,107,94,0.12)",
-        }}
-      >
-        <div style={{ fontSize: 13, color: MUTED, fontWeight: 600 }}>{label}</div>
-        <div style={{ fontSize: 30, fontWeight: 800, color, marginTop: 6, lineHeight: 1.1 }}>
-          {value === null || value === undefined ? "–" : Number(value).toLocaleString()}
-        </div>
+    <a className="cardlink" href={href}>
+      <Card style={{ position: "relative" }}>
+        <span
+          className="arrow"
+          style={{ position: "absolute", top: 16, right: 18, color: MUTED, fontSize: 15 }}
+        >
+          →
+        </span>
+        <div style={{ fontSize: 12.5, color: MUTED, fontWeight: 500 }}>{label}</div>
         <div
           style={{
-            display: "inline-block",
-            marginTop: 8,
-            background: color,
-            color: "#fff",
-            fontSize: 12,
+            fontSize: 26,
             fontWeight: 700,
-            padding: "5px 12px",
-            borderRadius: 20,
+            color: INK,
+            marginTop: 6,
+            lineHeight: 1.15,
+            fontVariantNumeric: "tabular-nums",
           }}
         >
-          {sub || "상세 보기"} →
+          {value === null || value === undefined ? "–" : Number(value).toLocaleString()}
         </div>
+        <div style={{ fontSize: 12, color: MUTED, marginTop: 5 }}>{sub || "상세 보기"}</div>
       </Card>
     </a>
   );
 }
 
-function WeeklyBars({ title, series, color }) {
+function TrendChart({ title, series, color }) {
   const data = series || [];
   const max = Math.max(1, ...data.map((d) => d.count));
   const W = 560;
-  const H = 120;
-  const bw = data.length ? W / data.length : W;
+  const H = 150;
+  const P = { t: 16, r: 10, b: 22, l: 10 };
+  const iw = W - P.l - P.r;
+  const ih = H - P.t - P.b;
+  const x = (i) => P.l + (data.length > 1 ? (i / (data.length - 1)) * iw : iw / 2);
+  const y = (v) => P.t + ih - (v / max) * ih;
+  const pts = data.map((d, i) => `${x(i)},${y(d.count)}`).join(" ");
+  const area = `M ${P.l},${P.t + ih} L ${pts.split(" ").join(" L ")} L ${P.l + iw},${P.t + ih} Z`;
+  const last = data.length - 1;
   return (
-    <Card style={{ flex: "1 1 340px", minWidth: 300 }}>
-      <div style={{ fontSize: 14, fontWeight: 700, color: NAVY, marginBottom: 12 }}>
-        {title} <span style={{ color: MUTED, fontWeight: 500 }}>· 최근 12주</span>
+    <Card>
+      <div style={{ fontSize: 13.5, fontWeight: 600, color: INK, marginBottom: 10 }}>
+        {title} <span style={{ color: MUTED, fontWeight: 400, fontSize: 12 }}>최근 12주</span>
       </div>
-      <svg viewBox={`0 0 ${W} ${H + 24}`} style={{ width: "100%", height: "auto", display: "block" }}>
-        {data.map((d, i) => {
-          const h = Math.round((d.count / max) * (H - 16));
-          return (
-            <g key={d.week}>
-              <rect
-                x={i * bw + bw * 0.18}
-                y={H - h}
-                width={bw * 0.64}
-                height={Math.max(h, d.count > 0 ? 3 : 1)}
-                rx={3}
-                fill={d.count > 0 ? color : "#eef1f7"}
-              />
-              {d.count > 0 && (
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
+        {[0, 0.5, 1].map((r) => (
+          <line
+            key={r}
+            x1={P.l}
+            x2={P.l + iw}
+            y1={P.t + ih * r}
+            y2={P.t + ih * r}
+            stroke={BORDER}
+            strokeWidth="1"
+          />
+        ))}
+        {data.length > 0 && (
+          <>
+            <path d={area} fill={color} opacity="0.08" />
+            <polyline
+              points={pts}
+              fill="none"
+              stroke={color}
+              strokeWidth="2"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+            {data[last] && data[last].count > 0 && (
+              <>
+                <circle cx={x(last)} cy={y(data[last].count)} r="3.5" fill={color} />
                 <text
-                  x={i * bw + bw / 2}
-                  y={H - h - 5}
-                  textAnchor="middle"
+                  x={Math.min(x(last), P.l + iw - 8)}
+                  y={y(data[last].count) - 8}
+                  textAnchor="end"
                   fontSize="11"
-                  fontWeight="700"
-                  fill={NAVY}
+                  fontWeight="600"
+                  fill={INK}
                 >
-                  {d.count}
+                  {data[last].count.toLocaleString()}
                 </text>
-              )}
-              <text
-                x={i * bw + bw / 2}
-                y={H + 16}
-                textAnchor="middle"
-                fontSize="9"
-                fill={MUTED}
-              >
-                {d.week.slice(5)}
-              </text>
-            </g>
-          );
-        })}
+              </>
+            )}
+            {data.map((d, i) =>
+              i % 2 === 0 ? (
+                <text
+                  key={d.week}
+                  x={x(i)}
+                  y={H - 6}
+                  textAnchor="middle"
+                  fontSize="9.5"
+                  fill={MUTED}
+                >
+                  {d.week.slice(5)}
+                </text>
+              ) : null
+            )}
+          </>
+        )}
       </svg>
     </Card>
   );
 }
 
-function HBars({ title, data, color, note }) {
-  const entries = Object.entries(data || {}).sort((a, b) => b[1] - a[1]);
-  const max = Math.max(1, ...entries.map(([, v]) => v));
+function MiniGrid({ title, entries }) {
   return (
-    <Card style={{ flex: "1 1 260px", minWidth: 240 }}>
-      <div style={{ fontSize: 14, fontWeight: 700, color: NAVY, marginBottom: 12 }}>{title}</div>
-      {entries.length === 0 && <div style={{ fontSize: 13, color: MUTED }}>데이터 없음</div>}
-      {entries.map(([k, v]) => (
-        <div key={k} style={{ marginBottom: 10 }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              fontSize: 13,
-              marginBottom: 4,
-            }}
-          >
-            <span style={{ color: NAVY, fontWeight: 600 }}>{k}</span>
-            <span style={{ color: MUTED, fontWeight: 700 }}>{v.toLocaleString()}</span>
-          </div>
-          <div style={{ background: "#eef1f7", borderRadius: 6, height: 8 }}>
+    <Card>
+      <div style={{ fontSize: 13.5, fontWeight: 600, color: INK, marginBottom: 14 }}>{title}</div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: `repeat(${Math.min(entries.length, 4)}, 1fr)`,
+          gap: 10,
+        }}
+      >
+        {entries.map(([label, value]) => (
+          <div key={label} style={{ borderLeft: `2px solid ${BORDER}`, paddingLeft: 10 }}>
+            <div style={{ fontSize: 12, color: MUTED }}>{label}</div>
             <div
               style={{
-                width: `${Math.round((v / max) * 100)}%`,
-                background: color,
-                height: 8,
-                borderRadius: 6,
+                fontSize: 19,
+                fontWeight: 700,
+                color: INK,
+                marginTop: 3,
+                fontVariantNumeric: "tabular-nums",
               }}
-            />
+            >
+              {value === null || value === undefined ? "–" : Number(value).toLocaleString()}
+            </div>
           </div>
-        </div>
-      ))}
-      {note && <div style={{ fontSize: 12, color: MUTED, marginTop: 8 }}>{note}</div>}
-    </Card>
-  );
-}
-
-function Section({ title, sub, children }) {
-  return (
-    <div style={{ marginBottom: 36 }}>
-      <div style={{ marginBottom: 14 }}>
-        <span style={{ fontSize: 18, fontWeight: 800, color: NAVY }}>{title}</span>
-        {sub && <span style={{ fontSize: 13, color: MUTED, marginLeft: 10 }}>{sub}</span>}
+        ))}
       </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>{children}</div>
-    </div>
+    </Card>
   );
 }
 
 function BestList({ items }) {
   const [metric, setMetric] = useState("views");
   const METRICS = [
-    ["views", "조회수", "회"],
-    ["likes", "좋아요", "개"],
-    ["comments", "댓글", "개"],
-    ["shares", "공유", "회"],
+    ["views", "조회수"],
+    ["likes", "좋아요"],
+    ["comments", "댓글"],
+    ["shares", "공유"],
   ];
-  const unit = (METRICS.find(([k]) => k === metric) || [])[2] || "";
   const list = (items || [])
     .filter((it) => typeof it[metric] === "number")
     .slice()
@@ -199,7 +190,7 @@ function BestList({ items }) {
     .slice(0, 5);
   const max = Math.max(1, ...list.map((it) => it[metric] || 0));
   return (
-    <Card style={{ flex: "1 1 340px", minWidth: 300 }}>
+    <Card>
       <div
         style={{
           display: "flex",
@@ -210,23 +201,21 @@ function BestList({ items }) {
           marginBottom: 12,
         }}
       >
-        <div style={{ fontSize: 14, fontWeight: 700, color: NAVY }}>
-          BEST 콘텐츠 <span style={{ color: MUTED, fontWeight: 500 }}>· TOP 5</span>
-        </div>
-        <div style={{ display: "flex", gap: 4 }}>
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: INK }}>BEST 콘텐츠</div>
+        <div style={{ display: "flex", gap: 2 }}>
           {METRICS.map(([k, label]) => (
             <button
               key={k}
               onClick={() => setMetric(k)}
               style={{
-                padding: "4px 10px",
-                borderRadius: 14,
-                fontSize: 11.5,
-                fontWeight: 700,
+                padding: "4px 9px",
+                borderRadius: 7,
+                fontSize: 12,
+                fontWeight: metric === k ? 600 : 400,
                 cursor: "pointer",
-                border: `1px solid ${metric === k ? CORAL : BORDER}`,
-                background: metric === k ? CORAL : "#fff",
-                color: metric === k ? "#fff" : MUTED,
+                border: "none",
+                background: metric === k ? FILL : "transparent",
+                color: metric === k ? INK : MUTED,
               }}
             >
               {label}
@@ -238,21 +227,16 @@ function BestList({ items }) {
         <div style={{ fontSize: 13, color: MUTED }}>해당 수치가 입력된 콘텐츠가 없습니다.</div>
       )}
       {list.map((it, i) => (
-        <div key={i} style={{ marginBottom: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+        <div key={i} style={{ marginBottom: 11 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
             <span
               style={{
-                width: 20,
-                height: 20,
-                borderRadius: 6,
-                background: i === 0 ? CORAL : "#eef1f7",
-                color: i === 0 ? "#fff" : MUTED,
-                fontSize: 11,
-                fontWeight: 800,
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
+                fontSize: 12,
+                fontWeight: 600,
+                color: i === 0 ? ACCENT : MUTED,
+                width: 14,
                 flexShrink: 0,
+                fontVariantNumeric: "tabular-nums",
               }}
             >
               {i + 1}
@@ -260,8 +244,8 @@ function BestList({ items }) {
             <span
               style={{
                 fontSize: 13,
-                color: NAVY,
-                fontWeight: 600,
+                color: INK,
+                fontWeight: 500,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -270,18 +254,25 @@ function BestList({ items }) {
             >
               {it.title || "(제목 없음)"}
             </span>
-            <span style={{ fontSize: 13, color: MUTED, fontWeight: 700, flexShrink: 0 }}>
+            <span
+              style={{
+                fontSize: 12.5,
+                color: INK,
+                fontWeight: 600,
+                flexShrink: 0,
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
               {(it[metric] || 0).toLocaleString()}
-              {unit}
             </span>
           </div>
-          <div style={{ background: "#eef1f7", borderRadius: 6, height: 6, marginLeft: 28 }}>
+          <div style={{ background: FILL, borderRadius: 4, height: 4, marginLeft: 24 }}>
             <div
               style={{
                 width: `${Math.round(((it[metric] || 0) / max) * 100)}%`,
-                background: NAVY,
-                height: 6,
-                borderRadius: 6,
+                background: ACCENT,
+                height: 4,
+                borderRadius: 4,
               }}
             />
           </div>
@@ -291,22 +282,59 @@ function BestList({ items }) {
   );
 }
 
+function Section({ title, children }) {
+  return (
+    <div style={{ marginBottom: 40 }}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: INK, marginBottom: 12 }}>{title}</div>
+      {children}
+    </div>
+  );
+}
+
+function StatGrid({ children }) {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+        gap: 12,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function ChartGrid({ children }) {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+        gap: 12,
+        marginTop: 12,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 function ErrorNote({ msg }) {
   if (!msg) return null;
   return (
     <div
       style={{
-        background: "#fff4f3",
-        border: "1px solid #ffd6d2",
+        background: "#fff7f6",
+        border: "1px solid #ffe0dc",
         color: "#c0392b",
         borderRadius: 10,
         padding: "10px 14px",
         fontSize: 13,
-        marginBottom: 14,
-        width: "100%",
+        marginBottom: 12,
       }}
     >
-      ⚠️ {msg}
+      {msg}
     </div>
   );
 }
@@ -327,7 +355,7 @@ export default function Dashboard() {
   }
   if (!data) {
     return (
-      <div style={{ padding: 60, textAlign: "center", color: MUTED, fontSize: 15 }}>
+      <div style={{ padding: 60, textAlign: "center", color: MUTED, fontSize: 14 }}>
         KPI 데이터를 불러오는 중…
       </div>
     );
@@ -338,9 +366,10 @@ export default function Dashboard() {
   const m = data.matching || {};
   const c = data.content || null;
   const mk = data.marketing || null;
+  const ch = (c && c.byChannel) || {};
 
   return (
-    <div style={{ maxWidth: 1080, margin: "0 auto", padding: "28px 20px 60px" }}>
+    <div style={{ maxWidth: 1040, margin: "0 auto", padding: "32px 20px 64px" }}>
       {/* 헤더 */}
       <div
         style={{
@@ -349,70 +378,101 @@ export default function Dashboard() {
           justifyContent: "space-between",
           flexWrap: "wrap",
           gap: 8,
-          marginBottom: 28,
+          marginBottom: 32,
         }}
       >
-        <div style={{ fontSize: 24, fontWeight: 800, color: NAVY }}>
-          K-ALBA <span style={{ color: CORAL }}>KPI</span> 대시보드
+        <div style={{ fontSize: 20, fontWeight: 700, color: INK }}>
+          K-ALBA <span style={{ color: ACCENT }}>KPI</span>
         </div>
         <div style={{ fontSize: 12, color: MUTED }}>
-          업데이트: {new Date(data.generatedAt).toLocaleString("ko-KR")}
+          업데이트 {new Date(data.generatedAt).toLocaleString("ko-KR")}
         </div>
       </div>
 
       <ErrorNote msg={data.dbError} />
 
-      {/* ① 성장 */}
       <Section title="① 성장 · 사용자">
-        <LinkStat href="/users" label="전체 가입자" value={u.total} accent sub="달력·명단 보기" />
-        <Stat label="알바생 (worker)" value={u.workers} />
-        <Stat label="사장님 (employer)" value={u.employers} />
-        <Stat label="탈퇴(비활성화)" value={u.deactivations} />
-        <WeeklyBars title="주간 신규 알바생" series={u.weeklyWorkers} color={NAVY} />
-        <WeeklyBars title="주간 신규 사장님" series={u.weeklyEmployers} color={CORAL} />
+        <StatGrid>
+          <LinkStat href="/users" label="전체 가입자" value={u.total} sub="달력 · 명단" />
+          <Stat label="알바생" value={u.workers} />
+          <Stat label="사장님" value={u.employers} />
+          <Stat label="탈퇴" value={u.deactivations} />
+        </StatGrid>
+        <ChartGrid>
+          <TrendChart title="주간 신규 알바생" series={u.weeklyWorkers} color={ACCENT} />
+          <TrendChart title="주간 신규 사장님" series={u.weeklyEmployers} color={INK} />
+        </ChartGrid>
       </Section>
 
-      {/* ② 공급 */}
       <Section title="② 공급 · 공고">
-        <Stat label="활성 공고" value={j.active} accent />
-        <Stat label="누적 공고" value={j.total} />
-        <LinkStat href="/jobs-manual?src=direct" label="직접 등록" value={j.bySource ? j.bySource.direct : null} sub="공고 목록" />
-        <LinkStat href="/jobs-manual?src=chatbot" label="챗봇 등록" value={j.bySource ? j.bySource.chatbot : null} sub="공고 목록" />
-        <WeeklyBars title="주간 신규 공고" series={j.weeklyNew} color={NAVY} />
-        <HBars
-          title="공고 소스 비중"
-          data={j.bySource || {}}
-          color={CORAL}
-          note="worknet=고용24 연동 · direct=직접 등록 · chatbot=카카오 챗봇"
-        />
+        <StatGrid>
+          <Stat label="활성 공고" value={j.active} />
+          <Stat label="누적 공고" value={j.total} />
+          <LinkStat
+            href="/jobs-manual?src=direct"
+            label="직접 등록"
+            value={j.bySource ? j.bySource.direct : null}
+            sub="공고 목록"
+          />
+          <LinkStat
+            href="/jobs-manual?src=chatbot"
+            label="챗봇 등록"
+            value={j.bySource ? j.bySource.chatbot : null}
+            sub="공고 목록"
+          />
+        </StatGrid>
+        <ChartGrid>
+          <TrendChart title="주간 신규 공고" series={j.weeklyNew} color={ACCENT} />
+          <MiniGrid
+            title="공고 소스"
+            entries={[
+              ["고용24", j.bySource ? j.bySource.worknet : null],
+              ["직접 등록", j.bySource ? j.bySource.direct : null],
+              ["챗봇 등록", j.bySource ? j.bySource.chatbot : null],
+            ]}
+          />
+        </ChartGrid>
       </Section>
 
-      {/* ③ 매칭 */}
       <Section title="③ 매칭 · 핵심 성과">
-        <LinkStat href="/applications" label="누적 지원" value={m.applications} accent sub="지원 내역" />
-        <LinkStat href="/favorites" label="관심공고 저장" value={m.favorites} sub="저장 목록" />
-        <Stat label="계약 체결" value={m.contracts} />
-        <Stat label="시간제취업 신청" value={m.partwork} />
-        <WeeklyBars title="주간 지원 수" series={m.weeklyApplications} color={CORAL} />
+        <StatGrid>
+          <LinkStat href="/applications" label="누적 지원" value={m.applications} sub="지원 내역" />
+          <LinkStat href="/favorites" label="관심공고 저장" value={m.favorites} sub="저장 목록" />
+          <Stat label="계약 체결" value={m.contracts} />
+          <Stat label="시간제취업 신청" value={m.partwork} />
+        </StatGrid>
+        <ChartGrid>
+          <TrendChart title="주간 지원 수" series={m.weeklyApplications} color={ACCENT} />
+        </ChartGrid>
       </Section>
 
-      {/* ④ 마케팅 */}
       <Section title="④ 마케팅 채널">
         <ErrorNote msg={data.contentError} />
         <ErrorNote msg={data.metricsError} />
-        <LinkStat
-          href="/marketing"
-          label="발행 콘텐츠"
-          value={c ? c.published : null}
-          accent
-          sub="전체 리스트 보기"
-        />
-        <Stat label="총 조회수" value={mk ? mk.totalViews : null} sub="게시물별 최신 조회수 합" />
-        <Stat label="총 좋아요" value={mk ? mk.totalLikes : null} />
-        <Stat label="총 댓글" value={mk ? mk.totalComments : null} />
-        {mk && <WeeklyBars title="주간 조회수" series={mk.weeklyViews} color={CORAL} />}
-        {mk && <BestList items={mk.items} />}
-        {c && <HBars title="채널별 발행" data={c.byChannel} color={NAVY} />}
+        <StatGrid>
+          <LinkStat
+            href="/marketing"
+            label="발행 콘텐츠"
+            value={c ? c.published : null}
+            sub="전체 리스트"
+          />
+          <Stat label="총 조회수" value={mk ? mk.totalViews : null} />
+          <Stat label="총 좋아요" value={mk ? mk.totalLikes : null} />
+          <Stat label="총 댓글" value={mk ? mk.totalComments : null} />
+        </StatGrid>
+        <ChartGrid>
+          {mk && <TrendChart title="주간 조회수" series={mk.weeklyViews} color={ACCENT} />}
+          {mk && <BestList items={mk.items} />}
+          <MiniGrid
+            title="채널별 발행"
+            entries={[
+              ["틱톡", ch["틱톡"] || 0],
+              ["페이스북", ch["페이스북"] || 0],
+              ["인스타그램", ch["인스타그램"] || 0],
+              ["스레드", ch["스레드"] || 0],
+            ]}
+          />
+        </ChartGrid>
       </Section>
     </div>
   );
