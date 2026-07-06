@@ -50,8 +50,8 @@ export default function MarketingDetail() {
         <a href="/" style={{ fontSize: 13, color: MUTED, textDecoration: "none" }}>
           ← KPI 대시보드로
         </a>
-        <div style={{ fontSize: 22, fontWeight: 800, color: NAVY, marginTop: 8 }}>
-          발행 콘텐츠 <span style={{ color: CORAL }}>{items.length}</span>건
+        <div style={{ fontSize: 18, fontWeight: 700, color: NAVY, marginTop: 8 }}>
+          발행 콘텐츠 <span style={{ fontVariantNumeric: "tabular-nums" }}>{items.length}</span>건
         </div>
         <div style={{ fontSize: 13, color: MUTED, marginTop: 4 }}>
           구글시트 [K-ALBA]성과 탭 · 최신순 · K-univ 제외

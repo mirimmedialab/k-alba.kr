@@ -16,14 +16,14 @@ const td = {
 
 function chip(active) {
   return {
-    padding: "7px 14px",
-    borderRadius: 20,
-    fontSize: 13,
-    fontWeight: 700,
+    padding: "6px 13px",
+    borderRadius: 8,
+    fontSize: 12.5,
+    fontWeight: active ? 600 : 400,
     cursor: "pointer",
-    border: `1.5px solid ${active ? NAVY : BORDER}`,
-    background: active ? NAVY : "#fff",
-    color: active ? "#fff" : MUTED,
+    border: `1px solid ${active ? "#d7dce3" : BORDER}`,
+    background: active ? "#f2f4f6" : "#fff",
+    color: active ? NAVY : MUTED,
   };
 }
 
@@ -63,8 +63,8 @@ export default function JobsManualDetail() {
         <a href="/" style={{ fontSize: 13, color: MUTED, textDecoration: "none" }}>
           ← KPI 대시보드로
         </a>
-        <div style={{ fontSize: 22, fontWeight: 800, color: NAVY, marginTop: 8 }}>
-          직접·챗봇 등록 공고 <span style={{ color: CORAL }}>{items.length}</span>건
+        <div style={{ fontSize: 18, fontWeight: 700, color: NAVY, marginTop: 8 }}>
+          직접·챗봇 등록 공고 <span style={{ fontVariantNumeric: "tabular-nums" }}>{items.length}</span>건
         </div>
         <div style={{ fontSize: 13, color: MUTED, marginTop: 4 }}>
           고용24(worknet) 자동 수집 제외 · 최신순

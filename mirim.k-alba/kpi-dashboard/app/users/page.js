@@ -2,29 +2,53 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-const NAVY = "#191f28";
-const CORAL = "#ff6b5e";
+const INK = "#191f28";
 const MUTED = "#8b95a1";
 const BORDER = "#eceef1";
+const ACCENT = "#ff6b5e";
+const FILL = "#f2f4f6";
 
 const td = {
   padding: "10px 12px",
   borderBottom: `1px solid ${BORDER}`,
   whiteSpace: "nowrap",
-  color: NAVY,
+  color: INK,
 };
 
-function chip(active) {
-  return {
-    padding: "7px 14px",
-    borderRadius: 20,
-    fontSize: 13,
-    fontWeight: 700,
-    cursor: "pointer",
-    border: `1.5px solid ${active ? NAVY : BORDER}`,
-    background: active ? NAVY : "#fff",
-    color: active ? "#fff" : MUTED,
-  };
+function Seg({ options, value, onChange }) {
+  return (
+    <div
+      style={{
+        display: "inline-flex",
+        border: `1px solid ${BORDER}`,
+        borderRadius: 9,
+        padding: 2,
+        background: "#fff",
+      }}
+    >
+      {options.map(([k, label]) => {
+        const active = value === k;
+        return (
+          <button
+            key={k}
+            onClick={() => onChange(k)}
+            style={{
+              border: "none",
+              padding: "5px 12px",
+              borderRadius: 7,
+              fontSize: 12.5,
+              fontWeight: active ? 600 : 400,
+              background: active ? FILL : "transparent",
+              color: active ? INK : MUTED,
+              cursor: "pointer",
+            }}
+          >
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
 function dkey(iso) {
@@ -34,19 +58,19 @@ function dkey(iso) {
   ).padStart(2, "0")}`;
 }
 
-function typeBadge(t) {
+function TypeLabel({ t }) {
   const isWorker = t === "worker";
   return (
-    <span
-      style={{
-        background: isWorker ? "#e8edfb" : "#ffe9e6",
-        color: isWorker ? "#3452c4" : CORAL,
-        fontWeight: 700,
-        fontSize: 12,
-        padding: "3px 10px",
-        borderRadius: 20,
-      }}
-    >
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+      <span
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: 3,
+          background: isWorker ? "#4c7cf0" : ACCENT,
+          display: "inline-block",
+        }}
+      />
       {isWorker ? "알바생" : "사장님"}
     </span>
   );
@@ -55,9 +79,9 @@ function typeBadge(t) {
 export default function UsersDetail() {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
-  const [tab, setTab] = useState("active"); // active | deactivated
-  const [type, setType] = useState("all"); // all | worker | employer
-  const [view, setView] = useState("calendar"); // calendar | list
+  const [tab, setTab] = useState("active");
+  const [type, setType] = useState("all");
+  const [view, setView] = useState("calendar");
   const [month, setMonth] = useState(() => {
     const n = new Date();
     return new Date(n.getFullYear(), n.getMonth(), 1);
@@ -103,87 +127,133 @@ export default function UsersDetail() {
   }
   if (!data) {
     return (
-      <div style={{ padding: 60, textAlign: "center", color: MUTED, fontSize: 15 }}>
+      <div style={{ padding: 60, textAlign: "center", color: MUTED, fontSize: 14 }}>
         가입자 목록을 불러오는 중…
       </div>
     );
   }
 
-  /* ----- 달력 그리드 ----- */
   const y = month.getFullYear();
   const mo = month.getMonth();
-  const firstDow = new Date(y, mo, 1).getDay(); // 일요일 시작
+  const firstDow = new Date(y, mo, 1).getDay();
   const daysInMonth = new Date(y, mo + 1, 0).getDate();
   const cells = [];
   for (let i = 0; i < firstDow; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
   const maxCnt = Math.max(1, ...Object.values(byDay));
-  const monthLabel = `${y}년 ${mo + 1}월`;
   const todayKey = dkey(new Date().toISOString());
 
+  const navBtn = {
+    border: "none",
+    background: "transparent",
+    color: MUTED,
+    fontSize: 13,
+    cursor: "pointer",
+    padding: "4px 8px",
+  };
+
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 20px 60px" }}>
+    <div style={{ maxWidth: 880, margin: "0 auto", padding: "32px 20px 64px" }}>
       <div style={{ marginBottom: 20 }}>
         <a href="/" style={{ fontSize: 13, color: MUTED, textDecoration: "none" }}>
-          ← KPI 대시보드로
+          ← KPI
         </a>
-        <div style={{ fontSize: 22, fontWeight: 800, color: NAVY, marginTop: 8 }}>
-          가입자 <span style={{ color: CORAL }}>{filtered.length}</span>명
+        <div style={{ fontSize: 18, fontWeight: 700, color: INK, marginTop: 10 }}>
+          가입자{" "}
+          <span style={{ fontVariantNumeric: "tabular-nums" }}>{filtered.length}</span>
+          <span style={{ color: MUTED, fontWeight: 400, fontSize: 14 }}>명</span>
         </div>
       </div>
 
       {/* 필터 */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-        <button style={chip(tab === "active")} onClick={() => { setTab("active"); setSelectedDay(""); }}>
-          회원
-        </button>
-        <button style={chip(tab === "deactivated")} onClick={() => { setTab("deactivated"); setSelectedDay(""); }}>
-          탈퇴회원
-        </button>
-        <span style={{ width: 12 }} />
-        <button style={chip(type === "all")} onClick={() => setType("all")}>전체</button>
-        <button style={chip(type === "worker")} onClick={() => setType("worker")}>알바생</button>
-        <button style={chip(type === "employer")} onClick={() => setType("employer")}>사장님</button>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 8,
+          alignItems: "center",
+          marginBottom: 14,
+        }}
+      >
+        <Seg
+          options={[
+            ["active", "회원"],
+            ["deactivated", "탈퇴회원"],
+          ]}
+          value={tab}
+          onChange={(v) => {
+            setTab(v);
+            setSelectedDay("");
+          }}
+        />
+        <Seg
+          options={[
+            ["all", "전체"],
+            ["worker", "알바생"],
+            ["employer", "사장님"],
+          ]}
+          value={type}
+          onChange={setType}
+        />
         <span style={{ flex: 1 }} />
-        <button style={chip(view === "calendar")} onClick={() => setView("calendar")}>📅 달력</button>
-        <button style={chip(view === "list")} onClick={() => { setView("list"); setSelectedDay(""); }}>☰ 리스트</button>
+        <Seg
+          options={[
+            ["calendar", "달력"],
+            ["list", "리스트"],
+          ]}
+          value={view}
+          onChange={(v) => {
+            setView(v);
+            if (v === "list") setSelectedDay("");
+          }}
+        />
       </div>
 
       {/* 달력 */}
       {view === "calendar" && (
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: 14,
-            border: `1px solid ${BORDER}`,
-            padding: 20,
-            marginBottom: 16,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-            <button style={chip(false)} onClick={() => { setMonth(new Date(y, mo - 1, 1)); setSelectedDay(""); }}>
-              ← 이전
+        <div className="card" style={{ marginBottom: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 12,
+            }}
+          >
+            <button
+              style={navBtn}
+              onClick={() => {
+                setMonth(new Date(y, mo - 1, 1));
+                setSelectedDay("");
+              }}
+            >
+              ← 이전 달
             </button>
-            <div style={{ fontSize: 16, fontWeight: 800, color: NAVY }}>
-              {monthLabel}
-              <span style={{ fontSize: 13, color: MUTED, fontWeight: 500, marginLeft: 8 }}>
-                {tab === "active" ? "가입" : "탈퇴"} 기준
+            <div style={{ fontSize: 14.5, fontWeight: 600, color: INK }}>
+              {y}년 {mo + 1}월{" "}
+              <span style={{ color: MUTED, fontWeight: 400, fontSize: 12 }}>
+                {tab === "active" ? "가입일" : "탈퇴일"} 기준
               </span>
             </div>
-            <button style={chip(false)} onClick={() => { setMonth(new Date(y, mo + 1, 1)); setSelectedDay(""); }}>
-              다음 →
+            <button
+              style={navBtn}
+              onClick={() => {
+                setMonth(new Date(y, mo + 1, 1));
+                setSelectedDay("");
+              }}
+            >
+              다음 달 →
             </button>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
-            {["일", "월", "화", "수", "목", "금", "토"].map((d, i) => (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+            {["일", "월", "화", "수", "목", "금", "토"].map((d) => (
               <div
                 key={d}
                 style={{
                   textAlign: "center",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: i === 0 ? CORAL : MUTED,
-                  padding: "4px 0",
+                  fontSize: 11.5,
+                  color: MUTED,
+                  padding: "4px 0 6px",
                 }}
               >
                 {d}
@@ -194,24 +264,39 @@ export default function UsersDetail() {
               const k = `${y}-${String(mo + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
               const cnt = byDay[k] || 0;
               const sel = selectedDay === k;
-              const alpha = cnt ? 0.15 + 0.55 * (cnt / maxCnt) : 0;
+              const alpha = cnt ? 0.05 + 0.13 * (cnt / maxCnt) : 0;
               return (
                 <div
                   key={k}
-                  onClick={() => setSelectedDay(sel ? "" : k)}
+                  onClick={() => cnt && setSelectedDay(sel ? "" : k)}
                   style={{
-                    minHeight: 58,
-                    borderRadius: 10,
-                    border: sel ? `2px solid ${CORAL}` : `1px solid ${k === todayKey ? NAVY : BORDER}`,
-                    background: cnt ? `rgba(255,107,94,${alpha})` : "#fafbfd",
+                    minHeight: 54,
+                    borderRadius: 8,
+                    background: cnt ? `rgba(255,107,94,${alpha})` : "transparent",
+                    boxShadow: sel ? `inset 0 0 0 1.5px ${INK}` : "none",
                     cursor: cnt ? "pointer" : "default",
                     padding: "6px 8px",
-                    boxSizing: "border-box",
                   }}
                 >
-                  <div style={{ fontSize: 12, color: MUTED, fontWeight: 600 }}>{d}</div>
+                  <div
+                    style={{
+                      fontSize: 11.5,
+                      color: k === todayKey ? ACCENT : MUTED,
+                      fontWeight: k === todayKey ? 700 : 400,
+                    }}
+                  >
+                    {d}
+                  </div>
                   {cnt > 0 && (
-                    <div style={{ fontSize: 16, fontWeight: 800, color: NAVY, marginTop: 2 }}>
+                    <div
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: INK,
+                        marginTop: 2,
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
                       {cnt}
                     </div>
                   )}
@@ -219,60 +304,59 @@ export default function UsersDetail() {
               );
             })}
           </div>
-          <div style={{ fontSize: 12, color: MUTED, marginTop: 10 }}>
-            숫자가 있는 날짜를 클릭하면 아래에 해당 날짜 명단이 표시됩니다.
-            {selectedDay && (
-              <b style={{ color: CORAL, marginLeft: 6 }}>
-                {selectedDay} 선택됨 (다시 클릭하면 해제)
-              </b>
+          <div style={{ fontSize: 12, color: MUTED, marginTop: 12 }}>
+            {selectedDay ? (
+              <>
+                <b style={{ color: INK, fontWeight: 600 }}>{selectedDay}</b> 명단이 아래에
+                표시됩니다 · 다시 클릭하면 해제
+              </>
+            ) : (
+              "숫자가 있는 날짜를 클릭하면 해당일 명단이 표시됩니다"
             )}
           </div>
         </div>
       )}
 
       {/* 리스트 */}
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 14,
-          border: `1px solid ${BORDER}`,
-          padding: 20,
-          overflowX: "auto",
-        }}
-      >
+      <div className="card" style={{ overflowX: "auto" }}>
         {dayList.length === 0 ? (
-          <div style={{ fontSize: 14, color: MUTED }}>해당 조건의 회원이 없습니다.</div>
+          <div style={{ fontSize: 13.5, color: MUTED }}>해당 조건의 회원이 없습니다.</div>
         ) : (
           <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 13.5 }}>
             <thead>
               <tr>
-                {["이름", "유형", "국적", tab === "active" ? "가입일" : "가입일 / 탈퇴일"].map((h) => (
-                  <th
-                    key={h}
-                    style={{
-                      textAlign: "left",
-                      padding: "10px 12px",
-                      borderBottom: `2px solid ${BORDER}`,
-                      color: MUTED,
-                      fontSize: 12.5,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {h}
-                  </th>
-                ))}
+                {["이름", "유형", "국적", tab === "active" ? "가입일" : "가입일 / 탈퇴일"].map(
+                  (h) => (
+                    <th
+                      key={h}
+                      style={{
+                        textAlign: "left",
+                        padding: "10px 12px",
+                        borderBottom: `1px solid ${BORDER}`,
+                        color: MUTED,
+                        fontSize: 12,
+                        fontWeight: 500,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {h}
+                    </th>
+                  )
+                )}
               </tr>
             </thead>
             <tbody>
               {dayList.map((u, i) => (
                 <tr key={i}>
-                  <td style={{ ...td, fontWeight: 600 }}>{u.name}</td>
-                  <td style={td}>{typeBadge(u.userType)}</td>
-                  <td style={td}>{u.nationality || "–"}</td>
+                  <td style={{ ...td, fontWeight: 500 }}>{u.name}</td>
                   <td style={td}>
+                    <TypeLabel t={u.userType} />
+                  </td>
+                  <td style={{ ...td, color: MUTED }}>{u.nationality || "–"}</td>
+                  <td style={{ ...td, fontVariantNumeric: "tabular-nums" }}>
                     {new Date(u.createdAt).toLocaleDateString("ko-KR")}
                     {tab === "deactivated" && u.deactivatedAt && (
-                      <span style={{ color: CORAL, marginLeft: 8 }}>
+                      <span style={{ color: MUTED, marginLeft: 8 }}>
                         → {new Date(u.deactivatedAt).toLocaleDateString("ko-KR")}
                       </span>
                     )}

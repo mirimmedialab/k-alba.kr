@@ -51,7 +51,7 @@ export async function GET(req) {
     if (type === "users") {
       const { data, error } = await client
         .from("profiles")
-        .select("id,name,user_type,nationality,created_at,deactivated_at")
+        .select("id,name,user_type,nationality,country,created_at,deactivated_at")
         .order("created_at", { ascending: false })
         .limit(2000);
       if (error) throw new Error(error.message);
@@ -59,7 +59,7 @@ export async function GET(req) {
         items: (data || []).map((p) => ({
           name: p.name || "(이름 없음)",
           userType: p.user_type || "",
-          nationality: p.nationality || "",
+          nationality: p.country || p.nationality || "",
           createdAt: p.created_at,
           deactivated: !!p.deactivated_at,
           deactivatedAt: p.deactivated_at,

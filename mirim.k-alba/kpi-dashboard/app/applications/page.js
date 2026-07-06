@@ -50,8 +50,8 @@ export default function ApplicationsDetail() {
         <a href="/" style={{ fontSize: 13, color: MUTED, textDecoration: "none" }}>
           ← KPI 대시보드로
         </a>
-        <div style={{ fontSize: 22, fontWeight: 800, color: NAVY, marginTop: 8 }}>
-          누적 지원 <span style={{ color: CORAL }}>{items.length}</span>건
+        <div style={{ fontSize: 18, fontWeight: 700, color: NAVY, marginTop: 8 }}>
+          누적 지원 <span style={{ fontVariantNumeric: "tabular-nums" }}>{items.length}</span>건
         </div>
         <div style={{ fontSize: 13, color: MUTED, marginTop: 4 }}>최신순</div>
       </div>
