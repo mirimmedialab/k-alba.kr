@@ -320,12 +320,33 @@ export default function Dashboard() {
           href="/marketing"
           style={{ flex: "1 1 150px", minWidth: 150, textDecoration: "none", cursor: "pointer" }}
         >
-          <Stat
-            label="발행 콘텐츠 →"
-            value={c ? c.published : null}
-            accent
-            sub="클릭하면 전체 리스트"
-          />
+          <Card
+            style={{
+              border: `1.5px solid ${CORAL}`,
+              height: "100%",
+              boxSizing: "border-box",
+              boxShadow: "0 2px 10px rgba(255,107,94,0.12)",
+            }}
+          >
+            <div style={{ fontSize: 13, color: MUTED, fontWeight: 600 }}>발행 콘텐츠</div>
+            <div style={{ fontSize: 30, fontWeight: 800, color: CORAL, marginTop: 6, lineHeight: 1.1 }}>
+              {c ? Number(c.published).toLocaleString() : "–"}
+            </div>
+            <div
+              style={{
+                display: "inline-block",
+                marginTop: 8,
+                background: CORAL,
+                color: "#fff",
+                fontSize: 12,
+                fontWeight: 700,
+                padding: "5px 12px",
+                borderRadius: 20,
+              }}
+            >
+              전체 리스트 보기 →
+            </div>
+          </Card>
         </a>
         <Stat label="총 조회수" value={mk ? mk.totalViews : null} sub="게시물별 최신 조회수 합" />
         <Stat label="총 좋아요" value={mk ? mk.totalLikes : null} />

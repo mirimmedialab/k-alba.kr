@@ -159,9 +159,25 @@ export default function MarketingDetail() {
         )}
       </div>
 
-      <div style={{ fontSize: 12, color: MUTED, marginTop: 12, lineHeight: 1.6 }}>
-        · 성과 수치는 구글시트 <b>[K-ALBA]성과</b> 탭에서 자동으로 읽어옵니다. 링크는{" "}
-        <b>[K-ABLA]Content</b> 탭의 게시물 링크를 번호 기준으로 연결합니다.
+      <div style={{ marginTop: 16 }}>
+        <a
+          href="https://docs.google.com/spreadsheets/d/1cgYYoJk5O7mJsmA-maZAMbNE8z6PV750-22hjDZvpYw/edit?gid=1912359929"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "inline-block",
+            background: "#fff",
+            border: `1.5px solid ${BORDER}`,
+            borderRadius: 10,
+            padding: "10px 16px",
+            fontSize: 13,
+            fontWeight: 700,
+            color: NAVY,
+            textDecoration: "none",
+          }}
+        >
+          📄 원본 시트 바로가기 ↗
+        </a>
       </div>
     </div>
   );
