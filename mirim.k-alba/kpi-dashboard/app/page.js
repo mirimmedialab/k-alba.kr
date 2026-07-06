@@ -40,7 +40,7 @@ function Stat({ label, value, sub }) {
 function LinkStat({ href, label, value, sub }) {
   return (
     <a className="cardlink" href={href}>
-      <Card style={{ position: "relative", border: "1.5px solid #c8d0da" }}>
+      <Card style={{ position: "relative", border: `2px solid ${INK}` }}>
         <span
           className="arrow"
           style={{ position: "absolute", top: 16, right: 18, color: MUTED, fontSize: 15 }}
@@ -72,7 +72,7 @@ function fmtMD(dateStr) {
   return `${+dateStr.slice(5, 7)}/${+dateStr.slice(8, 10)}`;
 }
 
-function DailyChart({ title, series, color }) {
+function DailyChart({ title, series, color, pointHref }) {
   const [offset, setOffset] = useState(0);
   const data = series || [];
   const maxOffset = Math.max(0, Math.floor(data.length / 7) - 1);
@@ -166,9 +166,11 @@ function DailyChart({ title, series, color }) {
               strokeLinejoin="round"
               strokeLinecap="round"
             />
-            {win.map((d, i) =>
-              d.count > 0 ? (
-                <g key={`v${d.date}`}>
+            {win.map((d, i) => {
+              if (d.count <= 0) return null;
+              const dot = (
+                <g style={pointHref ? { cursor: "pointer" } : undefined}>
+                  <circle cx={x(i)} cy={y(d.count)} r="10" fill="transparent" />
                   <circle cx={x(i)} cy={y(d.count)} r="3" fill={color} />
                   <text
                     x={Math.max(P.l + 12, Math.min(x(i), P.l + iw - 12))}
@@ -181,8 +183,15 @@ function DailyChart({ title, series, color }) {
                     {d.count.toLocaleString()}
                   </text>
                 </g>
-              ) : null
-            )}
+              );
+              return pointHref ? (
+                <a key={`v${d.date}`} href={pointHref(d)}>
+                  {dot}
+                </a>
+              ) : (
+                <g key={`v${d.date}`}>{dot}</g>
+              );
+            })}
             {win.map((d, i) => {
               const dow = new Date(d.date).getUTCDay();
               return (
@@ -266,22 +275,34 @@ function MiniGrid({ title, entries, vertical }) {
             gap: 10,
           }}
         >
-          {entries.map(([label, value]) => (
-            <div key={label} style={{ borderLeft: `2px solid ${BORDER}`, paddingLeft: 10 }}>
-              <div style={{ fontSize: 12, color: MUTED }}>{label}</div>
-              <div
-                style={{
-                  fontSize: 19,
-                  fontWeight: 700,
-                  color: INK,
-                  marginTop: 3,
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
-                {value === null || value === undefined ? "–" : Number(value).toLocaleString()}
+          {entries.map(([label, value, href]) => {
+            const cell = (
+              <div style={{ borderLeft: `2px solid ${BORDER}`, paddingLeft: 10 }}>
+                <div style={{ fontSize: 12, color: MUTED }}>
+                  {label}
+                  {href && <span style={{ marginLeft: 5, fontSize: 11 }}>→</span>}
+                </div>
+                <div
+                  style={{
+                    fontSize: 19,
+                    fontWeight: 700,
+                    color: INK,
+                    marginTop: 3,
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {value === null || value === undefined ? "–" : Number(value).toLocaleString()}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+            return href ? (
+              <a key={label} href={href} style={{ textDecoration: "none", color: "inherit" }}>
+                {cell}
+              </a>
+            ) : (
+              <div key={label}>{cell}</div>
+            );
+          })}
         </div>
       )}
     </Card>
@@ -340,7 +361,11 @@ function BestList({ items }) {
         <div style={{ fontSize: 13, color: MUTED }}>해당 수치가 입력된 콘텐츠가 없습니다.</div>
       )}
       {list.map((it, i) => (
-        <div key={i} style={{ marginBottom: 11 }}>
+        <a
+          key={i}
+          href={`/marketing?q=${encodeURIComponent(it.title || "")}`}
+          style={{ display: "block", marginBottom: 11, textDecoration: "none", color: "inherit" }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
             <span
               style={{
@@ -389,7 +414,7 @@ function BestList({ items }) {
               }}
             />
           </div>
-        </div>
+        </a>
       ))}
     </Card>
   );
@@ -509,10 +534,10 @@ export default function Dashboard() {
             title="공고"
             vertical
             entries={[
-              ["활성 공고", j.active],
+              ["고용24 공고", j.bySource ? j.bySource.worknet : null],
+              ["직접 등록 공고", j.bySource ? j.bySource.direct : null, "/jobs-manual?src=direct"],
+              ["챗봇 등록 공고", j.bySource ? j.bySource.chatbot : null, "/jobs-manual?src=chatbot"],
               ["누적 공고", j.total],
-              ["직접 등록", j.bySource ? j.bySource.direct : null, "/jobs-manual?src=direct"],
-              ["챗봇 등록", j.bySource ? j.bySource.chatbot : null, "/jobs-manual?src=chatbot"],
             ]}
           />
           <DailyChart title="신규 공고" series={j.dailyNew} color={ACCENT} />
@@ -546,17 +571,17 @@ export default function Dashboard() {
           <Stat label="총 댓글" value={mk ? mk.totalComments : null} />
         </StatGrid>
         <div className="row-2-1" style={{ marginTop: 12 }}>
-          {mk && <DailyChart title="일별 조회수" series={mk.dailyViews} color={ACCENT} />}
+          {mk && <DailyChart title="일별 조회수" series={mk.dailyViews} color={ACCENT} pointHref={(d) => `/marketing?date=${d.date}`} />}
           {mk && <BestList items={mk.items} />}
         </div>
         <div style={{ marginTop: 12 }}>
           <MiniGrid
             title="채널별 발행"
             entries={[
-              ["틱톡", ch["틱톡"] || 0],
-              ["페이스북", ch["페이스북"] || 0],
-              ["인스타그램", ch["인스타그램"] || 0],
-              ["스레드", ch["스레드"] || 0],
+              ["틱톡", ch["틱톡"] || 0, "/marketing?ch=틱톡"],
+              ["페이스북", ch["페이스북"] || 0, "/marketing?ch=페이스북"],
+              ["인스타그램", ch["인스타그램"] || 0, "/marketing?ch=인스타그램"],
+              ["스레드", ch["스레드"] || 0, "/marketing?ch=스레드"],
             ]}
           />
         </div>

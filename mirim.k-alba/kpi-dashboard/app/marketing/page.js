@@ -1,17 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-const NAVY = "#191f28";
-const CORAL = "#ff6b5e";
+const INK = "#191f28";
 const MUTED = "#8b95a1";
 const BORDER = "#eceef1";
+const ACCENT = "#ff6b5e";
+const FILL = "#f2f4f6";
 
 const td = {
   padding: "10px 12px",
   borderBottom: `1px solid ${BORDER}`,
   whiteSpace: "nowrap",
-  color: NAVY,
+  color: INK,
 };
 const tdNum = { ...td, textAlign: "right", fontVariantNumeric: "tabular-nums" };
 
@@ -19,57 +20,129 @@ function n(v) {
   return typeof v === "number" ? v.toLocaleString() : "–";
 }
 
+const CHANNELS = ["전체", "틱톡", "페이스북", "인스타그램", "스레드"];
+
 export default function MarketingDetail() {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
+  const [ch, setCh] = useState("전체");
+  const [date, setDate] = useState("");
+  const [q, setQ] = useState("");
 
   useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const pc = sp.get("ch");
+    if (pc && CHANNELS.includes(pc)) setCh(pc);
+    if (sp.get("date")) setDate(sp.get("date"));
+    if (sp.get("q")) setQ(sp.get("q"));
     fetch("/api/kpi")
       .then((r) => r.json())
       .then(setData)
       .catch((e) => setError(String(e)));
   }, []);
 
+  const all = (data && data.marketing && data.marketing.items) || [];
+  const items = useMemo(() => {
+    return all.filter((it) => {
+      if (ch !== "전체" && it.channel !== ch) return false;
+      if (date) {
+        const k = it.ts ? new Date(it.ts).toISOString().slice(0, 10) : "";
+        if (k !== date) return false;
+      }
+      if (q && !(it.title || "").includes(q)) return false;
+      return true;
+    });
+  }, [all, ch, date, q]);
+
   if (error) {
     return <div style={{ padding: 40, color: "#c0392b" }}>불러오기 실패: {error}</div>;
   }
   if (!data) {
     return (
-      <div style={{ padding: 60, textAlign: "center", color: MUTED, fontSize: 15 }}>
+      <div style={{ padding: 60, textAlign: "center", color: MUTED, fontSize: 14 }}>
         발행 콘텐츠를 불러오는 중…
       </div>
     );
   }
 
-  const mk = data.marketing || null;
-  const items = (mk && mk.items) || [];
+  const chipStyle = (active) => ({
+    border: "none",
+    padding: "5px 12px",
+    borderRadius: 7,
+    fontSize: 12.5,
+    fontWeight: active ? 600 : 400,
+    background: active ? FILL : "transparent",
+    color: active ? INK : MUTED,
+    cursor: "pointer",
+  });
+
+  const clearChip = {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+    border: `1px solid ${BORDER}`,
+    background: "#fff",
+    borderRadius: 8,
+    padding: "5px 10px",
+    fontSize: 12.5,
+    color: INK,
+    cursor: "pointer",
+  };
 
   return (
-    <div style={{ maxWidth: 1080, margin: "0 auto", padding: "28px 20px 60px" }}>
-      <div style={{ marginBottom: 24 }}>
+    <div style={{ maxWidth: 1080, margin: "0 auto", padding: "32px 20px 64px" }}>
+      <div style={{ marginBottom: 20 }}>
         <a href="/" style={{ fontSize: 13, color: MUTED, textDecoration: "none" }}>
-          ← KPI 대시보드로
+          ← KPI
         </a>
-        <div style={{ fontSize: 18, fontWeight: 700, color: NAVY, marginTop: 8 }}>
-          발행 콘텐츠 <span style={{ fontVariantNumeric: "tabular-nums" }}>{items.length}</span>건
+        <div style={{ fontSize: 18, fontWeight: 700, color: INK, marginTop: 10 }}>
+          발행 콘텐츠 <span style={{ fontVariantNumeric: "tabular-nums" }}>{items.length}</span>
+          <span style={{ color: MUTED, fontWeight: 400, fontSize: 14 }}>건</span>
         </div>
-        <div style={{ fontSize: 13, color: MUTED, marginTop: 4 }}>
-          구글시트 [K-ALBA]성과 탭 · 최신순 · K-univ 제외
-        </div>
+        <div style={{ fontSize: 12.5, color: MUTED, marginTop: 4 }}>최신순 · 발행완료 기준</div>
       </div>
 
+      {/* 필터 */}
       <div
         style={{
-          background: "#fff",
-          borderRadius: 14,
-          border: `1px solid ${BORDER}`,
-          padding: 20,
-          overflowX: "auto",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 8,
+          alignItems: "center",
+          marginBottom: 14,
         }}
       >
+        <div
+          style={{
+            display: "inline-flex",
+            border: `1px solid ${BORDER}`,
+            borderRadius: 9,
+            padding: 2,
+            background: "#fff",
+          }}
+        >
+          {CHANNELS.map((c) => (
+            <button key={c} style={chipStyle(ch === c)} onClick={() => setCh(c)}>
+              {c}
+            </button>
+          ))}
+        </div>
+        {date && (
+          <button style={clearChip} onClick={() => setDate("")}>
+            {date} <span style={{ color: MUTED }}>✕</span>
+          </button>
+        )}
+        {q && (
+          <button style={clearChip} onClick={() => setQ("")}>
+            "{q}" <span style={{ color: MUTED }}>✕</span>
+          </button>
+        )}
+      </div>
+
+      <div className="card" style={{ overflowX: "auto" }}>
         {items.length === 0 ? (
-          <div style={{ fontSize: 14, color: MUTED }}>
-            {data.metricsError ? `⚠️ ${data.metricsError}` : "발행된 콘텐츠가 없습니다."}
+          <div style={{ fontSize: 13.5, color: MUTED }}>
+            {data.metricsError ? `${data.metricsError}` : "조건에 맞는 콘텐츠가 없습니다."}
           </div>
         ) : (
           <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 13.5 }}>
@@ -92,9 +165,10 @@ export default function MarketingDetail() {
                     style={{
                       textAlign: align,
                       padding: "10px 12px",
-                      borderBottom: `2px solid ${BORDER}`,
+                      borderBottom: `1px solid ${BORDER}`,
                       color: MUTED,
-                      fontSize: 12.5,
+                      fontSize: 12,
+                      fontWeight: 500,
                       whiteSpace: "nowrap",
                     }}
                   >
@@ -108,18 +182,21 @@ export default function MarketingDetail() {
                 <tr key={i}>
                   <td style={td}>{it.date || "–"}</td>
                   <td style={td}>
-                    <span
+                    <button
+                      onClick={() => setCh(it.channel)}
                       style={{
-                        background: "#ffe9e6",
-                        color: CORAL,
-                        fontWeight: 700,
+                        border: "none",
+                        background: FILL,
+                        color: INK,
+                        fontWeight: 500,
                         fontSize: 12,
                         padding: "3px 10px",
-                        borderRadius: 20,
+                        borderRadius: 7,
+                        cursor: "pointer",
                       }}
                     >
                       {it.channel}
-                    </span>
+                    </button>
                   </td>
                   <td
                     style={{
@@ -127,7 +204,7 @@ export default function MarketingDetail() {
                       whiteSpace: "normal",
                       minWidth: 200,
                       maxWidth: 340,
-                      fontWeight: 600,
+                      fontWeight: 500,
                     }}
                   >
                     {it.title || "(제목 없음)"}
@@ -167,12 +244,12 @@ export default function MarketingDetail() {
           style={{
             display: "inline-block",
             background: "#fff",
-            border: `1.5px solid ${BORDER}`,
+            border: `1px solid ${BORDER}`,
             borderRadius: 10,
             padding: "10px 16px",
             fontSize: 13,
-            fontWeight: 700,
-            color: NAVY,
+            fontWeight: 600,
+            color: INK,
             textDecoration: "none",
           }}
         >
