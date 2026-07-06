@@ -591,7 +591,7 @@ export const ko = {
     logout: "로그아웃",
     withdraw: "회원 탈퇴",
     withdrawReasonTitle: "탈퇴 사유를 알려주세요",
-    withdrawReasonPlaceholder: "자세히 알려주시면 개선에 큰 도움이 돼요 (선택)",
+    withdrawReasonPlaceholder: "개선을 위해 자세한 사유를 남겨주시면 감사하겠습니다. (선택)",
     withdrawProcessing: "처리 중...",
     withdrawConfirm: "탈퇴하기",
     withdrawSelectReason: "탈퇴 사유를 선택해 주세요.",

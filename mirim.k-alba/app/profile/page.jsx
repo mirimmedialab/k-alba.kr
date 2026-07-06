@@ -451,23 +451,22 @@ export default function ProfilePage() {
         )}
       </Card>
 
-      {/* 마케팅 수신 동의 (프로필에서 언제든 켜고 끄기 — 변경 즉시 저장) */}
+      {/* 마케팅 수신 동의 (토글 — 변경 즉시 저장) */}
       <Card style={{ marginBottom: 16 }}>
-        <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-          <input
-            type="checkbox"
-            checked={!!form.agreed_marketing_at}
-            onChange={async (e) => {
-              const val = e.target.checked ? (form.agreed_marketing_at || new Date().toISOString()) : null;
-              setForm((f) => ({ ...f, agreed_marketing_at: val }));
-              if (user) { try { await updateProfile(user.id, { agreed_marketing_at: val }); } catch (_) {} }
-            }}
-            style={{ width: 16, height: 16, accentColor: T.n9, flexShrink: 0 }}
-          />
-          <span style={{ fontSize: 13.5, fontWeight: 600, color: T.ink }}>{t("auth.agreeMarketing")}</span>
-        </label>
-        <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 6, lineHeight: 1.6 }}>
-          이벤트·혜택 등 마케팅 정보 수신 동의(선택) · You can change this anytime.
+        <div
+          role="switch"
+          aria-checked={!!form.agreed_marketing_at}
+          onClick={async () => {
+            const val = form.agreed_marketing_at ? null : new Date().toISOString();
+            setForm((f) => ({ ...f, agreed_marketing_at: val }));
+            if (user) { try { await updateProfile(user.id, { agreed_marketing_at: val }); } catch (_) {} }
+          }}
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, cursor: "pointer" }}
+        >
+          <span style={{ fontSize: 14, fontWeight: 600, color: T.ink }}>마케팅 정보 수신 동의</span>
+          <span style={{ width: 46, height: 26, borderRadius: 13, background: form.agreed_marketing_at ? T.accent : T.border, position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+            <span style={{ position: "absolute", top: 3, left: form.agreed_marketing_at ? 23 : 3, width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }} />
+          </span>
         </div>
       </Card>
 

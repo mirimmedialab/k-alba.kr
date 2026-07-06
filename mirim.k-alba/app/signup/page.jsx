@@ -87,11 +87,9 @@ export default function SignupPage() {
       });
       const j = await res.json().catch(() => ({}));
       if (res.ok && j?.ok) {
-        // 재활성화 완료(이메일 확정 처리됨) → 바로 로그인
-        const { error: siErr } = await signIn(form.email, form.password);
+        // 재활성화 완료 → 자동 로그인하지 않고 로그인 화면으로(직접 로그인하도록)
         setLoading(false);
-        if (siErr) return setError(authErrorMessage(siErr.message, locale));
-        router.push(role === "worker" ? "/jobs" : "/my/jobs");
+        router.push("/login?reason=resignup");
         return;
       }
       if (j?.error === "active") {

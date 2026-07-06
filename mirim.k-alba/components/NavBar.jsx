@@ -75,8 +75,12 @@ export default function NavBar() {
   const handleLogout = async () => {
     setMenuOpen(false);
     setLoggingOut(true);
-    try { await signOut(); } catch (_) {}
-    router.push("/");
+    // signOut이 느리거나 멈춰도 4초 후 강제 진행(오버레이 무한 방지)
+    try {
+      await Promise.race([signOut(), new Promise((r) => setTimeout(r, 4000))]);
+    } catch (_) {}
+    setLoggingOut(false);
+    router.replace("/");
   };
 
   // 랜딩 페이지(/)는 자체 히어로가 있으므로 별도 네비 있음
@@ -147,7 +151,7 @@ export default function NavBar() {
         >
           {/* 브랜드 로고 — 타이포 기반 (이모지 X) */}
           <Link href={logoHref} style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
-            <KWordmark size={24} />
+            <KWordmark size={20} />
           </Link>
 
           {/* 랜딩 페이지: 심플하게 언어 + CTA 만 */}
@@ -281,9 +285,9 @@ export default function NavBar() {
               <button
                 onClick={() => router.push("/login")}
                 style={{
-                  padding: "8px 12px",
+                  padding: "7px 9px",
                   borderRadius: 4,
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: 600,
                   color: T.ink,
                   background: "transparent",
@@ -300,9 +304,9 @@ export default function NavBar() {
               <button
                 onClick={() => router.push("/signup")}
                 style={{
-                  padding: "8px 12px",
+                  padding: "7px 9px",
                   borderRadius: 4,
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: 600,
                   color: T.paper,
                   background: T.n9,
@@ -365,7 +369,7 @@ export default function NavBar() {
                 borderBottom: `1px solid ${T.border}`,
               }}
             >
-              <KWordmark size={24} />
+              <KWordmark size={20} />
               <button
                 type="button"
                 aria-label={t("common.close", null, "닫기")}
