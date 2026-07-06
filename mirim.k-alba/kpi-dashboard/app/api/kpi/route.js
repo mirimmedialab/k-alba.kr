@@ -330,6 +330,23 @@ export async function GET() {
       items.filter((it) => it.ts).map((it) => ({ created_at: new Date(it.ts).toISOString() })),
       WEEKS
     );
+    const weeklyViews = (() => {
+      const map = {};
+      for (const it of items) {
+        if (!it.ts || typeof it.views !== "number") continue;
+        const k = weekKey(new Date(it.ts));
+        map[k] = (map[k] || 0) + it.views;
+      }
+      const out = [];
+      const now = weekStart(new Date());
+      for (let i = WEEKS - 1; i >= 0; i--) {
+        const d = new Date(now);
+        d.setUTCDate(d.getUTCDate() - i * 7);
+        const k = d.toISOString().slice(0, 10);
+        out.push({ week: k, count: map[k] || 0 });
+      }
+      return out;
+    })();
     const best = items
       .filter((it) => typeof it.views === "number")
       .slice()
@@ -341,6 +358,7 @@ export async function GET() {
       totalComments: sum("comments"),
       totalShares: sum("shares"),
       weeklyPublished,
+      weeklyViews,
       best,
       items,
     };

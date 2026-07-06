@@ -184,14 +184,59 @@ function Section({ title, sub, children }) {
 }
 
 function BestList({ items }) {
-  const list = (items || []).slice(0, 5);
-  const max = Math.max(1, ...list.map((it) => it.views || 0));
+  const [metric, setMetric] = useState("views");
+  const METRICS = [
+    ["views", "조회수", "회"],
+    ["likes", "좋아요", "개"],
+    ["comments", "댓글", "개"],
+    ["shares", "공유", "회"],
+  ];
+  const unit = (METRICS.find(([k]) => k === metric) || [])[2] || "";
+  const list = (items || [])
+    .filter((it) => typeof it[metric] === "number")
+    .slice()
+    .sort((a, b) => b[metric] - a[metric])
+    .slice(0, 5);
+  const max = Math.max(1, ...list.map((it) => it[metric] || 0));
   return (
     <Card style={{ flex: "1 1 340px", minWidth: 300 }}>
-      <div style={{ fontSize: 14, fontWeight: 700, color: NAVY, marginBottom: 12 }}>
-        BEST 콘텐츠 <span style={{ color: MUTED, fontWeight: 500 }}>· 조회수 기준 TOP 5</span>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 8,
+          marginBottom: 12,
+        }}
+      >
+        <div style={{ fontSize: 14, fontWeight: 700, color: NAVY }}>
+          BEST 콘텐츠 <span style={{ color: MUTED, fontWeight: 500 }}>· TOP 5</span>
+        </div>
+        <div style={{ display: "flex", gap: 4 }}>
+          {METRICS.map(([k, label]) => (
+            <button
+              key={k}
+              onClick={() => setMetric(k)}
+              style={{
+                padding: "4px 10px",
+                borderRadius: 14,
+                fontSize: 11.5,
+                fontWeight: 700,
+                cursor: "pointer",
+                border: `1px solid ${metric === k ? CORAL : BORDER}`,
+                background: metric === k ? CORAL : "#fff",
+                color: metric === k ? "#fff" : MUTED,
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
-      {list.length === 0 && <div style={{ fontSize: 13, color: MUTED }}>데이터 없음</div>}
+      {list.length === 0 && (
+        <div style={{ fontSize: 13, color: MUTED }}>해당 수치가 입력된 콘텐츠가 없습니다.</div>
+      )}
       {list.map((it, i) => (
         <div key={i} style={{ marginBottom: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
@@ -226,13 +271,14 @@ function BestList({ items }) {
               {it.title || "(제목 없음)"}
             </span>
             <span style={{ fontSize: 13, color: MUTED, fontWeight: 700, flexShrink: 0 }}>
-              {(it.views || 0).toLocaleString()}회
+              {(it[metric] || 0).toLocaleString()}
+              {unit}
             </span>
           </div>
           <div style={{ background: "#eef1f7", borderRadius: 6, height: 6, marginLeft: 28 }}>
             <div
               style={{
-                width: `${Math.round(((it.views || 0) / max) * 100)}%`,
+                width: `${Math.round(((it[metric] || 0) / max) * 100)}%`,
                 background: NAVY,
                 height: 6,
                 borderRadius: 6,
@@ -364,8 +410,8 @@ export default function Dashboard() {
         <Stat label="총 조회수" value={mk ? mk.totalViews : null} sub="게시물별 최신 조회수 합" />
         <Stat label="총 좋아요" value={mk ? mk.totalLikes : null} />
         <Stat label="총 댓글" value={mk ? mk.totalComments : null} />
-        {mk && <WeeklyBars title="주간 발행 콘텐츠" series={mk.weeklyPublished} color={CORAL} />}
-        {mk && <BestList items={mk.best} />}
+        {mk && <WeeklyBars title="주간 조회수" series={mk.weeklyViews} color={CORAL} />}
+        {mk && <BestList items={mk.items} />}
         {c && <HBars title="채널별 발행" data={c.byChannel} color={NAVY} />}
       </Section>
     </div>
