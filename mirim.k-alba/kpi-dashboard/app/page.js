@@ -7,6 +7,8 @@ const MUTED = "#8b95a1";
 const BORDER = "#eceef1";
 const ACCENT = "#ff6b5e";
 const FILL = "#f2f4f6";
+const BLUE = "#3b82f6";
+const GREEN = "#16a34a";
 
 function Card({ children, style }) {
   return (
@@ -231,7 +233,7 @@ function MiniGrid({ title, entries, vertical }) {
       <div style={{ fontSize: 13.5, fontWeight: 600, color: INK, marginBottom: 14 }}>{title}</div>
       {vertical ? (
         <div>
-          {entries.map(([label, value, href], i) => {
+          {entries.map(([label, value, href, valueColor], i) => {
             const row = (
               <div
                 style={{
@@ -250,7 +252,7 @@ function MiniGrid({ title, entries, vertical }) {
                   style={{
                     fontSize: 17,
                     fontWeight: 700,
-                    color: INK,
+                    color: valueColor || INK,
                     fontVariantNumeric: "tabular-nums",
                   }}
                 >
@@ -275,7 +277,7 @@ function MiniGrid({ title, entries, vertical }) {
             gap: 10,
           }}
         >
-          {entries.map(([label, value, href]) => {
+          {entries.map(([label, value, href, valueColor]) => {
             const cell = (
               <div style={{ borderLeft: `2px solid ${BORDER}`, paddingLeft: 10 }}>
                 <div style={{ fontSize: 12, color: MUTED }}>
@@ -286,7 +288,7 @@ function MiniGrid({ title, entries, vertical }) {
                   style={{
                     fontSize: 19,
                     fontWeight: 700,
-                    color: INK,
+                    color: valueColor || INK,
                     marginTop: 3,
                     fontVariantNumeric: "tabular-nums",
                   }}
@@ -542,11 +544,11 @@ export default function Dashboard() {
 
       <ErrorNote msg={data.dbError} />
 
-      <Section num="1" title="성장 · 사용자" first>
+      <Section num="1" title="사용자" first>
         <MiniGrid
           title="가입 현황"
           entries={[
-            ["전체 가입자", u.total, "/users"],
+            ["전체 가입자", u.total, "/users", BLUE],
             ["알바생", u.workers],
             ["사장님", u.employers],
             ["탈퇴", u.deactivations],
@@ -558,15 +560,15 @@ export default function Dashboard() {
         </div>
       </Section>
 
-      <Section num="2" title="공급 · 공고">
+      <Section num="2" title="공고">
         <div className="row-1-2">
           <MiniGrid
             title="공고"
             vertical
             entries={[
               ["고용24 공고", j.bySource ? j.bySource.worknet : null],
-              ["직접 등록 공고", j.bySource ? j.bySource.direct : null, "/jobs-manual?src=direct"],
-              ["챗봇 등록 공고", j.bySource ? j.bySource.chatbot : null, "/jobs-manual?src=chatbot"],
+              ["직접 등록 공고", j.bySource ? j.bySource.direct : null, "/jobs-manual?src=direct", BLUE],
+              ["챗봇 등록 공고", j.bySource ? j.bySource.chatbot : null, "/jobs-manual?src=chatbot", GREEN],
               ["누적 공고", j.total],
             ]}
           />
@@ -574,7 +576,7 @@ export default function Dashboard() {
         </div>
       </Section>
 
-      <Section num="3" title="매칭 · 핵심 성과">
+      <Section num="3" title="매칭">
         <div className="row-1-1">
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <LinkStat href="/applications" label="누적 지원" value={m.applications} sub="지원 내역" />
