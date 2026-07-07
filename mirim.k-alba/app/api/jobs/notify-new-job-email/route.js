@@ -23,7 +23,7 @@ export const maxDuration = 60;
 
 export async function POST(request) {
   try {
-    const { job_id } = await request.json();
+    const { job_id, force } = await request.json();
     if (!job_id) {
       return NextResponse.json({ ok: false, error: "job_id 필요" }, { status: 400 });
     }
@@ -33,7 +33,10 @@ export async function POST(request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    const result = await sendNewJobEmailsForJob(supabase, job_id);
+    // force=true: 야간(23~08 KST) 차단 우회 — 관리자 수동 재발송/테스트용.
+    const result = await sendNewJobEmailsForJob(supabase, job_id, {
+      ignoreBusinessHours: force === true,
+    });
     return NextResponse.json(result);
   } catch (error) {
     console.error("[notify-new-job-email] error:", error);
