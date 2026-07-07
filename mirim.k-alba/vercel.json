@@ -49,6 +49,12 @@
     "app/api/cron/cleanup-expired-jobs/route.js": {
       "maxDuration": 30
     },
+    "app/api/cron/flush-new-job-emails/route.js": {
+      "maxDuration": 60
+    },
+    "app/api/jobs/notify-new-job-email/route.js": {
+      "maxDuration": 60
+    },
     "app/api/jobs/[id]/preview-shot/route.js": {
       "maxDuration": 60,
       "memory": 1769
@@ -62,6 +68,10 @@
     {
       "path": "/api/cron/cleanup-expired-jobs",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/flush-new-job-emails",
+      "schedule": "0 23,1 * * *"
     }
   ]
 }

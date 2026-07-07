@@ -306,6 +306,13 @@ export default function PostJobPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ job_id: newJob.id }),
       }).catch((e) => console.error("[post-job] push notify failed:", e));
+
+      // 신규 공고 이메일 알림: 동의한 알바생 + 사장님 확인 메일 (fire-and-forget)
+      fetch("/api/jobs/notify-new-job-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ job_id: newJob.id }),
+      }).catch((e) => console.error("[post-job] email notify failed:", e));
     }
 
     setPosted(true);

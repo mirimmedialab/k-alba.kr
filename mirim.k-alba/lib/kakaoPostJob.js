@@ -287,6 +287,14 @@ async function continueFlow(db, key, draftRow, input) {
 
   await db.from("kakao_job_drafts").delete().eq("bot_user_key", key);
 
+  // 신규 공고 이메일 알림: 동의 알바생 + 사장님 확인 메일 (fire-and-forget)
+  // 카톡 응답을 막지 않도록 await 하지 않는다. 누락 시 /api/cron/flush-new-job-emails 가 보완.
+  fetch(`${SITE}/api/jobs/notify-new-job-email`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ job_id: newJob.id }),
+  }).catch((e) => console.error("[kakaoPostJob] email notify failed:", e?.message));
+
   const payStr = `${data.pay_type || "시급"} ${formatPay(Number(data.pay_amount) || 0, data.pay_type)}`;
   const region = data.sigungu || data.sido || "";
   return reply({
