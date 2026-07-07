@@ -521,6 +521,7 @@ export default function Dashboard() {
   const m = data.matching || {};
   const c = data.content || null;
   const mk = data.marketing || null;
+  const kk = data.kakao || null;
   const ch = (c && c.byChannel) || {};
   const n = (v) => (typeof v === "number" ? v.toLocaleString() : "–");
 
@@ -616,6 +617,25 @@ export default function Dashboard() {
               ["스레드", ch["스레드"] || 0, "/marketing?ch=스레드"],
             ]}
           />
+        </div>
+      </Section>
+
+      <Section num="5" title="카카오톡 채널">
+        <ErrorNote msg={data.kakaoError} />
+        <div className="row-1-2">
+          <MiniGrid
+            vertical
+            entries={[
+              ["친구수 (추정)", kk ? kk.friends : null],
+              ["채널 추가", kk ? kk.added : null],
+              ["차단", kk ? kk.blocked : null],
+              ["순증", kk ? kk.net : null],
+            ]}
+          />
+          <DailyChart title="일별 채널 추가" series={kk ? kk.dailyAdded : []} color={ACCENT} wide />
+        </div>
+        <div style={{ fontSize: 12, color: MUTED, marginTop: 10 }}>
+          웹훅 등록 시점 이후의 추가/차단만 집계됩니다 · 친구수 = 기준값(KAKAO_FRIENDS_BASELINE) + 순증
         </div>
       </Section>
     </div>

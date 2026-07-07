@@ -283,7 +283,7 @@ export default function UsersDetail() {
                     minHeight: 54,
                     borderRadius: 8,
                     background: cnt ? `rgba(255,107,94,${alpha})` : "transparent",
-                    boxShadow: sel ? `inset 0 0 0 1.5px ${INK}` : "none",
+                    boxShadow: sel ? `inset 0 0 0 1.5px ${ACCENT}` : "none",
                     cursor: cnt ? "pointer" : "default",
                     padding: "6px 8px",
                   }}

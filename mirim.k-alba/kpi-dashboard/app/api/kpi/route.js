@@ -297,6 +297,35 @@ export async function GET() {
     } catch (e) {
       result.dbError = String((e && e.message) || e);
     }
+
+    /* --- 카카오톡 채널 웹훅 이벤트 (테이블 미생성 시 조용히 스킵) --- */
+    try {
+      const evDates = async (ev) => {
+        const { data, error } = await sb
+          .from("kakao_channel_events")
+          .select("occurred_at")
+          .eq("event", ev)
+          .gte("occurred_at", sinceIso)
+          .limit(20000);
+        if (error) throw new Error("kakao_channel_events: " + error.message);
+        return (data || []).map((r) => ({ created_at: r.occurred_at }));
+      };
+      const [kAdded, kBlocked, kRecentAdded] = await Promise.all([
+        count("kakao_channel_events", (q) => q.eq("event", "added")),
+        count("kakao_channel_events", (q) => q.eq("event", "blocked")),
+        evDates("added"),
+      ]);
+      const baseline = parseFloat(process.env.KAKAO_FRIENDS_BASELINE || "");
+      result.kakao = {
+        added: kAdded,
+        blocked: kBlocked,
+        net: kAdded - kBlocked,
+        friends: Number.isFinite(baseline) ? baseline + kAdded - kBlocked : null,
+        dailyAdded: buildDailySeries(kRecentAdded, DAYS),
+      };
+    } catch (e) {
+      result.kakaoError = String((e && e.message) || e);
+    }
   } else {
     result.dbError = "SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 환경변수가 설정되지 않았습니다.";
   }
