@@ -74,11 +74,12 @@ export function verifyUnsubToken(token, secret) {
 function payLabel(job, lang) {
   const amount = Number(job.pay_amount || 0).toLocaleString("ko-KR");
   const type = job.pay_type || (lang === "ko" ? "시급" : "Pay");
-  return `${type} ₩${amount}`;
+  return `${amount} / ${type}`;
 }
 
 function regionLabel(job) {
-  return job.sigungu || job.sido || job.address || "";
+  const parts = [job.sido, job.sigungu].filter(Boolean);
+  return parts.length ? parts.join(" ") : (job.address || "");
 }
 
 function esc(s) {
@@ -96,7 +97,7 @@ function emailShell(bodyRows) {
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background-color:#FFFFFF;border:1px solid #E8E4DB;border-radius:16px;overflow:hidden;">
         <tr>
           <td style="background-color:#0A1628;padding:26px 36px;font-family:${FONT};">
-            <span style="font-size:22px;font-weight:800;color:#FFFFFF;letter-spacing:-0.5px;">K<span style="color:#FF6B5A;">-</span>ALBA</span>
+            <span style="font-size:22px;font-weight:800;color:#FFFFFF;letter-spacing:-0.5px;"><span style="color:#FF6B5A;">K</span>-ALBA</span>
             <span style="font-size:12px;color:#9DB0CC;">&nbsp;&nbsp;외국인 알바 매칭 플랫폼</span>
           </td>
         </tr>
@@ -140,15 +141,15 @@ function jobCardRow(job, lang, labels) {
 
 function ctaRow(href, label, bg) {
   return `<tr>
-    <td align="center" style="padding:24px 36px 6px 36px;font-family:${FONT};">
-      <a href="${href}" target="_blank" style="background-color:${bg || "#FF6B5A"};color:#FFFFFF;display:inline-block;font-size:16px;font-weight:800;line-height:54px;text-align:center;text-decoration:none;width:340px;max-width:90%;border-radius:12px;">${label}</a>
+    <td align="center" style="padding:34px 36px 26px 36px;font-family:${FONT};">
+      <a href="${href}" target="_blank" style="background-color:${bg || "#FF6B5A"};color:#FFFFFF;display:inline-block;font-size:16px;font-weight:800;line-height:52px;text-align:center;text-decoration:none;width:250px;max-width:80%;border-radius:12px;">${label}</a>
     </td>
   </tr>`;
 }
 
 function noteRow(text, linkHtml) {
   return `<tr>
-    <td align="center" style="padding:0 36px 6px 36px;font-family:${FONT};">
+    <td align="center" style="padding:0 36px 30px 36px;font-family:${FONT};">
       <p style="margin:0;font-size:13px;color:#6B7A95;line-height:1.6;">${text}${linkHtml ? " " + linkHtml : ""}</p>
     </td>
   </tr>`;
@@ -171,8 +172,8 @@ function featureGridRow(items) {
 function footerRow(finePrintHtml) {
   return `<tr>
     <td style="background-color:#0A1628;padding:26px 36px;font-family:${FONT};">
-      <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#FFFFFF;">미림미디어랩(주)</p>
-      <p style="margin:0 0 12px 0;font-size:12px;color:#9DB0CC;line-height:1.6;">외국인 알바 매칭 플랫폼 K-알바 · <a href="https://www.k-alba.kr" target="_blank" style="color:#FF6B5A;text-decoration:none;">www.k-alba.kr</a> · 문의 k-alba@naver.com<br>서울특별시 강서구 양천로 583 우림블루나인비즈니스센터 A동 406호 · 직업정보제공사업 신고번호 J1204020260002</p>
+      <p style="margin:0 0 6px 0;font-size:14px;font-weight:800;letter-spacing:-0.5px;"><span style="color:#FF6B5A;">K</span><span style="color:#FFFFFF;">-ALBA</span>&nbsp;&nbsp;<a href="https://www.k-alba.kr" target="_blank" style="color:#FF6B5A;text-decoration:none;font-weight:400;font-size:12px;">www.k-alba.kr</a></p>
+      <p style="margin:0 0 10px 0;font-size:11px;color:#6B7A95;line-height:1.6;">미림미디어랩(주)</p>
       <p style="margin:0;font-size:11px;color:#6B7A95;line-height:1.7;">${finePrintHtml}</p>
     </td>
   </tr>`;
@@ -187,17 +188,17 @@ export function buildWorkerEmail(job, lang, unsubUrl, siteUrl) {
     : `A new job was just posted — ${job.title || ""}`.trim();
 
   const eyebrow = ko ? "새 공고 알림" : "NEW JOB";
-  const headline = ko ? "새로운 알바 공고가<br>올라왔어요" : "A new job was<br>just posted";
+  const headline = ko ? "새로운 알바 공고가 올라왔어요 🔔" : "A new job was just posted 🔔";
   const desc = ko
-    ? '마음에 드는 공고가 있으면 지금 바로 지원해보세요. K-알바는 <strong style="color:#0A1628;">비자 조건에 맞는 합법 알바</strong>만 안내해드려요.'
-    : 'If it looks good, apply right now. K-ALBA only shows <strong style="color:#0A1628;">legal jobs that fit your visa</strong>.';
+    ? "마음에 드는 공고가 있으면 지금 바로 지원해보세요."
+    : "If it looks good, apply right now.";
   const labels = ko
     ? { card: "새로 올라온 공고", pay: "급여", region: "근무지" }
     : { card: "NEW JOB", pay: "Pay", region: "Location" };
   const cta = ko ? "공고 보고 지원하기 →" : "View & Apply →";
   const note = ko
-    ? "지원은 무료이고, 카카오 로그인으로 간편하게 시작할 수 있어요."
-    : "Applying is free — get started in seconds with Kakao login.";
+    ? "마음에 드는 공고는 마감 전에 서둘러 지원해보세요."
+    : "Don't miss out — apply before the listing closes.";
   const seeMore = `<a href="${jobUrl}" target="_blank" style="color:#FF6B5A;font-weight:700;text-decoration:none;">${ko ? "공고 전체 보기 →" : "See full listing →"}</a>`;
 
   const finePrint = ko
@@ -222,12 +223,12 @@ export function buildEmployerEmail(job, employer, siteUrl) {
 
   const subject = `[K-ALBA] 등록하신 공고를 구직자분들께 전달해드렸어요`;
   const eyebrow = "공고 등록 완료";
-  const headline = `${who}님, 공고가<br>등록됐어요 🎉`;
+  const headline = `${who}님, 공고가 등록됐어요 📢`;
   const desc =
-    '방금 등록하신 공고를 <strong style="color:#0A1628;">K-알바 구직자분들께 이메일로 전달</strong>해드렸어요. 좋은 지원자와 빠르게 연결되시길 바랄게요!';
+    '방금 등록하신 공고를 <strong style="color:#0A1628;">K-알바 구직자분들께 이메일로 전달</strong>해드렸어요.<br>좋은 지원자와 빠르게 연결되시길 바랄게요!';
   const labels = { card: "등록된 공고", pay: "급여", region: "근무지" };
   const cta = "내 공고 보기 →";
-  const note = "지원자가 들어오면 바로 알려드릴게요.";
+  const note = "지원자가 카카오톡으로 사장님께 직접 연락드려요.";
   const manageLink = `<a href="${manageUrl}" target="_blank" style="color:#FF6B5A;font-weight:700;text-decoration:none;">공고 관리하기 →</a>`;
   const finePrint = "본 메일은 회원님의 공고 등록에 따른 서비스 안내 메일입니다.";
 
