@@ -51,6 +51,16 @@ function Seg({ options, value, onChange }) {
   );
 }
 
+function fmtDT(v) {
+  return new Date(v).toLocaleString("ko-KR", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 function dkey(iso) {
   const d = new Date(iso);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
@@ -325,7 +335,7 @@ export default function UsersDetail() {
           <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 13.5 }}>
             <thead>
               <tr>
-                {["이름", "유형", "국적", tab === "active" ? "가입일" : "가입일 / 탈퇴일"].map(
+                {["이름", "유형", "국적", tab === "active" ? "가입일시" : "가입일시 / 탈퇴일시"].map(
                   (h) => (
                     <th
                       key={h}
@@ -354,10 +364,10 @@ export default function UsersDetail() {
                   </td>
                   <td style={{ ...td, color: MUTED }}>{u.nationality || "–"}</td>
                   <td style={{ ...td, fontVariantNumeric: "tabular-nums" }}>
-                    {new Date(u.createdAt).toLocaleDateString("ko-KR")}
+                    {fmtDT(u.createdAt)}
                     {tab === "deactivated" && u.deactivatedAt && (
                       <span style={{ color: MUTED, marginLeft: 8 }}>
-                        → {new Date(u.deactivatedAt).toLocaleDateString("ko-KR")}
+                        → {fmtDT(u.deactivatedAt)}
                       </span>
                     )}
                   </td>
