@@ -71,9 +71,19 @@ export function verifyUnsubToken(token, secret) {
 }
 
 // ────────── 표시용 헬퍼 ──────────
+const PAY_TYPE_KO = {
+  hourly: "시급",
+  daily: "일급",
+  weekly: "주급",
+  monthly: "월급",
+  yearly: "연봉",
+  annual: "연봉",
+};
 function payLabel(job, lang) {
   const amount = Number(job.pay_amount || 0).toLocaleString("ko-KR");
-  const type = job.pay_type || (lang === "ko" ? "시급" : "Pay");
+  const raw = job.pay_type || "";
+  const type =
+    PAY_TYPE_KO[String(raw).toLowerCase()] || raw || (lang === "ko" ? "시급" : "Pay");
   return `${amount} / ${type}`;
 }
 
@@ -199,7 +209,7 @@ export function buildWorkerEmail(job, lang, unsubUrl, siteUrl) {
   const note = ko
     ? "마음에 드는 공고는 마감 전에 서둘러 지원해보세요."
     : "Don't miss out — apply before the listing closes.";
-  const seeMore = `<a href="${jobUrl}" target="_blank" style="color:#FF6B5A;font-weight:700;text-decoration:none;">${ko ? "공고 전체 보기 →" : "See full listing →"}</a>`;
+  const seeMore = `<a href="${siteUrl}/jobs" target="_blank" style="color:#FF6B5A;font-weight:700;text-decoration:none;">${ko ? "공고 전체 보기 →" : "See all jobs →"}</a>`;
 
   const finePrint = ko
     ? `본 메일은 마케팅 정보 수신에 동의하신 회원님께 발송되었습니다. <a href="${unsubUrl}" target="_blank" style="color:#FF6B5A;text-decoration:none;font-weight:700;">수신거부</a>`
@@ -223,7 +233,7 @@ export function buildEmployerEmail(job, employer, siteUrl) {
 
   const subject = `[K-ALBA] 등록하신 공고를 구직자분들께 전달해드렸어요`;
   const eyebrow = "공고 등록 완료";
-  const headline = `${who}님, 공고가 등록됐어요 📢`;
+  const headline = `딱 맞는 구직자분들께<br>${who}님 공고를 알렸어요 📢`;
   const desc =
     '방금 등록하신 공고를 <strong style="color:#0A1628;">K-알바 구직자분들께 이메일로 전달</strong>해드렸어요.<br>좋은 지원자와 빠르게 연결되시길 바랄게요!';
   const labels = { card: "등록된 공고", pay: "급여", region: "근무지" };
