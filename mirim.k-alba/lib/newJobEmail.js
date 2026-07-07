@@ -199,19 +199,6 @@ export function buildWorkerEmail(job, lang, unsubUrl, siteUrl) {
     ? "지원은 무료이고, 카카오 로그인으로 간편하게 시작할 수 있어요."
     : "Applying is free — get started in seconds with Kakao login.";
   const seeMore = `<a href="${jobUrl}" target="_blank" style="color:#FF6B5A;font-weight:700;text-decoration:none;">${ko ? "공고 전체 보기 →" : "See full listing →"}</a>`;
-  const features = ko
-    ? [
-        { t: "합법 매칭만", d: "비자별 취업 가능 조건에 맞는 공고만 안내해요." },
-        { t: "내 언어로", d: "공고를 7개 국어로 편하게 볼 수 있어요." },
-        { t: "카카오톡 소통", d: "궁금한 점은 카카오톡 채널로 바로 물어보세요." },
-        { t: "간편 지원", d: "프로필만 있으면 몇 번의 클릭으로 지원 완료." },
-      ]
-    : [
-        { t: "Legal matches only", d: "Only jobs that fit your visa conditions." },
-        { t: "In your language", d: "View listings in 7 languages." },
-        { t: "KakaoTalk support", d: "Ask us anytime on our Kakao channel." },
-        { t: "Easy apply", d: "Apply in a few clicks with your profile." },
-      ];
 
   const finePrint = ko
     ? `본 메일은 마케팅 정보 수신에 동의하신 회원님께 발송되었습니다. <a href="${unsubUrl}" target="_blank" style="color:#FF6B5A;text-decoration:none;font-weight:700;">수신거부</a>`
@@ -222,7 +209,6 @@ export function buildWorkerEmail(job, lang, unsubUrl, siteUrl) {
     jobCardRow(job, lang, labels) +
     ctaRow(jobUrl, esc(cta), "#FF6B5A") +
     noteRow(esc(note), seeMore) +
-    featureGridRow(features) +
     footerRow(finePrint);
 
   return { subject, html: emailShell(rows) };
@@ -243,12 +229,6 @@ export function buildEmployerEmail(job, employer, siteUrl) {
   const cta = "내 공고 보기 →";
   const note = "지원자가 들어오면 바로 알려드릴게요.";
   const manageLink = `<a href="${manageUrl}" target="_blank" style="color:#FF6B5A;font-weight:700;text-decoration:none;">공고 관리하기 →</a>`;
-  const features = [
-    { t: "합법 매칭만", d: "비자 조건에 맞는 외국인 구직자에게만 노출돼요." },
-    { t: "지원 알림", d: "지원이 들어오면 이메일·앱으로 바로 알려드려요." },
-    { t: "카카오톡 소통", d: "지원자와 카카오톡 채널로 바로 연결돼요." },
-    { t: "7개 국어 지원", d: "구직자는 모국어로 보고, 사장님은 한국어로 관리해요." },
-  ];
   const finePrint = "본 메일은 회원님의 공고 등록에 따른 서비스 안내 메일입니다.";
 
   const rows =
@@ -256,7 +236,6 @@ export function buildEmployerEmail(job, employer, siteUrl) {
     jobCardRow(job, "ko", labels) +
     ctaRow(jobUrl, esc(cta), "#FF6B5A") +
     noteRow(esc(note), manageLink) +
-    featureGridRow(features) +
     footerRow(finePrint);
 
   return { subject, html: emailShell(rows) };
