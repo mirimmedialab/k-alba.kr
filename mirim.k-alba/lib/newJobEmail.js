@@ -10,6 +10,9 @@ import crypto from "node:crypto";
  *              AND agreed_marketing_at IS NOT NULL  (동의자 = 동의 도입 이후 가입자)
  *   2) 사장님에게 "공유 완료" 서비스 메일 (트랜잭셔널 — (광고)·동의·야간차단 불필요)
  *
+ * 디자인: K-ALBA 하우스 스타일(email-templates/kyocharo-*.html) — 테이블 기반,
+ *         네이비(#0A1628) 헤더 + 골드(#B8944A) 구분선 + 코랄(#FF6B5A) CTA + 네이비 푸터.
+ *
  * 중복 방지: jobs.email_notified_at 을 발송 직전 claim(원자적 update)해서 공고당 1회만.
  * 야간 등록분: claim 안 하고 deferred 반환 → /api/cron/flush-new-job-emails 가 아침에 재시도.
  *
@@ -21,10 +24,7 @@ const RESEND_API = "https://api.resend.com/emails";
 const FROM = "K-ALBA <no-reply@k-alba.kr>";
 const REPLY_TO = "k-alba@naver.com";
 
-const NAVY = "#3F5273";
-const CORAL = "#C2512A";
-const MUTED = "#6B7A95";
-const LINE = "#D9D4C7";
+const FONT = "'Apple SD Gothic Neo','Malgun Gothic',Arial,sans-serif";
 
 // ────────── 야간 발송 차단 (KST 08:00~23:00) ──────────
 export function isBusinessHoursKST(now = new Date()) {
@@ -88,107 +88,178 @@ function esc(s) {
     .replace(/>/g, "&gt;");
 }
 
+// ────────── 공통 레이아웃 조각 ──────────
+function emailShell(bodyRows) {
+  return `<div style="margin:0;padding:0;background-color:#FAF8F3;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#FAF8F3;">
+    <tr><td align="center" style="padding:24px 12px;">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background-color:#FFFFFF;border:1px solid #E8E4DB;border-radius:16px;overflow:hidden;">
+        <tr>
+          <td style="background-color:#0A1628;padding:26px 36px;font-family:${FONT};">
+            <span style="font-size:22px;font-weight:800;color:#FFFFFF;letter-spacing:-0.5px;">K<span style="color:#FF6B5A;">-</span>ALBA</span>
+            <span style="font-size:12px;color:#9DB0CC;">&nbsp;&nbsp;외국인 알바 매칭 플랫폼</span>
+          </td>
+        </tr>
+        <tr><td style="height:4px;background-color:#B8944A;font-size:0;line-height:0;">&nbsp;</td></tr>
+        ${bodyRows}
+      </table>
+    </td></tr>
+  </table>
+</div>`;
+}
+
+function introRow(eyebrow, headlineHtml, descHtml) {
+  return `<tr>
+    <td style="padding:36px 36px 8px 36px;font-family:${FONT};">
+      <p style="margin:0 0 8px 0;font-size:14px;color:#B8944A;font-weight:700;">${eyebrow}</p>
+      <h1 style="margin:0 0 16px 0;font-size:24px;line-height:1.4;color:#0A1628;font-weight:800;letter-spacing:-0.6px;">${headlineHtml}</h1>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:#3F5273;">${descHtml}</p>
+    </td>
+  </tr>`;
+}
+
+function jobCardRow(job, lang, labels) {
+  const title = esc(job.title || (lang === "ko" ? "새 알바 공고" : "New job"));
+  const pay = esc(payLabel(job, lang));
+  const region = esc(regionLabel(job));
+  return `<tr>
+    <td style="padding:22px 36px 4px 36px;font-family:${FONT};">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #E8E4DB;border-radius:12px;background-color:#FAF8F3;">
+        <tr><td style="padding:20px 22px;">
+          <p style="margin:0 0 6px 0;font-size:12px;font-weight:700;color:#B8944A;letter-spacing:0.4px;">${labels.card}</p>
+          <p style="margin:0 0 14px 0;font-size:18px;font-weight:800;color:#0A1628;line-height:1.35;">${title}</p>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr><td width="72" style="padding:3px 0;font-size:13px;color:#6B7A95;">${labels.pay}</td><td style="padding:3px 0;font-size:13px;font-weight:700;color:#0A1628;">${pay}</td></tr>
+            <tr><td style="padding:3px 0;font-size:13px;color:#6B7A95;">${labels.region}</td><td style="padding:3px 0;font-size:13px;font-weight:700;color:#0A1628;">${region}</td></tr>
+          </table>
+        </td></tr>
+      </table>
+    </td>
+  </tr>`;
+}
+
+function ctaRow(href, label, bg) {
+  return `<tr>
+    <td align="center" style="padding:24px 36px 6px 36px;font-family:${FONT};">
+      <a href="${href}" target="_blank" style="background-color:${bg || "#FF6B5A"};color:#FFFFFF;display:inline-block;font-size:16px;font-weight:800;line-height:54px;text-align:center;text-decoration:none;width:340px;max-width:90%;border-radius:12px;">${label}</a>
+    </td>
+  </tr>`;
+}
+
+function noteRow(text, linkHtml) {
+  return `<tr>
+    <td align="center" style="padding:0 36px 6px 36px;font-family:${FONT};">
+      <p style="margin:0;font-size:13px;color:#6B7A95;line-height:1.6;">${text}${linkHtml ? " " + linkHtml : ""}</p>
+    </td>
+  </tr>`;
+}
+
+function featureGridRow(items) {
+  const cell = (it, padding) =>
+    `<td width="50%" valign="top" style="padding:${padding};"><p style="margin:0 0 4px 0;font-size:14px;font-weight:800;color:#0A1628;">${esc(it.t)}</p><p style="margin:0;font-size:13px;color:#6B7A95;line-height:1.6;">${esc(it.d)}</p></td>`;
+  return `<tr>
+    <td style="padding:22px 36px 4px 36px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #E8E4DB;font-family:${FONT};">
+        <tr><td colspan="2" style="height:24px;font-size:0;line-height:0;">&nbsp;</td></tr>
+        <tr>${cell(items[0], "0 8px 16px 0")}${cell(items[1], "0 0 16px 8px")}</tr>
+        <tr>${cell(items[2], "0 8px 0 0")}${cell(items[3], "0 0 0 8px")}</tr>
+      </table>
+    </td>
+  </tr>`;
+}
+
+function footerRow(finePrintHtml) {
+  return `<tr>
+    <td style="background-color:#0A1628;padding:26px 36px;font-family:${FONT};">
+      <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#FFFFFF;">미림미디어랩(주)</p>
+      <p style="margin:0 0 12px 0;font-size:12px;color:#9DB0CC;line-height:1.6;">외국인 알바 매칭 플랫폼 K-알바 · <a href="https://www.k-alba.kr" target="_blank" style="color:#FF6B5A;text-decoration:none;">www.k-alba.kr</a> · 문의 k-alba@naver.com<br>서울특별시 강서구 양천로 583 우림블루나인비즈니스센터 A동 406호 · 직업정보제공사업 신고번호 J1204020260002</p>
+      <p style="margin:0;font-size:11px;color:#6B7A95;line-height:1.7;">${finePrintHtml}</p>
+    </td>
+  </tr>`;
+}
+
 // ────────── 알바생 메일 (광고성) ──────────
 export function buildWorkerEmail(job, lang, unsubUrl, siteUrl) {
   const ko = lang === "ko";
   const jobUrl = `${siteUrl}/jobs/${job.id}`;
-  const title = esc(job.title || (ko ? "새 알바 공고" : "New job"));
-  const region = esc(regionLabel(job));
-  const pay = esc(payLabel(job, lang));
-
   const subject = ko
     ? `새 알바 공고가 올라왔어요 — ${job.title || ""}`.trim()
     : `A new job was just posted — ${job.title || ""}`.trim();
 
-  const t = ko
-    ? {
-        pre: "K-ALBA에 딱 맞을지도 모를 새 공고가 등록됐어요.",
-        cta: "공고 보고 지원하기",
-        hi: "안녕하세요,",
-        lead: "새로운 아르바이트 공고가 K-ALBA에 올라왔어요. 마음에 들면 바로 지원해보세요!",
-        payL: "급여",
-        regionL: "근무지",
-        foot: "본 메일은 K-ALBA 마케팅 정보 수신에 동의하신 회원님께 발송되었습니다.",
-        unsub: "수신 거부",
-      }
-    : {
-        pre: "A new job that might fit you was just posted on K-ALBA.",
-        cta: "View & Apply",
-        hi: "Hello,",
-        lead: "A new part-time job was just posted on K-ALBA. If it looks good, apply right away!",
-        payL: "Pay",
-        regionL: "Location",
-        foot: "You are receiving this because you agreed to receive marketing information from K-ALBA.",
-        unsub: "Unsubscribe",
-      };
+  const eyebrow = ko ? "새 공고 알림" : "NEW JOB";
+  const headline = ko ? "새로운 알바 공고가<br>올라왔어요" : "A new job was<br>just posted";
+  const desc = ko
+    ? '마음에 드는 공고가 있으면 지금 바로 지원해보세요. K-알바는 <strong style="color:#0A1628;">비자 조건에 맞는 합법 알바</strong>만 안내해드려요.'
+    : 'If it looks good, apply right now. K-ALBA only shows <strong style="color:#0A1628;">legal jobs that fit your visa</strong>.';
+  const labels = ko
+    ? { card: "새로 올라온 공고", pay: "급여", region: "근무지" }
+    : { card: "NEW JOB", pay: "Pay", region: "Location" };
+  const cta = ko ? "공고 보고 지원하기 →" : "View & Apply →";
+  const note = ko
+    ? "지원은 무료이고, 카카오 로그인으로 간편하게 시작할 수 있어요."
+    : "Applying is free — get started in seconds with Kakao login.";
+  const seeMore = `<a href="${jobUrl}" target="_blank" style="color:#FF6B5A;font-weight:700;text-decoration:none;">${ko ? "공고 전체 보기 →" : "See full listing →"}</a>`;
+  const features = ko
+    ? [
+        { t: "합법 매칭만", d: "비자별 취업 가능 조건에 맞는 공고만 안내해요." },
+        { t: "내 언어로", d: "공고를 7개 국어로 편하게 볼 수 있어요." },
+        { t: "카카오톡 소통", d: "궁금한 점은 카카오톡 채널로 바로 물어보세요." },
+        { t: "간편 지원", d: "프로필만 있으면 몇 번의 클릭으로 지원 완료." },
+      ]
+    : [
+        { t: "Legal matches only", d: "Only jobs that fit your visa conditions." },
+        { t: "In your language", d: "View listings in 7 languages." },
+        { t: "KakaoTalk support", d: "Ask us anytime on our Kakao channel." },
+        { t: "Easy apply", d: "Apply in a few clicks with your profile." },
+      ];
 
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#F4F1EA;font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;">
-  <div style="max-width:520px;margin:0 auto;padding:24px;">
-    <div style="font-size:20px;font-weight:800;color:${NAVY};letter-spacing:-0.5px;margin-bottom:4px;">K-ALBA</div>
-    <div style="font-size:12px;color:${MUTED};margin-bottom:20px;">${esc(t.pre)}</div>
+  const finePrint = ko
+    ? `본 메일은 마케팅 정보 수신에 동의하신 회원님께 발송되었습니다. <a href="${unsubUrl}" target="_blank" style="color:#FF6B5A;text-decoration:none;font-weight:700;">수신거부</a>`
+    : `You are receiving this because you agreed to receive marketing information from K-ALBA. <a href="${unsubUrl}" target="_blank" style="color:#FF6B5A;text-decoration:none;font-weight:700;">Unsubscribe</a>`;
 
-    <div style="background:#ffffff;border:1px solid ${LINE};border-radius:16px;padding:24px;">
-      <div style="font-size:14px;color:${NAVY};margin-bottom:12px;">${esc(t.hi)}</div>
-      <div style="font-size:14px;color:#333;line-height:1.6;margin-bottom:20px;">${esc(t.lead)}</div>
+  const rows =
+    introRow(esc(eyebrow), headline, desc) +
+    jobCardRow(job, lang, labels) +
+    ctaRow(jobUrl, esc(cta), "#FF6B5A") +
+    noteRow(esc(note), seeMore) +
+    featureGridRow(features) +
+    footerRow(finePrint);
 
-      <div style="font-size:18px;font-weight:700;color:${NAVY};line-height:1.4;margin-bottom:14px;">${title}</div>
-      <table style="width:100%;font-size:13px;color:#444;border-collapse:collapse;">
-        <tr><td style="padding:4px 0;color:${MUTED};width:64px;">${esc(t.payL)}</td><td style="padding:4px 0;font-weight:600;">${pay}</td></tr>
-        <tr><td style="padding:4px 0;color:${MUTED};">${esc(t.regionL)}</td><td style="padding:4px 0;font-weight:600;">${region}</td></tr>
-      </table>
-
-      <a href="${jobUrl}" style="display:block;margin-top:22px;background:${CORAL};color:#ffffff;text-decoration:none;text-align:center;font-weight:700;font-size:15px;padding:14px 0;border-radius:12px;">${esc(t.cta)} →</a>
-    </div>
-
-    <div style="margin-top:24px;padding-top:16px;border-top:1px solid ${LINE};font-size:11px;color:${MUTED};line-height:1.7;">
-      <strong style="color:${NAVY};">미림미디어랩 주식회사</strong> · 대표 남기환<br>
-      서울특별시 강서구 양천로 583 우림블루나인비즈니스센터 A동 406호<br>
-      k-alba@naver.com · https://k-alba.kr · 직업정보제공사업 신고번호 J1204020260002<br>
-      <span style="display:block;margin-top:10px;">${esc(t.foot)}</span>
-      <a href="${unsubUrl}" style="color:${CORAL};font-weight:600;">${esc(t.unsub)}</a>
-    </div>
-  </div>
-</body></html>`;
-
-  return { subject, html };
+  return { subject, html: emailShell(rows) };
 }
 
 // ────────── 사장님 확인 메일 (트랜잭셔널) ──────────
 export function buildEmployerEmail(job, employer, siteUrl) {
   const jobUrl = `${siteUrl}/jobs/${job.id}`;
   const manageUrl = `${siteUrl}/my/jobs`;
-  const who =
-    employer?.company_name || employer?.name || "사장님";
-  const title = esc(job.title || "공고");
+  const who = esc(employer?.company_name || employer?.name || "사장님");
 
   const subject = `[K-ALBA] 등록하신 공고를 구직자분들께 전달해드렸어요`;
+  const eyebrow = "공고 등록 완료";
+  const headline = `${who}님, 공고가<br>등록됐어요 🎉`;
+  const desc =
+    '방금 등록하신 공고를 <strong style="color:#0A1628;">K-알바 구직자분들께 이메일로 전달</strong>해드렸어요. 좋은 지원자와 빠르게 연결되시길 바랄게요!';
+  const labels = { card: "등록된 공고", pay: "급여", region: "근무지" };
+  const cta = "내 공고 보기 →";
+  const note = "지원자가 들어오면 바로 알려드릴게요.";
+  const manageLink = `<a href="${manageUrl}" target="_blank" style="color:#FF6B5A;font-weight:700;text-decoration:none;">공고 관리하기 →</a>`;
+  const features = [
+    { t: "합법 매칭만", d: "비자 조건에 맞는 외국인 구직자에게만 노출돼요." },
+    { t: "지원 알림", d: "지원이 들어오면 이메일·앱으로 바로 알려드려요." },
+    { t: "카카오톡 소통", d: "지원자와 카카오톡 채널로 바로 연결돼요." },
+    { t: "7개 국어 지원", d: "구직자는 모국어로 보고, 사장님은 한국어로 관리해요." },
+  ];
+  const finePrint = "본 메일은 회원님의 공고 등록에 따른 서비스 안내 메일입니다.";
 
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#F4F1EA;font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;">
-  <div style="max-width:520px;margin:0 auto;padding:24px;">
-    <div style="font-size:20px;font-weight:800;color:${NAVY};letter-spacing:-0.5px;margin-bottom:20px;">K-ALBA</div>
+  const rows =
+    introRow(esc(eyebrow), headline, desc) +
+    jobCardRow(job, "ko", labels) +
+    ctaRow(jobUrl, esc(cta), "#FF6B5A") +
+    noteRow(esc(note), manageLink) +
+    featureGridRow(features) +
+    footerRow(finePrint);
 
-    <div style="background:#ffffff;border:1px solid ${LINE};border-radius:16px;padding:24px;">
-      <div style="font-size:15px;color:${NAVY};font-weight:700;margin-bottom:14px;">${esc(who)}님, 공고 등록이 완료됐어요 🎉</div>
-      <div style="font-size:14px;color:#333;line-height:1.7;">
-        방금 등록하신 <strong style="color:${NAVY};">'${title}'</strong> 공고를<br>
-        K-ALBA 구직자분들께 이메일로 전달해드렸어요.<br>
-        좋은 지원자와 빠르게 연결되시길 바랄게요!
-      </div>
-
-      <a href="${jobUrl}" style="display:block;margin-top:22px;background:${NAVY};color:#ffffff;text-decoration:none;text-align:center;font-weight:700;font-size:15px;padding:14px 0;border-radius:12px;">내 공고 보기 →</a>
-      <a href="${manageUrl}" style="display:block;margin-top:10px;text-align:center;font-size:13px;color:${MUTED};text-decoration:none;">공고 관리하기</a>
-    </div>
-
-    <div style="margin-top:24px;padding-top:16px;border-top:1px solid ${LINE};font-size:11px;color:${MUTED};line-height:1.7;">
-      본 메일은 회원님의 공고 등록에 따른 서비스 안내 메일입니다.<br>
-      미림미디어랩 주식회사 · k-alba@naver.com · https://k-alba.kr
-    </div>
-  </div>
-</body></html>`;
-
-  return { subject, html };
+  return { subject, html: emailShell(rows) };
 }
 
 // ────────── Resend 발송 ──────────
