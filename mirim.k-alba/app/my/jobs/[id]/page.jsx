@@ -212,6 +212,7 @@ export default function JobManagePage() {
           <Row label="모집 인원">{job.headcount}</Row>
           <Row label="복리후생">{toArr(job.benefits).join(", ")}</Row>
           <Row label="상세 설명"><span style={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{job.description}</span></Row>
+          <Row label="연락처">{[job.contact_mobile, job.contact_phone, job.contact_email].filter(Boolean).join(" · ") || <span style={{ color: T.accent }}>미등록 · 수정에서 추가해 주세요</span>}</Row>
           {err && <div style={{ marginTop: 14, color: T.accent, fontSize: 13 }}>{err}</div>}
         </div>
       )}
