@@ -327,40 +327,60 @@ export async function sendNewJobEmailsForJob(supabase, jobId, opts = {}) {
     employer = emp || null;
   }
 
-  // 5. 알바생 수신자 (동의자만)
-  const { data: workers, error: wErr } = await supabase
-    .from("profiles")
-    .select("id, email, preferred_lang")
-    .eq("user_type", "worker")
-    .is("deactivated_at", null)
-    .not("agreed_marketing_at", "is", null);
+  // ── 테스트 리다이렉트 모드 ──
+  // EMAIL_REDIRECT_TO 가 설정돼 있으면, 실제 수신자와 무관하게 모든 메일을 그 주소로만
+  // 발송한다(실제 이용자에겐 발송 안 됨). 실서버에서 실공고로 테스트할 때 안전장치.
+  // 비워두면 정상 발송. 라이브 전환 = 이 env 제거.
+  const redirectTo = (opts.redirectTo || process.env.EMAIL_REDIRECT_TO || "").trim();
 
   let workerSent = 0;
   let workerFailed = 0;
 
-  if (!wErr && Array.isArray(workers)) {
-    for (const w of workers) {
-      if (!w.email || !w.email.includes("@")) continue;
-      const lang = w.preferred_lang === "ko" ? "ko" : "en";
-      const unsubUrl = `${siteUrl}/api/email/worker-unsubscribe?token=${unsubToken(w.id, secret)}`;
-      const { subject, html } = buildWorkerEmail(job, lang, unsubUrl, siteUrl);
-      const adSubject = subject.startsWith("(광고)") ? subject : `(광고) ${subject}`;
-      const r = await sendViaResend(
-        { from: FROM, to: w.email, reply_to: REPLY_TO, subject: adSubject, html },
-        resendKey
-      );
-      if (r.ok) workerSent++;
-      else workerFailed++;
-      await new Promise((res) => setTimeout(res, 100)); // rate limit
+  if (redirectTo) {
+    // 대표 1통만 지정 주소로 (알바생 목록 조회/루프 생략)
+    const unsubUrl = `${siteUrl}/api/email/worker-unsubscribe?token=${unsubToken("test", secret)}`;
+    const { subject, html } = buildWorkerEmail(job, "ko", unsubUrl, siteUrl);
+    const adSubject = subject.startsWith("(광고)") ? subject : `(광고) ${subject}`;
+    const r = await sendViaResend(
+      { from: FROM, to: redirectTo, reply_to: REPLY_TO, subject: adSubject, html },
+      resendKey
+    );
+    if (r.ok) workerSent++;
+    else workerFailed++;
+  } else {
+    // 5. 알바생 수신자 (동의자만)
+    const { data: workers, error: wErr } = await supabase
+      .from("profiles")
+      .select("id, email, preferred_lang")
+      .eq("user_type", "worker")
+      .is("deactivated_at", null)
+      .not("agreed_marketing_at", "is", null);
+
+    if (!wErr && Array.isArray(workers)) {
+      for (const w of workers) {
+        if (!w.email || !w.email.includes("@")) continue;
+        const lang = w.preferred_lang === "ko" ? "ko" : "en";
+        const unsubUrl = `${siteUrl}/api/email/worker-unsubscribe?token=${unsubToken(w.id, secret)}`;
+        const { subject, html } = buildWorkerEmail(job, lang, unsubUrl, siteUrl);
+        const adSubject = subject.startsWith("(광고)") ? subject : `(광고) ${subject}`;
+        const r = await sendViaResend(
+          { from: FROM, to: w.email, reply_to: REPLY_TO, subject: adSubject, html },
+          resendKey
+        );
+        if (r.ok) workerSent++;
+        else workerFailed++;
+        await new Promise((res) => setTimeout(res, 100)); // rate limit
+      }
     }
   }
 
-  // 6. 사장님 확인 메일 (트랜잭셔널)
+  // 6. 사장님 확인 메일 (트랜잭셔널) — redirectTo 설정 시 그 주소로.
   let employerSent = false;
-  if (employer?.email && employer.email.includes("@")) {
+  const empTo = redirectTo || employer?.email;
+  if (empTo && empTo.includes("@")) {
     const { subject, html } = buildEmployerEmail(job, employer, siteUrl);
     const r = await sendViaResend(
-      { from: FROM, to: employer.email, reply_to: REPLY_TO, subject, html },
+      { from: FROM, to: empTo, reply_to: REPLY_TO, subject, html },
       resendKey
     );
     employerSent = r.ok;
