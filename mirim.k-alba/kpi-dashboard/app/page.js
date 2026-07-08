@@ -634,9 +634,6 @@ export default function Dashboard() {
           />
           <DailyChart title="일별 채널 추가" series={kk ? kk.dailyAdded : []} color={ACCENT} wide />
         </div>
-        <div style={{ fontSize: 12, color: MUTED, marginTop: 10 }}>
-          웹훅 등록 시점 이후의 추가/차단만 집계됩니다 · 친구수 = 기준값(KAKAO_FRIENDS_BASELINE) + 순증
-        </div>
       </Section>
 
       <Section num="4" title="공고">
