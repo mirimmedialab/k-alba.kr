@@ -245,6 +245,13 @@ async function continueFlow(db, key, draftRow, input) {
     return askStep(step);
   }
 
+  // 연락처(챗봇 단일 입력)를 전화/휴대/이메일 컬럼으로 분배
+  const _cv = String(data.contact || "").trim();
+  const _cd = _cv.replace(/[^0-9]/g, "");
+  const contactEmail = _cv.includes("@") ? _cv : null;
+  const contactMobile = !contactEmail && /^01[0-9]/.test(_cd) ? _cv : null;
+  const contactPhone = !contactEmail && !contactMobile && _cv ? _cv : null;
+
   // 완료: 공고 저장
   const jobData = {
     employer_id: profile.id,
@@ -266,6 +273,9 @@ async function continueFlow(db, key, draftRow, input) {
     headcount: data.headcount || null,
     benefits: data.benefits || null,
     description: data.description || null,
+    contact_phone: contactPhone,
+    contact_mobile: contactMobile,
+    contact_email: contactEmail,
     employer_external_name: data.company || profile.company_name || null,
     status: "active",
     source_type: "chatbot",

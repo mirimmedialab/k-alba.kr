@@ -116,6 +116,7 @@ export default function JobDetail({ jobId, embedded = false }) {
   const [userProfile, setUserProfile] = useState(null);
   const [faved, setFaved] = useState(false);
   const [favBusy, setFavBusy] = useState(false);
+  const [showContact, setShowContact] = useState(false);
 
   useEffect(() => {
     getJob(jobId).then((data) => {
@@ -219,23 +220,13 @@ export default function JobDetail({ jobId, embedded = false }) {
   }, [job?.id, job?.title, locale]);
 
   const handleApply = async () => {
-    // 원문 공고 링크가 있으면 그쪽으로 이동(외부 새 탭). 없으면(직접등록 공고) 내부 원클릭 지원.
+    // 원문 공고 링크가 있으면 그쪽으로 이동(외부 새 탭 — 주로 워크넷 공고).
     if (job?.apply_url) {
       if (typeof window !== "undefined") window.open(job.apply_url, "_blank", "noopener,noreferrer");
       return;
     }
-    const u = await getCurrentUser();
-    if (!u) {
-      router.push("/login");
-      return;
-    }
-    setUser(u);
-    setLoading(true);
-    const { error } = await applyJob(jobId, u.id, "지원합니다.");
-    setLoading(false);
-    if (!error || String(error.message || "").includes("not configured")) {
-      setApplied(true);
-    }
+    // 실제 지원 기능 도입 전까지는, 사장님 연락처를 팝업으로 안내해 직접 연락하게 한다.
+    setShowContact(true);
   };
 
   // Step 3-B PageLoading 컴포넌트
@@ -258,6 +249,33 @@ export default function JobDetail({ jobId, embedded = false }) {
       <style>{"@keyframes kalbaspin{to{transform:rotate(360deg)}}"}</style>
     </div>
   );
+
+  // 지원하기 → 사장님 연락처 안내 팝업 (실제 지원 기능 도입 전 임시)
+  const _cRow = (label, value, href) => (
+    <a href={href} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", textDecoration: "none", padding: "12px 14px", borderRadius: 10, border: `1px solid ${D.border}`, background: "#FAF8F3" }}>
+      <span style={{ color: "#6B7A95", fontSize: 12.5 }}>{label}</span>
+      <span style={{ fontWeight: 700, color: D.navy, fontSize: 14.5 }}>{value}</span>
+    </a>
+  );
+  const _hasContact = job.contact_mobile || job.contact_phone || job.contact_email;
+  const contactModal = showContact ? (
+    <div onClick={() => setShowContact(false)} style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(15,23,42,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 380, background: "#fff", borderRadius: 16, padding: "24px 22px", boxShadow: "0 16px 40px rgba(0,0,0,0.25)" }}>
+        <div style={{ fontSize: 17, fontWeight: 800, color: D.ink, marginBottom: 6 }}>사장님께 직접 연락해보세요 📞</div>
+        <div style={{ fontSize: 13, color: "#6B7A95", marginBottom: 16, lineHeight: 1.6 }}>아래 연락처로 연락해 지원 의사를 전해보세요.</div>
+        {_hasContact ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {job.contact_mobile && _cRow("휴대전화", job.contact_mobile, `tel:${job.contact_mobile}`)}
+            {job.contact_phone && _cRow("전화", job.contact_phone, `tel:${job.contact_phone}`)}
+            {job.contact_email && _cRow("이메일", job.contact_email, `mailto:${job.contact_email}`)}
+          </div>
+        ) : (
+          <div style={{ fontSize: 13.5, color: "#6B7A95", lineHeight: 1.7 }}>아직 등록된 연락처가 없어요. 등록자에게 연락처 추가를 요청 중이에요.</div>
+        )}
+        <button onClick={() => setShowContact(false)} style={{ marginTop: 20, width: "100%", padding: "12px", borderRadius: 10, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>닫기</button>
+      </div>
+    </div>
+  ) : null;
 
   if (isDesktop) {
     const koreanLabel = D_KOREAN[job.korean] ? t("kr." + job.korean) : null;
@@ -329,6 +347,7 @@ export default function JobDetail({ jobId, embedded = false }) {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <h1 style={{ fontSize: 26, fontWeight: 800, color: D.navy, lineHeight: 1.3, margin: 0, letterSpacing: "-0.02em" }}>{displayTitle}</h1>
                 {translating && translatingOverlay}
+                {contactModal}
                 <div style={{ fontSize: 14.5, color: D.ink2, marginTop: 8 }}>{locale !== "ko" ? `${job.company} (${romanizeCompany(job.company)})` : job.company}</div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 14 }}>
                   {(job.visa || []).map((v) => <VisaBadge key={v} code={v} variant="solid" size="md" />)}
@@ -468,6 +487,7 @@ export default function JobDetail({ jobId, embedded = false }) {
           <div style={{ fontSize: 32, marginBottom: 8 }}>{job.icon || "💼"}</div>
           <h1 style={{ fontSize: 20, fontWeight: 800, color: D.navy, lineHeight: 1.3, margin: 0, letterSpacing: "-0.01em" }}>{displayTitle}</h1>
                 {translating && translatingOverlay}
+                {contactModal}
           <div style={{ fontSize: 13.5, color: D.ink2, marginTop: 6 }}>{locale !== "ko" ? `${job.company} (${romanizeCompany(job.company)})` : job.company}</div>
           {(job.visa || []).length > 0 && (
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 12 }}>

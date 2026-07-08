@@ -50,7 +50,7 @@ export default function PostJobPage() {
   const scrollRef = useRef(null);
   const initRef = useRef(false);
   const isDesktop = useIsDesktop();
-  const [form, setForm] = useState({ jobType: "", title: "", workType: [], address: "", addressDetail: "", payType: "시급", payAmount: "", workHours: "", workDays: "", korean: "", visa: [], headcount: "", benefits: [], description: "" });
+  const [form, setForm] = useState({ jobType: "", title: "", workType: [], address: "", addressDetail: "", payType: "시급", payAmount: "", workHours: "", workDays: "", korean: "", visa: [], headcount: "", benefits: [], description: "", contactPhone: "", contactMobile: "", contactEmail: "" });
   const [webAddrOpen, setWebAddrOpen] = useState(false);
   const [webErr, setWebErr] = useState("");
   const [webBusy, setWebBusy] = useState(false);
@@ -73,18 +73,18 @@ export default function PostJobPage() {
   }, [bizGate.loading, bizGate.verified, isDesktop, router]);
 
   // 스텝: 1=업종, 2=제목, 3=근무형태, 4=주소, 5=상세주소, 6=급여형태, 7=금액, 8=시간, 9=요일, 10=한국어, 11=비자, 12=인원, 13=복리후생, 14=설명
-  const TOTAL_STEPS = 14;
+  const TOTAL_STEPS = 15;
 
   const getStepType = (s) => ({
     1: "chips", 2: "input", 3: "multi", 4: "addressSearch", 5: "input",
     6: "chips", 7: "input", 8: "chipsInput", 9: "chips", 10: "chips",
-    11: "multi", 12: "chipsInput", 13: "multi", 14: "textarea"
+    11: "multi", 12: "chipsInput", 13: "multi", 14: "textarea", 15: "input"
   })[s];
 
   const getStepKey = (s) => ({
     1: "jobType", 2: "title", 3: "workType", 4: "address", 5: "addressDetail",
     6: "payType", 7: "payAmount", 8: "workHours", 9: "workDays", 10: "korean",
-    11: "visa", 12: "headcount", 13: "benefits", 14: "description"
+    11: "visa", 12: "headcount", 13: "benefits", 14: "description", 15: "contact"
   })[s];
 
   const getStepOptions = (s) => ({
@@ -130,6 +130,7 @@ export default function PostJobPage() {
     if (s === 12) return t("postJob.botStep12", { jt, hint: p.headHint });
     if (s === 13) return p.beneHint ? t("postJob.botStep13", { jt, hint: p.beneHint }) : t("postJob.botStep13NoHint");
     if (s === 14) return t("postJob.botStep14", { jt, ex: p.descEx });
+    if (s === 15) return "📞 마지막이에요! 지원자가 연락할 연락처를 남겨주세요.\n전화·휴대폰·이메일 중 하나면 돼요.";
     return "";
   };
 
@@ -145,6 +146,7 @@ export default function PostJobPage() {
     if (s === 8) return p.hoursEx;
     if (s === 12) return t("postJob.phHeadcount");
     if (s === 14) return t("postJob.phDescription");
+    if (s === 15) return "010-1234-5678 또는 email@example.com";
     return t("postJob.sendPlaceholder");
   };
 
@@ -268,6 +270,18 @@ export default function PostJobPage() {
       ? a.benefits
       : String(a.benefits || "").split(",").map((s) => s.trim()).filter(Boolean);
 
+    // 연락처: 웹폼은 3필드, 챗봇/모바일챗은 단일 contact → 휴리스틱으로 분배
+    let cPhone = (a.contactPhone || "").toString().trim() || null;
+    let cMobile = (a.contactMobile || "").toString().trim() || null;
+    let cEmail = (a.contactEmail || "").toString().trim() || null;
+    if (a.contact && !cPhone && !cMobile && !cEmail) {
+      const v = String(a.contact).trim();
+      const digits = v.replace(/[^0-9]/g, "");
+      if (v.includes("@")) cEmail = v;
+      else if (/^01[0-9]/.test(digits)) cMobile = v;
+      else cPhone = v;
+    }
+
     const jobData = {
       employer_id: user.id,
       title: a.title,
@@ -286,6 +300,9 @@ export default function PostJobPage() {
       headcount: a.headcount,
       benefits: benefitsArr.join(", "),
       description: a.description,
+      contact_phone: cPhone,
+      contact_mobile: cMobile,
+      contact_email: cEmail,
       ...geoData,
       provides_housing: benefitsArr.some((b) => b.includes("숙식") || b.includes("기숙사")),
       provides_shuttle: benefitsArr.some((b) => b.includes("통근") || b.includes("셔틀")),
@@ -327,6 +344,8 @@ export default function PostJobPage() {
     if (!form.payType) return setWebErr(t("postJob.errPayType"));
     if (!String(form.payAmount).trim()) return setWebErr(t("postJob.errPayAmount"));
     if (form.visa.length === 0) return setWebErr(t("postJob.errVisa"));
+    if (!form.contactPhone.trim() && !form.contactMobile.trim() && !form.contactEmail.trim())
+      return setWebErr("연락처(전화번호·휴대번호·이메일 중 최소 1개)를 입력해 주세요.");
     setWebErr("");
     setWebBusy(true);
     try {
@@ -345,6 +364,9 @@ export default function PostJobPage() {
         headcount: form.headcount,
         benefits: form.benefits.join(", "),
         description: form.description,
+        contactPhone: form.contactPhone.trim(),
+        contactMobile: form.contactMobile.trim(),
+        contactEmail: form.contactEmail.trim(),
       });
     } finally {
       setWebBusy(false);
@@ -526,6 +548,13 @@ export default function PostJobPage() {
         <div style={field}>
           <label style={lab}>{t("postJob.labelDescription")}</label>
           <textarea value={form.description} onChange={(e) => setF("description", e.target.value)} placeholder={t("postJob.phDescriptionWeb")} style={{ ...inp, minHeight: 110, resize: "vertical" }} />
+        </div>
+
+        <div style={field}>
+          <label style={lab}>연락처 <span style={{ color: "#DC2626" }}>*</span> <span style={{ color: T.ink3, fontWeight: 500, fontSize: 12 }}>전화·휴대·이메일 중 최소 1개 (지원자가 연락할 수단)</span></label>
+          <input value={form.contactPhone} onChange={(e) => setF("contactPhone", e.target.value)} placeholder="전화번호 (예: 02-123-4567)" style={inp} />
+          <input value={form.contactMobile} onChange={(e) => setF("contactMobile", e.target.value)} placeholder="휴대번호 (예: 010-1234-5678)" style={{ ...inp, marginTop: 8 }} />
+          <input value={form.contactEmail} onChange={(e) => setF("contactEmail", e.target.value)} type="email" placeholder="이메일 (예: owner@example.com)" style={{ ...inp, marginTop: 8 }} />
         </div>
 
         {webErr && <div style={{ color: "#DC2626", fontSize: 13, marginBottom: 14, fontWeight: 600 }}>{webErr}</div>}
