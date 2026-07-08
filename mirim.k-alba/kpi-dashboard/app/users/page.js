@@ -19,8 +19,13 @@ const CHANNEL_LABELS = {
   direct: "직접유입",
   etc: "기타 외부",
 };
+// 유입경로 추적 완비 시점(KST 2026-07-08 10:00) — 이전 가입=도입 전, 이후 무기록=추적 안됨
+const ATTRIBUTION_SINCE = Date.parse("2026-07-08T01:00:00Z");
 function channelLabel(u) {
-  if (!u.channel) return "도입 전 가입";
+  if (!u.channel) {
+    const t = u.createdAt ? Date.parse(u.createdAt) : 0;
+    return t >= ATTRIBUTION_SINCE ? "추적 안됨" : "도입 전 가입";
+  }
   return CHANNEL_LABELS[u.channel] || u.channel;
 }
 

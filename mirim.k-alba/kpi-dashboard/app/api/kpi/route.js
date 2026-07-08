@@ -275,17 +275,22 @@ export async function GET() {
         (async () => {
           const { data, error } = await sb
             .from("profiles")
-            .select("signup_channel")
+            .select("signup_channel,created_at")
             .limit(20000);
           if (error) throw new Error(`profiles(channel): ${error.message}`);
           return data || [];
         })(),
       ]);
 
-      // 가입 유입경로 집계 (signup_channel null = 추적 도입 전 가입자)
+      // 유입경로 추적 완비 시점(KST 2026-07-08 10:00) — 이전 가입=도입 전, 이후 무기록=추적 안됨
+      const ATTRIBUTION_SINCE = Date.parse("2026-07-08T01:00:00Z");
       const channels = {};
       for (const r of channelRows) {
-        const k = r.signup_channel || "unknown";
+        let k = r.signup_channel;
+        if (!k) {
+          const t = r.created_at ? Date.parse(r.created_at) : 0;
+          k = t >= ATTRIBUTION_SINCE ? "untracked" : "unknown";
+        }
         channels[k] = (channels[k] || 0) + 1;
       }
 

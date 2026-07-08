@@ -238,12 +238,14 @@ const CHANNEL_LABELS = {
   app: "앱(직접)",
   direct: "직접유입",
   etc: "기타 외부",
+  untracked: "추적 안됨",
   unknown: "도입 전 가입",
 };
 function channelEntries(channels) {
   if (!channels) return [];
+  const rank = (k) => (k === "unknown" ? 2 : k === "untracked" ? 1 : 0);
   return Object.entries(channels)
-    .sort((x, y) => (y[0] === "unknown" ? -1 : x[0] === "unknown" ? 1 : y[1] - x[1]))
+    .sort((x, y) => rank(x[0]) - rank(y[0]) || y[1] - x[1])
     .slice(0, 8)
     .map(([k, v]) => [CHANNEL_LABELS[k] || k, v]);
 }
@@ -589,34 +591,7 @@ export default function Dashboard() {
         )}
       </Section>
 
-      <Section num="2" title="공고">
-        <div className="row-1-2">
-          <MiniGrid
-            vertical
-            entries={[
-              ["직접 등록", j.bySource ? j.bySource.direct : null, "/jobs-manual?src=direct", BLUE],
-              ["챗봇 등록", j.bySource ? j.bySource.chatbot : null, "/jobs-manual?src=chatbot", GREEN],
-              ["고용24", j.bySource ? j.bySource.worknet : null],
-              ["누적", j.total],
-            ]}
-          />
-          <DailyChart title="신규 공고" series={j.dailyNew} color={ACCENT} wide />
-        </div>
-      </Section>
-
-      <Section num="3" title="매칭">
-        <div className="row-1-1">
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            <LinkStat href="/applications" label="누적 지원" value={m.applications} sub="지원 내역" />
-            <LinkStat href="/favorites" label="관심공고 저장" value={m.favorites} sub="저장 목록" />
-            <Stat label="계약 체결" value={m.contracts} />
-            <Stat label="시간제취업 신청" value={m.partwork} />
-          </div>
-          <DailyChart title="지원 수" series={m.dailyApplications} color={ACCENT} />
-        </div>
-      </Section>
-
-      <Section num="4" title="마케팅 채널">
+      <Section num="2" title="마케팅 채널">
         <ErrorNote msg={data.contentError} />
         <ErrorNote msg={data.metricsError} />
         <MiniGrid
@@ -645,7 +620,7 @@ export default function Dashboard() {
         </div>
       </Section>
 
-      <Section num="5" title="카카오톡 채널">
+      <Section num="3" title="카카오톡 채널">
         <ErrorNote msg={data.kakaoError} />
         <div className="row-1-2">
           <MiniGrid
@@ -661,6 +636,33 @@ export default function Dashboard() {
         </div>
         <div style={{ fontSize: 12, color: MUTED, marginTop: 10 }}>
           웹훅 등록 시점 이후의 추가/차단만 집계됩니다 · 친구수 = 기준값(KAKAO_FRIENDS_BASELINE) + 순증
+        </div>
+      </Section>
+
+      <Section num="4" title="공고">
+        <div className="row-1-2">
+          <MiniGrid
+            vertical
+            entries={[
+              ["직접 등록", j.bySource ? j.bySource.direct : null, "/jobs-manual?src=direct", BLUE],
+              ["챗봇 등록", j.bySource ? j.bySource.chatbot : null, "/jobs-manual?src=chatbot", GREEN],
+              ["고용24", j.bySource ? j.bySource.worknet : null],
+              ["누적", j.total],
+            ]}
+          />
+          <DailyChart title="신규 공고" series={j.dailyNew} color={ACCENT} wide />
+        </div>
+      </Section>
+
+      <Section num="5" title="매칭">
+        <div className="row-1-1">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <LinkStat href="/applications" label="누적 지원" value={m.applications} sub="지원 내역" />
+            <LinkStat href="/favorites" label="관심공고 저장" value={m.favorites} sub="저장 목록" />
+            <Stat label="계약 체결" value={m.contracts} />
+            <Stat label="시간제취업 신청" value={m.partwork} />
+          </div>
+          <DailyChart title="지원 수" series={m.dailyApplications} color={ACCENT} />
         </div>
       </Section>
     </div>
