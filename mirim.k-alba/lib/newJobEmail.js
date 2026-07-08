@@ -328,21 +328,25 @@ export async function sendNewJobEmailsForJob(supabase, jobId, opts = {}) {
   }
 
   // ── 테스트 리다이렉트 모드 ──
-  // EMAIL_REDIRECT_TO 가 설정돼 있으면, 실제 수신자와 무관하게 모든 메일을 그 주소로만
-  // 발송한다(실제 이용자에겐 발송 안 됨). 실서버에서 실공고로 테스트할 때 안전장치.
-  // 비워두면 정상 발송. 라이브 전환 = 이 env 제거.
-  const redirectTo = (opts.redirectTo || process.env.EMAIL_REDIRECT_TO || "").trim();
+  // 리다이렉트 주소가 설정돼 있으면, 실제 수신자와 무관하게 해당 주소로만 발송한다
+  // (실제 이용자에겐 발송 안 됨). 실서버에서 실공고로 테스트할 때 안전장치.
+  //   - 알바생: EMAIL_REDIRECT_WORKER_TO   (없으면 EMAIL_REDIRECT_TO)
+  //   - 사장님: EMAIL_REDIRECT_EMPLOYER_TO (없으면 EMAIL_REDIRECT_TO)
+  // 비워두면 정상 발송. 라이브 전환 = 이 env들 제거.
+  const fallbackRedirect = (opts.redirectTo || process.env.EMAIL_REDIRECT_TO || "").trim();
+  const workerRedirect = (opts.workerRedirectTo || process.env.EMAIL_REDIRECT_WORKER_TO || fallbackRedirect).trim();
+  const employerRedirect = (opts.employerRedirectTo || process.env.EMAIL_REDIRECT_EMPLOYER_TO || fallbackRedirect).trim();
 
   let workerSent = 0;
   let workerFailed = 0;
 
-  if (redirectTo) {
+  if (workerRedirect) {
     // 대표 1통만 지정 주소로 (알바생 목록 조회/루프 생략)
     const unsubUrl = `${siteUrl}/api/email/worker-unsubscribe?token=${unsubToken("test", secret)}`;
     const { subject, html } = buildWorkerEmail(job, "ko", unsubUrl, siteUrl);
     const adSubject = subject.startsWith("(광고)") ? subject : `(광고) ${subject}`;
     const r = await sendViaResend(
-      { from: FROM, to: redirectTo, reply_to: REPLY_TO, subject: adSubject, html },
+      { from: FROM, to: workerRedirect, reply_to: REPLY_TO, subject: adSubject, html },
       resendKey
     );
     if (r.ok) workerSent++;
@@ -374,9 +378,9 @@ export async function sendNewJobEmailsForJob(supabase, jobId, opts = {}) {
     }
   }
 
-  // 6. 사장님 확인 메일 (트랜잭셔널) — redirectTo 설정 시 그 주소로.
+  // 6. 사장님 확인 메일 (트랜잭셔널) — employerRedirect 설정 시 그 주소로.
   let employerSent = false;
-  const empTo = redirectTo || employer?.email;
+  const empTo = employerRedirect || employer?.email;
   if (empTo && empTo.includes("@")) {
     const { subject, html } = buildEmployerEmail(job, employer, siteUrl);
     const r = await sendViaResend(

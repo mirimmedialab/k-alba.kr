@@ -23,15 +23,37 @@ export const maxDuration = 60;
 
 export async function POST(request) {
   try {
-    const { job_id, force } = await request.json();
-    if (!job_id) {
-      return NextResponse.json({ ok: false, error: "job_id 필요" }, { status: 400 });
-    }
+    const { job_id, force, dryRun } = await request.json();
 
     const supabase = createClient(
       process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY
     );
+
+    // dryRun=true: 발송하지 않고 리다이렉트 활성 여부·대상자 수만 반환(안전 점검용).
+    if (dryRun) {
+      const fb = (process.env.EMAIL_REDIRECT_TO || "").trim();
+      const workerRedirect = (process.env.EMAIL_REDIRECT_WORKER_TO || fb).trim();
+      const employerRedirect = (process.env.EMAIL_REDIRECT_EMPLOYER_TO || fb).trim();
+      const { count } = await supabase
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("user_type", "worker")
+        .is("deactivated_at", null)
+        .not("agreed_marketing_at", "is", null);
+      return NextResponse.json({
+        ok: true,
+        dry_run: true,
+        redirect_active: !!(workerRedirect || employerRedirect),
+        worker_redirect: workerRedirect || null,
+        employer_redirect: employerRedirect || null,
+        consenting_workers: count ?? null,
+      });
+    }
+
+    if (!job_id) {
+      return NextResponse.json({ ok: false, error: "job_id 필요" }, { status: 400 });
+    }
 
     // force=true: 야간(23~08 KST) 차단 우회 — 관리자 수동 재발송/테스트용.
     const result = await sendNewJobEmailsForJob(supabase, job_id, {
