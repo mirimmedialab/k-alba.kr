@@ -119,6 +119,7 @@ export default function JobDetail({ jobId, embedded = false }) {
   const [favBusy, setFavBusy] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [revealContact, setRevealContact] = useState(false);
+  const [copied, setCopied] = useState("");
 
   useEffect(() => {
     getJob(jobId).then((data) => {
@@ -229,6 +230,7 @@ export default function JobDetail({ jobId, embedded = false }) {
     }
     // 실제 지원 기능 도입 전까지는, 사장님 연락처를 팝업으로 안내해 직접 연락하게 한다.
     setRevealContact(false);
+    setCopied("");
     setShowContact(true);
   };
 
@@ -260,14 +262,17 @@ export default function JobDetail({ jobId, embedded = false }) {
   const _emailTo = job.contact_email || job.employer?.email || null; // 공고 연락 이메일 없으면 사장님 가입 이메일로
   const _hasContact = _smsTo || _callTo || _emailTo;
 
+  const _copyNumMsg = "번호를 복사했어요 · 전화·문자 앱에 붙여넣어 연락해주세요";
+  const _copyMailMsg = "이메일 주소를 복사했어요 · 메일에서 붙여넣어 보내주세요";
+
   let _primary = null;
-  if (_smsTo) _primary = { label: "문자로 메시지 보내기", href: `sms:${_smsTo}`, kind: "sms", emoji: "💬", title: "메시지로 지원 의사를 남겨보세요" };
-  else if (_callTo) _primary = { label: "전화하기", href: `tel:${_callTo}`, kind: "call", emoji: "📞", title: "전화로 지원 문의를 해보세요" };
-  else if (_emailTo) _primary = { label: "이메일 보내기", href: `mailto:${_emailTo}`, kind: "email", emoji: "✉️", title: "이메일로 지원 문의를 보내보세요" };
+  if (_smsTo) _primary = { label: "문자로 메시지 보내기", href: `sms:${_smsTo}`, kind: "sms", emoji: "💬", title: "메시지로 지원 의사를 남겨보세요", value: _smsTo, copyMsg: _copyNumMsg };
+  else if (_callTo) _primary = { label: "전화하기", href: `tel:${_callTo}`, kind: "call", emoji: "📞", title: "전화로 지원 문의를 해보세요", value: _callTo, copyMsg: _copyNumMsg };
+  else if (_emailTo) _primary = { label: "이메일 보내기", href: `mailto:${_emailTo}`, kind: "email", emoji: "✉️", title: "이메일로 지원 문의를 보내보세요", value: _emailTo, copyMsg: _copyMailMsg };
 
   const _secondary = [];
-  if (_primary && _primary.kind === "sms" && _callTo) _secondary.push({ label: "전화", href: `tel:${_callTo}` });
-  if (_primary && _primary.kind !== "email" && _emailTo) _secondary.push({ label: "이메일", href: `mailto:${_emailTo}` });
+  if (_primary && _primary.kind === "sms" && _callTo) _secondary.push({ label: "전화", href: `tel:${_callTo}`, value: _callTo, copyMsg: _copyNumMsg });
+  if (_primary && _primary.kind !== "email" && _emailTo) _secondary.push({ label: "이메일", href: `mailto:${_emailTo}`, value: _emailTo, copyMsg: _copyMailMsg });
 
   const _refLine = [
     (_smsTo || _callTo) ? formatPhoneDisplay(job.contact_mobile || job.contact_phone) : null,
@@ -275,6 +280,15 @@ export default function JobDetail({ jobId, embedded = false }) {
   ].filter(Boolean).join(" · ");
 
   const _btn = { display: "block", textAlign: "center", textDecoration: "none", borderRadius: 12, fontWeight: 700, fontFamily: "inherit", cursor: "pointer" };
+  // PC는 tel:/sms:/mailto: 가 안 열리는 경우가 많음 → 데스크탑에선 복사 + 안내 토스트로 대체
+  const _onContact = (e, item) => {
+    if (!isDesktop) return;
+    e.preventDefault();
+    try { if (navigator.clipboard) navigator.clipboard.writeText(item.value); } catch (_) {}
+    setRevealContact(true);
+    setCopied(item.copyMsg);
+    setTimeout(() => setCopied(""), 3000);
+  };
   const contactModal = showContact ? (
     <div onClick={() => setShowContact(false)} style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(10,22,40,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 360, background: "#fff", borderRadius: 20, padding: "24px 22px", position: "relative" }}>
@@ -284,14 +298,15 @@ export default function JobDetail({ jobId, embedded = false }) {
             <div style={{ width: 46, height: 46, borderRadius: 14, background: "#FAECE7", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14, fontSize: 22 }}>{_primary.emoji}</div>
             <div style={{ fontSize: 18, fontWeight: 800, color: "#0A1628", lineHeight: 1.4, marginBottom: 6 }}>{_primary.title}</div>
             <div style={{ fontSize: 13.5, color: "#6B7A95", lineHeight: 1.6, marginBottom: 18 }}>관심 있는 공고라면 사장님께 바로 연락해 지원해보세요.</div>
-            <a href={_primary.href} style={{ ..._btn, background: "#FF6B5A", color: "#fff", padding: "14px", fontSize: 15 }}>{_primary.label}</a>
+            <a href={_primary.href} onClick={(e) => _onContact(e, _primary)} style={{ ..._btn, background: "#FF6B5A", color: "#fff", padding: "14px", fontSize: 15 }}>{_primary.label}</a>
             {_secondary.length > 0 && (
               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                 {_secondary.map((s) => (
-                  <a key={s.label} href={s.href} style={{ ..._btn, flex: 1, background: "#fff", color: "#0A1628", border: "1px solid #D4D0CA", padding: "12px", fontSize: 14 }}>{s.label}</a>
+                  <a key={s.label} href={s.href} onClick={(e) => _onContact(e, s)} style={{ ..._btn, flex: 1, background: "#fff", color: "#0A1628", border: "1px solid #D4D0CA", padding: "12px", fontSize: 14 }}>{s.label}</a>
                 ))}
               </div>
             )}
+            {copied && <div style={{ marginTop: 12, textAlign: "center", fontSize: 12.5, color: "#0F6E56", background: "#E1F5EE", borderRadius: 10, padding: "9px 10px", lineHeight: 1.5 }}>{copied}</div>}
             {_refLine && (revealContact ? (
               <div style={{ textAlign: "center", fontSize: 13, color: "#0A1628", marginTop: 14, wordBreak: "break-all", fontWeight: 500 }}>{_refLine}</div>
             ) : (
