@@ -145,6 +145,20 @@ export default function AuthCallbackPage() {
           userType = prof?.user_type || "worker";
         }
 
+        // 유입경로 백필: /login의 소셜 버튼으로 가입한 신규 계정(intent=login)도 기록되도록,
+        // 생성 1시간 이내 프로필에 signup_channel이 비어 있으면 첫방문(first-touch) 값을 채움.
+        // (기존 회원은 created_at이 오래돼 건드리지 않음)
+        try {
+          const { data: attrProf } = await supabase
+            .from("profiles").select("signup_channel, created_at").eq("id", user.id).maybeSingle();
+          if (attrProf && !attrProf.signup_channel && attrProf.created_at) {
+            const ageMs = Math.abs(Date.now() - new Date(attrProf.created_at).getTime());
+            if (ageMs < 60 * 60 * 1000) {
+              await supabase.from("profiles").update(getAttributionForSignup()).eq("id", user.id);
+            }
+          }
+        } catch (_) {}
+
         sessionStorage.removeItem("k-alba-oauth-intent");
         sessionStorage.removeItem("k-alba-oauth-role");
 
