@@ -81,6 +81,9 @@ export default function JobManagePage() {
       headcount: job.headcount || "",
       benefits: toArr(job.benefits),
       description: job.description || "",
+      contactPhone: job.contact_phone || "",
+      contactMobile: job.contact_mobile || "",
+      contactEmail: job.contact_email || "",
       status: job.status === "closed" ? "closed" : "active",
     });
     setErr("");
@@ -91,6 +94,8 @@ export default function JobManagePage() {
     setErr("");
     if (!form.title.trim()) return setErr("공고 제목을 입력해 주세요.");
     if (form.visa_types.length === 0) return setErr("지원 가능 비자를 1개 이상 선택해 주세요.");
+    if (!form.contactPhone.trim() && !form.contactMobile.trim() && !form.contactEmail.trim())
+      return setErr("연락처(전화번호·휴대번호·이메일 중 최소 1개)를 입력해 주세요.");
     setSaving(true);
     const updates = {
       title: form.title.trim(),
@@ -106,6 +111,9 @@ export default function JobManagePage() {
       headcount: form.headcount,
       benefits: Array.isArray(form.benefits) ? form.benefits.join(", ") : (form.benefits || ""),
       description: form.description,
+      contact_phone: form.contactPhone.trim() || null,
+      contact_mobile: form.contactMobile.trim() || null,
+      contact_email: form.contactEmail.trim() || null,
       status: form.status,
     };
     const { data, error } = await updateJob(id, updates);
@@ -262,6 +270,12 @@ export default function JobManagePage() {
           <div style={field}>
             <label style={lab}>상세 설명</label>
             <textarea value={form.description} onChange={(e) => setF("description", e.target.value)} style={{ ...inp, minHeight: 110, resize: "vertical" }} />
+          </div>
+          <div style={field}>
+            <label style={lab}>연락처 <span style={{ color: T.accent }}>*</span> <span style={{ color: T.ink3, fontWeight: 500, fontSize: 12 }}>전화·휴대·이메일 중 최소 1개 (지원자가 연락할 수단)</span></label>
+            <input value={form.contactPhone} onChange={(e) => setF("contactPhone", e.target.value)} placeholder="전화번호 (예: 02-123-4567)" style={inp} />
+            <input value={form.contactMobile} onChange={(e) => setF("contactMobile", e.target.value)} placeholder="휴대번호 (예: 010-1234-5678)" style={{ ...inp, marginTop: 8 }} />
+            <input value={form.contactEmail} onChange={(e) => setF("contactEmail", e.target.value)} type="email" placeholder="이메일 (예: owner@example.com)" style={{ ...inp, marginTop: 8 }} />
           </div>
           <div style={{ fontSize: 12, color: T.ink3, marginBottom: 16 }}>※ 근무지 주소 변경은 곧 지원될 예정이에요.</div>
           {err && <div style={{ marginBottom: 14, color: T.accent, fontSize: 13, fontWeight: 600 }}>{err}</div>}
