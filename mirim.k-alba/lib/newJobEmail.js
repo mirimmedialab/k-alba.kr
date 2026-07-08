@@ -291,7 +291,7 @@ export async function sendNewJobEmailsForJob(supabase, jobId, opts = {}) {
   const { data: job, error: jobErr } = await supabase
     .from("jobs")
     .select(
-      "id, title, job_type, pay_type, pay_amount, sigungu, sido, address, employer_id, employer_external_name, status, email_notified_at"
+      "id, title, job_type, pay_type, pay_amount, sigungu, sido, address, employer_id, employer_external_name, status, source_type, email_notified_at"
     )
     .eq("id", jobId)
     .single();
@@ -299,6 +299,12 @@ export async function sendNewJobEmailsForJob(supabase, jobId, opts = {}) {
   if (jobErr || !job) return { ok: false, error: "job not found" };
   if (job.email_notified_at) return { ok: true, skipped: "already_notified" };
   if (job.status && job.status !== "active") return { ok: true, skipped: "not_active" };
+
+  // 사용자가 직접 등록한 공고에만 알림 (워크넷 자동수집 등은 제외).
+  //   direct = 웹 폼(/jobs/post),  chatbot = 카카오 챗봇
+  if (job.source_type !== "direct" && job.source_type !== "chatbot") {
+    return { ok: true, skipped: "not_user_posted", source_type: job.source_type };
+  }
 
   // 2. 야간이면 지금은 발송하지 않고 크론에 맡김
   if (!ignoreBusinessHours && !isBusinessHoursKST()) {

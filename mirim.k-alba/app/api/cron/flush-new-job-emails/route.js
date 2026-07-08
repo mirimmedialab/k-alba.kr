@@ -39,6 +39,7 @@ export async function GET(request) {
     .from("jobs")
     .select("id")
     .eq("status", "active")
+    .in("source_type", ["direct", "chatbot"]) // 사용자 등록 공고만 (워크넷 제외)
     .is("email_notified_at", null)
     .gte("created_at", twoDaysAgo)
     .order("created_at", { ascending: true })
