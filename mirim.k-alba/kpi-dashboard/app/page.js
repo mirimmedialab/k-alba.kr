@@ -238,7 +238,7 @@ const CHANNEL_LABELS = {
   app: "앱(직접)",
   direct: "직접유입",
   etc: "기타 외부",
-  unknown: "추적 전",
+  unknown: "도입 전 가입",
 };
 function channelEntries(channels) {
   if (!channels) return [];
@@ -651,7 +651,7 @@ export default function Dashboard() {
           <MiniGrid
             vertical
             entries={[
-              ["친구수 (추정)", kk ? kk.friends : null],
+              ["친구 수", kk ? kk.friends : null],
               ["채널 추가", kk ? kk.added : null],
               ["차단", kk ? kk.blocked : null],
               ["순증", kk ? kk.net : null],

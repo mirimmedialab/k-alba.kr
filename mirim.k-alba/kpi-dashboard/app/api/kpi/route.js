@@ -370,10 +370,22 @@ export async function GET() {
     const posts = (result.content && result.content.posts) || [];
     const byNum = {};
     for (const p of posts) if (p.num) byNum[p.num] = p;
+    // 번호가 어긋난 경우 대비: 채널+제목(또는 주제)으로 폴백 매칭
+    const normT = (v) => String(v || "").replace(/\s+/g, "").toLowerCase();
+    const findPost = (num, channel, title) => {
+      if (byNum[num]) return byNum[num];
+      const t = normT(title);
+      if (!t) return null;
+      return (
+        posts.find(
+          (q) => q.channel === channel && (normT(q.subject) === t || normT(q.title) === t)
+        ) || null
+      );
+    };
     const items = result.metrics.rows
       .map((r) => {
         const num = String(r["번호"] || "").trim();
-        const p = byNum[num] || null;
+        const p = findPost(num, String(r["채널"] || "").trim(), r["제목"]);
         const d1 = r["조회 수(D+1)"];
         const d3 = r["조회 수(D+3)"];
         const d7 = r["조회 수(D+7)"];

@@ -20,7 +20,7 @@ const CHANNEL_LABELS = {
   etc: "기타 외부",
 };
 function channelLabel(u) {
-  if (!u.channel) return "추적 전";
+  if (!u.channel) return "도입 전 가입";
   return CHANNEL_LABELS[u.channel] || u.channel;
 }
 
