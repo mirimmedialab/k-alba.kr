@@ -254,6 +254,7 @@ export async function GET() {
         recentEmployers,
         recentJobs,
         recentApps,
+        channelRows,
       ] = await Promise.all([
         count("profiles", (q) => q.eq("user_type", "worker")),
         count("profiles", (q) => q.eq("user_type", "employer")),
@@ -271,7 +272,22 @@ export async function GET() {
         recentDates("profiles", (q) => q.eq("user_type", "employer")),
         recentDates("jobs"),
         recentDates("applications"),
+        (async () => {
+          const { data, error } = await sb
+            .from("profiles")
+            .select("signup_channel")
+            .limit(20000);
+          if (error) throw new Error(`profiles(channel): ${error.message}`);
+          return data || [];
+        })(),
       ]);
+
+      // 가입 유입경로 집계 (signup_channel null = 추적 도입 전 가입자)
+      const channels = {};
+      for (const r of channelRows) {
+        const k = r.signup_channel || "unknown";
+        channels[k] = (channels[k] || 0) + 1;
+      }
 
       result.users = {
         total: workers + employers,
@@ -280,6 +296,7 @@ export async function GET() {
         deactivations,
         dailyWorkers: buildDailySeries(recentWorkers, DAYS),
         dailyEmployers: buildDailySeries(recentEmployers, DAYS),
+        channels,
       };
       result.jobs = {
         total: jobsTotal,

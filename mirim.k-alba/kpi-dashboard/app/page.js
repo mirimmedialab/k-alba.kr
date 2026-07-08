@@ -228,6 +228,26 @@ function DailyChart({ title, series, color, pointHref, wide }) {
   );
 }
 
+const CHANNEL_LABELS = {
+  kakao_channel: "카카오 채널/챗봇",
+  naver: "네이버",
+  google: "구글",
+  sns: "SNS(인스타·페북)",
+  referral: "지인추천",
+  school: "학교",
+  app: "앱(직접)",
+  direct: "직접유입",
+  etc: "기타 외부",
+  unknown: "추적 전",
+};
+function channelEntries(channels) {
+  if (!channels) return [];
+  return Object.entries(channels)
+    .sort((x, y) => (y[0] === "unknown" ? -1 : x[0] === "unknown" ? 1 : y[1] - x[1]))
+    .slice(0, 8)
+    .map(([k, v]) => [CHANNEL_LABELS[k] || k, v]);
+}
+
 function MiniGrid({ title, entries, vertical }) {
   return (
     <Card>
@@ -562,6 +582,11 @@ export default function Dashboard() {
           <DailyChart title="신규 알바생" series={u.dailyWorkers} color={ACCENT} />
           <DailyChart title="신규 사장님" series={u.dailyEmployers} color={INK} />
         </div>
+        {u.channels && (
+          <div style={{ marginTop: 12 }}>
+            <MiniGrid title="가입 유입경로" entries={channelEntries(u.channels)} />
+          </div>
+        )}
       </Section>
 
       <Section num="2" title="공고">

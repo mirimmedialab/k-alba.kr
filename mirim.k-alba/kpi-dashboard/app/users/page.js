@@ -8,6 +8,22 @@ const BORDER = "#eceef1";
 const ACCENT = "#ff6b5e";
 const FILL = "#f2f4f6";
 
+const CHANNEL_LABELS = {
+  kakao_channel: "카카오톡 채널/챗봇",
+  naver: "네이버",
+  google: "구글",
+  sns: "SNS(인스타·페북)",
+  referral: "지인추천",
+  school: "학교",
+  app: "앱(직접)",
+  direct: "직접유입",
+  etc: "기타 외부",
+};
+function channelLabel(u) {
+  if (!u.channel) return "추적 전";
+  return CHANNEL_LABELS[u.channel] || u.channel;
+}
+
 const td = {
   padding: "10px 12px",
   borderBottom: `1px solid ${BORDER}`,
@@ -335,7 +351,7 @@ export default function UsersDetail() {
           <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 13.5 }}>
             <thead>
               <tr>
-                {["이름", "유형", "국적", tab === "active" ? "가입일시" : "가입일시 / 탈퇴일시"].map(
+                {["이름", "유형", "국적", "유입경로", tab === "active" ? "가입일시" : "가입일시 / 탈퇴일시"].map(
                   (h) => (
                     <th
                       key={h}
@@ -363,6 +379,12 @@ export default function UsersDetail() {
                     <TypeLabel t={u.userType} />
                   </td>
                   <td style={{ ...td, color: MUTED }}>{u.nationality || "–"}</td>
+                  <td style={{ ...td, color: u.channel ? INK : MUTED }}>
+                    {channelLabel(u)}
+                    {u.utmSource && u.utmSource !== u.channel && (
+                      <span style={{ color: MUTED, marginLeft: 6, fontSize: 12 }}>({u.utmSource})</span>
+                    )}
+                  </td>
                   <td style={{ ...td, fontVariantNumeric: "tabular-nums" }}>
                     {fmtDT(u.createdAt)}
                     {tab === "deactivated" && u.deactivatedAt && (
