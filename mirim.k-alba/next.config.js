@@ -25,8 +25,10 @@ const nextConfig = {
   async redirects() {
     return [
       { source: "/insta", destination: "/?utm_source=instagram", permanent: false },
+      { source: "/instagram", destination: "/?utm_source=instagram", permanent: false },
       { source: "/tiktok", destination: "/?utm_source=tiktok", permanent: false },
       { source: "/fb", destination: "/?utm_source=facebook", permanent: false },
+      { source: "/facebook", destination: "/?utm_source=facebook", permanent: false },
       { source: "/threads", destination: "/?utm_source=threads", permanent: false },
       { source: "/qr", destination: "/?utm_source=qr_poster", permanent: false },
       { source: "/kakao", destination: "/?utm_source=kakao_channel", permanent: false },

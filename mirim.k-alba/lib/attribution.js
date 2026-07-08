@@ -63,8 +63,9 @@ export function classifyChannel(a = {}) {
     if (src.includes("kakao")) return "kakao_channel";
     if (src.includes("naver")) return "naver";
     if (src.includes("google")) return "google";
-    if (/(instagram|^ig$|facebook|^fb$|meta)/.test(src)) return "sns";
-    return src; // 커스텀 utm_source 는 그대로 보존
+    if (src === "ig") return "instagram";
+    if (src === "fb") return "facebook";
+    return src; // utm_source 는 그대로 채널로 보존 (instagram/facebook/tiktok/threads/...)
   }
   if (ref) {
     if (ref.includes("k-alba.kr")) return isApp() ? "app" : "direct"; // 내부 이동
@@ -99,7 +100,12 @@ export const CHANNEL_LABELS = {
   kakao_channel: "카카오톡 채널/챗봇",
   naver: "네이버",
   google: "구글",
-  sns: "SNS(인스타·페북)",
+  instagram: "인스타그램",
+  facebook: "페이스북",
+  tiktok: "틱톡",
+  threads: "스레드",
+  qr_poster: "QR·포스터",
+  sns: "SNS(링크 미부착)",
   referral: "지인추천",
   school: "학교",
   app: "앱(직접)",
