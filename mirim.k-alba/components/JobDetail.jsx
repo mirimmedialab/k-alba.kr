@@ -251,29 +251,54 @@ export default function JobDetail({ jobId, embedded = false }) {
     </div>
   );
 
-  // 지원하기 → 사장님 연락처 안내 팝업 (실제 지원 기능 도입 전 임시)
-  const _cRow = (label, value, href) => (
-    <a href={href} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", textDecoration: "none", padding: "12px 14px", borderRadius: 10, border: `1px solid ${D.border}`, background: "#FAF8F3" }}>
-      <span style={{ color: "#6B7A95", fontSize: 12.5 }}>{label}</span>
-      <span style={{ fontWeight: 700, color: D.navy, fontSize: 14.5 }}>{value}</span>
-    </a>
-  );
-  const _hasContact = job.contact_mobile || job.contact_phone || job.contact_email;
+  // 지원하기 → 사장님 연락처 안내 팝업 (시안 A · 메시지 우선). 실제 지원 기능 도입 전 임시.
+  const _mDigits = String(job.contact_mobile || "").replace(/[^0-9]/g, "");
+  const _smsTo = job.contact_mobile && _mDigits.startsWith("010") ? job.contact_mobile : null; // 문자는 010 휴대번호만
+  const _callTo = job.contact_phone || job.contact_mobile || null; // 전화 걸 번호(유선 우선)
+  const _emailTo = job.contact_email || null;
+  const _hasContact = _smsTo || _callTo || _emailTo;
+
+  let _primary = null;
+  if (_smsTo) _primary = { label: "문자로 메시지 보내기", href: `sms:${_smsTo}`, kind: "sms" };
+  else if (_callTo) _primary = { label: "전화하기", href: `tel:${_callTo}`, kind: "call" };
+  else if (_emailTo) _primary = { label: "이메일 보내기", href: `mailto:${_emailTo}`, kind: "email" };
+
+  const _secondary = [];
+  if (_primary && _primary.kind === "sms" && _callTo) _secondary.push({ label: "전화", href: `tel:${_callTo}` });
+  if (_primary && _primary.kind !== "email" && _emailTo) _secondary.push({ label: "이메일", href: `mailto:${_emailTo}` });
+
+  const _refLine = [
+    (_smsTo || _callTo) ? formatPhoneDisplay(job.contact_mobile || job.contact_phone) : null,
+    _emailTo,
+  ].filter(Boolean).join(" · ");
+
+  const _btn = { display: "block", textAlign: "center", textDecoration: "none", borderRadius: 12, fontWeight: 700, fontFamily: "inherit", cursor: "pointer" };
   const contactModal = showContact ? (
-    <div onClick={() => setShowContact(false)} style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(15,23,42,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 380, background: "#fff", borderRadius: 16, padding: "24px 22px", boxShadow: "0 16px 40px rgba(0,0,0,0.25)" }}>
-        <div style={{ fontSize: 17, fontWeight: 800, color: D.ink, marginBottom: 6 }}>사장님께 직접 연락해보세요 📞</div>
-        <div style={{ fontSize: 13, color: "#6B7A95", marginBottom: 16, lineHeight: 1.6 }}>아래 연락처로 연락해 지원 의사를 전해보세요.</div>
+    <div onClick={() => setShowContact(false)} style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(10,22,40,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 360, background: "#fff", borderRadius: 20, padding: "24px 22px", position: "relative" }}>
+        <button aria-label="닫기" onClick={() => setShowContact(false)} style={{ position: "absolute", top: 12, right: 14, background: "none", border: "none", fontSize: 22, color: "#9AA4B2", cursor: "pointer", lineHeight: 1 }}>×</button>
         {_hasContact ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {job.contact_mobile && _cRow("휴대전화", formatPhoneDisplay(job.contact_mobile), `tel:${job.contact_mobile}`)}
-            {job.contact_phone && _cRow("전화", formatPhoneDisplay(job.contact_phone), `tel:${job.contact_phone}`)}
-            {job.contact_email && _cRow("이메일", job.contact_email, `mailto:${job.contact_email}`)}
-          </div>
+          <>
+            <div style={{ width: 46, height: 46, borderRadius: 14, background: "#FAECE7", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14, fontSize: 22 }}>{_smsTo ? "💬" : "📞"}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "#0A1628", lineHeight: 1.4, marginBottom: 6 }}>{_smsTo ? "메시지로 지원 의사를 남겨보세요" : "사장님께 연락해보세요"}</div>
+            <div style={{ fontSize: 13.5, color: "#6B7A95", lineHeight: 1.6, marginBottom: 18 }}>{_smsTo ? "관심 있는 공고라면 사장님께 바로 연락해 지원해보세요. 문자가 가장 편해요." : "아래 연락처로 연락해 지원 의사를 전해보세요."}</div>
+            <a href={_primary.href} style={{ ..._btn, background: "#FF6B5A", color: "#fff", padding: "14px", fontSize: 15 }}>{_primary.label}</a>
+            {_secondary.length > 0 && (
+              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                {_secondary.map((s) => (
+                  <a key={s.label} href={s.href} style={{ ..._btn, flex: 1, background: "#fff", color: "#0A1628", border: "1px solid #D4D0CA", padding: "12px", fontSize: 14 }}>{s.label}</a>
+                ))}
+              </div>
+            )}
+            {_refLine && <div style={{ textAlign: "center", fontSize: 12, color: "#9AA4B2", marginTop: 14, wordBreak: "break-all" }}>{_refLine}</div>}
+          </>
         ) : (
-          <div style={{ fontSize: 13.5, color: "#6B7A95", lineHeight: 1.7 }}>아직 등록된 연락처가 없어요. 등록자에게 연락처 추가를 요청 중이에요.</div>
+          <>
+            <div style={{ fontSize: 17, fontWeight: 800, color: "#0A1628", marginBottom: 8 }}>등록된 연락처가 없어요</div>
+            <div style={{ fontSize: 13.5, color: "#6B7A95", lineHeight: 1.7, marginBottom: 18 }}>이 공고에는 아직 연락 수단이 등록되지 않았어요. 잠시 후 다시 확인해 주세요.</div>
+            <button onClick={() => setShowContact(false)} style={{ ..._btn, width: "100%", background: "#0A1628", color: "#fff", padding: "12px", fontSize: 14, border: "none" }}>닫기</button>
+          </>
         )}
-        <button onClick={() => setShowContact(false)} style={{ marginTop: 20, width: "100%", padding: "12px", borderRadius: 10, background: D.navy, color: "#fff", border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>닫기</button>
       </div>
     </div>
   ) : null;
