@@ -162,7 +162,7 @@ function askStep(stepIndex, note) {
 }
 
 function needJoin(key) {
-  const url = `${SITE}${JOIN_PATH}?b=${encodeURIComponent(key)}`;
+  const url = `${SITE}${JOIN_PATH}?b=${encodeURIComponent(key)}&utm_source=kakao_channel&utm_medium=chatbot`;
   return reply({
     outputs: [{
       textCard: {
@@ -317,7 +317,7 @@ async function continueFlow(db, key, draftRow, input) {
           `💰 ${payStr}${region ? ` · 📍 ${region}` : ""}`,
           "\n✨ 지금부터 알바 찾기에 노출돼요. 지원이 들어오면 알려드릴게요!",
         ].filter(Boolean).join("\n"),
-        buttons: [{ action: "webLink", label: "공고 보기", webLinkUrl: `${SITE}/jobs/${newJob.id}` }],
+        buttons: [{ action: "webLink", label: "공고 보기", webLinkUrl: `${SITE}/jobs/${newJob.id}?utm_source=kakao_channel&utm_medium=chatbot` }],
       },
     }],
     quickReplies: [qrMsg("📝 공고 더 올리기", "공고 등록"), qrMsg("🏠 메인 메뉴", "사장님")],

@@ -192,7 +192,7 @@ function footerRow(finePrintHtml) {
 // ────────── 알바생 메일 (광고성) ──────────
 export function buildWorkerEmail(job, lang, unsubUrl, siteUrl) {
   const ko = lang === "ko";
-  const jobUrl = `${siteUrl}/jobs/${job.id}`;
+  const jobUrl = `${siteUrl}/jobs/${job.id}?utm_source=email&utm_medium=new_job_alert`;
   const subject = ko
     ? `새 알바 공고가 올라왔어요 — ${job.title || ""}`.trim()
     : `A new job was just posted — ${job.title || ""}`.trim();
@@ -209,7 +209,7 @@ export function buildWorkerEmail(job, lang, unsubUrl, siteUrl) {
   const note = ko
     ? "마음에 드는 공고는 마감 전에 서둘러 지원해보세요."
     : "Don't miss out — apply before the listing closes.";
-  const seeMore = `<a href="${siteUrl}/jobs" target="_blank" style="color:#FF6B5A;font-weight:700;text-decoration:none;">${ko ? "공고 전체 보기 →" : "See all jobs →"}</a>`;
+  const seeMore = `<a href="${siteUrl}/jobs?utm_source=email&utm_medium=new_job_alert" target="_blank" style="color:#FF6B5A;font-weight:700;text-decoration:none;">${ko ? "공고 전체 보기 →" : "See all jobs →"}</a>`;
 
   const finePrint = ko
     ? `본 메일은 마케팅 정보 수신에 동의하신 회원님께 발송되었습니다. <a href="${unsubUrl}" target="_blank" style="color:#FF6B5A;text-decoration:none;font-weight:700;">수신거부</a>`
@@ -227,8 +227,8 @@ export function buildWorkerEmail(job, lang, unsubUrl, siteUrl) {
 
 // ────────── 사장님 확인 메일 (트랜잭셔널) ──────────
 export function buildEmployerEmail(job, employer, siteUrl) {
-  const jobUrl = `${siteUrl}/jobs/${job.id}`;
-  const manageUrl = `${siteUrl}/my/jobs`;
+  const jobUrl = `${siteUrl}/jobs/${job.id}?utm_source=email&utm_medium=job_posted`;
+  const manageUrl = `${siteUrl}/my/jobs?utm_source=email&utm_medium=job_posted`;
   const who = esc(employer?.company_name || employer?.name || "사장님");
 
   const subject = `[K-ALBA] 등록하신 공고를 구직자분들께 전달해드렸어요`;

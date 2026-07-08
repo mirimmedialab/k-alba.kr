@@ -21,6 +21,18 @@ const nextConfig = {
   // 앱에서는 SSR 대신 CSR 위주로 동작 (Capacitor Server Mode로 Vercel 웹 로드)
   // 따라서 이 설정은 웹 배포용임
 
+  // 마케팅용 짧은 주소 → utm 부착 리다이렉트 (바이오/포스터에 깔끔한 주소 사용)
+  async redirects() {
+    return [
+      { source: "/insta", destination: "/?utm_source=instagram", permanent: false },
+      { source: "/tiktok", destination: "/?utm_source=tiktok", permanent: false },
+      { source: "/fb", destination: "/?utm_source=facebook", permanent: false },
+      { source: "/threads", destination: "/?utm_source=threads", permanent: false },
+      { source: "/qr", destination: "/?utm_source=qr_poster", permanent: false },
+      { source: "/kakao", destination: "/?utm_source=kakao_channel", permanent: false },
+    ];
+  },
+
   // HTTPS 강제 (Capacitor에서 cleartext 차단)
   async headers() {
     return [

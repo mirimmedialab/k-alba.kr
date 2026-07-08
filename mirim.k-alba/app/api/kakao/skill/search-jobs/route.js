@@ -130,7 +130,7 @@ export async function POST(request) {
     return {
       title: String(j.title || "공고").slice(0, 36),
       description: desc.slice(0, 40),
-      link: { web: `${SITE}/jobs/${j.id}` },
+      link: { web: `${SITE}/jobs/${j.id}?utm_source=kakao_channel&utm_medium=chatbot` },
     };
   });
 
@@ -144,7 +144,7 @@ export async function POST(request) {
           listCard: {
             header: { title: header.slice(0, 36) },
             items,
-            buttons: [{ label: "웹에서 더 보기", action: "webLink", webLinkUrl: `${SITE}/jobs` }],
+            buttons: [{ label: "웹에서 더 보기", action: "webLink", webLinkUrl: `${SITE}/jobs?utm_source=kakao_channel&utm_medium=chatbot` }],
           },
         },
       ],
