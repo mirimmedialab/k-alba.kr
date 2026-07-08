@@ -13,6 +13,7 @@ import { formatDistance, calculateDistanceMeters } from "@/lib/geolocation";
 import { formatPay, formatWorkHours, localizeWorkText } from "@/lib/format";
 import { romanizeRegion, romanizeCompany } from "@/lib/koroman";
 import { visaMeaning, jobNotice } from "@/lib/jobI18n";
+import { formatPhoneDisplay } from "@/lib/phone";
 import {
   Button,
   Card,
@@ -265,8 +266,8 @@ export default function JobDetail({ jobId, embedded = false }) {
         <div style={{ fontSize: 13, color: "#6B7A95", marginBottom: 16, lineHeight: 1.6 }}>아래 연락처로 연락해 지원 의사를 전해보세요.</div>
         {_hasContact ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {job.contact_mobile && _cRow("휴대전화", job.contact_mobile, `tel:${job.contact_mobile}`)}
-            {job.contact_phone && _cRow("전화", job.contact_phone, `tel:${job.contact_phone}`)}
+            {job.contact_mobile && _cRow("휴대전화", formatPhoneDisplay(job.contact_mobile), `tel:${job.contact_mobile}`)}
+            {job.contact_phone && _cRow("전화", formatPhoneDisplay(job.contact_phone), `tel:${job.contact_phone}`)}
             {job.contact_email && _cRow("이메일", job.contact_email, `mailto:${job.contact_email}`)}
           </div>
         ) : (

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { T } from "@/lib/theme";
 import { supabase } from "@/lib/supabase";
 import { Button, Badge, Empty, ButtonLoading } from "@/components/ui";
+import { formatPhoneInput } from "@/lib/phone";
 
 /**
  * /staff/register 학교 담당자 신규 가입 (BI v2)
@@ -369,7 +370,7 @@ export default function StaffRegisterPage() {
 
           <Field label="학교 사무실 전화 (운영팀 통화 검증용)" required error={errors.office_phone}>
             <input id="field-office_phone" type="tel" value={form.applicant_office_phone}
-              onChange={(e) => setForm({ ...form, applicant_office_phone: e.target.value })}
+              onChange={(e) => setForm({ ...form, applicant_office_phone: formatPhoneInput(e.target.value) })}
               placeholder="02-1234-5678" style={inputStyle} />
             <div style={{ fontSize: 10, color: T.ink2, marginTop: 4, lineHeight: 1.6 }}>
               💡 운영팀이 학교 대표번호 또는 부서 직통번호로 직접 전화하여 본인 확인합니다.
@@ -378,7 +379,7 @@ export default function StaffRegisterPage() {
           </Field>
           <Field label="휴대전화 (선택)">
             <input type="tel" value={form.applicant_phone}
-              onChange={(e) => setForm({ ...form, applicant_phone: e.target.value })}
+              onChange={(e) => setForm({ ...form, applicant_phone: formatPhoneInput(e.target.value) })}
               placeholder="010-1234-5678" style={inputStyle} />
           </Field>
         </Section>

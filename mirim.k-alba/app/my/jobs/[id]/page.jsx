@@ -7,6 +7,7 @@ import { getCurrentUser, getJob, updateJob, deleteJob, getJobApplicants, updateA
 import { Button, Badge, PageLoading } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 import { JOB_TYPES, WORK_TYPES, KOREAN_LEVELS, BENEFITS, VISA_OPTIONS } from "@/data/marketData";
+import { formatPhoneInput, formatPhoneDisplay } from "@/lib/phone";
 
 /**
  * /my/jobs/[id] — 사장님 공고 관리 (탭)
@@ -212,7 +213,7 @@ export default function JobManagePage() {
           <Row label="모집 인원">{job.headcount}</Row>
           <Row label="복리후생">{toArr(job.benefits).join(", ")}</Row>
           <Row label="상세 설명"><span style={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{job.description}</span></Row>
-          <Row label="연락처">{[job.contact_mobile, job.contact_phone, job.contact_email].filter(Boolean).join(" · ") || <span style={{ color: T.accent }}>미등록 · 수정에서 추가해 주세요</span>}</Row>
+          <Row label="연락처">{[formatPhoneDisplay(job.contact_mobile), formatPhoneDisplay(job.contact_phone), job.contact_email].filter(Boolean).join(" · ") || <span style={{ color: T.accent }}>미등록 · 수정에서 추가해 주세요</span>}</Row>
           {err && <div style={{ marginTop: 14, color: T.accent, fontSize: 13 }}>{err}</div>}
         </div>
       )}
@@ -274,8 +275,8 @@ export default function JobManagePage() {
           </div>
           <div style={field}>
             <label style={lab}>연락처 <span style={{ color: T.accent }}>*</span> <span style={{ color: T.ink3, fontWeight: 500, fontSize: 12 }}>전화·휴대·이메일 중 최소 1개 (지원자가 연락할 수단)</span></label>
-            <input value={form.contactPhone} onChange={(e) => setF("contactPhone", e.target.value)} placeholder="전화번호 (예: 02-123-4567)" style={inp} />
-            <input value={form.contactMobile} onChange={(e) => setF("contactMobile", e.target.value)} placeholder="휴대번호 (예: 010-1234-5678)" style={{ ...inp, marginTop: 8 }} />
+            <input value={form.contactPhone} onChange={(e) => setF("contactPhone", formatPhoneInput(e.target.value))} placeholder="전화번호 (예: 02-123-4567)" style={inp} />
+            <input value={form.contactMobile} onChange={(e) => setF("contactMobile", formatPhoneInput(e.target.value))} placeholder="휴대번호 (예: 010-1234-5678)" style={{ ...inp, marginTop: 8 }} />
             <input value={form.contactEmail} onChange={(e) => setF("contactEmail", e.target.value)} type="email" placeholder="이메일 (예: owner@example.com)" style={{ ...inp, marginTop: 8 }} />
           </div>
           <div style={{ fontSize: 12, color: T.ink3, marginBottom: 16 }}>※ 근무지 주소 변경은 곧 지원될 예정이에요.</div>

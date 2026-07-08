@@ -9,6 +9,7 @@ import BusinessVerify from "@/components/ui/BusinessVerify";
 import { Button, KIcon } from "@/components/ui";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 import { useT } from "@/lib/i18n";
+import { formatPhoneInput } from "@/lib/phone";
 
 /**
  * /jobs/post 공고 등록 (BI v2)
@@ -552,8 +553,8 @@ export default function PostJobPage() {
 
         <div style={field}>
           <label style={lab}>연락처 <span style={{ color: "#DC2626" }}>*</span> <span style={{ color: T.ink3, fontWeight: 500, fontSize: 12 }}>전화·휴대·이메일 중 최소 1개 (지원자가 연락할 수단)</span></label>
-          <input value={form.contactPhone} onChange={(e) => setF("contactPhone", e.target.value)} placeholder="전화번호 (예: 02-123-4567)" style={inp} />
-          <input value={form.contactMobile} onChange={(e) => setF("contactMobile", e.target.value)} placeholder="휴대번호 (예: 010-1234-5678)" style={{ ...inp, marginTop: 8 }} />
+          <input value={form.contactPhone} onChange={(e) => setF("contactPhone", formatPhoneInput(e.target.value))} placeholder="전화번호 (예: 02-123-4567)" style={inp} />
+          <input value={form.contactMobile} onChange={(e) => setF("contactMobile", formatPhoneInput(e.target.value))} placeholder="휴대번호 (예: 010-1234-5678)" style={{ ...inp, marginTop: 8 }} />
           <input value={form.contactEmail} onChange={(e) => setF("contactEmail", e.target.value)} type="email" placeholder="이메일 (예: owner@example.com)" style={{ ...inp, marginTop: 8 }} />
         </div>
 
@@ -722,7 +723,7 @@ export default function PostJobPage() {
         <div style={{ padding: "10px 16px", background: "#fff", borderTop: `1px solid ${T.border}`, display: "flex", gap: 8 }}>
           {currentType === "textarea"
             ? <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder={currentPlaceholder} style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `2px solid ${T.border}`, fontSize: 14, fontFamily: "inherit", outline: "none", minHeight: 60, resize: "none" }} />
-            : <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleInputSend()} placeholder={currentPlaceholder} style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `2px solid ${T.border}`, fontSize: 14, fontFamily: "inherit", outline: "none" }} />
+            : <input value={input} onChange={(e) => setInput(step === 15 && /^[\d\-\s]*$/.test(e.target.value) ? formatPhoneInput(e.target.value) : e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleInputSend()} placeholder={currentPlaceholder} style={{ flex: 1, padding: "10px 14px", borderRadius: 12, border: `2px solid ${T.border}`, fontSize: 14, fontFamily: "inherit", outline: "none" }} />
           }
           <button onClick={handleInputSend} disabled={!input.trim()} style={{ padding: "10px 16px", borderRadius: 12, background: input.trim() ? T.coralDark : T.border, color: input.trim() ? "#fff" : T.ink3, border: "none", fontWeight: 700, fontSize: 15, cursor: input.trim() ? "pointer" : "default" }}>↑</button>
         </div>

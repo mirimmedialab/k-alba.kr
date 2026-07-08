@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, Suspense } from "react";
+import { formatPhoneInput } from "@/lib/phone";
 export const dynamic = "force-dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -111,7 +112,7 @@ function NewContractContent() {
                   <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.navy, marginBottom: 6 }}>근로자 이름 *</label>
                   <input value={workerName} onChange={(e) => setWorkerName(e.target.value)} placeholder="예: Linh T." style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `2px solid ${T.g200}`, fontSize: 14, fontFamily: "inherit", outline: "none", marginBottom: 12, boxSizing: "border-box" }} />
                   <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.navy, marginBottom: 6 }}>연락처 (선택)</label>
-                  <input value={workerPhone} onChange={(e) => setWorkerPhone(e.target.value)} placeholder="010-0000-0000" style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `2px solid ${T.g200}`, fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }} />
+                  <input value={workerPhone} onChange={(e) => setWorkerPhone(formatPhoneInput(e.target.value))} placeholder="010-0000-0000" style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `2px solid ${T.g200}`, fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }} />
                 </Card>
                 <Card style={{ background: `linear-gradient(135deg,${T.coralL},#FFE4E0)`, border: `1.5px solid ${T.coral}40` }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
@@ -206,7 +207,7 @@ function NewContractContent() {
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.navy, marginBottom: 6 }}>연락처 (선택)</label>
           <input
             value={workerPhone}
-            onChange={(e) => setWorkerPhone(e.target.value)}
+            onChange={(e) => setWorkerPhone(formatPhoneInput(e.target.value))}
             placeholder="010-0000-0000"
             style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `2px solid ${T.g200}`, fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
           />

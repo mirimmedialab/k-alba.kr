@@ -6,6 +6,7 @@ import { T } from "@/lib/theme";
 import { getCurrentUser, supabase } from "@/lib/supabase";
 import SignaturePad from "@/components/SignaturePad";
 import { Button, Badge, Empty, PageLoading, ButtonLoading } from "@/components/ui";
+import { formatPhoneInput } from "@/lib/phone";
 
 /**
  * /staff/partwork/profile 담당자 본인 정보 + 서명 (BI v2)
@@ -234,7 +235,7 @@ export default function StaffProfilePage() {
           </FormField>
           <FormField label="연락처">
             <input type="tel" value={form.staff_phone}
-              onChange={(e) => setForm({ ...form, staff_phone: e.target.value })}
+              onChange={(e) => setForm({ ...form, staff_phone: formatPhoneInput(e.target.value) })}
               placeholder="02-1234-5678" style={inputStyle} />
           </FormField>
           <FormField label="업무 이메일">

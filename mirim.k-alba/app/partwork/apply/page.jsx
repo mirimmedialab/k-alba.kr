@@ -1,5 +1,6 @@
 "use client";
 import { Suspense, useState, useEffect, useMemo, useRef } from "react";
+import { formatPhoneInput } from "@/lib/phone";
 export const dynamic = "force-dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -478,7 +479,7 @@ function ConfirmationFormButton({ contract, form, profile, onProfileChange, inli
               <input
                 type={f.type}
                 value={profile?.[f.key] || ''}
-                onChange={(e) => updateField(f.key, e.target.value)}
+                onChange={(e) => updateField(f.key, f.key === "phone" ? formatPhoneInput(e.target.value) : e.target.value)}
                 placeholder={f.placeholder}
                 maxLength={f.maxLen}
                 style={{

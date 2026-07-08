@@ -4,6 +4,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser, supabase } from "@/lib/supabase";
 import SignaturePad from "@/components/SignaturePad";
+import { formatPhoneInput } from "@/lib/phone";
 
 /**
  * /immigration/[id] — 출입국 통합신청서 자동 작성 페이지
@@ -389,7 +390,7 @@ export default function ImmigrationApplicationPage() {
             <FieldAuto
               label="휴대전화 / Cell Phone"
               value={imm.cell_phone}
-              onChange={(v) => updateField('cell_phone', v)}
+              onChange={(v) => updateField('cell_phone', formatPhoneInput(v))}
               onBlur={handleBlur}
               placeholder="010-1234-5678"
               required

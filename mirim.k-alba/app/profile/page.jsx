@@ -12,6 +12,7 @@ import { useT } from "@/lib/i18n";
 import { Button, Card, ButtonLoading, PageLoading } from "@/components/ui";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 import BusinessVerify from "@/components/ui/BusinessVerify";
+import { formatPhoneInput } from "@/lib/phone";
 
 /**
  * /profile 프로필 (BI v2)
@@ -144,7 +145,7 @@ export default function ProfilePage() {
               <Inp label={t("profile.companyName")} value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} />
               <Inp label={t("profile.ceoName")} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               <Inp label={t("profile.businessNumber")} placeholder={t("profile.businessNumberPlaceholder")} value={form.business_number} onChange={(e) => setForm({ ...form, business_number: e.target.value })} />
-              <Inp label={t("profile.phone")} placeholder={t("profile.phonePlaceholder")} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <Inp label={t("profile.phone")} placeholder={t("profile.phonePlaceholder")} value={form.phone} onChange={(e) => setForm({ ...form, phone: formatPhoneInput(e.target.value) })} />
               <LocationPicker
                 label={t("profile.businessAddress")}
                 value={{
@@ -241,7 +242,7 @@ export default function ProfilePage() {
         {editing ? (
           <>
             <Inp label={t("profile.name")} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            <Inp label={t("profile.phone")} placeholder={t("profile.phonePlaceholder")} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+            <Inp label={t("profile.phone")} placeholder={t("profile.phonePlaceholder")} value={form.phone} onChange={(e) => setForm({ ...form, phone: formatPhoneInput(e.target.value) })} />
             <Inp label={t("profile.visa")} options={VISA_OPTIONS} value={form.visa} onChange={(e) => setForm({ ...form, visa: e.target.value })} />
             <Inp label={t("profile.country")} options={COUNTRIES} value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
             <Inp label={t("profile.organization")} placeholder={t("profile.organizationPlaceholder")} value={form.organization} onChange={(e) => setForm({ ...form, organization: e.target.value })} />
