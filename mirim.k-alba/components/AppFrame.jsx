@@ -4,6 +4,7 @@ import DesktopMobileFrame from "./DesktopMobileFrame";
 import NavBar from "./NavBar";
 import Footer from "./Footer";
 import { KakaoFloatingButton } from "./KakaoFloatingButton";
+import RegionNudge from "./RegionNudge";
 import { I18nProvider } from "@/lib/i18n";
 
 /**
@@ -49,6 +50,7 @@ export default function AppFrame({ children }) {
     <I18nProvider>
       <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         {showNavBar && <NavBar />}
+        {showNavBar && <RegionNudge />}
         <div style={{ flex: "1 0 auto" }}>
           {useFrame ? <DesktopMobileFrame>{children}</DesktopMobileFrame> : children}
         </div>

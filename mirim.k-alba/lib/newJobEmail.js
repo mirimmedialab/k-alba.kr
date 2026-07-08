@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { regionMatchesJob } from "@/lib/region";
 
 /**
  * 신규 공고 알림 메일 — 발송 코어 (서버 전용)
@@ -361,7 +362,7 @@ export async function sendNewJobEmailsForJob(supabase, jobId, opts = {}) {
     // 5. 알바생 수신자 (동의자만)
     const { data: workers, error: wErr } = await supabase
       .from("profiles")
-      .select("id, email, preferred_lang")
+      .select("id, email, preferred_lang, regions")
       .eq("user_type", "worker")
       .is("deactivated_at", null)
       .not("agreed_marketing_at", "is", null);
@@ -369,6 +370,8 @@ export async function sendNewJobEmailsForJob(supabase, jobId, opts = {}) {
     if (!wErr && Array.isArray(workers)) {
       for (const w of workers) {
         if (!w.email || !w.email.includes("@")) continue;
+        // 지역 타겟팅: 관심지역 설정자는 공고 시/도가 맞을 때만, 미설정자는 계속 발송(놓침 방지).
+        if (!regionMatchesJob(w.regions, job.sido)) continue;
         const lang = w.preferred_lang === "ko" ? "ko" : "en";
         const unsubUrl = `${siteUrl}/api/email/worker-unsubscribe?token=${unsubToken(w.id, secret)}`;
         const { subject, html } = buildWorkerEmail(job, lang, unsubUrl, siteUrl);

@@ -6,7 +6,7 @@ import { T } from "@/lib/theme";
 import { useT } from "@/lib/i18n";
 import { getCurrentUser, signOut, supabase } from "@/lib/supabase";
 import { PageLoading, Select } from "@/components/ui";
-import { VISA_OPTIONS } from "@/data/marketData";
+import { VISA_OPTIONS, REGIONS } from "@/data/marketData";
 
 /**
  * /consent — 약관 동의 + (알바생) 비자 입력 게이트
@@ -36,6 +36,7 @@ function ConsentInner() {
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeMarketing, setAgreeMarketing] = useState(false);
   const [visa, setVisa] = useState("");
+  const [regions, setRegions] = useState([]);
   const [alreadyConsented, setAlreadyConsented] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -47,7 +48,8 @@ function ConsentInner() {
         return;
       }
       const { data: prof } = await supabase
-        .from("profiles").select("agreed_terms_at, agreed_privacy_at, user_type, visa").eq("id", u.id).maybeSingle();
+        .from("profiles").select("agreed_terms_at, agreed_privacy_at, user_type, visa, regions").eq("id", u.id).maybeSingle();
+      if (Array.isArray(prof?.regions) && prof.regions.length) setRegions(prof.regions);
       const isWorker = (prof?.user_type || "worker") !== "employer";
       const hasConsent = !!(prof?.agreed_terms_at && prof?.agreed_privacy_at);
       const hasVisa = !!prof?.visa;
@@ -82,7 +84,10 @@ function ConsentInner() {
       updates.agreed_privacy_at = nowIso;
       updates.agreed_marketing_at = agreeMarketing ? nowIso : null;
     }
-    if (isWorker) updates.visa = visa;
+    if (isWorker) {
+      updates.visa = visa;
+      updates.regions = regions; // 관심 지역(선택) — 미선택이면 빈 배열
+    }
     const { error } = await supabase
       .from("profiles")
       .update(updates)
@@ -148,6 +153,23 @@ function ConsentInner() {
               placeholder={t("auth.visaSelectPlaceholder", null, "비자 종류를 선택하세요")}
               hint={t("auth.visaWhyNote", null, "비자에 맞는 합법 알바만 안내해 드리기 위해 필요해요.")}
             />
+          </div>
+        )}
+
+        {/* 관심 지역 — 알바생 (선택). 설정하면 내 지역 공고 알림만 받음 */}
+        {isWorker && (
+          <div style={{ marginTop: 16 }}>
+            <label style={{ display: "block", fontSize: 13.5, fontWeight: 700, color: T.ink, marginBottom: 4 }}>관심 지역 <span style={{ color: T.ink3, fontWeight: 500 }}>(선택 · 여러 개 가능)</span></label>
+            <p style={{ fontSize: 12, color: T.ink3, lineHeight: 1.5, marginBottom: 8 }}>선택하면 내 지역 알바 알림만 받아요. 나중에 프로필에서 바꿀 수 있어요.</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {REGIONS.map((r) => {
+                const on = regions.includes(r);
+                return (
+                  <button key={r} type="button" onClick={() => setRegions((prev) => prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r])}
+                    style={{ padding: "7px 12px", borderRadius: 20, border: `1.5px solid ${on ? T.coral : T.border}`, background: on ? T.coralL : "#fff", color: on ? T.coralDark : T.ink2, fontSize: 13, fontWeight: on ? 700 : 500, cursor: "pointer", fontFamily: "inherit" }}>{r}</button>
+                );
+              })}
+            </div>
           </div>
         )}
 
