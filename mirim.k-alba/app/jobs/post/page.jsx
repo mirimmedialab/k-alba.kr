@@ -74,18 +74,18 @@ export default function PostJobPage() {
   }, [bizGate.loading, bizGate.verified, isDesktop, router]);
 
   // 스텝: 1=업종, 2=제목, 3=근무형태, 4=주소, 5=상세주소, 6=급여형태, 7=금액, 8=시간, 9=요일, 10=한국어, 11=비자, 12=인원, 13=복리후생, 14=설명
-  const TOTAL_STEPS = 15;
+  const TOTAL_STEPS = 14;
 
   const getStepType = (s) => ({
     1: "chips", 2: "input", 3: "multi", 4: "addressSearch", 5: "input",
     6: "chips", 7: "input", 8: "chipsInput", 9: "chips", 10: "chips",
-    11: "multi", 12: "chipsInput", 13: "multi", 14: "textarea", 15: "input"
+    11: "multi", 12: "chipsInput", 13: "multi", 14: "textarea"
   })[s];
 
   const getStepKey = (s) => ({
     1: "jobType", 2: "title", 3: "workType", 4: "address", 5: "addressDetail",
     6: "payType", 7: "payAmount", 8: "workHours", 9: "workDays", 10: "korean",
-    11: "visa", 12: "headcount", 13: "benefits", 14: "description", 15: "contact"
+    11: "visa", 12: "headcount", 13: "benefits", 14: "description"
   })[s];
 
   const getStepOptions = (s) => ({
@@ -131,7 +131,6 @@ export default function PostJobPage() {
     if (s === 12) return t("postJob.botStep12", { jt, hint: p.headHint });
     if (s === 13) return p.beneHint ? t("postJob.botStep13", { jt, hint: p.beneHint }) : t("postJob.botStep13NoHint");
     if (s === 14) return t("postJob.botStep14", { jt, ex: p.descEx });
-    if (s === 15) return "📞 마지막이에요! 지원자가 연락할 연락처를 남겨주세요.\n전화·휴대폰·이메일 중 하나면 돼요.";
     return "";
   };
 
@@ -147,7 +146,6 @@ export default function PostJobPage() {
     if (s === 8) return p.hoursEx;
     if (s === 12) return t("postJob.phHeadcount");
     if (s === 14) return t("postJob.phDescription");
-    if (s === 15) return "010-1234-5678 또는 email@example.com";
     return t("postJob.sendPlaceholder");
   };
 
@@ -345,8 +343,6 @@ export default function PostJobPage() {
     if (!form.payType) return setWebErr(t("postJob.errPayType"));
     if (!String(form.payAmount).trim()) return setWebErr(t("postJob.errPayAmount"));
     if (form.visa.length === 0) return setWebErr(t("postJob.errVisa"));
-    if (!form.contactPhone.trim() && !form.contactMobile.trim() && !form.contactEmail.trim())
-      return setWebErr("연락처(전화번호·휴대번호·이메일 중 최소 1개)를 입력해 주세요.");
     setWebErr("");
     setWebBusy(true);
     try {
@@ -552,10 +548,11 @@ export default function PostJobPage() {
         </div>
 
         <div style={field}>
-          <label style={lab}>연락처 <span style={{ color: "#DC2626" }}>*</span> <span style={{ color: T.ink3, fontWeight: 500, fontSize: 12 }}>전화·휴대·이메일 중 최소 1개 (지원자가 연락할 수단)</span></label>
+          <label style={lab}>연락처 <span style={{ color: T.ink3, fontWeight: 500, fontSize: 12 }}>(선택)</span></label>
+          <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.6, marginBottom: 8 }}>지원 문의는 기본적으로 가입하신 이메일로 전달돼요. 전화·문자로 받거나 다른 담당자 이메일로 받고 싶을 때만 입력하세요.</div>
           <input value={form.contactPhone} onChange={(e) => setF("contactPhone", formatPhoneInput(e.target.value))} placeholder="전화번호 (예: 02-123-4567)" style={inp} />
           <input value={form.contactMobile} onChange={(e) => setF("contactMobile", formatPhoneInput(e.target.value))} placeholder="휴대번호 (예: 010-1234-5678)" style={{ ...inp, marginTop: 8 }} />
-          <input value={form.contactEmail} onChange={(e) => setF("contactEmail", e.target.value)} type="email" placeholder="이메일 (예: owner@example.com)" style={{ ...inp, marginTop: 8 }} />
+          <input value={form.contactEmail} onChange={(e) => setF("contactEmail", e.target.value)} type="email" placeholder="다른 담당자 이메일 (미입력 시 가입 이메일로)" style={{ ...inp, marginTop: 8 }} />
         </div>
 
         {webErr && <div style={{ color: "#DC2626", fontSize: 13, marginBottom: 14, fontWeight: 600 }}>{webErr}</div>}

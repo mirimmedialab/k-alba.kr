@@ -95,8 +95,6 @@ export default function JobManagePage() {
     setErr("");
     if (!form.title.trim()) return setErr("공고 제목을 입력해 주세요.");
     if (form.visa_types.length === 0) return setErr("지원 가능 비자를 1개 이상 선택해 주세요.");
-    if (!form.contactPhone.trim() && !form.contactMobile.trim() && !form.contactEmail.trim())
-      return setErr("연락처(전화번호·휴대번호·이메일 중 최소 1개)를 입력해 주세요.");
     setSaving(true);
     const updates = {
       title: form.title.trim(),
@@ -213,7 +211,7 @@ export default function JobManagePage() {
           <Row label="모집 인원">{job.headcount}</Row>
           <Row label="복리후생">{toArr(job.benefits).join(", ")}</Row>
           <Row label="상세 설명"><span style={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{job.description}</span></Row>
-          <Row label="연락처">{[formatPhoneDisplay(job.contact_mobile), formatPhoneDisplay(job.contact_phone), job.contact_email].filter(Boolean).join(" · ") || <span style={{ color: T.accent }}>미등록 · 수정에서 추가해 주세요</span>}</Row>
+          <Row label="연락처">{[formatPhoneDisplay(job.contact_mobile), formatPhoneDisplay(job.contact_phone), job.contact_email].filter(Boolean).join(" · ") || <span style={{ color: T.ink3 }}>가입 이메일로 지원 문의가 전달돼요</span>}</Row>
           {err && <div style={{ marginTop: 14, color: T.accent, fontSize: 13 }}>{err}</div>}
         </div>
       )}
@@ -274,10 +272,11 @@ export default function JobManagePage() {
             <textarea value={form.description} onChange={(e) => setF("description", e.target.value)} style={{ ...inp, minHeight: 110, resize: "vertical" }} />
           </div>
           <div style={field}>
-            <label style={lab}>연락처 <span style={{ color: T.accent }}>*</span> <span style={{ color: T.ink3, fontWeight: 500, fontSize: 12 }}>전화·휴대·이메일 중 최소 1개 (지원자가 연락할 수단)</span></label>
+            <label style={lab}>연락처 <span style={{ color: T.ink3, fontWeight: 500, fontSize: 12 }}>(선택)</span></label>
+            <div style={{ fontSize: 12, color: T.ink3, lineHeight: 1.6, marginBottom: 8 }}>지원 문의는 기본적으로 가입하신 이메일로 전달돼요. 전화·문자로 받거나 다른 담당자 이메일로 받고 싶을 때만 입력하세요.</div>
             <input value={form.contactPhone} onChange={(e) => setF("contactPhone", formatPhoneInput(e.target.value))} placeholder="전화번호 (예: 02-123-4567)" style={inp} />
             <input value={form.contactMobile} onChange={(e) => setF("contactMobile", formatPhoneInput(e.target.value))} placeholder="휴대번호 (예: 010-1234-5678)" style={{ ...inp, marginTop: 8 }} />
-            <input value={form.contactEmail} onChange={(e) => setF("contactEmail", e.target.value)} type="email" placeholder="이메일 (예: owner@example.com)" style={{ ...inp, marginTop: 8 }} />
+            <input value={form.contactEmail} onChange={(e) => setF("contactEmail", e.target.value)} type="email" placeholder="다른 담당자 이메일 (미입력 시 가입 이메일로)" style={{ ...inp, marginTop: 8 }} />
           </div>
           <div style={{ fontSize: 12, color: T.ink3, marginBottom: 16 }}>※ 근무지 주소 변경은 곧 지원될 예정이에요.</div>
           {err && <div style={{ marginBottom: 14, color: T.accent, fontSize: 13, fontWeight: 600 }}>{err}</div>}

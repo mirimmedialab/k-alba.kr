@@ -118,6 +118,7 @@ export default function JobDetail({ jobId, embedded = false }) {
   const [faved, setFaved] = useState(false);
   const [favBusy, setFavBusy] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const [revealContact, setRevealContact] = useState(false);
 
   useEffect(() => {
     getJob(jobId).then((data) => {
@@ -227,6 +228,7 @@ export default function JobDetail({ jobId, embedded = false }) {
       return;
     }
     // 실제 지원 기능 도입 전까지는, 사장님 연락처를 팝업으로 안내해 직접 연락하게 한다.
+    setRevealContact(false);
     setShowContact(true);
   };
 
@@ -255,13 +257,13 @@ export default function JobDetail({ jobId, embedded = false }) {
   const _mDigits = String(job.contact_mobile || "").replace(/[^0-9]/g, "");
   const _smsTo = job.contact_mobile && _mDigits.startsWith("010") ? job.contact_mobile : null; // 문자는 010 휴대번호만
   const _callTo = job.contact_phone || job.contact_mobile || null; // 전화 걸 번호(유선 우선)
-  const _emailTo = job.contact_email || null;
+  const _emailTo = job.contact_email || job.employer?.email || null; // 공고 연락 이메일 없으면 사장님 가입 이메일로
   const _hasContact = _smsTo || _callTo || _emailTo;
 
   let _primary = null;
-  if (_smsTo) _primary = { label: "문자로 메시지 보내기", href: `sms:${_smsTo}`, kind: "sms" };
-  else if (_callTo) _primary = { label: "전화하기", href: `tel:${_callTo}`, kind: "call" };
-  else if (_emailTo) _primary = { label: "이메일 보내기", href: `mailto:${_emailTo}`, kind: "email" };
+  if (_smsTo) _primary = { label: "문자로 메시지 보내기", href: `sms:${_smsTo}`, kind: "sms", emoji: "💬", title: "메시지로 지원 의사를 남겨보세요" };
+  else if (_callTo) _primary = { label: "전화하기", href: `tel:${_callTo}`, kind: "call", emoji: "📞", title: "전화로 지원 문의를 해보세요" };
+  else if (_emailTo) _primary = { label: "이메일 보내기", href: `mailto:${_emailTo}`, kind: "email", emoji: "✉️", title: "이메일로 지원 문의를 보내보세요" };
 
   const _secondary = [];
   if (_primary && _primary.kind === "sms" && _callTo) _secondary.push({ label: "전화", href: `tel:${_callTo}` });
@@ -279,9 +281,9 @@ export default function JobDetail({ jobId, embedded = false }) {
         <button aria-label="닫기" onClick={() => setShowContact(false)} style={{ position: "absolute", top: 12, right: 14, background: "none", border: "none", fontSize: 22, color: "#9AA4B2", cursor: "pointer", lineHeight: 1 }}>×</button>
         {_hasContact ? (
           <>
-            <div style={{ width: 46, height: 46, borderRadius: 14, background: "#FAECE7", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14, fontSize: 22 }}>{_smsTo ? "💬" : "📞"}</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: "#0A1628", lineHeight: 1.4, marginBottom: 6 }}>{_smsTo ? "메시지로 지원 의사를 남겨보세요" : "사장님께 연락해보세요"}</div>
-            <div style={{ fontSize: 13.5, color: "#6B7A95", lineHeight: 1.6, marginBottom: 18 }}>{_smsTo ? "관심 있는 공고라면 사장님께 바로 연락해 지원해보세요. 문자가 가장 편해요." : "아래 연락처로 연락해 지원 의사를 전해보세요."}</div>
+            <div style={{ width: 46, height: 46, borderRadius: 14, background: "#FAECE7", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14, fontSize: 22 }}>{_primary.emoji}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "#0A1628", lineHeight: 1.4, marginBottom: 6 }}>{_primary.title}</div>
+            <div style={{ fontSize: 13.5, color: "#6B7A95", lineHeight: 1.6, marginBottom: 18 }}>관심 있는 공고라면 사장님께 바로 연락해 지원해보세요.</div>
             <a href={_primary.href} style={{ ..._btn, background: "#FF6B5A", color: "#fff", padding: "14px", fontSize: 15 }}>{_primary.label}</a>
             {_secondary.length > 0 && (
               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
@@ -290,7 +292,11 @@ export default function JobDetail({ jobId, embedded = false }) {
                 ))}
               </div>
             )}
-            {_refLine && <div style={{ textAlign: "center", fontSize: 12, color: "#9AA4B2", marginTop: 14, wordBreak: "break-all" }}>{_refLine}</div>}
+            {_refLine && (revealContact ? (
+              <div style={{ textAlign: "center", fontSize: 13, color: "#0A1628", marginTop: 14, wordBreak: "break-all", fontWeight: 500 }}>{_refLine}</div>
+            ) : (
+              <button onClick={() => setRevealContact(true)} style={{ display: "block", margin: "14px auto 0", background: "none", border: "none", color: "#9AA4B2", fontSize: 12.5, cursor: "pointer", textDecoration: "underline", fontFamily: "inherit" }}>연락처 직접 확인하기</button>
+            ))}
           </>
         ) : (
           <>
