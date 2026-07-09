@@ -570,7 +570,7 @@ export const zh = {
     phonePlaceholder: "010-0000-0000",
     kalbaVerified: "✓ K-ALBA认证",
     locationTitle: "Location · 位置匹配",
-    locationDesc: "注册居住地址可优先看到附近兼职。公共交通所需时间也会自动计算。",
+    locationDesc: "注册居住地址可优先看到附近兼职。",
     locationHelperText: "不需要精确位置 — 大概位置也可以。",
     locationHelperTextBusiness: "搜索地址后,拖动地图上的大头针调整到准确的店铺位置。",
     locationNotRegistered: "💡 注册居住地可优先看到家附近的兼职。按[编辑]按钮注册。",

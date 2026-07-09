@@ -648,7 +648,7 @@ export const en = {
     phonePlaceholder: "010-0000-0000",
     kalbaVerified: "✓ K-ALBA Verified",
     locationTitle: "Location · Location-based Matching",
-    locationDesc: "Register your home address to see nearby jobs first. Commute time via public transit is automatically calculated.",
+    locationDesc: "Register your home address to see nearby jobs first.",
     locationHelperText: "An approximate location is fine — you don't need to provide the exact address.",
     locationHelperTextBusiness: "After searching for an address, drag the pin on the map to adjust to the exact store location.",
     locationNotRegistered: "💡 Register your home address to see jobs near you first. Press the [Edit] button to register.",

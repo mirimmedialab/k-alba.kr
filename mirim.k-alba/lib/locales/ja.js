@@ -572,7 +572,7 @@ export const ja = {
     phonePlaceholder: "010-0000-0000",
     kalbaVerified: "✓ K-ALBA認証",
     locationTitle: "Location · 位置ベースマッチング",
-    locationDesc: "住所を登録すると近くのバイトを優先的に見られます。公共交通機関での所要時間も自動計算されます。",
+    locationDesc: "住所を登録すると近くのバイトを優先的に見られます。",
     locationHelperText: "正確な位置でなくても大丈夫です — おおよその位置で登録できます。",
     locationHelperTextBusiness: "住所検索後、地図上のピンをドラッグして正確な店舗位置に調整してください。",
     locationNotRegistered: "💡 住所を登録すると家の近くのバイトを優先的に見られます。[編集]ボタンを押して登録してください。",

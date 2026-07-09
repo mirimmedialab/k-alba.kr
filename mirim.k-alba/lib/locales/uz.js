@@ -573,7 +573,7 @@ export const uz = {
     phonePlaceholder: "010-0000-0000",
     kalbaVerified: "✓ K-ALBA tasdiqlangan",
     locationTitle: "Location · Joylashuvga asoslangan moslashtirish",
-    locationDesc: "Uy manzilingizni ro'yxatdan o'tkazing va yaqin atrofdagi ishlarni birinchi bo'lib ko'ring. Jamoat transporti orqali sayohat vaqti avtomatik hisoblanadi.",
+    locationDesc: "Uy manzilingizni ro'yxatdan o'tkazing va yaqin atrofdagi ishlarni birinchi bo'lib ko'ring.",
     locationHelperText: "Taxminiy joy yaxshi — aniq manzilni berish shart emas.",
     locationHelperTextBusiness: "Manzilni qidirgandan so'ng, xaritadagi pinni sudrab, do'konning aniq joyiga sozlang.",
     locationNotRegistered: "💡 Yaqin joydagi ishlarni birinchi bo'lib ko'rish uchun uy manzilingizni ro'yxatdan o'tkazing. [Tahrirlash] tugmasini bosing.",

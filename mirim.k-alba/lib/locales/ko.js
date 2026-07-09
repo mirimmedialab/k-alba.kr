@@ -641,7 +641,7 @@ export const ko = {
     kalbaVerified: "✓ K-ALBA 인증",
     // Location-based fields
     locationTitle: "Location · 위치 기반 매칭",
-    locationDesc: "거주지 주소를 등록하면 가까운 알바를 먼저 볼 수 있어요. 대중교통 소요시간도 자동 계산됩니다.",
+    locationDesc: "거주지 주소를 등록하면 가까운 알바를 먼저 볼 수 있어요.",
     locationHelperText: "정확한 위치가 아니어도 괜찮아요 — 대략적인 위치로 등록하셔도 됩니다.",
     locationHelperTextBusiness: "주소 검색 후 지도에서 핀을 드래그해 정확한 매장 위치로 조정해 주세요.",
     locationNotRegistered: "💡 거주지를 등록하면 우리 집 근처 알바를 먼저 볼 수 있어요. [수정] 버튼을 눌러 등록해 주세요.",

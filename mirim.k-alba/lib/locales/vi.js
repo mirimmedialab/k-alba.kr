@@ -573,7 +573,7 @@ export const vi = {
     phonePlaceholder: "010-0000-0000",
     kalbaVerified: "✓ K-ALBA đã xác minh",
     locationTitle: "Location · Khớp dựa trên vị trí",
-    locationDesc: "Đăng ký địa chỉ nhà để xem công việc gần bạn trước. Thời gian di chuyển bằng phương tiện công cộng được tính tự động.",
+    locationDesc: "Đăng ký địa chỉ nhà để xem công việc gần bạn trước.",
     locationHelperText: "Vị trí gần đúng là được — bạn không cần cung cấp địa chỉ chính xác.",
     locationHelperTextBusiness: "Sau khi tìm kiếm địa chỉ, kéo ghim trên bản đồ để điều chỉnh đến vị trí cửa hàng chính xác.",
     locationNotRegistered: "💡 Đăng ký địa chỉ nhà để xem công việc gần bạn trước. Nhấn nút [Sửa] để đăng ký.",
