@@ -12,6 +12,8 @@ import { useIsDesktop } from "@/lib/useIsDesktop";
 
 const STATUS_INFO = {
   draft: { color: T.ink3, bg: T.cream, icon: "📝" },
+  pending_approval: { color: "#A17810", bg: "#FFF7E0", icon: "📮" },
+  rejected: { color: "#B4231F", bg: "#FDEBEA", icon: "✕" },
   worker_signing: { color: "#A17810", bg: "#F7F5F0", icon: "⏳" },
   employer_signing: { color: "#A17810", bg: "#F7F5F0", icon: "⏳" },
   completed: { color: "#2A7A4A", bg: "#E8F5EC", icon: "✓" },
@@ -66,13 +68,11 @@ export default function MyContractsPage() {
               {completedCount === 0 && pendingCount === 0 && t("myContracts.statusOverview")}
             </p>
           </div>
-          {isEmployer && (
-            <Link href="/contracts/new" style={{ textDecoration: "none" }}>
-              <button style={{ padding: "12px 20px", background: T.n9, color: T.gold, border: "none", borderRadius: 6, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", letterSpacing: "-0.01em" }}>
-                {t("myContracts.newContractBtn")}
-              </button>
-            </Link>
-          )}
+          <Link href="/contracts/new" style={{ textDecoration: "none" }}>
+            <button style={{ padding: "12px 20px", background: T.n9, color: T.gold, border: "none", borderRadius: 6, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", letterSpacing: "-0.01em" }}>
+              {t("myContracts.newContractBtn")}
+            </button>
+          </Link>
         </div>
 
         {contracts.length === 0 ? (
@@ -82,11 +82,9 @@ export default function MyContractsPage() {
             <p style={{ fontSize: 13, color: T.ink2, marginBottom: 20, lineHeight: 1.6 }}>
               {isEmployer ? t("myContracts.noContractsEmployer") : t("myContracts.noContractsWorker")}
             </p>
-            {isEmployer && (
-              <Link href="/contracts/new" style={{ display: "inline-block", padding: "12px 24px", background: T.n9, color: T.gold, textDecoration: "none", fontSize: 13, fontWeight: 700, borderRadius: 6, letterSpacing: "-0.01em" }}>
-                {t("myContracts.writeContractBtn")}
-              </Link>
-            )}
+            <Link href="/contracts/new" style={{ display: "inline-block", padding: "12px 24px", background: T.n9, color: T.gold, textDecoration: "none", fontSize: 13, fontWeight: 700, borderRadius: 6, letterSpacing: "-0.01em" }}>
+              {t("myContracts.writeContractBtn")}
+            </Link>
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
@@ -156,24 +154,22 @@ export default function MyContractsPage() {
             {completedCount === 0 && pendingCount === 0 && t("myContracts.statusOverview")}
           </p>
         </div>
-        {isEmployer && (
-          <Link href="/contracts/new" style={{ textDecoration: "none" }}>
-            <button style={{
-              padding: "12px 20px",
-              background: T.n9,
-              color: T.gold,
-              border: "none",
-              borderRadius: 4,
-              fontSize: 13,
-              fontWeight: 700,
-              cursor: "pointer",
-              fontFamily: "inherit",
-              letterSpacing: "-0.01em",
-            }}>
-              {t("myContracts.newContractBtn")}
-            </button>
-          </Link>
-        )}
+        <Link href="/contracts/new" style={{ textDecoration: "none" }}>
+          <button style={{
+            padding: "12px 20px",
+            background: T.n9,
+            color: T.gold,
+            border: "none",
+            borderRadius: 4,
+            fontSize: 13,
+            fontWeight: 700,
+            cursor: "pointer",
+            fontFamily: "inherit",
+            letterSpacing: "-0.01em",
+          }}>
+            {t("myContracts.newContractBtn")}
+          </button>
+        </Link>
       </div>
 
       {contracts.length === 0 ? (
@@ -200,21 +196,19 @@ export default function MyContractsPage() {
               : t("myContracts.noContractsWorker")
             }
           </p>
-          {isEmployer && (
-            <Link href="/contracts/new" style={{
-              display: "inline-block",
-              padding: "12px 24px",
-              background: T.n9,
-              color: T.gold,
-              textDecoration: "none",
-              fontSize: 13,
-              fontWeight: 700,
-              borderRadius: 4,
-              letterSpacing: "-0.01em",
-            }}>
-              {t("myContracts.writeContractBtn")}
-            </Link>
-          )}
+          <Link href="/contracts/new" style={{
+            display: "inline-block",
+            padding: "12px 24px",
+            background: T.n9,
+            color: T.gold,
+            textDecoration: "none",
+            fontSize: 13,
+            fontWeight: 700,
+            borderRadius: 4,
+            letterSpacing: "-0.01em",
+          }}>
+            {t("myContracts.writeContractBtn")}
+          </Link>
         </div>
       ) : (
         <div>
