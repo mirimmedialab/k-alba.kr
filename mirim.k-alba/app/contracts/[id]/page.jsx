@@ -6,6 +6,7 @@ import { T } from "@/lib/theme";
 import { getContract, updateContract, signContract, getCurrentUser, supabase } from "@/lib/supabase";
 import { formatKoreanDate, MIN_WAGE } from "@/lib/contractUtils";
 import { generateContractPDF, buildContractFilename } from "@/lib/pdfGenerator";
+import { shareContractKakao } from "@/lib/kakaoShare";
 import { useT } from "@/lib/i18n";
 import { ContractDetailSkel } from "@/components/Wireframe";
 import SignaturePad from "@/components/SignaturePad";
@@ -58,6 +59,8 @@ export default function ContractDetailPage() {
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [signatureModalOpen, setSignatureModalOpen] = useState(false);
   const [pendingRole, setPendingRole] = useState(null);
+  const [approving, setApproving] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const scrollRef = useRef(null);
 
   // ─── 계약서 데이터 로드 ───
@@ -90,7 +93,15 @@ export default function ContractDetailPage() {
   useEffect(() => {
     if (!contract || !user) return;
 
-    if (isWorker && !contract.worker_signed) {
+    if (contract.status === "pending_approval") {
+      if (isEmployer) initApprovalChat();
+      else initWaitApprovalChat();
+    } else if (contract.status === "rejected") {
+      setMessages([
+        { from: "bot", text: `❌ 사장님이 계약서를 거절했습니다.${contract.reject_reason ? `\n\n사유: ${contract.reject_reason}` : ""}` },
+        { from: "bot", text: "조건을 확인한 뒤 새 계약서를 다시 작성하거나, 사장님과 직접 상의해 보세요." },
+      ]);
+    } else if (isWorker && !contract.worker_signed) {
       initWorkerChat();
     } else if (isEmployer && contract.worker_signed && !contract.employer_signed) {
       initEmployerChat();
@@ -148,6 +159,86 @@ export default function ContractDetailPage() {
         addBot("📄 계약서 탭에서 내용을 최종 확인 후\n아래 버튼으로 서명해 주세요.");
       }, 500);
     }, 400);
+  };
+
+  // ─── 승인 대기 챗봇 (알바생 작성 → 사장님 검토) ───
+  const initApprovalChat = () => {
+    setTyping(true);
+    setTimeout(() => {
+      setMessages([
+        { from: "bot", text: `📮 ${contract.worker_name}님(알바생)이 작성한\n근로계약서가 도착했어요!\n\n내용을 확인하고 승인해 주세요.` },
+      ]);
+      setTyping(false);
+      setTimeout(() => {
+        addBot("📋 계약 조건:\n" +
+          `✓ 업체: ${contract.company_name}\n` +
+          `✓ 급여: ${contract.pay_type} ₩${Number(contract.pay_amount).toLocaleString()}\n` +
+          `✓ 근무: ${(contract.work_days || []).join("·")} ${contract.work_start}~${contract.work_end}\n` +
+          `✓ 기간: ${contract.contract_start} ~ ${contract.contract_end}\n\n` +
+          "승인하면 서명 단계로 진행됩니다.\n조건이 다르면 거절 후 사유를 남겨주세요.");
+      }, 500);
+    }, 400);
+  };
+
+  const initWaitApprovalChat = () => {
+    setTyping(true);
+    setTimeout(() => {
+      setMessages([
+        { from: "bot", text: `${contract.worker_name}님이 작성한 계약서가\n사장님 승인을 기다리고 있어요. ⏳` },
+      ]);
+      setTyping(false);
+      setTimeout(() => {
+        addBot("💬 아래 버튼으로 사장님께 카카오톡으로\n계약서 링크를 보내 확인을 요청해 보세요!\n\n사장님이 승인하면 서명을 시작할 수 있어요.");
+      }, 500);
+    }, 400);
+  };
+
+  // ─── 사장님 승인/거절 (알바생 작성 계약서) ───
+  const handleApprove = async () => {
+    if (approving) return;
+    setApproving(true);
+    const { error } = await updateContract(contract.id, {
+      status: "worker_signing",
+      employer_approved_at: new Date().toISOString(),
+    });
+    setApproving(false);
+    if (error) {
+      alert("승인 처리 중 오류가 발생했습니다: " + error.message);
+      return;
+    }
+    const fresh = await getContract(contract.id);
+    if (fresh) setContract(fresh);
+    addBot("✅ 계약서를 승인했습니다!\n근로자에게 서명 요청이 전달됩니다.");
+  };
+
+  const handleReject = async () => {
+    if (approving) return;
+    const reason = window.prompt(t("contract.rejectPrompt") || "거절 사유를 입력해주세요 (선택)");
+    if (reason === null) return; // 취소
+    setApproving(true);
+    const { error } = await updateContract(contract.id, {
+      status: "rejected",
+      reject_reason: reason || null,
+    });
+    setApproving(false);
+    if (error) {
+      alert("거절 처리 중 오류가 발생했습니다: " + error.message);
+      return;
+    }
+    const fresh = await getContract(contract.id);
+    if (fresh) setContract(fresh);
+  };
+
+  // ─── 카카오톡 공유 ───
+  const handleShare = async () => {
+    if (sharing) return;
+    setSharing(true);
+    try {
+      const method = await shareContractKakao(contract, typeof window !== "undefined" ? window.location.href : "");
+      if (method === "clipboard") alert(t("contract.linkCopied"));
+    } finally {
+      setSharing(false);
+    }
   };
 
   // ─── 서명 처리 ───
@@ -311,18 +402,26 @@ export default function ContractDetailPage() {
     { k: "preview", ic: "📄", label: t("contract.tab.preview"), desc: t("contract.tab.previewDesc") },
   ];
 
-  const canWorkerSign = isWorker && !contract.worker_signed;
-  const canEmployerSign = isEmployer && contract.worker_signed && !contract.employer_signed;
+  // 승인 전(pending_approval)·거절(rejected) 상태에서는 서명 불가
+  const signBlocked = ["pending_approval", "rejected"].includes(contract.status);
+  const canWorkerSign = isWorker && !contract.worker_signed && !signBlocked;
+  const canEmployerSign = isEmployer && contract.worker_signed && !contract.employer_signed && !signBlocked;
+  const needsApproval = isEmployer && contract.status === "pending_approval";
+  const waitingApproval = isWorker && contract.status === "pending_approval";
 
   // 상태 → Badge variant 매핑 (Step 3-A)
   const statusVariant = {
     draft: "neutral",                // 초안
+    pending_approval: "warning",     // 사장님 승인 대기 (알바생 작성)
+    rejected: "error",               // 사장님 거절
     worker_signing: "warning",       // 근로자 서명 대기
     employer_signing: "warning",     // 사장님 서명 대기
     completed: "success",            // 계약 완료
   };
   const statusLabel = {
     draft: "초안",
+    pending_approval: "사장님 승인 대기",
+    rejected: "거절됨",
     worker_signing: "근로자 서명 대기",
     employer_signing: "사장님 서명 대기",
     completed: "계약 완료",
@@ -359,6 +458,16 @@ export default function ContractDetailPage() {
             >
               {t(`contract.status.${contract.status}`) || statusLabel[contract.status]}
             </Badge>
+            {/* 카카오톡 공유 — 상호간 계약 내용 확인용 링크 전송 */}
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleShare}
+              disabled={sharing}
+              title={t("contract.shareKakao")}
+            >
+              💬 {t("contract.share")}
+            </Button>
             {contract.worker_signed && contract.employer_signed && (
               <Button
                 variant="primary"
@@ -439,6 +548,48 @@ export default function ContractDetailPage() {
               )}
               <div ref={scrollRef} />
             </div>
+
+            {/* 승인 버튼 영역 — 알바생 작성 계약서를 사장님이 검토 */}
+            {needsApproval && !typing && (
+              <div style={{ padding: 14, background: "#fff", borderTop: `1px solid ${T.border}`, display: "flex", gap: 10 }}>
+                <Button
+                  variant="primaryDark"
+                  size="lg"
+                  fullWidth
+                  onClick={handleApprove}
+                  disabled={approving}
+                >
+                  {approving ? <ButtonLoading text="처리 중..." /> : `✅ ${t("contract.approveBtn")}`}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  onClick={handleReject}
+                  disabled={approving}
+                  style={{ flexShrink: 0 }}
+                >
+                  {t("contract.rejectBtn")}
+                </Button>
+              </div>
+            )}
+
+            {/* 승인 대기 — 알바생이 사장님께 카카오톡으로 확인 요청 */}
+            {waitingApproval && !typing && (
+              <div style={{ padding: 14, background: "#fff", borderTop: `1px solid ${T.border}` }}>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  onClick={handleShare}
+                  disabled={sharing}
+                >
+                  💬 {t("contract.shareToEmployer")}
+                </Button>
+                <p style={{ textAlign: "center", fontSize: 10, color: T.ink3, marginTop: 8 }}>
+                  {t("contract.waitApprovalHint")}
+                </p>
+              </div>
+            )}
 
             {/* 서명 버튼 영역 — 페르소나 분기 */}
             {(canWorkerSign || canEmployerSign) && !typing && (
