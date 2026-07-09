@@ -149,6 +149,20 @@ export async function POST(request) {
       );
     }
 
+    // 알바생 작성 계약서는 사장님 승인 전 서명 불가
+    if (contract.status === "pending_approval") {
+      return NextResponse.json(
+        { ok: false, error: "사장님 승인 후 서명할 수 있습니다." },
+        { status: 400 }
+      );
+    }
+    if (contract.status === "rejected") {
+      return NextResponse.json(
+        { ok: false, error: "거절된 계약서입니다. 새 계약서를 작성해 주세요." },
+        { status: 400 }
+      );
+    }
+
     // 이미 서명한 경우 차단
     if (role === "worker" && contract.worker_signed) {
       return NextResponse.json(
