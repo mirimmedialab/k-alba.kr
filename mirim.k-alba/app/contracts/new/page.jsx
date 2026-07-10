@@ -222,6 +222,9 @@ function NewContractContent() {
                       );
                     })}
                   </div>
+                  {!manualEntry && !selectedApplicantId && (
+                    <p style={{ fontSize: 12, color: T.coral, fontWeight: 700, margin: "0 0 10px" }}>{t("contract.pickApplicantHint")}</p>
+                  )}
                   <button
                     onClick={() => { setManualEntry(!manualEntry); setSelectedApplicantId(null); }}
                     style={{ background: "none", border: "none", color: T.coral, fontSize: 12, fontWeight: 700, cursor: "pointer", padding: 0, marginBottom: manualEntry ? 12 : 0, fontFamily: "inherit" }}
