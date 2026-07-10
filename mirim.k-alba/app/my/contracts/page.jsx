@@ -43,6 +43,28 @@ export default function MyContractsPage() {
 
   const isEmployer = user?.user_metadata?.user_type === "employer";
 
+  // 지금 내가 해야 할 일 표시 (사장님/알바생 역할별)
+  const getAction = (c) => {
+    if (isEmployer) {
+      if (c.status === "pending_approval") return { text: t("contract.actionApprove"), hot: true };
+      if (c.worker_signed && !c.employer_signed && c.status !== "rejected" && c.status !== "completed") return { text: t("contract.actionSign"), hot: true };
+    } else {
+      if (!c.worker_signed && ["draft", "worker_signing"].includes(c.status)) return { text: t("contract.actionSign"), hot: true };
+      if (c.status === "pending_approval") return { text: t("contract.actionWait"), hot: false };
+    }
+    return null;
+  };
+
+  const ActionBanner = ({ c }) => {
+    const a = getAction(c);
+    if (!a) return null;
+    return (
+      <div style={{ marginTop: 10, padding: "8px 12px", borderRadius: 8, background: a.hot ? T.coral : T.cream, color: a.hot ? "#fff" : T.ink2, fontSize: 12, fontWeight: 700, textAlign: "center" }}>
+        {a.text}
+      </div>
+    );
+  };
+
   if (loading) return isDesktop ? <PageLoading message={t("common.pleaseWait")} minHeight={400} /> : <ListPageSkel maxWidth={820} showAction rows={3} />;
 
   const completedCount = contracts.filter(c => c.status === "completed").length;
@@ -118,6 +140,7 @@ export default function MyContractsPage() {
                       <span style={{ color: c.worker_signed ? T.green : T.ink3 }}>{c.worker_signed ? "✓" : "⏳"} {t("myContracts.workerSignature")}</span>
                       <span style={{ color: c.employer_signed ? T.green : T.ink3 }}>{c.employer_signed ? "✓" : "⏳"} {t("myContracts.employerSignature")}</span>
                     </div>
+                    <ActionBanner c={c} />
                   </div>
                 </Link>
               );
@@ -296,6 +319,7 @@ export default function MyContractsPage() {
                         {c.employer_signed ? "✓" : "⏳"} {t("myContracts.employerSignature")}
                       </span>
                     </div>
+                    <ActionBanner c={c} />
                   </div>
 
                   <div style={{ fontSize: 16, color: T.ink3, flexShrink: 0, paddingTop: 4 }}>
