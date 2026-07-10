@@ -644,6 +644,10 @@ export const uz = {
     shareToEmployer: "KakaoTalk orqali ish beruvchidan tasdiq so'rash",
     waitApprovalHint: "Ish beruvchi tasdiqlagach imzolashingiz mumkin",
     linkCopied: "Shartnoma havolasi nusxalandi. KakaoTalk'ga joylab yuboring!",
+    actionApprove: "📮 Tasdiq kerak — ko'rish uchun bosing",
+    actionSign: "✍️ Imzolash navbati sizda",
+    actionWait: "⏳ Ish beruvchi tasdig'i kutilmoqda",
+    pickApplicantHint: "👆 Shartnoma tuziladigan nomzodni tanlang",
     tab: {
       chatbot: "Chatbot", chatbotDesc: "KakaoTalk imzosi",
       form: "Veb shakl", formDesc: "Ma'lumotlar",

@@ -726,6 +726,10 @@ export const ko = {
     shareToEmployer: "카카오톡으로 사장님께 확인 요청",
     waitApprovalHint: "사장님이 승인하면 서명을 시작할 수 있습니다",
     linkCopied: "계약서 링크가 복사되었습니다. 카카오톡에 붙여넣어 보내주세요!",
+    actionApprove: "📮 승인이 필요해요 — 눌러서 확인하세요",
+    actionSign: "✍️ 지금 서명할 차례예요",
+    actionWait: "⏳ 사장님 승인 기다리는 중",
+    pickApplicantHint: "👆 계약을 체결할 지원자를 선택해주세요",
     tab: {
       chatbot: "챗봇",
       chatbotDesc: "카카오톡 서명",

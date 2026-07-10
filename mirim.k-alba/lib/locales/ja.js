@@ -643,6 +643,10 @@ export const ja = {
     shareToEmployer: "KakaoTalkで店長に確認を依頼",
     waitApprovalHint: "店長が承認すると署名を開始できます",
     linkCopied: "契約書リンクをコピーしました。KakaoTalkに貼り付けて送ってください!",
+    actionApprove: "📮 承認が必要です — タップして確認",
+    actionSign: "✍️ 署名する番です",
+    actionWait: "⏳ 店長の承認待ち",
+    pickApplicantHint: "👆 契約する応募者を選択してください",
     tab: {
       chatbot: "チャットボット", chatbotDesc: "KakaoTalk署名",
       form: "ウェブフォーム", formDesc: "入力内容",

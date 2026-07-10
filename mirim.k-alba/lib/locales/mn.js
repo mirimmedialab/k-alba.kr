@@ -642,6 +642,10 @@ export const mn = {
     shareToEmployer: "KakaoTalk-аар ажил олгогчоос баталгаажуулалт хүсэх",
     waitApprovalHint: "Ажил олгогч зөвшөөрсний дараа гарын үсэг зурж болно",
     linkCopied: "Гэрээний холбоос хуулагдлаа. KakaoTalk дээр буулгаж илгээгээрэй!",
+    actionApprove: "📮 Зөвшөөрөл шаардлагатай — дарж шалгана уу",
+    actionSign: "✍️ Таны гарын үсэг зурах ээлж",
+    actionWait: "⏳ Ажил олгогчийн зөвшөөрлийг хүлээж байна",
+    pickApplicantHint: "👆 Гэрээ байгуулах өргөдөл гаргагчийг сонгоно уу",
     tab: {
       chatbot: "Чатбот", chatbotDesc: "KakaoTalk гарын үсэг",
       form: "Вэб форм", formDesc: "Өгөгдөл",

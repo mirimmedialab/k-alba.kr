@@ -729,6 +729,10 @@ export const en = {
     shareToEmployer: "Ask employer to review via KakaoTalk",
     waitApprovalHint: "You can sign once the employer approves",
     linkCopied: "Contract link copied. Paste it into KakaoTalk!",
+    actionApprove: "📮 Approval needed — tap to review",
+    actionSign: "✍️ Your turn to sign",
+    actionWait: "⏳ Waiting for employer approval",
+    pickApplicantHint: "👆 Select the applicant to contract with",
     tab: {
       chatbot: "Chatbot",
       chatbotDesc: "KakaoTalk signing",

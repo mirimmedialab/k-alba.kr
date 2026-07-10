@@ -641,6 +641,10 @@ export const zh = {
     shareToEmployer: "通过 KakaoTalk 请雇主确认",
     waitApprovalHint: "雇主批准后即可开始签字",
     linkCopied: "合同链接已复制,请粘贴到 KakaoTalk 发送!",
+    actionApprove: "📮 需要批准 — 点击查看",
+    actionSign: "✍️ 轮到您签字了",
+    actionWait: "⏳ 等待雇主批准中",
+    pickApplicantHint: "👆 请选择要签约的申请人",
     tab: {
       chatbot: "聊天机器人", chatbotDesc: "KakaoTalk 签字",
       form: "网页表单", formDesc: "输入内容",

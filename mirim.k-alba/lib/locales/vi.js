@@ -644,6 +644,10 @@ export const vi = {
     shareToEmployer: "Nhờ chủ quán xác nhận qua KakaoTalk",
     waitApprovalHint: "Bạn có thể ký sau khi chủ quán phê duyệt",
     linkCopied: "Đã sao chép liên kết hợp đồng. Dán vào KakaoTalk để gửi!",
+    actionApprove: "📮 Cần phê duyệt — nhấn để xem",
+    actionSign: "✍️ Đến lượt bạn ký",
+    actionWait: "⏳ Đang chờ chủ quán phê duyệt",
+    pickApplicantHint: "👆 Chọn ứng viên để ký hợp đồng",
     tab: {
       chatbot: "Chatbot", chatbotDesc: "Ký qua KakaoTalk",
       form: "Biểu mẫu web", formDesc: "Nội dung nhập",
