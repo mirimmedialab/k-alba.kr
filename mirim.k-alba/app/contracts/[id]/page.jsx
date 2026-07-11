@@ -800,7 +800,180 @@ function ContractForm({ contract }) {
 }
 
 // ─── 계약서 미리보기 탭 (인쇄 양식 — 컬러 변경 금지) ───
+// ─── 계약서 미리보기: 고용노동부 「표준근로계약서(단시간근로자)」 서식 기반 ───
 function ContractPreview({ contract }) {
+  const workDays = contract.work_days || [];
+  const weeklyHours = contract.weekly_hours || 0;
+  const weeklyDays = workDays.length;
+  const dailyHours = weeklyDays > 0 ? (weeklyHours / weeklyDays).toFixed(1).replace(/\.0$/, "") : "";
+  const contractDate = (contract.created_at || new Date().toISOString()).split("T")[0];
+  const [cy, cm, cd] = contractDate.split("-");
+  const insured = !!contract.insurance_required; // 월 60시간 이상 → 국민연금·건강보험
+  const employmentIns = weeklyHours >= 15; // 주 15시간 이상 → 고용보험
+  const payLabel = contract.pay_type === "시급" ? "시간급" : contract.pay_type === "일급" ? "일급" : "월급";
+  const contractNo = contract.id
+    ? `ALBA-${new Date(contract.created_at || Date.now()).getFullYear()}-${String(contract.id).padStart(6, "0").slice(-6)}`
+    : "ALBA-2026-000001";
+
+  const num = { fontWeight: 800, fontSize: 12.5, color: "#111" };
+  const line = { fontSize: 12, color: "#111", lineHeight: 1.9, marginBottom: 4 };
+  const noteStyle = { fontSize: 10.5, color: "#555", lineHeight: 1.7, margin: "2px 0 6px 14px" };
+  const u = { borderBottom: "1px solid #111", padding: "0 6px", fontWeight: 700 };
+  const th = { border: "1px solid #333", background: "#F5F3F0", padding: "6px 8px", fontSize: 11, fontWeight: 700, textAlign: "center" };
+  const td = { border: "1px solid #333", padding: "6px 8px", fontSize: 11, textAlign: "center" };
+
+  const SignImg = ({ png, signed, date }) => (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+      {signed && png ? (
+        <img src={png} alt="서명" style={{ height: 34, verticalAlign: "middle" }} />
+      ) : (
+        <span style={{ color: "#999" }}>(서명)</span>
+      )}
+      {signed && date && (
+        <span style={{ fontSize: 10, color: "#00A86B" }}>✓ {new Date(date).toLocaleDateString("ko-KR")} 전자서명</span>
+      )}
+    </span>
+  );
+
+  return (
+    <div style={{ flex: 1, overflowY: "auto", padding: 16, background: "#EDEDEA" }}>
+      <div
+        id="contract-preview-for-pdf"
+        style={{ background: "#fff", padding: "40px 36px 30px", borderRadius: 4, maxWidth: 700, margin: "0 auto", boxShadow: "0 4px 24px rgba(0,0,0,0.08)", fontFamily: "'Noto Sans KR', sans-serif", color: "#111" }}
+      >
+        {/* 제목 */}
+        <h1 style={{ textAlign: "center", fontSize: 21, fontWeight: 900, letterSpacing: 4, marginBottom: 6 }}>
+          단시간근로자 표준근로계약서
+        </h1>
+        <div style={{ textAlign: "center", fontSize: 10, color: "#777", marginBottom: 18 }}>
+          계약번호 {contractNo} · 고용노동부 표준서식 기반 · 법률검토 : 법무법인 수성 김익환 변호사
+        </div>
+
+        <p style={{ fontSize: 12, lineHeight: 2.1, marginBottom: 14 }}>
+          <span style={u}>{contract.company_name || contract.employer_name || "        "}</span> (이하 “사업주”라 함)과(와){" "}
+          <span style={u}>{contract.worker_name || "        "}</span> (이하 “근로자”라 함)은 다음과 같이 근로계약을 체결한다.
+        </p>
+
+        <div style={line}><span style={num}>1. 근로개시일</span> : {formatKoreanDate(contract.contract_start)}부터 {formatKoreanDate(contract.contract_end)}까지</div>
+        <div style={line}><span style={num}>2. 근 무 장 소</span> : {contract.business_address || "—"}{contract.address_detail ? ` ${contract.address_detail}` : ""}{contract.company_name ? ` (${contract.company_name})` : ""}</div>
+        <div style={line}><span style={num}>3. 업무의 내용</span> : {contract.job_description || "—"}</div>
+
+        <div style={{ ...line, marginBottom: 6 }}><span style={num}>4. 근로일 및 근로일별 근로시간</span></div>
+        <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 4 }}>
+          <thead>
+            <tr>
+              <th style={{ ...th, width: 90 }}></th>
+              {workDays.map((d) => (
+                <th key={d} style={th}>( {d} )요일</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={th}>근로시간</td>
+              {workDays.map((d) => (<td key={d} style={td}>{dailyHours}시간</td>))}
+            </tr>
+            <tr>
+              <td style={th}>시 업</td>
+              {workDays.map((d) => (<td key={d} style={td}>{contract.work_start || "—"}</td>))}
+            </tr>
+            <tr>
+              <td style={th}>종 업</td>
+              {workDays.map((d) => (<td key={d} style={td}>{contract.work_end || "—"}</td>))}
+            </tr>
+            <tr>
+              <td style={th}>휴게 시간</td>
+              {workDays.map((d) => (<td key={d} style={td}>4시간당 30분</td>))}
+            </tr>
+          </tbody>
+        </table>
+        <div style={{ ...line, marginLeft: 6, marginBottom: 10 }}>ㅇ 주휴일 : 매주 일요일 {weeklyHours >= 15 ? "(유급 · 주 15시간 이상)" : "(주 15시간 미만 — 미발생)"}</div>
+
+        <div style={{ ...line, marginBottom: 2 }}><span style={num}>5. 임 금</span></div>
+        <div style={{ marginLeft: 14 }}>
+          <div style={line}>
+            - {payLabel} : <strong>{Number(contract.pay_amount || 0).toLocaleString()}원</strong>
+            {contract.pay_type === "시급" && contract.pay_amount >= MIN_WAGE && (
+              <span style={{ fontSize: 10.5, color: "#00A86B" }}> (✓ 2026년 최저시급 {MIN_WAGE.toLocaleString()}원 이상)</span>
+            )}
+          </div>
+          <div style={line}>- 상여금 : 없음 ( ○ )</div>
+          <div style={line}>
+            - 기타급여(제수당 등) : {weeklyHours >= 15 && contract.pay_type === "시급"
+              ? <>있음 ( ○ ) — 주휴수당 약 {Number(contract.monthly_holiday || 0).toLocaleString()}원/월</>
+              : "없음 ( ○ )"}
+          </div>
+          <div style={line}>- 초과근로에 대한 가산임금률 : 50%</div>
+          <div style={noteStyle}>
+            ※ 단시간근로자와 사용자 사이에 근로하기로 정한 시간을 초과하여 근로하면 법정 근로시간 내라도 통상임금의 100분의 50% 이상의 가산임금 지급(’14.9.19. 시행)
+          </div>
+          <div style={line}>- 임금지급일 : 매월 말일 (휴일의 경우는 전일 지급)</div>
+          <div style={line}>- 지급방법 : 근로자 명의 예금통장에 입금 ( ○ )</div>
+          {contract.pay_type === "시급" && (
+            <div style={noteStyle}>
+              ※ 예상 월 급여(참고) : 기본급 약 {Number(contract.monthly_basic || 0).toLocaleString()}원 + 주휴수당 약 {Number(contract.monthly_holiday || 0).toLocaleString()}원 = 약 {Number(contract.monthly_total || 0).toLocaleString()}원 (4.345주 기준 추정, 실제 지급액은 근무일수에 따라 달라질 수 있음)
+            </div>
+          )}
+        </div>
+
+        <div style={line}><span style={num}>6. 연차유급휴가</span> : 통상근로자의 근로시간에 비례하여 연차유급휴가 부여</div>
+
+        <div style={{ ...line, marginBottom: 2 }}><span style={num}>7. 사회보험 적용여부</span> (해당란에 체크)</div>
+        <div style={{ ...line, marginLeft: 14, letterSpacing: 0.5 }}>
+          {employmentIns ? "☑" : "☐"} 고용보험 &nbsp;&nbsp; ☑ 산재보험 &nbsp;&nbsp; {insured ? "☑" : "☐"} 국민연금 &nbsp;&nbsp; {insured ? "☑" : "☐"} 건강보험
+        </div>
+
+        <div style={line}><span style={num}>8. 근로계약서 교부</span></div>
+        <div style={{ ...line, marginLeft: 14 }}>
+          - “사업주”는 근로계약을 체결함과 동시에 본 계약서를 사본하여 “근로자”의 교부요구와 관계없이 “근로자”에게 교부함 (근로기준법 제17조 이행 — 전자문서 교부 포함)
+        </div>
+
+        <div style={line}><span style={num}>9. 근로계약, 취업규칙 등의 성실한 이행의무</span></div>
+        <div style={{ ...line, marginLeft: 14 }}>
+          - 사업주와 근로자는 각자가 근로계약, 취업규칙, 단체협약을 지키고 성실하게 이행하여야 함
+        </div>
+
+        <div style={line}><span style={num}>10. 기 타</span></div>
+        <div style={{ ...line, marginLeft: 14 }}>- 이 계약에 정함이 없는 사항은 근로기준법령에 의함</div>
+
+        <div style={{ textAlign: "center", fontSize: 13, fontWeight: 700, margin: "24px 0 18px" }}>
+          {cy}년 {Number(cm)}월 {Number(cd)}일
+        </div>
+
+        {/* 서명란 */}
+        <div style={{ fontSize: 12, lineHeight: 2.3, marginBottom: 6 }}>
+          <div>
+            <strong>(사업주)</strong> 사업체명 : {contract.company_name || "—"} &nbsp;(전화 : {contract.employer_phone || "—"})
+          </div>
+          <div style={{ marginLeft: 52 }}>주&nbsp;&nbsp;&nbsp;&nbsp;소 : {contract.business_address || "—"}</div>
+          <div style={{ marginLeft: 52 }}>
+            대 표 자 : {contract.employer_name || "—"} &nbsp;
+            <SignImg png={contract.employer_signature} signed={contract.employer_signed} date={contract.employer_sign_date} />
+          </div>
+        </div>
+        <div style={{ fontSize: 12, lineHeight: 2.3 }}>
+          <div>
+            <strong>(근로자)</strong> 주&nbsp;&nbsp;&nbsp;&nbsp;소 : {contract.worker_address || ""}
+          </div>
+          <div style={{ marginLeft: 52 }}>연 락 처 : {contract.worker_phone || "—"}</div>
+          <div style={{ marginLeft: 52 }}>
+            성&nbsp;&nbsp;&nbsp;&nbsp;명 : {contract.worker_name || "—"} &nbsp;
+            <SignImg png={contract.worker_signature} signed={contract.worker_signed} date={contract.worker_sign_date} />
+          </div>
+        </div>
+
+        {/* K-ALBA 푸터 */}
+        <div style={{ marginTop: 22, paddingTop: 12, borderTop: "1px dashed #AAA", textAlign: "center", fontSize: 10, color: "#777", lineHeight: 1.7 }}>
+          본 근로계약서는 고용노동부 표준근로계약서(단시간근로자) 서식에 따라 <strong>K-ALBA</strong>에서 자동 생성되었으며, 전자서명은 서면 서명과 동일한 법적 효력을 가집니다.<br />
+          미림미디어랩 주식회사 | k-alba.kr
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── (구 양식 — 보관용, 미사용) ───
+function LegacyContractPreview({ contract }) {
   const contractNo = contract.id
     ? `ALBA-${new Date(contract.created_at || Date.now()).getFullYear()}-${String(contract.id).padStart(6, "0").slice(-6)}`
     : "ALBA-2026-000001";
