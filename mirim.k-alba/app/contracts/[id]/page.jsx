@@ -105,6 +105,18 @@ export default function ContractDetailPage() {
       initWorkerChat();
     } else if (isEmployer && contract.worker_signed && !contract.employer_signed) {
       initEmployerChat();
+    } else if (isEmployer && !contract.worker_signed) {
+      // 사장님이 작성 완료 → 근로자 서명 대기 중
+      setMessages([
+        { from: "bot", text: `📝 계약서가 준비되었습니다!\n\n${contract.worker_name || "근로자"}님의 서명을 기다리고 있어요. ⏳` },
+        { from: "bot", text: "💬 상단의 공유 버튼을 눌러 카카오톡으로\n근로자에게 계약서 링크를 보내\n서명을 요청해 보세요!" },
+      ]);
+    } else if (isWorker && contract.worker_signed && !contract.employer_signed) {
+      // 알바생 서명 완료 → 사장님 최종 서명 대기 중
+      setMessages([
+        { from: "bot", text: "✅ 서명이 완료되었어요!\n\n이제 사장님의 최종 서명을 기다리고 있습니다. ⏳" },
+        { from: "bot", text: "💬 상단의 공유 버튼으로 사장님께\n카카오톡 알림을 보낼 수도 있어요.\n\n사장님 서명이 끝나면 PDF를 다운로드할 수 있습니다." },
+      ]);
     } else if (contract.worker_signed && contract.employer_signed) {
       setMessages([
         { from: "bot", text: "🎉 계약이 완료되었습니다!" },
