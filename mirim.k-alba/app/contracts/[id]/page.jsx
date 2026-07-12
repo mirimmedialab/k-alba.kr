@@ -66,6 +66,11 @@ export default function ContractDetailPage() {
   const [editStep, setEditStep] = useState(0); // 1:급여 2:요일 3:시간 4:기간 5:확인
   const [editData, setEditData] = useState(null);
   const [chatInput, setChatInput] = useState("");
+  // 챗봇 흐름: 조건 확인 → 계약서 보기 → 서명
+  const [termsConfirmed, setTermsConfirmed] = useState(false);
+  // 유학생 시간제취업 확인서 정보 수집 Q&A
+  const [confAsk, setConfAsk] = useState(null); // { queue: [...], idx, data: {} }
+  const [downloadingConf, setDownloadingConf] = useState(false);
   const scrollRef = useRef(null);
 
   // ─── 계약서 데이터 로드 ───
@@ -125,8 +130,21 @@ export default function ContractDetailPage() {
     } else if (contract.worker_signed && contract.employer_signed) {
       setMessages([
         { from: "bot", text: "🎉 계약이 완료되었습니다!" },
-        { from: "bot", text: "📄 양측에 PDF가 발송되었어요.\n✅ K-ALBA 근무 기록 자동 저장 완료!" },
+        { from: "bot", text: "📄 아래 버튼으로 근로계약서 PDF를 다운로드하세요.\n✅ K-ALBA 근무 기록 자동 저장 완료!" },
       ]);
+      // 유학생이면 시간제취업 확인서 자동 생성 흐름
+      const si = getStudentInfo(contract);
+      if (si.isStudent) {
+        if (isWorker && si.missingWorker.length > 0) {
+          setTimeout(() => startConfAsk(si.missingWorker), 900);
+        } else if (isEmployer && si.missingEmployer.length > 0) {
+          setTimeout(() => startConfAsk(si.missingEmployer), 900);
+        } else if (si.missingWorker.length === 0 && si.missingEmployer.length === 0) {
+          setTimeout(() => addBot("🎓 외국인 유학생 시간제취업 확인서도 준비되었습니다!\n아래 버튼으로 다운로드하세요.\n\n(유학생담당자 확인란은 학교 국제처에서\n서명을 받으시면 됩니다)"), 900);
+        } else {
+          setTimeout(() => addBot("🎓 유학생 시간제취업 확인서에 필요한 정보를\n상대방이 입력하는 중이에요.\n입력이 끝나면 확인서를 다운로드할 수 있습니다."), 900);
+        }
+      }
     }
   }, [contract, user]);
 
@@ -395,6 +413,80 @@ export default function ContractDetailPage() {
     addBot("✅ 계약 조건이 변경되었습니다!\n📄 '계약서' 탭에서 변경된 내용을 확인하세요.\n\n변경된 조건으로 서명을 진행하면 됩니다.");
   };
 
+  // ─── 조건 확인 → 계약서 보기 → 서명 흐름 ───
+  const confirmTerms = () => {
+    setTermsConfirmed(true);
+    addUser("👍 이 조건으로 진행할게요");
+    addBot("좋아요! 서명 전에 '📄 계약서 보기'를 눌러\n계약서 전문을 꼭 확인해 주세요.\n\n확인하셨으면 ✍️ 서명하기를 눌러주세요.");
+  };
+
+  // ─── 유학생 시간제취업 확인서 (출입국·외국인청 서식) ───
+  const CONF_PROMPTS = {
+    alien_reg_no: "외국인등록번호를 입력해주세요.\n(예: 123456-1234567)",
+    university: "재학 중인 대학교 이름을 알려주세요.\n(예: OO대학교)",
+    department: "학과(전공)를 알려주세요.\n(예: 컴퓨터공학과)",
+    semester: "이수 학기를 숫자로 알려주세요.\n(예: 3)",
+    industry: "사업장의 업종을 알려주세요.\n(예: 편의점, 음식점, 카페 등)",
+  };
+
+  const getStudentInfo = (c) => {
+    const wp = c?.worker || {};
+    const visa = wp.visa || "";
+    const isStudent = visa.includes("D-2") || visa.includes("D-4") || visa.includes("D2") || visa.includes("D4");
+    const sf = c?.student_form || {};
+    const missingWorker = [];
+    if (!(sf.alien_reg_no || wp.alien_reg_number)) missingWorker.push("alien_reg_no");
+    if (!(sf.university || wp.organization)) missingWorker.push("university");
+    if (!sf.department) missingWorker.push("department");
+    if (!sf.semester) missingWorker.push("semester");
+    const missingEmployer = sf.industry ? [] : ["industry"];
+    return { isStudent, sf, missingWorker, missingEmployer, workerProfile: wp };
+  };
+
+  const startConfAsk = (queue) => {
+    setConfAsk({ queue, idx: 0, data: {} });
+    addBot(`🎓 ${contract.worker_name}님은 외국인 유학생이라\n'시간제취업 확인서'도 자동으로 만들어 드려요!\n\n확인서 작성에 필요한 정보를 몇 가지 여쭤볼게요.`);
+    setTimeout(() => addBot(CONF_PROMPTS[queue[0]]), 1800);
+  };
+
+  const submitConfInput = async () => {
+    const v = chatInput.trim();
+    if (!v || !confAsk) return;
+    setChatInput("");
+    addUser(v);
+    const key = confAsk.queue[confAsk.idx];
+    const data = { ...confAsk.data, [key]: v };
+    if (confAsk.idx + 1 < confAsk.queue.length) {
+      setConfAsk({ ...confAsk, idx: confAsk.idx + 1, data });
+      addBot(CONF_PROMPTS[confAsk.queue[confAsk.idx + 1]]);
+    } else {
+      setConfAsk(null);
+      const merged = { ...(contract.student_form || {}), ...data };
+      const { error } = await updateContract(contract.id, { student_form: merged });
+      if (error) {
+        alert("정보 저장 중 오류가 발생했습니다: " + error.message);
+        return;
+      }
+      const fresh = await getContract(contract.id);
+      if (fresh) setContract(fresh);
+    }
+  };
+
+  const handleDownloadConfirmation = async () => {
+    if (downloadingConf) return;
+    setDownloadingConf(true);
+    try {
+      await generateContractPDF(
+        "student-confirmation-for-pdf",
+        `K-ALBA_시간제취업확인서_${(contract.worker_name || "student").replace(/[\s\/\\]/g, "_")}.pdf`
+      );
+    } catch (e) {
+      alert("확인서 생성 중 오류가 발생했습니다: " + e.message);
+    } finally {
+      setDownloadingConf(false);
+    }
+  };
+
   // ─── 서명 처리 ───
   const handleSign = (role) => {
     if (signing) return;
@@ -562,6 +654,9 @@ export default function ContractDetailPage() {
   const canEdit = !contract.worker_signed && !contract.employer_signed
     && !["rejected", "completed"].includes(contract.status)
     && (isEmployer || (contract.created_by === "worker" && contract.status === "pending_approval"));
+  // 유학생 시간제취업 확인서 상태
+  const studentInfo = getStudentInfo(contract);
+  const confReady = studentInfo.isStudent && studentInfo.missingWorker.length === 0 && studentInfo.missingEmployer.length === 0;
   const canWorkerSign = isWorker && !contract.worker_signed && !signBlocked;
   const canEmployerSign = isEmployer && contract.worker_signed && !contract.employer_signed && !signBlocked;
   const needsApproval = isEmployer && contract.status === "pending_approval";
@@ -818,25 +913,64 @@ export default function ContractDetailPage() {
               </div>
             )}
 
-            {/* 서명 버튼 영역 — 페르소나 분기 */}
+            {/* 유학생 확인서 정보 수집 입력 영역 */}
+            {confAsk && !editing && (
+              <div style={{ padding: 12, background: "#fff", borderTop: `1px solid ${T.border}`, display: "flex", gap: 8 }}>
+                <input
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") submitConfInput(); }}
+                  placeholder="답변을 입력하세요"
+                  style={{ flex: 1, padding: "10px 14px", borderRadius: 10, border: `2px solid ${T.border}`, fontSize: 14, fontFamily: "inherit", outline: "none", minWidth: 0 }}
+                />
+                <Button variant="primary" size="md" onClick={submitConfInput}>전송</Button>
+              </div>
+            )}
+
+            {/* 서명 버튼 영역 — 1)조건 확인 → 2)계약서 보기 → 3)서명 */}
             {(canWorkerSign || canEmployerSign) && !typing && !editing && (
               <div style={{ padding: 14, background: "#fff", borderTop: `1px solid ${T.border}` }}>
-                <Button
-                  variant={canEmployerSign ? "primaryDark" : "primary"}
-                  size="lg"
-                  fullWidth
-                  onClick={() => handleSign(canWorkerSign ? "worker" : "employer")}
-                  disabled={signing}
-                >
-                  {signing ? (
-                    <ButtonLoading text={t("contract.signing")} />
-                  ) : (
-                    canWorkerSign ? t("contract.signWorker") : t("contract.signEmployer")
-                  )}
-                </Button>
-                <p style={{ textAlign: "center", fontSize: 10, color: T.ink3, marginTop: 8 }}>
-                  {t("contract.signHint")}
-                </p>
+                {canWorkerSign && !termsConfirmed ? (
+                  <>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <Button variant="primary" size="lg" fullWidth onClick={confirmTerms}>
+                        👍 이 조건으로 진행
+                      </Button>
+                      {canEdit && (
+                        <Button variant="secondary" size="lg" onClick={startEdit} style={{ flexShrink: 0 }}>
+                          ✏️ 수정
+                        </Button>
+                      )}
+                    </div>
+                    <p style={{ textAlign: "center", fontSize: 10, color: T.ink3, marginTop: 8 }}>
+                      계약 조건을 확인한 뒤 진행해주세요
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <Button variant="secondary" size="lg" onClick={() => setTab("preview")} style={{ flexShrink: 0 }}>
+                        📄 계약서 보기
+                      </Button>
+                      <Button
+                        variant={canEmployerSign ? "primaryDark" : "primary"}
+                        size="lg"
+                        fullWidth
+                        onClick={() => handleSign(canWorkerSign ? "worker" : "employer")}
+                        disabled={signing}
+                      >
+                        {signing ? (
+                          <ButtonLoading text={t("contract.signing")} />
+                        ) : (
+                          canWorkerSign ? t("contract.signWorker") : t("contract.signEmployer")
+                        )}
+                      </Button>
+                    </div>
+                    <p style={{ textAlign: "center", fontSize: 10, color: T.ink3, marginTop: 8 }}>
+                      {t("contract.signHint")}
+                    </p>
+                  </>
+                )}
               </div>
             )}
 
@@ -846,15 +980,20 @@ export default function ContractDetailPage() {
                 <div style={{ fontWeight: 800, color: "#059669", fontSize: 14 }}>{t("contract.complete")}</div>
                 <div style={{ fontSize: 11, color: T.ink3, marginTop: 4 }}>{t("contract.completeDesc")}</div>
 
-                {contract.pdf_url && (
-                  <Button
-                    variant="landingDark"
-                    size="md"
-                    href={contract.pdf_url}
-                    style={{ marginTop: 14 }}
-                  >
-                    📄 서명 완료 PDF 다운로드
+                <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginTop: 14 }}>
+                  <Button variant="landingDark" size="md" onClick={handleDownloadPdf} disabled={downloadingPdf}>
+                    {downloadingPdf ? "생성 중..." : "📄 근로계약서 PDF"}
                   </Button>
+                  {studentInfo.isStudent && confReady && (
+                    <Button variant="primary" size="md" onClick={handleDownloadConfirmation} disabled={downloadingConf}>
+                      {downloadingConf ? "생성 중..." : "🎓 시간제취업 확인서 PDF"}
+                    </Button>
+                  )}
+                </div>
+                {studentInfo.isStudent && !confReady && (
+                  <p style={{ fontSize: 10.5, color: T.ink3, marginTop: 8 }}>
+                    🎓 시간제취업 확인서는 정보 입력이 끝나면 다운로드할 수 있어요
+                  </p>
                 )}
               </div>
             )}
@@ -864,6 +1003,11 @@ export default function ContractDetailPage() {
         {tab === "form" && <ContractForm contract={contract} />}
         {tab === "preview" && <ContractPreview contract={contract} />}
       </div>
+
+      {/* 유학생 시간제취업 확인서 (숨김 — PDF 생성용) */}
+      {contract.worker_signed && contract.employer_signed && studentInfo.isStudent && (
+        <StudentConfirmationForm contract={contract} info={studentInfo} />
+      )}
 
       {/* 서명 모달 */}
       {signatureModalOpen && (
@@ -1027,6 +1171,179 @@ function ContractForm({ contract }) {
 }
 
 // ─── 계약서 미리보기 탭 (인쇄 양식 — 컬러 변경 금지) ───
+// ─── 외국인 유학생 시간제 취업 확인서 (출입국·외국인청 서식) — PDF 생성용 숨김 렌더 ───
+function StudentConfirmationForm({ contract, info }) {
+  const sf = info.sf || {};
+  const wp = info.workerProfile || {};
+  const days = contract.work_days || [];
+  let dailyH = 0;
+  if (contract.work_start && contract.work_end) {
+    const [sh, sm] = contract.work_start.split(":").map(Number);
+    const [eh, em] = contract.work_end.split(":").map(Number);
+    dailyH = eh + em / 60 - (sh + sm / 60);
+    if (dailyH <= 0) dailyH += 24;
+  }
+  const fmtH = (h) => (Math.round(h * 10) / 10).toString().replace(/\.0$/, "");
+  const WEEKDAYS = ["월", "화", "수", "목", "금"];
+  const WEEKEND = ["토", "일"];
+  const weekdayTotal = days.filter((d) => WEEKDAYS.includes(d)).length * dailyH;
+  const weekendTotal = days.filter((d) => WEEKEND.includes(d)).length * dailyH;
+  const timeRange = contract.work_start && contract.work_end ? `${contract.work_start}~${contract.work_end}` : "";
+
+  const th = { border: "1px solid #111", background: "#F2F0EC", padding: "7px 8px", fontSize: 11, fontWeight: 700, textAlign: "center", verticalAlign: "middle" };
+  const td = { border: "1px solid #111", padding: "7px 10px", fontSize: 11, verticalAlign: "middle" };
+  const tdC = { ...td, textAlign: "center" };
+
+  return (
+    <div
+      id="student-confirmation-for-pdf"
+      style={{ display: "none", background: "#fff", padding: "42px 40px", width: 700, fontFamily: "'Noto Sans KR', sans-serif", color: "#111" }}
+    >
+      <h1 style={{ textAlign: "center", fontSize: 20, fontWeight: 900, letterSpacing: 3, border: "2px solid #111", padding: "12px 0", marginBottom: 0 }}>
+        외국인 유학생 시간제 취업 확인서
+      </h1>
+      <div style={{ textAlign: "center", fontSize: 9.5, color: "#777", padding: "4px 0 10px" }}>
+        Part-time Work of Foreign Student Confirmation Form
+      </div>
+
+      {/* 대상자 */}
+      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 0 }}>
+        <tbody>
+          <tr>
+            <td style={{ ...th, width: 60 }} rowSpan={3}>대상자</td>
+            <td style={{ ...th, width: 90 }}>성 명</td>
+            <td style={td}>{contract.worker_name || ""}</td>
+            <td style={{ ...th, width: 90 }}>외국인<br />등록번호</td>
+            <td style={{ ...td, width: 150 }}>{sf.alien_reg_no || wp.alien_reg_number || ""}</td>
+          </tr>
+          <tr>
+            <td style={th}>학과(전공)</td>
+            <td style={td}>{sf.department || ""}</td>
+            <td style={th}>이수학기</td>
+            <td style={td}>{sf.semester ? `${String(sf.semester).replace(/[^0-9]/g, "")}학기` : ""}</td>
+          </tr>
+          <tr>
+            <td style={th}>전화번호</td>
+            <td style={td}>{contract.worker_phone || wp.phone || ""}</td>
+            <td style={th}>e-mail</td>
+            <td style={td}>{wp.email || ""}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* 취업 예정 근무처 */}
+      <table style={{ width: "100%", borderCollapse: "collapse", borderTop: "none" }}>
+        <tbody>
+          <tr>
+            <td style={{ ...th, width: 60 }} rowSpan={6}>취업<br />예정<br />근무처</td>
+            <td style={{ ...th, width: 90 }}>업 체 명</td>
+            <td style={td} colSpan={3}>{contract.company_name || ""}</td>
+          </tr>
+          <tr>
+            <td style={th}>사업자<br />등록번호</td>
+            <td style={td}>{contract.business_number || ""}</td>
+            <td style={{ ...th, width: 70 }}>업종</td>
+            <td style={{ ...td, width: 150 }}>{sf.industry || ""}</td>
+          </tr>
+          <tr>
+            <td style={th}>주 소</td>
+            <td style={td} colSpan={3}>{contract.business_address || ""}{contract.address_detail ? ` ${contract.address_detail}` : ""}</td>
+          </tr>
+          <tr>
+            <td style={th}>고 용 주</td>
+            <td style={td}>
+              {contract.employer_name || ""}&nbsp;&nbsp;
+              {contract.employer_signature ? (
+                <img src={contract.employer_signature} alt="서명" style={{ height: 26, verticalAlign: "middle" }} />
+              ) : (
+                <span style={{ color: "#999", fontSize: 10 }}>(인 또는 서명)</span>
+              )}
+            </td>
+            <td style={th}>전화<br />번호</td>
+            <td style={td}>{contract.employer_phone || ""}</td>
+          </tr>
+          <tr>
+            <td style={th}>취업기간</td>
+            <td style={td}>{contract.contract_start || ""} ~ {contract.contract_end || ""}</td>
+            <td style={th}>급여<br />(시급)</td>
+            <td style={td}>{Number(contract.pay_amount || 0).toLocaleString()}원</td>
+          </tr>
+          <tr>
+            <td style={th}>근무시간</td>
+            <td style={{ ...td, padding: 0 }} colSpan={3}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <tbody>
+                  <tr>
+                    <td style={{ ...tdC, border: "none", borderBottom: "1px solid #111", fontWeight: 700 }} colSpan={6}>
+                      평 일 : 총 {fmtH(weekdayTotal)}시간
+                    </td>
+                    <td style={{ ...tdC, border: "none", borderBottom: "1px solid #111", borderLeft: "1px solid #111", fontWeight: 700 }} colSpan={2}>
+                      주말 : 총 {fmtH(weekendTotal)}시간
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={{ ...th, borderTop: "none" }}>요일</td>
+                    {["월", "화", "수", "목", "금", "토", "일"].map((d) => (
+                      <td key={d} style={{ ...th, borderTop: "none" }}>{d}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td style={{ ...th }}>시간</td>
+                    {["월", "화", "수", "목", "금", "토", "일"].map((d) => (
+                      <td key={d} style={{ ...tdC, fontSize: 9.5 }}>{days.includes(d) ? timeRange : ""}</td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* 확인 문구 */}
+      <div style={{ border: "1px solid #111", borderTop: "none", padding: "14px 16px", fontSize: 11.5, lineHeight: 2 }}>
+        위 유학생은 본교에 재학하고 있는 학생으로서 현재의 학습 및 연구 상황으로 볼 때, 상기 예정된
+        시간제취업 활동을 통해서는 학업(또는 연구 활동)에 지장이 없을 것으로 판단되므로, 이에 확인합니다.
+        <div style={{ textAlign: "center", marginTop: 10, fontSize: 12 }}>20&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.</div>
+        <div style={{ fontSize: 9, color: "#555", lineHeight: 1.7, marginTop: 8 }}>
+          ※ 시간제취업허가 [한국어능력기준 제출자] 허용시간은 어학연수생은 주당 20시간, 학부과정은 주당 20시간 이내(인증대학은 25시간), 석박사과정은 주당 30시간 이내임.<br />
+          ▶ 한국어능력기준(토픽 기준) : 어학연수 2급, 전문학사 3급, 학사(1~2학년) 3급, 학사(3~4학년) 4급, 석박사 4급 이상 ◀<br />
+          ※ 시간제취업 허가 전 취업할 경우 [유학생과 고용주] 모두 처벌될 수 있습니다. (허가된 근무처에서만 취업 활동 가능)
+        </div>
+      </div>
+
+      <div style={{ border: "1px solid #111", borderTop: "none", padding: "16px 0", textAlign: "center", fontSize: 15, fontWeight: 700, letterSpacing: 2 }}>
+        ◌ ◌ 출입국·외국인청(사무소·출장소)장 귀하
+      </div>
+
+      {/* 유학생담당자 확인란 (학교 기재) */}
+      <table style={{ width: "100%", borderCollapse: "collapse", borderTop: "none" }}>
+        <tbody>
+          <tr>
+            <td style={{ ...th, width: 100 }} rowSpan={3}>유학생담당자<br />확인란</td>
+            <td style={{ ...th, width: 80 }}>소속</td>
+            <td style={{ ...td, width: 160 }}>{sf.university || wp.organization || ""}</td>
+            <td style={{ ...th, width: 60 }} rowSpan={3}>성명</td>
+            <td style={td} rowSpan={3}><span style={{ color: "#999", fontSize: 10 }}>(인 또는 서명)</span></td>
+          </tr>
+          <tr>
+            <td style={th}>인증대학<br />여부</td>
+            <td style={td}>해당 ☐&nbsp;&nbsp;비해당 ☐</td>
+          </tr>
+          <tr>
+            <td style={th}>직위<br />(연락처)</td>
+            <td style={td}></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style={{ textAlign: "center", fontSize: 9, color: "#999", marginTop: 10 }}>
+        본 확인서는 K-ALBA에서 자동 생성되었습니다. 유학생담당자 확인란은 소속 대학에서 기재·날인 후 제출하세요.
+      </div>
+    </div>
+  );
+}
+
 // ─── 계약서 미리보기: 고용노동부 「표준근로계약서(단시간근로자)」 서식 기반 ───
 function ContractPreview({ contract }) {
   const workDays = contract.work_days || [];
