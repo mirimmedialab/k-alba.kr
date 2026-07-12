@@ -428,8 +428,15 @@ export default function ContractDetailPage() {
   // ─── 조건 확인 → 계약서 보기 → 서명 흐름 ───
   const confirmTerms = () => {
     setTermsConfirmed(true);
-    addUser("👍 이 조건으로 진행할게요");
-    addBot("좋아요! 서명 전에 '📄 계약서 보기'를 눌러\n계약서 전문을 꼭 확인해 주세요.\n\n확인하셨으면 ✍️ 서명하기를 눌러주세요.");
+    addUser("👍 수정할 내용 없어요. 이 조건으로 진행할게요");
+    addBot("좋아요! 서명 전에 '📄 계약서 보기'를 눌러\n근로계약서 전문을 꼭 확인해 주세요.\n\n확인하셨으면 ✍️ 서명하기를 눌러주세요.");
+  };
+
+  // 계약서 전문 보기 (챗봇 대화로 안내)
+  const handleViewContract = () => {
+    addUser("📄 계약서 전문을 확인할게요");
+    addBot("근로계약서 전문을 열었어요!\n검토가 끝나면 '챗봇' 탭으로 돌아와\n✍️ 서명하기를 눌러주세요.");
+    setTimeout(() => setTab("preview"), 900);
   };
 
   // ─── 유학생 시간제취업 확인서 (출입국·외국인청 서식) ───
@@ -487,11 +494,13 @@ export default function ContractDetailPage() {
   const handleDownloadConfirmation = async () => {
     if (downloadingConf) return;
     setDownloadingConf(true);
+    addUser("🎓 시간제취업 확인서를 다운로드할게요");
     try {
       await generateContractPDF(
         "student-confirmation-for-pdf",
         `K-ALBA_시간제취업확인서_${(contract.worker_name || "student").replace(/[\s\/\\]/g, "_")}.pdf`
       );
+      addBot("✅ 시간제취업 확인서 PDF가 저장되었습니다!\n\n유학생담당자 확인란은 학교 국제처에서\n기재·날인 후 출입국·외국인청에 제출하세요.");
     } catch (e) {
       alert("확인서 생성 중 오류가 발생했습니다: " + e.message);
     } finally {
@@ -695,9 +704,11 @@ export default function ContractDetailPage() {
   const handleDownloadPdf = async () => {
     if (downloadingPdf) return;
     setDownloadingPdf(true);
+    addUser("📄 근로계약서를 다운로드할게요");
     try {
       const filename = buildContractFilename(contract);
       await generateContractPDF("contract-preview-for-pdf", filename);
+      addBot("✅ 근로계약서 PDF가 저장되었습니다!\n다운로드 폴더를 확인해 주세요.");
     } catch (e) {
       alert("PDF 생성 중 오류가 발생했습니다: " + e.message);
     } finally {
@@ -961,7 +972,7 @@ export default function ContractDetailPage() {
                 ) : (
                   <>
                     <div style={{ display: "flex", gap: 8 }}>
-                      <Button variant="secondary" size="lg" onClick={() => setTab("preview")} style={{ flexShrink: 0 }}>
+                      <Button variant="secondary" size="lg" onClick={handleViewContract} style={{ flexShrink: 0 }}>
                         📄 계약서 보기
                       </Button>
                       <Button
