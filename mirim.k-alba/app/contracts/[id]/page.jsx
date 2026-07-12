@@ -61,6 +61,11 @@ export default function ContractDetailPage() {
   const [pendingRole, setPendingRole] = useState(null);
   const [approving, setApproving] = useState(false);
   const [sharing, setSharing] = useState(false);
+  // 계약 조건 수정 (챗봇 대화형)
+  const [editing, setEditing] = useState(false);
+  const [editStep, setEditStep] = useState(0); // 1:급여 2:요일 3:시간 4:기간 5:확인
+  const [editData, setEditData] = useState(null);
+  const [chatInput, setChatInput] = useState("");
   const scrollRef = useRef(null);
 
   // ─── 계약서 데이터 로드 ───
@@ -253,6 +258,143 @@ export default function ContractDetailPage() {
     }
   };
 
+  // ─── 계약 조건 수정 (챗봇 대화형) — 서명 전에만 가능 ───
+  const DAY_ORDER = ["월", "화", "수", "목", "금", "토", "일"];
+
+  const startEdit = () => {
+    setEditing(true);
+    setEditStep(1);
+    setEditData({
+      pay_amount: contract.pay_amount,
+      work_days: [...(contract.work_days || [])],
+      work_start: contract.work_start,
+      work_end: contract.work_end,
+      contract_start: contract.contract_start,
+      contract_end: contract.contract_end,
+    });
+    addUser("✏️ 계약 조건을 수정할게요");
+    addBot(`좋아요! 조건을 하나씩 바꿔볼게요.\n\n1️⃣ ${contract.pay_type || "시급"}을 입력해주세요.\n현재: ${Number(contract.pay_amount || 0).toLocaleString()}원\n\n(숫자만 입력, 예: 12000)`);
+  };
+
+  const cancelEdit = () => {
+    setEditing(false);
+    setEditStep(0);
+    setEditData(null);
+    setChatInput("");
+    addBot("수정을 취소했어요. 기존 조건이 그대로 유지됩니다.");
+  };
+
+  const toggleEditDay = (d) => {
+    setEditData((p) => ({
+      ...p,
+      work_days: p.work_days.includes(d) ? p.work_days.filter((x) => x !== d) : [...p.work_days, d],
+    }));
+  };
+
+  const completeDays = () => {
+    const days = DAY_ORDER.filter((d) => editData?.work_days?.includes(d));
+    if (days.length === 0) {
+      addBot("근무 요일을 1개 이상 선택해주세요.");
+      return;
+    }
+    setEditData((p) => ({ ...p, work_days: days }));
+    setEditStep(3);
+    addUser(days.join("·"));
+    addBot(`✅ ${days.join("·")} (주 ${days.length}일)!\n\n3️⃣ 근무 시간을 입력해주세요.\n(예: 14:00~19:00)`);
+  };
+
+  const submitEditInput = () => {
+    const v = chatInput.trim();
+    if (!v) return;
+    setChatInput("");
+    addUser(v);
+
+    if (editStep === 1) {
+      const amount = parseInt(v.replace(/[^0-9]/g, ""), 10);
+      if (!amount) {
+        addBot("숫자로 입력해주세요. (예: 12000)");
+        return;
+      }
+      if ((contract.pay_type || "시급") === "시급" && amount < MIN_WAGE) {
+        addBot(`⚠️ 최저시급(${MIN_WAGE.toLocaleString()}원)보다 낮아요.\n${MIN_WAGE.toLocaleString()}원 이상으로 입력해주세요.`);
+        return;
+      }
+      setEditData((p) => ({ ...p, pay_amount: amount }));
+      setEditStep(2);
+      addBot(`✅ ${amount.toLocaleString()}원으로 변경!\n\n2️⃣ 근무 요일을 선택해주세요.\n아래 버튼으로 요일을 켜고 끈 뒤\n'요일 선택 완료'를 눌러주세요.`);
+    } else if (editStep === 3) {
+      const m = v.match(/(\d{1,2}):?(\d{0,2})\s*[~\-]\s*(\d{1,2}):?(\d{0,2})/);
+      if (!m) {
+        addBot("형식이 올바르지 않아요.\n예: 14:00~19:00");
+        return;
+      }
+      const ws = `${String(parseInt(m[1], 10)).padStart(2, "0")}:${m[2] || "00"}`;
+      const we = `${String(parseInt(m[3], 10)).padStart(2, "0")}:${m[4] || "00"}`;
+      setEditData((p) => ({ ...p, work_start: ws, work_end: we }));
+      setEditStep(4);
+      addBot(`✅ ${ws} ~ ${we}!\n\n4️⃣ 계약 기간을 입력해주세요.\n(예: 2026-08-01 ~ 2027-01-31)\n\n그대로 두려면 '그대로'라고 입력해주세요.`);
+    } else if (editStep === 4) {
+      if (v !== "그대로") {
+        const dm = v.match(/(\d{4}-\d{1,2}-\d{1,2})\s*[~\-]\s*(\d{4}-\d{1,2}-\d{1,2})/);
+        if (!dm) {
+          addBot("형식이 올바르지 않아요.\n예: 2026-08-01 ~ 2027-01-31\n(그대로 두려면 '그대로')");
+          return;
+        }
+        setEditData((p) => ({ ...p, contract_start: dm[1], contract_end: dm[2] }));
+      }
+      setEditStep(5);
+      addBot("5️⃣ 변경할 조건을 확인해주세요!\n아래 요약을 보고 '저장'을 누르면 계약서에 반영됩니다.");
+    }
+  };
+
+  const saveEdit = async () => {
+    if (!editData) return;
+    // 주간 근로시간 재계산
+    let dailyH = 0;
+    if (editData.work_start && editData.work_end) {
+      const [sh, sm] = editData.work_start.split(":").map(Number);
+      const [eh, em] = editData.work_end.split(":").map(Number);
+      dailyH = eh + em / 60 - (sh + sm / 60);
+      if (dailyH <= 0) dailyH += 24;
+    }
+    const weeklyHours = Math.round(dailyH * editData.work_days.length * 10) / 10;
+
+    // 급여 재계산 (시급일 때)
+    let monthly_basic = contract.monthly_basic;
+    let monthly_holiday = contract.monthly_holiday;
+    let monthly_total = contract.monthly_total;
+    if ((contract.pay_type || "시급") === "시급") {
+      monthly_basic = Math.round(editData.pay_amount * weeklyHours * 4.345);
+      monthly_holiday = weeklyHours >= 15 ? Math.round(editData.pay_amount * (weeklyHours / 5) * 4.345) : 0;
+      monthly_total = monthly_basic + monthly_holiday;
+    }
+
+    const { error } = await updateContract(contract.id, {
+      pay_amount: editData.pay_amount,
+      work_days: editData.work_days,
+      work_start: editData.work_start,
+      work_end: editData.work_end,
+      contract_start: editData.contract_start,
+      contract_end: editData.contract_end,
+      weekly_hours: weeklyHours,
+      monthly_basic,
+      monthly_holiday,
+      monthly_total,
+      insurance_required: weeklyHours >= 15,
+    });
+
+    setEditing(false);
+    setEditStep(0);
+
+    if (error) {
+      alert("조건 변경 중 오류가 발생했습니다: " + error.message);
+      return;
+    }
+    const fresh = await getContract(contract.id);
+    if (fresh) setContract(fresh);
+    addBot("✅ 계약 조건이 변경되었습니다!\n📄 '계약서' 탭에서 변경된 내용을 확인하세요.\n\n변경된 조건으로 서명을 진행하면 됩니다.");
+  };
+
   // ─── 서명 처리 ───
   const handleSign = (role) => {
     if (signing) return;
@@ -416,6 +558,10 @@ export default function ContractDetailPage() {
 
   // 승인 전(pending_approval)·거절(rejected) 상태에서는 서명 불가
   const signBlocked = ["pending_approval", "rejected"].includes(contract.status);
+  // 조건 수정: 양측 모두 서명 전 + 거절/완료 아님 (사장님은 항상, 알바생은 본인이 만든 승인 대기 건만)
+  const canEdit = !contract.worker_signed && !contract.employer_signed
+    && !["rejected", "completed"].includes(contract.status)
+    && (isEmployer || (contract.created_by === "worker" && contract.status === "pending_approval"));
   const canWorkerSign = isWorker && !contract.worker_signed && !signBlocked;
   const canEmployerSign = isEmployer && contract.worker_signed && !contract.employer_signed && !signBlocked;
   const needsApproval = isEmployer && contract.status === "pending_approval";
@@ -561,8 +707,77 @@ export default function ContractDetailPage() {
               <div ref={scrollRef} />
             </div>
 
+            {/* 계약 조건 수정 버튼 (서명 전) */}
+            {canEdit && !editing && !typing && (
+              <div style={{ padding: "8px 14px 0", background: "#fff", borderTop: `1px solid ${T.border}` }}>
+                <button
+                  onClick={startEdit}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `1.5px dashed ${T.borderStrong}`, background: "#fff", color: T.ink2, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+                >
+                  ✏️ 계약 조건 수정 (급여·요일·시간·기간)
+                </button>
+              </div>
+            )}
+
+            {/* 조건 수정 대화 입력 영역 */}
+            {editing && (
+              <div style={{ padding: 12, background: "#fff", borderTop: `1px solid ${T.border}` }}>
+                {editStep === 2 && (
+                  <div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+                      {DAY_ORDER.map((d) => {
+                        const on = editData?.work_days?.includes(d);
+                        return (
+                          <button
+                            key={d}
+                            onClick={() => toggleEditDay(d)}
+                            style={{ flex: 1, minWidth: 40, padding: "10px 0", borderRadius: 8, border: `2px solid ${on ? T.coral : T.border}`, background: on ? T.coralL : "#fff", color: on ? T.coral : T.ink3, fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}
+                          >
+                            {d}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <Button variant="primary" size="md" fullWidth onClick={completeDays}>
+                        요일 선택 완료 ({(editData?.work_days || []).length}일)
+                      </Button>
+                      <Button variant="secondary" size="md" onClick={cancelEdit}>취소</Button>
+                    </div>
+                  </div>
+                )}
+                {editStep === 5 && editData && (
+                  <div>
+                    <div style={{ background: T.cream, borderRadius: 10, padding: "10px 14px", fontSize: 12.5, lineHeight: 2, marginBottom: 8 }}>
+                      💰 {contract.pay_type || "시급"} <strong>{Number(editData.pay_amount).toLocaleString()}원</strong><br />
+                      📅 <strong>{editData.work_days.join("·")}</strong> (주 {editData.work_days.length}일)<br />
+                      ⏰ <strong>{editData.work_start} ~ {editData.work_end}</strong><br />
+                      🗓 <strong>{editData.contract_start} ~ {editData.contract_end}</strong>
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <Button variant="primary" size="md" fullWidth onClick={saveEdit}>💾 이 조건으로 저장</Button>
+                      <Button variant="secondary" size="md" onClick={cancelEdit}>취소</Button>
+                    </div>
+                  </div>
+                )}
+                {(editStep === 1 || editStep === 3 || editStep === 4) && (
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <input
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") submitEditInput(); }}
+                      placeholder={editStep === 1 ? "예: 12000" : editStep === 3 ? "예: 14:00~19:00" : "예: 2026-08-01 ~ 2027-01-31 (또는 '그대로')"}
+                      style={{ flex: 1, padding: "10px 14px", borderRadius: 10, border: `2px solid ${T.border}`, fontSize: 14, fontFamily: "inherit", outline: "none", minWidth: 0 }}
+                    />
+                    <Button variant="primary" size="md" onClick={submitEditInput}>전송</Button>
+                    <Button variant="ghost" size="md" onClick={cancelEdit}>✕</Button>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* 승인 버튼 영역 — 알바생 작성 계약서를 사장님이 검토 */}
-            {needsApproval && !typing && (
+            {needsApproval && !typing && !editing && (
               <div style={{ padding: 14, background: "#fff", borderTop: `1px solid ${T.border}`, display: "flex", gap: 10 }}>
                 <Button
                   variant="primaryDark"
@@ -586,7 +801,7 @@ export default function ContractDetailPage() {
             )}
 
             {/* 승인 대기 — 알바생이 사장님께 카카오톡으로 확인 요청 */}
-            {waitingApproval && !typing && (
+            {waitingApproval && !typing && !editing && (
               <div style={{ padding: 14, background: "#fff", borderTop: `1px solid ${T.border}` }}>
                 <Button
                   variant="primary"
@@ -604,7 +819,7 @@ export default function ContractDetailPage() {
             )}
 
             {/* 서명 버튼 영역 — 페르소나 분기 */}
-            {(canWorkerSign || canEmployerSign) && !typing && (
+            {(canWorkerSign || canEmployerSign) && !typing && !editing && (
               <div style={{ padding: 14, background: "#fff", borderTop: `1px solid ${T.border}` }}>
                 <Button
                   variant={canEmployerSign ? "primaryDark" : "primary"}
