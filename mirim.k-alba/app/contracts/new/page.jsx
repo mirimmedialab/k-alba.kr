@@ -14,6 +14,7 @@ import {
   getMyJobs,
   getMyApplications,
   getJobApplicants,
+  supabase,
 } from "@/lib/supabase";
 import { buildContractFromJob } from "@/lib/contractUtils";
 import { useT } from "@/lib/i18n";
@@ -132,6 +133,21 @@ function NewContractContent() {
     setLoading(false);
 
     if (!error && data) {
+      // 상대방에게 자동 이메일 알림 (실패해도 진행)
+      try {
+        const { data: s } = await supabase.auth.getSession();
+        fetch("/api/contract/notify", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${s?.session?.access_token || ""}`,
+          },
+          body: JSON.stringify({
+            contract_id: data.id,
+            event: isEmployer ? "sign_request" : "approval_request",
+          }),
+        }).catch(() => {});
+      } catch (e) { /* no-op */ }
       router.push(`/contracts/${data.id}`);
     } else {
       console.error("[contracts/new] create error:", error);
