@@ -119,17 +119,20 @@ export default function ContractDetailPage() {
       // 사장님이 작성 완료 → 근로자 서명 대기 중
       setMessages([
         { from: "bot", text: `📝 계약서가 준비되었습니다!\n\n${contract.worker_name || "근로자"}님의 서명을 기다리고 있어요. ⏳` },
+        { from: "bot", text: buildTermsText(contract) },
         { from: "bot", text: "💬 상단의 공유 버튼을 눌러 카카오톡으로\n근로자에게 계약서 링크를 보내\n서명을 요청해 보세요!" },
       ]);
     } else if (isWorker && contract.worker_signed && !contract.employer_signed) {
       // 알바생 서명 완료 → 사장님 최종 서명 대기 중
       setMessages([
         { from: "bot", text: "✅ 서명이 완료되었어요!\n\n이제 사장님의 최종 서명을 기다리고 있습니다. ⏳" },
+        { from: "bot", text: buildTermsText(contract) },
         { from: "bot", text: "💬 상단의 공유 버튼으로 사장님께\n카카오톡 알림을 보낼 수도 있어요.\n\n사장님 서명이 끝나면 PDF를 다운로드할 수 있습니다." },
       ]);
     } else if (contract.worker_signed && contract.employer_signed) {
       setMessages([
         { from: "bot", text: "🎉 계약이 완료되었습니다!" },
+        { from: "bot", text: buildTermsText(contract) },
         { from: "bot", text: "📄 아래 버튼으로 근로계약서 PDF를 다운로드하세요.\n✅ K-ALBA 근무 기록 자동 저장 완료!" },
       ]);
       // 유학생이면 시간제취업 확인서 자동 생성 흐름
@@ -165,6 +168,24 @@ export default function ContractDetailPage() {
     if (cb) setTimeout(cb, 300);
   };
 
+  // ─── 주요 근로계약 내용 요약 (챗봇 메시지용) ───
+  const buildTermsText = (c) => {
+    const lines = [
+      "📋 주요 근로계약 내용",
+      `🏪 업체: ${c.company_name || "—"} (${c.employer_name || "—"})`,
+      `👤 근로자: ${c.worker_name || "—"}`,
+      `💰 급여: ${c.pay_type || "시급"} ₩${Number(c.pay_amount || 0).toLocaleString()}`,
+    ];
+    if ((c.pay_type || "시급") === "시급" && c.monthly_total) {
+      lines.push(`   └ 예상 월급여 약 ₩${Number(c.monthly_total).toLocaleString()} (주휴수당 포함)`);
+    }
+    lines.push(`📅 근무: ${(c.work_days || []).join("·")} ${c.work_start || ""}~${c.work_end || ""}${c.weekly_hours ? ` (주 ${c.weekly_hours}시간)` : ""}`);
+    lines.push(`🗓 기간: ${c.contract_start || "—"} ~ ${c.contract_end || "—"}`);
+    if (c.job_description) lines.push(`💼 업무: ${String(c.job_description).substring(0, 40)}`);
+    if (c.business_address) lines.push(`📍 장소: ${c.business_address}`);
+    return lines.join("\n");
+  };
+
   const initWorkerChat = () => {
     setTyping(true);
     setTimeout(() => {
@@ -173,12 +194,7 @@ export default function ContractDetailPage() {
       ]);
       setTyping(false);
       setTimeout(() => {
-        addBot("📋 근무 조건을 확인해 주세요:\n" +
-          `✓ 업체: ${contract.company_name}\n` +
-          `✓ 급여: ${contract.pay_type} ₩${Number(contract.pay_amount).toLocaleString()}\n` +
-          `✓ 근무: ${(contract.work_days || []).join("·")} ${contract.work_start}~${contract.work_end}\n` +
-          `✓ 기간: ${contract.contract_start} ~ ${contract.contract_end}\n\n` +
-          "이 조건으로 계약하시겠어요?");
+        addBot(buildTermsText(contract) + "\n\n이 조건으로 계약하시겠어요?");
       }, 500);
     }, 400);
   };
@@ -191,7 +207,7 @@ export default function ContractDetailPage() {
       ]);
       setTyping(false);
       setTimeout(() => {
-        addBot("📄 계약서 탭에서 내용을 최종 확인 후\n아래 버튼으로 서명해 주세요.");
+        addBot(buildTermsText(contract) + "\n\n📄 '계약서 보기'로 최종 확인 후\n아래 버튼으로 서명해 주세요.");
       }, 500);
     }, 400);
   };
@@ -205,12 +221,7 @@ export default function ContractDetailPage() {
       ]);
       setTyping(false);
       setTimeout(() => {
-        addBot("📋 계약 조건:\n" +
-          `✓ 업체: ${contract.company_name}\n` +
-          `✓ 급여: ${contract.pay_type} ₩${Number(contract.pay_amount).toLocaleString()}\n` +
-          `✓ 근무: ${(contract.work_days || []).join("·")} ${contract.work_start}~${contract.work_end}\n` +
-          `✓ 기간: ${contract.contract_start} ~ ${contract.contract_end}\n\n` +
-          "승인하면 서명 단계로 진행됩니다.\n조건이 다르면 거절 후 사유를 남겨주세요.");
+        addBot(buildTermsText(contract) + "\n\n승인하면 서명 단계로 진행됩니다.\n조건이 다르면 거절 후 사유를 남겨주세요.");
       }, 500);
     }, 400);
   };
@@ -220,6 +231,7 @@ export default function ContractDetailPage() {
     setTimeout(() => {
       setMessages([
         { from: "bot", text: `${contract.worker_name}님이 작성한 계약서가\n사장님 승인을 기다리고 있어요. ⏳` },
+        { from: "bot", text: buildTermsText(contract) },
       ]);
       setTyping(false);
       setTimeout(() => {
