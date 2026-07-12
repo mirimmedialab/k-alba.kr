@@ -255,7 +255,19 @@ export default function ContractDetailPage() {
     }
     const fresh = await getContract(contract.id);
     if (fresh) setContract(fresh);
-    addBot("✅ 계약서를 승인했습니다!\n근로자에게 서명 요청이 전달됩니다.");
+    addBot("✅ 계약서를 승인했습니다!\n근로자에게 이메일로 서명 요청을 보냈어요.");
+    // 근로자에게 자동 이메일 알림 (실패해도 진행)
+    try {
+      const { data: s } = await supabase.auth.getSession();
+      fetch("/api/contract/notify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${s?.session?.access_token || ""}`,
+        },
+        body: JSON.stringify({ contract_id: contract.id, event: "approved" }),
+      }).catch(() => {});
+    } catch (e) { /* no-op */ }
   };
 
   const handleReject = async () => {
