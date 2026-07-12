@@ -293,7 +293,7 @@ export default function ContractDetailPage() {
 
   const startEdit = () => {
     setEditing(true);
-    setEditStep(1);
+    setEditStep(0);
     setEditData({
       pay_amount: contract.pay_amount,
       work_days: [...(contract.work_days || [])],
@@ -303,7 +303,7 @@ export default function ContractDetailPage() {
       contract_end: contract.contract_end,
     });
     addUser("✏️ 계약 조건을 수정할게요");
-    addBot(`좋아요! 조건을 하나씩 바꿔볼게요.\n\n1️⃣ ${contract.pay_type || "시급"}을 입력해주세요.\n현재: ${Number(contract.pay_amount || 0).toLocaleString()}원\n\n(숫자만 입력, 예: 12000)`);
+    addBot("어떤 계약 조건을 수정할까요?\n아래에서 번호를 선택해주세요.\n\n1️⃣ 급여\n2️⃣ 근무 요일\n3️⃣ 근무 시간\n4️⃣ 계약 기간\n\n수정이 끝나면 '✅ 수정 완료'를 눌러주세요.");
   };
 
   const cancelEdit = () => {
@@ -312,6 +312,45 @@ export default function ContractDetailPage() {
     setEditData(null);
     setChatInput("");
     addBot("수정을 취소했어요. 기존 조건이 그대로 유지됩니다.");
+  };
+
+  // 수정 항목 번호 선택 메뉴
+  const EDIT_MENU = [
+    { n: 1, label: "1️⃣ 급여" },
+    { n: 2, label: "2️⃣ 근무 요일" },
+    { n: 3, label: "3️⃣ 근무 시간" },
+    { n: 4, label: "4️⃣ 계약 기간" },
+  ];
+
+  const pickEditField = (n) => {
+    if (n === 1) {
+      addUser("1️⃣ 급여를 수정할게요");
+      setEditStep(1);
+      addBot(`${contract.pay_type || "시급"}을 입력해주세요.\n현재: ${Number(editData?.pay_amount ?? contract.pay_amount ?? 0).toLocaleString()}원\n\n(숫자만 입력, 예: 12000)`);
+    } else if (n === 2) {
+      addUser("2️⃣ 근무 요일을 수정할게요");
+      setEditStep(2);
+      addBot(`근무 요일을 선택해주세요.\n현재: ${(editData?.work_days || []).join("·")}\n\n아래 버튼으로 요일을 켜고 끈 뒤\n'요일 선택 완료'를 눌러주세요.`);
+    } else if (n === 3) {
+      addUser("3️⃣ 근무 시간을 수정할게요");
+      setEditStep(3);
+      addBot(`근무 시간을 입력해주세요.\n현재: ${editData?.work_start || "—"} ~ ${editData?.work_end || "—"}\n\n(예: 14:00~19:00)`);
+    } else if (n === 4) {
+      addUser("4️⃣ 계약 기간을 수정할게요");
+      setEditStep(4);
+      addBot(`계약 기간을 입력해주세요.\n현재: ${editData?.contract_start || "—"} ~ ${editData?.contract_end || "—"}\n\n(예: 2026-08-01 ~ 2027-01-31)`);
+    }
+  };
+
+  const backToEditMenu = (doneMsg) => {
+    setEditStep(0);
+    addBot(`${doneMsg}\n\n다른 항목도 수정할까요?\n1️⃣ 급여  2️⃣ 근무 요일  3️⃣ 근무 시간  4️⃣ 계약 기간\n\n끝났으면 '✅ 수정 완료'를 눌러주세요.`);
+  };
+
+  const finishEdit = () => {
+    addUser("✅ 수정 완료");
+    setEditStep(5);
+    addBot("변경할 조건을 확인해주세요!\n아래 요약을 보고 '저장'을 누르면 계약서에 반영됩니다.");
   };
 
   const toggleEditDay = (d) => {
@@ -328,9 +367,8 @@ export default function ContractDetailPage() {
       return;
     }
     setEditData((p) => ({ ...p, work_days: days }));
-    setEditStep(3);
     addUser(days.join("·"));
-    addBot(`✅ ${days.join("·")} (주 ${days.length}일)!\n\n3️⃣ 근무 시간을 입력해주세요.\n(예: 14:00~19:00)`);
+    backToEditMenu(`✅ 근무 요일을 ${days.join("·")} (주 ${days.length}일)로 변경했어요!`);
   };
 
   const submitEditInput = () => {
@@ -350,8 +388,7 @@ export default function ContractDetailPage() {
         return;
       }
       setEditData((p) => ({ ...p, pay_amount: amount }));
-      setEditStep(2);
-      addBot(`✅ ${amount.toLocaleString()}원으로 변경!\n\n2️⃣ 근무 요일을 선택해주세요.\n아래 버튼으로 요일을 켜고 끈 뒤\n'요일 선택 완료'를 눌러주세요.`);
+      backToEditMenu(`✅ 급여를 ${amount.toLocaleString()}원으로 변경했어요!`);
     } else if (editStep === 3) {
       const m = v.match(/(\d{1,2}):?(\d{0,2})\s*[~\-]\s*(\d{1,2}):?(\d{0,2})/);
       if (!m) {
@@ -361,19 +398,15 @@ export default function ContractDetailPage() {
       const ws = `${String(parseInt(m[1], 10)).padStart(2, "0")}:${m[2] || "00"}`;
       const we = `${String(parseInt(m[3], 10)).padStart(2, "0")}:${m[4] || "00"}`;
       setEditData((p) => ({ ...p, work_start: ws, work_end: we }));
-      setEditStep(4);
-      addBot(`✅ ${ws} ~ ${we}!\n\n4️⃣ 계약 기간을 입력해주세요.\n(예: 2026-08-01 ~ 2027-01-31)\n\n그대로 두려면 '그대로'라고 입력해주세요.`);
+      backToEditMenu(`✅ 근무 시간을 ${ws} ~ ${we}로 변경했어요!`);
     } else if (editStep === 4) {
-      if (v !== "그대로") {
-        const dm = v.match(/(\d{4}-\d{1,2}-\d{1,2})\s*[~\-]\s*(\d{4}-\d{1,2}-\d{1,2})/);
-        if (!dm) {
-          addBot("형식이 올바르지 않아요.\n예: 2026-08-01 ~ 2027-01-31\n(그대로 두려면 '그대로')");
-          return;
-        }
-        setEditData((p) => ({ ...p, contract_start: dm[1], contract_end: dm[2] }));
+      const dm = v.match(/(\d{4}-\d{1,2}-\d{1,2})\s*[~\-]\s*(\d{4}-\d{1,2}-\d{1,2})/);
+      if (!dm) {
+        addBot("형식이 올바르지 않아요.\n예: 2026-08-01 ~ 2027-01-31");
+        return;
       }
-      setEditStep(5);
-      addBot("5️⃣ 변경할 조건을 확인해주세요!\n아래 요약을 보고 '저장'을 누르면 계약서에 반영됩니다.");
+      setEditData((p) => ({ ...p, contract_start: dm[1], contract_end: dm[2] }));
+      backToEditMenu(`✅ 계약 기간을 ${dm[1]} ~ ${dm[2]}로 변경했어요!`);
     }
   };
 
@@ -876,6 +909,25 @@ export default function ContractDetailPage() {
             {/* 조건 수정 대화 입력 영역 */}
             {editing && (
               <div style={{ padding: 12, background: "#fff", borderTop: `1px solid ${T.border}` }}>
+                {editStep === 0 && (
+                  <div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+                      {EDIT_MENU.map((m) => (
+                        <button
+                          key={m.n}
+                          onClick={() => pickEditField(m.n)}
+                          style={{ flex: "1 1 45%", padding: "11px 8px", borderRadius: 8, border: `2px solid ${T.border}`, background: "#fff", color: T.navy, fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+                        >
+                          {m.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <Button variant="primary" size="md" fullWidth onClick={finishEdit}>✅ 수정 완료</Button>
+                      <Button variant="secondary" size="md" onClick={cancelEdit}>취소</Button>
+                    </div>
+                  </div>
+                )}
                 {editStep === 2 && (
                   <div>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
