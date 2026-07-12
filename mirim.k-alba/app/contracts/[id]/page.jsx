@@ -116,11 +116,11 @@ export default function ContractDetailPage() {
     } else if (isEmployer && contract.worker_signed && !contract.employer_signed) {
       initEmployerChat();
     } else if (isEmployer && !contract.worker_signed) {
-      // 사장님이 작성 완료 → 근로자 서명 대기 중
+      // 사장님: 조건 확인 → 계약서 보기 → 근로자 서명 요청 흐름
       setMessages([
-        { from: "bot", text: `📝 계약서가 준비되었습니다!\n\n${contract.worker_name || "근로자"}님의 서명을 기다리고 있어요. ⏳` },
+        { from: "bot", text: `📝 ${contract.worker_name || "근로자"}님과의\n근로계약서가 준비되었습니다!` },
         { from: "bot", text: buildTermsText(contract) },
-        { from: "bot", text: "💬 상단의 공유 버튼을 눌러 카카오톡으로\n근로자에게 계약서 링크를 보내\n서명을 요청해 보세요!" },
+        { from: "bot", text: "혹시 수정할 내용이 있나요?\n없으면 '수정 없음'을 눌러 진행해 주세요." },
       ]);
     } else if (isWorker && contract.worker_signed && !contract.employer_signed) {
       // 알바생 서명 완료 → 사장님 최종 서명 대기 중
@@ -429,13 +429,17 @@ export default function ContractDetailPage() {
   const confirmTerms = () => {
     setTermsConfirmed(true);
     addUser("👍 수정할 내용 없어요. 이 조건으로 진행할게요");
-    addBot("좋아요! 서명 전에 '📄 계약서 보기'를 눌러\n근로계약서 전문을 꼭 확인해 주세요.\n\n확인하셨으면 ✍️ 서명하기를 눌러주세요.");
+    if (isEmployer && !contract.worker_signed) {
+      addBot("좋아요! 계약 조건이 확정되었어요.\n\n📄 '계약서 보기'로 전문을 확인하고,\n💬 '근로자에게 서명 요청'을 눌러\n카카오톡으로 서명 요청을 보내주세요.");
+    } else {
+      addBot("좋아요! 서명 전에 '📄 계약서 보기'를 눌러\n근로계약서 전문을 꼭 확인해 주세요.\n\n확인하셨으면 ✍️ 서명하기를 눌러주세요.");
+    }
   };
 
   // 계약서 전문 보기 (챗봇 대화로 안내)
   const handleViewContract = () => {
     addUser("📄 계약서 전문을 확인할게요");
-    addBot("근로계약서 전문을 열었어요!\n검토가 끝나면 '챗봇' 탭으로 돌아와\n✍️ 서명하기를 눌러주세요.");
+    addBot("근로계약서 전문을 열었어요!\n검토가 끝나면 '챗봇' 탭으로 돌아와\n계속 진행해 주세요.");
     setTimeout(() => setTab("preview"), 900);
   };
 
@@ -825,8 +829,8 @@ export default function ContractDetailPage() {
               <div ref={scrollRef} />
             </div>
 
-            {/* 계약 조건 수정 버튼 (서명 전) */}
-            {canEdit && !editing && !typing && (
+            {/* 계약 조건 수정 버튼 — 승인 검토 단계에서만 별도 노출 (다른 단계는 대화 버튼에 포함) */}
+            {canEdit && !editing && !typing && signBlocked && (
               <div style={{ padding: "8px 14px 0", background: "#fff", borderTop: `1px solid ${T.border}` }}>
                 <button
                   onClick={startEdit}
@@ -834,6 +838,38 @@ export default function ContractDetailPage() {
                 >
                   ✏️ 계약 조건 수정 (급여·요일·시간·기간)
                 </button>
+              </div>
+            )}
+
+            {/* 사장님: 근로자 서명 대기 단계 — 조건 확인 → 계약서 보기·서명 요청 */}
+            {isEmployer && !contract.worker_signed && !contract.employer_signed && !signBlocked && !typing && !editing && !confAsk && (
+              <div style={{ padding: 14, background: "#fff", borderTop: `1px solid ${T.border}` }}>
+                {!termsConfirmed ? (
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <Button variant="primaryDark" size="lg" fullWidth onClick={confirmTerms}>
+                      👍 수정 없음, 진행
+                    </Button>
+                    {canEdit && (
+                      <Button variant="secondary" size="lg" onClick={startEdit} style={{ flexShrink: 0 }}>
+                        ✏️ 수정
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <Button variant="secondary" size="lg" onClick={handleViewContract} style={{ flexShrink: 0 }}>
+                        📄 계약서 보기
+                      </Button>
+                      <Button variant="primaryDark" size="lg" fullWidth onClick={handleShare} disabled={sharing}>
+                        💬 근로자에게 서명 요청
+                      </Button>
+                    </div>
+                    <p style={{ textAlign: "center", fontSize: 10, color: T.ink3, marginTop: 8 }}>
+                      근로자가 서명하면 사장님 최종 서명 차례가 됩니다
+                    </p>
+                  </>
+                )}
               </div>
             )}
 
