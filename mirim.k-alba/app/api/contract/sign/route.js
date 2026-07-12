@@ -308,24 +308,23 @@ export async function POST(request) {
       }
     }
 
-    // ─── 5. 상대방 자동 이메일 알림 ───
-    try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_SITE_URL || "https://k-alba.kr"}/api/contract/notify`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-internal-auth": process.env.INTERNAL_API_KEY || "internal",
-          },
-          body: JSON.stringify({
-            contract_id,
-            event: willBothSigned ? "completed" : role === "worker" ? "employer_sign_request" : "sign_request",
-          }),
-        }
-      );
-    } catch (e) {
-      console.error("[contract/sign] notify failed:", e);
+    // ─── 5. 계약 최종 완료 시에만 양측에 자동 이메일 발송 ───
+    if (willBothSigned) {
+      try {
+        await fetch(
+          `${process.env.NEXT_PUBLIC_SITE_URL || "https://k-alba.kr"}/api/contract/notify`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-internal-auth": process.env.INTERNAL_API_KEY || "internal",
+            },
+            body: JSON.stringify({ contract_id, event: "completed" }),
+          }
+        );
+      } catch (e) {
+        console.error("[contract/sign] notify failed:", e);
+      }
     }
 
     return NextResponse.json({
