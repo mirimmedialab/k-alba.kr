@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { sendAlimtalk, alimtalkConfigured } from "@/lib/alimtalk";
 
 /**
  * POST /api/contract/notify
@@ -163,7 +164,56 @@ export async function POST(request) {
       }
     }
 
-    return NextResponse.json({ ok: true, sent, skipped: jobs.length === 0, errors });
+    // ─── 카카오 알림톡 (SENS 설정 + 템플릿 심사 완료 시에만 발송) ───
+    let alimSent = 0;
+    if (alimtalkConfigured()) {
+      const workerPhone = c.worker_phone || null;
+      const employerPhone = c.employer_phone || null;
+      const btn = [{ type: "WL", name: "계약서 확인", linkMobile: url, linkPc: url }];
+      const alimJobs = [];
+      const pushAlim = (to, tplEnv, content) => {
+        const templateCode = process.env[tplEnv];
+        if (to && templateCode) alimJobs.push({ to, templateCode, content, buttons: btn });
+      };
+      const summary = `· 근무: ${(c.work_days || []).join("·")} ${c.work_start || ""}~${c.work_end || ""}\n· 급여: ${c.pay_type || "시급"} ${Number(c.pay_amount || 0).toLocaleString()}원`;
+
+      switch (event) {
+        case "sign_request":
+          pushAlim(workerPhone, "ALIMTALK_TPL_SIGN_REQUEST",
+            `[K-ALBA] 근로계약서 서명 요청\n\n${c.worker_name || "근로자"}님, ${c.company_name || "사업장"}에서 근로계약서를 보냈습니다.\n\n${summary}\n\n내용을 확인하고 전자서명해 주세요.`);
+          break;
+        case "approval_request":
+          pushAlim(employerPhone, "ALIMTALK_TPL_APPROVAL_REQUEST",
+            `[K-ALBA] 근로계약서 승인 요청\n\n${c.worker_name || "근로자"}님이 작성한 근로계약서가 승인을 기다리고 있습니다.\n\n${summary}\n\n조건을 확인하고 승인해 주세요.`);
+          break;
+        case "approved":
+          pushAlim(workerPhone, "ALIMTALK_TPL_APPROVED",
+            `[K-ALBA] 계약서 승인 완료\n\n${c.worker_name || "근로자"}님, 사장님이 계약서를 승인했습니다.\n전자서명을 진행해 주세요.`);
+          break;
+        case "employer_sign_request":
+          pushAlim(employerPhone, "ALIMTALK_TPL_EMPLOYER_SIGN",
+            `[K-ALBA] 최종 서명 요청\n\n${c.worker_name || "근로자"}님이 서명을 완료했습니다.\n사장님의 최종 서명만 남았습니다.`);
+          break;
+        case "completed": {
+          const done = `[K-ALBA] 근로계약 완료\n\n양측 서명이 모두 완료되었습니다.\n계약서 PDF를 다운로드해 보관하세요.`;
+          pushAlim(workerPhone, "ALIMTALK_TPL_COMPLETED", done);
+          pushAlim(employerPhone, "ALIMTALK_TPL_COMPLETED", done);
+          break;
+        }
+      }
+
+      for (const j of alimJobs) {
+        try {
+          const r = await sendAlimtalk(j);
+          if (r.ok) alimSent++;
+          else if (!r.skipped) errors.push(`alimtalk ${r.status}: ${JSON.stringify(r.data || {}).slice(0, 120)}`);
+        } catch (e) {
+          errors.push(`alimtalk: ${e.message}`);
+        }
+      }
+    }
+
+    return NextResponse.json({ ok: true, sent, alimtalk_sent: alimSent, skipped: jobs.length === 0, errors });
   } catch (error) {
     console.error("[contract/notify] error:", error);
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
