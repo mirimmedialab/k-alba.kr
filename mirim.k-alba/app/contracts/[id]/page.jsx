@@ -695,7 +695,7 @@ export default function ContractDetailPage() {
         if (role === "worker") {
           addBot("✅ 근로자 서명 완료!\n📱 사장님께 카카오톡으로 알림을 보냈어요!");
           if (data.audit?.ip_recorded) {
-            addBot(`🔒 감사 로그 기록됨 (${data.audit.device} / ${data.audit.platform})`);
+            addBot("🔒 전자서명이 기록되었습니다.");
           }
         } else {
           addBot("🎉 계약 완료!\n📄 양측 서명이 모두 기록되었습니다.");
