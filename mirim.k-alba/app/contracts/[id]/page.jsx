@@ -120,6 +120,7 @@ export default function ContractDetailPage() {
       setMessages([
         { from: "bot", text: `📝 ${contract.worker_name || "근로자"}님과의\n근로계약서가 준비되었습니다!` },
         { from: "bot", text: buildTermsText(contract) },
+        { from: "bot", text: buildBreakGuide(contract) },
         { from: "bot", text: "혹시 수정할 내용이 있나요?\n없으면 '수정 없음'을 눌러 진행해 주세요." },
       ]);
     } else if (isWorker && contract.worker_signed && !contract.employer_signed) {
@@ -168,6 +169,30 @@ export default function ContractDetailPage() {
     if (cb) setTimeout(cb, 300);
   };
 
+  // 일 근로시간 계산 (휴게시간 안내용)
+  const calcDailyHours = (c) => {
+    if (!c?.work_start || !c?.work_end) return 0;
+    const [sh, sm] = c.work_start.split(":").map(Number);
+    const [eh, em] = c.work_end.split(":").map(Number);
+    let h = eh + em / 60 - (sh + sm / 60);
+    if (h <= 0) h += 24;
+    return h;
+  };
+
+  // 사장님 안내: 법정 휴게시간 (근로기준법 제54조)
+  const buildBreakGuide = (c) => {
+    const dailyH = calcDailyHours(c);
+    const hTxt = (Math.round(dailyH * 10) / 10).toString().replace(/\.0$/, "");
+    const need = dailyH >= 8 ? "1시간 이상" : dailyH >= 4 ? "30분 이상" : null;
+    let tail;
+    if (need) {
+      tail = `이 계약은 일 ${hTxt}시간 근무라\n휴게시간 ${need}을 근무 도중에\n주셔야 합니다. (위반 시 처벌 대상)`;
+    } else {
+      tail = `이 계약은 일 ${hTxt}시간 근무로\n법정 휴게 의무는 없지만,\n적절한 휴식 부여를 권장해요.`;
+    }
+    return "☕ 사장님, 휴게시간을 꼭 챙겨주세요!\n\n근로기준법 제54조:\n· 근로 4시간 → 휴게 30분 이상\n· 근로 8시간 → 휴게 1시간 이상\n(근무시간 도중에 부여, 무급 가능)\n\n" + tail;
+  };
+
   // ─── 주요 근로계약 내용 요약 (챗봇 메시지용) ───
   const buildTermsText = (c) => {
     const lines = [
@@ -180,6 +205,8 @@ export default function ContractDetailPage() {
       lines.push(`   └ 예상 월급여 약 ₩${Number(c.monthly_total).toLocaleString()} (주휴수당 포함)`);
     }
     lines.push(`📅 근무: ${(c.work_days || []).join("·")} ${c.work_start || ""}~${c.work_end || ""}${c.weekly_hours ? ` (주 ${c.weekly_hours}시간)` : ""}`);
+    const bh = calcDailyHours(c);
+    lines.push(`☕ 휴게시간: ${bh >= 8 ? "1시간 이상" : bh >= 4 ? "30분 이상" : "권장"} (근무 중 부여)`);
     lines.push(`🗓 기간: ${c.contract_start || "—"} ~ ${c.contract_end || "—"}`);
     if (c.job_description) lines.push(`💼 업무: ${String(c.job_description).substring(0, 40)}`);
     if (c.business_address) lines.push(`📍 장소: ${c.business_address}`);
@@ -221,7 +248,9 @@ export default function ContractDetailPage() {
       ]);
       setTyping(false);
       setTimeout(() => {
-        addBot(buildTermsText(contract) + "\n\n승인하면 서명 단계로 진행됩니다.\n조건이 다르면 거절 후 사유를 남겨주세요.");
+        addBot(buildTermsText(contract) + "\n\n승인하면 서명 단계로 진행됩니다.\n조건이 다르면 거절 후 사유를 남겨주세요.", () => {
+          addBot(buildBreakGuide(contract));
+        });
       }, 500);
     }, 400);
   };
