@@ -1,14 +1,18 @@
 "use client";
 // HTML 요소를 PDF로 변환
 // html2canvas + jsPDF 조합 (한글 폰트 완벽 지원)
+//
+// 항상 A4 "1페이지"로 생성:
+//   1) 요소를 700px 고정 폭 복제본으로 오프스크린 렌더 (화면 폭과 무관하게 서식 레이아웃 유지)
+//   2) 캡처 이미지를 A4 인쇄영역(190×277mm)에 비율 유지로 맞춤 (넘치면 축소)
 
 export async function generateContractPDF(elementId, filename = "k-alba-contract.pdf") {
   if (typeof window === "undefined") {
     throw new Error("PDF generation only works in browser");
   }
 
-  const element = document.getElementById(elementId);
-  if (!element) {
+  const source = document.getElementById(elementId);
+  if (!source) {
     throw new Error(`Element #${elementId} not found`);
   }
 
@@ -18,17 +22,23 @@ export async function generateContractPDF(elementId, filename = "k-alba-contract
     import("jspdf"),
   ]);
 
-  // 잠시 요소를 보이게 (숨겨진 경우 캡처 안됨)
-  const originalDisplay = element.style.display;
-  const originalVisibility = element.style.visibility;
-  const wasHidden = originalDisplay === "none";
-  if (wasHidden) {
-    element.style.display = "block";
-    element.style.visibility = "hidden";
-    element.style.position = "absolute";
-    element.style.top = "-9999px";
-    element.style.left = "0";
-  }
+  // 고정 폭(700px) 복제본을 화면 밖에 렌더 → 모바일 화면에서도 동일한 서식으로 캡처
+  const element = source.cloneNode(true);
+  element.id = `${elementId}-pdf-clone`;
+  Object.assign(element.style, {
+    display: "block",
+    visibility: "visible",
+    position: "fixed",
+    top: "0",
+    left: "-10000px",
+    width: "700px",
+    maxWidth: "700px",
+    margin: "0",
+    boxShadow: "none",
+    borderRadius: "0",
+    zIndex: "-1",
+  });
+  document.body.appendChild(element);
 
   try {
     // 캔버스로 렌더링 (고해상도)
@@ -37,7 +47,7 @@ export async function generateContractPDF(elementId, filename = "k-alba-contract
       useCORS: true,
       logging: false,
       backgroundColor: "#ffffff",
-      windowWidth: element.scrollWidth,
+      windowWidth: 700,
       windowHeight: element.scrollHeight,
     });
 
@@ -47,27 +57,21 @@ export async function generateContractPDF(elementId, filename = "k-alba-contract
     const pdfWidth = 210;
     const pdfHeight = 297;
     const margin = 10;
-    const contentWidth = pdfWidth - margin * 2;
+    const contentWidth = pdfWidth - margin * 2;   // 190
+    const printableHeight = pdfHeight - margin * 2; // 277
 
-    // 이미지 비율 유지
-    const imgWidth = contentWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    // 이미지 비율 유지, 1페이지에 맞춤 (세로가 넘치면 전체 축소)
+    let imgWidth = contentWidth;
+    let imgHeight = (canvas.height * imgWidth) / canvas.width;
+    if (imgHeight > printableHeight) {
+      const s = printableHeight / imgHeight;
+      imgHeight = printableHeight;
+      imgWidth = imgWidth * s;
+    }
+    const x = (pdfWidth - imgWidth) / 2; // 가로 중앙 정렬
 
     const pdf = new jsPDF("p", "mm", "a4");
-
-    // 페이지가 넘치면 여러 페이지로 분할
-    let heightLeft = imgHeight;
-    let position = margin;
-
-    pdf.addImage(imgData, "JPEG", margin, position, imgWidth, imgHeight);
-    heightLeft -= pdfHeight - margin * 2;
-
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight + margin;
-      pdf.addPage();
-      pdf.addImage(imgData, "JPEG", margin, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight - margin * 2;
-    }
+    pdf.addImage(imgData, "JPEG", x, margin, imgWidth, imgHeight);
 
     // PDF 메타데이터
     pdf.setProperties({
@@ -80,14 +84,7 @@ export async function generateContractPDF(elementId, filename = "k-alba-contract
     pdf.save(filename);
     return true;
   } finally {
-    // 원래 상태로 복원
-    if (wasHidden) {
-      element.style.display = originalDisplay;
-      element.style.visibility = originalVisibility;
-      element.style.position = "";
-      element.style.top = "";
-      element.style.left = "";
-    }
+    element.remove();
   }
 }
 
