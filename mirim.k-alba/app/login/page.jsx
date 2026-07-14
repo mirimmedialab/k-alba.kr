@@ -26,6 +26,8 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   // 인증 에러 원본(언어 변경 시 렌더에서 재번역되도록 raw로 보관)
   const [authErrRaw, setAuthErrRaw] = useState("");
+  // 회원이 아닌 경우 → 회원가입 바로가기 노출
+  const [notMember, setNotMember] = useState(false);
   // 어드민(/admin)으로 redirect되어 온 경우: 소셜 로그인만 노출
   const [adminLogin, setAdminLogin] = useState(false);
 
@@ -33,6 +35,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setAuthErrRaw("");
+    setNotMember(false);
     if (!isValidEmail(form.email)) {
       setError(t("auth.errEmailFormat", null, "올바른 이메일 주소를 입력해 주세요 (예: name@example.com)"));
       return;
@@ -40,15 +43,31 @@ export default function LoginPage() {
     setLoading(true);
     const { data, error } = await signIn(form.email, form.password);
     if (error) {
+      // 미가입 이메일이면 "회원이 아닙니다" + 회원가입 유도
+      let handled = false;
+      try {
+        const res = await fetch("/api/auth/check-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: form.email }),
+        });
+        const j = await res.json();
+        if (j?.ok && j.exists === false) {
+          setError("회원이 아닙니다. 입력하신 이메일로 가입된 계정이 없어요.");
+          setNotMember(true);
+          handled = true;
+        }
+      } catch (e) { /* 확인 실패 시 기본 에러 표시 */ }
       setLoading(false);
-      setAuthErrRaw(error.message);
+      if (!handled) setAuthErrRaw(error.message);
       return;
     }
     // 탈퇴(비활성화)된 계정 차단
     if (data?.user && (await isAccountDeactivated(data.user.id))) {
       await signOut();
       setLoading(false);
-      setError("탈퇴했거나 존재하지 않는 계정이에요. 새로 가입해 주세요.");
+      setError("회원이 아닙니다. 탈퇴했거나 가입되지 않은 계정이에요.");
+      setNotMember(true);
       return;
     }
     const userType = data?.user?.user_metadata?.user_type || "worker";
@@ -70,7 +89,8 @@ export default function LoginPage() {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.get("reason") === "deactivated") {
-        setError("탈퇴했거나 존재하지 않는 계정이에요. 새로 가입해 주세요.");
+        setError("회원이 아닙니다. 탈퇴했거나 가입되지 않은 계정이에요.");
+        setNotMember(true);
       }
       if (params.get("reason") === "resignup") {
         setError("재가입이 완료되었어요. 방금 설정한 비밀번호로 로그인해 주세요.");
@@ -237,6 +257,26 @@ export default function LoginPage() {
             }}
           >
             {authErrRaw ? authErrorMessage(authErrRaw, locale) : error}
+            {notMember && (
+              <Link
+                href="/signup"
+                style={{
+                  display: "block",
+                  marginTop: 10,
+                  padding: "12px 14px",
+                  background: T.ink,
+                  color: "#fff",
+                  borderRadius: 4,
+                  textAlign: "center",
+                  fontWeight: 700,
+                  fontSize: 13,
+                  textDecoration: "none",
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                회원가입 하러 가기 →
+              </Link>
+            )}
           </div>
         )}
 
