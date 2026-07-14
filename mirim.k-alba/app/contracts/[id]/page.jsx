@@ -368,6 +368,31 @@ export default function ContractDetailPage() {
     try {
       const method = await shareContractKakao(contract, typeof window !== "undefined" ? window.location.href : "");
       if (method === "clipboard") alert(t("contract.linkCopied"));
+      // 상대방에게 자동 알림 발송 (이메일 즉시 · 알림톡은 SENS 설정 완료 시)
+      let notifyEvent = null;
+      if (isEmployer && !contract.worker_signed) notifyEvent = "sign_request";
+      else if (isWorker && contract.status === "pending_approval") notifyEvent = "approval_request";
+      else if (isWorker && contract.worker_signed && !contract.employer_signed) notifyEvent = "employer_sign_request";
+      if (notifyEvent && supabase) {
+        try {
+          const { data: sess } = await supabase.auth.getSession();
+          const token = sess?.session?.access_token;
+          if (token) {
+            fetch("/api/contract/notify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ contract_id: contract.id, event: notifyEvent }),
+            })
+              .then((r) => r.json())
+              .then((j) => {
+                if (j?.ok && (j.sent > 0 || j.alimtalk_sent > 0)) {
+                  addBot("📨 상대방에게 자동 알림도 보냈어요!");
+                }
+              })
+              .catch(() => {});
+          }
+        } catch (_) { /* 알림 실패는 공유 흐름에 영향 없음 */ }
+      }
     } finally {
       setSharing(false);
     }
