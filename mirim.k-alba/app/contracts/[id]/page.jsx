@@ -75,6 +75,8 @@ export default function ContractDetailPage() {
   const [breakAsk, setBreakAsk] = useState(false);
   const [breakEdit, setBreakEdit] = useState(false);
   const [savingBreak, setSavingBreak] = useState(false);
+  // 대화 시작 시 곧바로 휴게시간 배정을 요청한 경우 (확인 후 '수정 여부' 단계로 이어감)
+  const [breakFirst, setBreakFirst] = useState(false);
   const scrollRef = useRef(null);
 
   // 시간 표시 정규화: "14:00:00" → "14:00"
@@ -129,13 +131,20 @@ export default function ContractDetailPage() {
     } else if (isEmployer && contract.worker_signed && !contract.employer_signed) {
       initEmployerChat();
     } else if (isEmployer && !contract.worker_signed) {
-      // 사장님: 조건 확인 → 계약서 보기 → 근로자 서명 요청 흐름
+      // 사장님: 휴게시간 의무 배정 → 조건 확인 → 계약서 보기 → 근로자 서명 요청 흐름
+      const needBreakNow = breakRequired(contract) && !contract.employer_break_ok;
       setMessages([
         { from: "bot", text: `📝 ${contract.worker_name || "근로자"}님과의\n근로계약서가 준비되었습니다!` },
         { from: "bot", text: buildTermsText(contract) },
         { from: "bot", text: buildBreakGuide(contract) },
-        { from: "bot", text: "혹시 수정할 내용이 있나요?\n없으면 '수정 없음'을 눌러 진행해 주세요." },
+        ...(needBreakNow
+          ? [{ from: "bot", text: buildBreakConfirmText(contract) }]
+          : [{ from: "bot", text: "혹시 수정할 내용이 있나요?\n없으면 '수정 없음'을 눌러 진행해 주세요." }]),
       ]);
+      if (needBreakNow) {
+        setBreakFirst(true);
+        setBreakAsk(true);
+      }
     } else if (isWorker && contract.worker_signed && !contract.employer_signed) {
       // 알바생 서명 완료 → 사장님 최종 서명 대기 중
       setMessages([
@@ -579,7 +588,14 @@ export default function ContractDetailPage() {
     setBreakEdit(false);
     const fresh = await getContract(contract.id);
     if (fresh) setContract(normalizeContract(fresh));
-    addBot(`☕ 휴게시간이 계약서에 반영되었습니다!\n🕐 ${start} ~ ${end} (${minutes}분, 무급)\n\n계약서 4항 근로시간 표에서\n확인할 수 있어요.`, () => proceedAfterTerms());
+    addBot(`☕ 휴게시간이 계약서에 반영되었습니다!\n🕐 ${start} ~ ${end} (${minutes}분, 무급)\n\n계약서 4항 근로시간 표에서\n확인할 수 있어요.`, () => {
+      if (breakFirst) {
+        setBreakFirst(false);
+        addBot("혹시 수정할 내용이 있나요?\n없으면 '수정 없음'을 눌러 진행해 주세요.");
+      } else {
+        proceedAfterTerms();
+      }
+    });
   };
 
   const submitBreakTime = () => {
