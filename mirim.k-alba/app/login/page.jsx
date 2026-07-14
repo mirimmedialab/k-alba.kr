@@ -43,8 +43,23 @@ export default function LoginPage() {
     setLoading(true);
     const { data, error } = await signIn(form.email, form.password);
     if (error) {
+      // 미가입 이메일이면 "회원이 아닙니다" + 회원가입 유도
+      let handled = false;
+      try {
+        const res = await fetch("/api/auth/check-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: form.email }),
+        });
+        const j = await res.json();
+        if (j?.ok && j.exists === false) {
+          setError("회원이 아닙니다. 입력하신 이메일로 가입된 계정이 없어요.");
+          setNotMember(true);
+          handled = true;
+        }
+      } catch (e) { /* 확인 실패 시 기본 에러 표시 */ }
       setLoading(false);
-      setAuthErrRaw(error.message);
+      if (!handled) setAuthErrRaw(error.message);
       return;
     }
     // 탈퇴(비활성화)된 계정 차단
