@@ -1520,9 +1520,9 @@ function ContractPreview({ contract }) {
 
   const line = { fontSize: 12, color: "#111", lineHeight: 1.75, marginBottom: 3 };
   const sub = { ...line, marginLeft: 16 };
-  const th = { border: "1px solid #333", padding: "3px 4px", fontSize: 10.5, textAlign: "center", fontWeight: 700 };
-  const td = { border: "1px solid #333", padding: "3px 4px", fontSize: 10.5, textAlign: "center" };
-  const u = { borderBottom: "1px solid #111", padding: "0 8px", fontWeight: 700 };
+  const th = { border: "1px solid #333", padding: "5px 2px", fontSize: 10.5, textAlign: "center", fontWeight: 700, verticalAlign: "middle", lineHeight: 1.35 };
+  const td = { border: "1px solid #333", padding: "5px 2px", fontSize: 10.5, textAlign: "center", verticalAlign: "middle", lineHeight: 1.35 };
+  const u = { fontWeight: 700, padding: "0 4px" };
 
   return (
     <div style={{ flex: 1, overflowY: "auto", padding: 16, background: "#EDEDEA" }}>
@@ -1571,7 +1571,7 @@ function ContractPreview({ contract }) {
           </tbody>
         </table>
         <div style={{ ...sub, marginBottom: 6 }}>
-          ㅇ 주휴일 : 매주 <span style={{ borderBottom: "1px solid #111", padding: "0 12px", fontWeight: 700 }}>{weeklyHours >= 15 ? "일" : "  "}</span> 요일
+          ㅇ 주휴일 : 매주 <span style={{ fontWeight: 700, padding: "0 6px" }}>{weeklyHours >= 15 ? "일" : "  "}</span> 요일
         </div>
 
         <div style={line}>5. 임   금</div>
