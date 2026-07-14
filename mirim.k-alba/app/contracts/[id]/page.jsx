@@ -136,10 +136,12 @@ export default function ContractDetailPage() {
       setMessages([
         { from: "bot", text: `📝 ${contract.worker_name || "근로자"}님과의\n근로계약서가 준비되었습니다!` },
         { from: "bot", text: buildTermsText(contract) },
-        { from: "bot", text: buildBreakGuide(contract) },
         ...(needBreakNow
           ? [{ from: "bot", text: buildBreakConfirmText(contract) }]
-          : [{ from: "bot", text: "혹시 수정할 내용이 있나요?\n없으면 '수정 없음'을 눌러 진행해 주세요." }]),
+          : [
+              { from: "bot", text: buildBreakGuide(contract) },
+              { from: "bot", text: "혹시 수정할 내용이 있나요?\n없으면 '수정 없음'을 눌러 진행해 주세요." },
+            ]),
       ]);
       if (needBreakNow) {
         setBreakFirst(true);
@@ -240,7 +242,7 @@ export default function ContractDetailPage() {
     const { start, minutes } = suggestBreak(c);
     const end = breakEndFrom(start, minutes);
     const hTxt = (Math.round(calcDailyHours(c) * 10) / 10).toString().replace(/\.0$/, "");
-    return `☕ 휴게시간 의무 배정\n\n이 계약은 일 ${hTxt}시간 근무예요.\n근로기준법 제54조에 따라 휴게시간\n${minutes}분 이상을 근무 도중에 반드시\n배정해야 합니다. (무급 가능)\n\n제안 휴게시간:\n🕐 ${start} ~ ${end} (${minutes}분)\n\n이 휴게시간을 계약서에 넣을까요?`;
+    return `☕ 휴게시간 의무 배정\n\n근로기준법 제54조에 따라 일 ${hTxt}시간\n근무는 휴게시간 ${minutes}분 이상을\n근무 도중에 반드시 줘야 해요. (무급 가능)\n\n제안 휴게시간:\n🕐 ${start} ~ ${end} (${minutes}분)\n\n이 휴게시간을 계약서에 넣을까요?`;
   };
 
   // ─── 주요 근로계약 내용 요약 (챗봇 메시지용) ───
