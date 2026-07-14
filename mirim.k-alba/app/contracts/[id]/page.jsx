@@ -71,6 +71,10 @@ export default function ContractDetailPage() {
   // 유학생 시간제취업 확인서 정보 수집 Q&A
   const [confAsk, setConfAsk] = useState(null); // { queue: [...], idx, data: {} }
   const [downloadingConf, setDownloadingConf] = useState(false);
+  // 휴게시간 의무 배정 확인 (근로기준법 제54조) — 양측 모두 확인해야 서명 진행
+  const [breakAsk, setBreakAsk] = useState(false);
+  const [breakEdit, setBreakEdit] = useState(false);
+  const [savingBreak, setSavingBreak] = useState(false);
   const scrollRef = useRef(null);
 
   // 시간 표시 정규화: "14:00:00" → "14:00"
@@ -104,9 +108,13 @@ export default function ContractDetailPage() {
   const isEmployer = userType === "employer";
   const isWorker = !isEmployer;
 
-  // ─── 챗봇 메시지 초기화 ───
+  // ─── 챗봇 메시지 초기화 (단계가 바뀔 때만 — 데이터만 바뀌면 대화 유지) ───
+  const chatInitKey = useRef("");
   useEffect(() => {
     if (!contract || !user) return;
+    const initKey = `${contract.status}|${contract.worker_signed}|${contract.employer_signed}|${user.id}`;
+    if (chatInitKey.current === initKey) return;
+    chatInitKey.current = initKey;
 
     if (contract.status === "pending_approval") {
       if (isEmployer) initApprovalChat();
@@ -198,6 +206,34 @@ export default function ContractDetailPage() {
     return "☕ 사장님, 휴게시간을 꼭 챙겨주세요!\n\n근로기준법 제54조:\n· 근로 4시간 → 휴게 30분 이상\n· 근로 8시간 → 휴게 1시간 이상\n(근무시간 도중에 부여, 무급 가능)\n\n" + tail;
   };
 
+  // ─── 휴게시간 의무 배정 (일 4시간 이상 근무) ───
+  const breakRequired = (c) => calcDailyHours(c) >= 4;
+  const legalBreakMin = (c) => (calcDailyHours(c) >= 8 ? 60 : 30);
+  const fmtHM = (mins) => `${String(Math.floor(((mins % 1440) + 1440) % 1440 / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
+  const breakEndFrom = (start, minutes) => {
+    const [h, m] = String(start).split(":").map(Number);
+    return fmtHM(h * 60 + m + minutes);
+  };
+  const suggestBreak = (c) => {
+    if (c.break_start && c.break_minutes) return { start: normTime(c.break_start), minutes: c.break_minutes };
+    const [sh, sm] = (c.work_start || "0:0").split(":").map(Number);
+    const [eh, em] = (c.work_end || "0:0").split(":").map(Number);
+    let s = sh * 60 + sm;
+    let e = eh * 60 + em;
+    if (e <= s) e += 1440;
+    const minutes = legalBreakMin(c);
+    let start = Math.round(((s + e) / 2 - minutes / 2) / 30) * 30;
+    if (start < s) start = s;
+    if (start + minutes > e) start = e - minutes;
+    return { start: fmtHM(start), minutes };
+  };
+  const buildBreakConfirmText = (c) => {
+    const { start, minutes } = suggestBreak(c);
+    const end = breakEndFrom(start, minutes);
+    const hTxt = (Math.round(calcDailyHours(c) * 10) / 10).toString().replace(/\.0$/, "");
+    return `☕ 휴게시간 의무 배정\n\n이 계약은 일 ${hTxt}시간 근무예요.\n근로기준법 제54조에 따라 휴게시간\n${minutes}분 이상을 근무 도중에 반드시\n배정해야 합니다. (무급 가능)\n\n제안 휴게시간:\n🕐 ${start} ~ ${end} (${minutes}분)\n\n이 휴게시간을 계약서에 넣을까요?`;
+  };
+
   // ─── 주요 근로계약 내용 요약 (챗봇 메시지용) ───
   const buildTermsText = (c) => {
     const lines = [
@@ -211,7 +247,11 @@ export default function ContractDetailPage() {
     }
     lines.push(`📅 근무: ${(c.work_days || []).join("·")} ${c.work_start || ""}~${c.work_end || ""}${c.weekly_hours ? ` (주 ${c.weekly_hours}시간)` : ""}`);
     const bh = calcDailyHours(c);
-    lines.push(`☕ 휴게시간: ${bh >= 8 ? "1시간 이상" : bh >= 4 ? "30분 이상" : "권장"} (근무 중 부여)`);
+    if (c.break_start && c.break_minutes) {
+      lines.push(`☕ 휴게시간: ${normTime(c.break_start)} ~ ${breakEndFrom(normTime(c.break_start), c.break_minutes)} (${c.break_minutes}분, 무급)`);
+    } else {
+      lines.push(`☕ 휴게시간: ${bh >= 8 ? "1시간 이상" : bh >= 4 ? "30분 이상" : "권장"} (근무 중 부여 · 서명 전 확정)`);
+    }
     lines.push(`🗓 기간: ${c.contract_start || "—"} ~ ${c.contract_end || "—"}`);
     if (c.job_description) lines.push(`💼 업무: ${String(c.job_description).substring(0, 40)}`);
     if (c.business_address) lines.push(`📍 장소: ${c.business_address}`);
@@ -478,6 +518,11 @@ export default function ContractDetailPage() {
       monthly_holiday,
       monthly_total,
       insurance_required: weeklyHours >= 15,
+      // 조건이 바뀌면 휴게시간을 다시 확인해야 함
+      break_start: null,
+      break_minutes: null,
+      worker_break_ok: false,
+      employer_break_ok: false,
     });
 
     setEditing(false);
@@ -492,15 +537,73 @@ export default function ContractDetailPage() {
     addBot("✅ 계약 조건이 변경되었습니다!\n📄 '계약서' 탭에서 변경된 내용을 확인하세요.\n\n변경된 조건으로 서명을 진행하면 됩니다.");
   };
 
-  // ─── 조건 확인 → 계약서 보기 → 서명 흐름 ───
-  const confirmTerms = () => {
+  // ─── 조건 확인 → 휴게시간 확정 → 계약서 보기 → 서명 흐름 ───
+  const proceedAfterTerms = () => {
     setTermsConfirmed(true);
-    addUser("👍 수정할 내용 없어요. 이 조건으로 진행할게요");
     if (isEmployer && !contract.worker_signed) {
       addBot("좋아요! 계약 조건이 확정되었어요.\n\n📄 '계약서 보기'로 전문을 확인하고,\n💬 '근로자에게 서명 요청'을 눌러\n카카오톡으로 서명 요청을 보내주세요.");
     } else {
       addBot("좋아요! 서명 전에 '📄 계약서 보기'를 눌러\n근로계약서 전문을 꼭 확인해 주세요.\n\n확인하셨으면 ✍️ 서명하기를 눌러주세요.");
     }
+  };
+
+  const confirmTerms = () => {
+    addUser("👍 수정할 내용 없어요. 이 조건으로 진행할게요");
+    const myBreakOk = isEmployer ? contract.employer_break_ok : contract.worker_break_ok;
+    if (breakRequired(contract) && !myBreakOk) {
+      setBreakAsk(true);
+      addBot(buildBreakConfirmText(contract));
+      return;
+    }
+    proceedAfterTerms();
+  };
+
+  // 휴게시간 확인 → 계약서에 반영 (양측 각자 확인)
+  const confirmBreak = async (startStr) => {
+    if (savingBreak) return;
+    const minutes = contract.break_minutes || legalBreakMin(contract);
+    const start = startStr || suggestBreak(contract).start;
+    const end = breakEndFrom(start, minutes);
+    setSavingBreak(true);
+    addUser(`✅ 휴게시간 ${start} ~ ${end} 확인했어요`);
+    const upd = { break_start: start, break_minutes: minutes };
+    if (isEmployer) upd.employer_break_ok = true;
+    else upd.worker_break_ok = true;
+    const { error } = await updateContract(contract.id, upd);
+    setSavingBreak(false);
+    if (error) {
+      alert("휴게시간 저장 중 오류가 발생했습니다: " + error.message);
+      return;
+    }
+    setBreakAsk(false);
+    setBreakEdit(false);
+    const fresh = await getContract(contract.id);
+    if (fresh) setContract(normalizeContract(fresh));
+    addBot(`☕ 휴게시간이 계약서에 반영되었습니다!\n🕐 ${start} ~ ${end} (${minutes}분, 무급)\n\n계약서 4항 근로시간 표에서\n확인할 수 있어요.`, () => proceedAfterTerms());
+  };
+
+  const submitBreakTime = () => {
+    const v = chatInput.trim();
+    const m = v.match(/^(\d{1,2}):(\d{2})$/);
+    if (!m || Number(m[1]) > 23 || Number(m[2]) > 59) {
+      alert("시간 형식이 올바르지 않아요. 예: 16:30");
+      return;
+    }
+    const start = `${String(Number(m[1])).padStart(2, "0")}:${m[2]}`;
+    const [sh, sm] = (contract.work_start || "0:0").split(":").map(Number);
+    const [eh, em] = (contract.work_end || "0:0").split(":").map(Number);
+    let s = sh * 60 + sm;
+    let e = eh * 60 + em;
+    if (e <= s) e += 1440;
+    let b = Number(m[1]) * 60 + Number(m[2]);
+    if (b < s) b += 1440;
+    const minutes = legalBreakMin(contract);
+    if (b < s || b + minutes > e) {
+      alert(`휴게시간은 근무시간(${contract.work_start}~${contract.work_end}) 도중에 배정해야 해요.`);
+      return;
+    }
+    setChatInput("");
+    confirmBreak(start);
   };
 
   // 계약서 전문 보기 (챗봇 대화로 안내)
@@ -917,7 +1020,41 @@ export default function ContractDetailPage() {
             )}
 
             {/* 사장님: 근로자 서명 대기 단계 — 조건 확인 → 계약서 보기·서명 요청 */}
-            {isEmployer && !contract.worker_signed && !contract.employer_signed && !signBlocked && !typing && !editing && !confAsk && (
+            {/* 휴게시간 의무 배정 확인 (근로기준법 제54조) */}
+            {breakAsk && !typing && !editing && (
+              <div style={{ padding: 14, background: "#fff", borderTop: `1px solid ${T.border}` }}>
+                {!breakEdit ? (
+                  <>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <Button variant="primary" size="lg" fullWidth onClick={() => confirmBreak()} disabled={savingBreak}>
+                        {savingBreak ? "저장 중..." : "✅ 이 휴게시간으로 확인"}
+                      </Button>
+                      <Button variant="secondary" size="lg" onClick={() => setBreakEdit(true)} style={{ flexShrink: 0 }}>
+                        🕐 시간 변경
+                      </Button>
+                    </div>
+                    <p style={{ textAlign: "center", fontSize: 10, color: T.ink3, marginTop: 8 }}>
+                      근로자·사장님 모두 확인해야 서명으로 진행됩니다
+                    </p>
+                  </>
+                ) : (
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <input
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && submitBreakTime()}
+                      placeholder="휴게 시작 시간 (예: 16:30)"
+                      style={{ flex: 1, padding: "12px 14px", borderRadius: 10, border: `1.5px solid ${T.borderStrong}`, fontSize: 14, fontFamily: "inherit", outline: "none" }}
+                    />
+                    <Button variant="primary" size="lg" onClick={submitBreakTime} disabled={savingBreak}>
+                      확인
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {isEmployer && !contract.worker_signed && !contract.employer_signed && !signBlocked && !typing && !editing && !confAsk && !breakAsk && (
               <div style={{ padding: 14, background: "#fff", borderTop: `1px solid ${T.border}` }}>
                 {!termsConfirmed ? (
                   <div style={{ display: "flex", gap: 8 }}>
@@ -1081,9 +1218,9 @@ export default function ContractDetailPage() {
             )}
 
             {/* 서명 버튼 영역 — 1)조건 확인 → 2)계약서 보기 → 3)서명 */}
-            {(canWorkerSign || canEmployerSign) && !typing && !editing && (
+            {(canWorkerSign || canEmployerSign) && !typing && !editing && !breakAsk && (
               <div style={{ padding: 14, background: "#fff", borderTop: `1px solid ${T.border}` }}>
-                {canWorkerSign && !termsConfirmed ? (
+                {(canWorkerSign && !termsConfirmed) || (breakRequired(contract) && !(isEmployer ? contract.employer_break_ok : contract.worker_break_ok)) ? (
                   <>
                     <div style={{ display: "flex", gap: 8 }}>
                       <Button variant="primary" size="lg" fullWidth onClick={confirmTerms}>
@@ -1517,6 +1654,13 @@ function ContractPreview({ contract }) {
   const [wsH, wsM] = tsplit(contract.work_start);
   const [weH, weM] = tsplit(contract.work_end);
   const payLabel = contract.pay_type === "일급" ? "일급(일급)" : contract.pay_type === "월급" ? "월급(월급)" : "시간(시급)";
+  // 확정된 휴게시간 (양측 확인 후 계약서에 표기)
+  let bkTxt = null;
+  if (contract.break_start && contract.break_minutes) {
+    const [bkH, bkM] = String(contract.break_start).slice(0, 5).split(":").map(Number);
+    const bkEndMin = (bkH * 60 + bkM + Number(contract.break_minutes)) % 1440;
+    bkTxt = [`${bkH}시 ${String(bkM).padStart(2, "0")}분`, `${Math.floor(bkEndMin / 60)}시 ${String(bkEndMin % 60).padStart(2, "0")}분`];
+  }
 
   const line = { fontSize: 12, color: "#111", lineHeight: 1.75, marginBottom: 3 };
   const sub = { ...line, marginLeft: 16 };
@@ -1566,7 +1710,11 @@ function ContractPreview({ contract }) {
             </tr>
             <tr>
               <td style={th}>휴게 시간</td>
-              {workDays.map((d) => (<td key={d} style={{ ...td, fontSize: 9.5, color: "#555" }}>시&nbsp;&nbsp;분<br />~&nbsp;&nbsp;시&nbsp;&nbsp;분</td>))}
+              {workDays.map((d) => (
+                <td key={d} style={{ ...td, fontSize: 9.5, color: bkTxt ? "#111" : "#555" }}>
+                  {bkTxt ? <>{bkTxt[0]}<br />~ {bkTxt[1]}</> : <>시&nbsp;&nbsp;분<br />~&nbsp;&nbsp;시&nbsp;&nbsp;분</>}
+                </td>
+              ))}
             </tr>
           </tbody>
         </table>
