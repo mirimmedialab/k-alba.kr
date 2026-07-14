@@ -73,6 +73,11 @@ export default function ContractDetailPage() {
   const [downloadingConf, setDownloadingConf] = useState(false);
   const scrollRef = useRef(null);
 
+  // 시간 표시 정규화: "14:00:00" → "14:00"
+  const normTime = (t) => (typeof t === "string" && t.length >= 5 ? t.slice(0, 5) : t);
+  const normalizeContract = (c) =>
+    c ? { ...c, work_start: normTime(c.work_start), work_end: normTime(c.work_end) } : c;
+
   // ─── 계약서 데이터 로드 ───
   useEffect(() => {
     getCurrentUser().then(async (u) => {
@@ -90,7 +95,7 @@ export default function ContractDetailPage() {
         if (stored) c = JSON.parse(stored);
       }
 
-      if (c) setContract(c);
+      if (c) setContract(normalizeContract(c));
       setLoading(false);
     });
   }, [params.id, router]);
@@ -283,7 +288,7 @@ export default function ContractDetailPage() {
       return;
     }
     const fresh = await getContract(contract.id);
-    if (fresh) setContract(fresh);
+    if (fresh) setContract(normalizeContract(fresh));
     addBot("✅ 계약서를 승인했습니다!\n근로자에게 서명 요청이 전달됩니다.");
   };
 
@@ -302,7 +307,7 @@ export default function ContractDetailPage() {
       return;
     }
     const fresh = await getContract(contract.id);
-    if (fresh) setContract(fresh);
+    if (fresh) setContract(normalizeContract(fresh));
   };
 
   // ─── 카카오톡 공유 ───
@@ -483,7 +488,7 @@ export default function ContractDetailPage() {
       return;
     }
     const fresh = await getContract(contract.id);
-    if (fresh) setContract(fresh);
+    if (fresh) setContract(normalizeContract(fresh));
     addBot("✅ 계약 조건이 변경되었습니다!\n📄 '계약서' 탭에서 변경된 내용을 확인하세요.\n\n변경된 조건으로 서명을 진행하면 됩니다.");
   };
 
@@ -553,7 +558,7 @@ export default function ContractDetailPage() {
         return;
       }
       const fresh = await getContract(contract.id);
-      if (fresh) setContract(fresh);
+      if (fresh) setContract(normalizeContract(fresh));
     }
   };
 
@@ -682,7 +687,7 @@ export default function ContractDetailPage() {
       }
 
       const fresh = await getContract(contract.id);
-      if (fresh) setContract(fresh);
+      if (fresh) setContract(normalizeContract(fresh));
 
       setSigning(false);
 
