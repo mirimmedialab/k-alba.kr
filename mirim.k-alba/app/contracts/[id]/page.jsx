@@ -776,11 +776,19 @@ export default function ContractDetailPage() {
     if (downloadingPdf) return;
     setDownloadingPdf(true);
     addUser("📄 근로계약서를 다운로드할게요");
+    const prevTab = tab;
     try {
+      // 계약서 탭이 렌더링돼 있어야 PDF 요소가 존재 → 잠시 전환 후 생성
+      if (typeof document !== "undefined" && !document.getElementById("contract-preview-for-pdf")) {
+        setTab("preview");
+        await new Promise((r) => setTimeout(r, 700));
+      }
       const filename = buildContractFilename(contract);
       await generateContractPDF("contract-preview-for-pdf", filename);
+      setTab(prevTab);
       addBot("✅ 근로계약서 PDF가 저장되었습니다!\n다운로드 폴더를 확인해 주세요.");
     } catch (e) {
+      setTab(prevTab);
       alert("PDF 생성 중 오류가 발생했습니다: " + e.message);
     } finally {
       setDownloadingPdf(false);
