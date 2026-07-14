@@ -40,6 +40,34 @@ export async function generateContractPDF(elementId, filename = "k-alba-contract
   });
   document.body.appendChild(element);
 
+  // 웹폰트 로드 대기 (미로드 시 글자 위치가 틀어짐)
+  try {
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  } catch (_) { /* ignore */ }
+
+  // html2canvas가 한글 글자를 박스/표 칸의 아래쪽에 그리는 문제 보정:
+  // 위쪽 패딩을 아래로 옮겨 글자를 세로 가운데로 이동 (PDF 복제본에만 적용)
+  const shiftUp = (el, maxShift) => {
+    const cs = window.getComputedStyle(el);
+    const pt = parseFloat(cs.paddingTop) || 0;
+    const pb = parseFloat(cs.paddingBottom) || 0;
+    const shift = Math.min(pt, maxShift);
+    if (shift <= 0) return;
+    el.style.paddingTop = `${pt - shift}px`;
+    el.style.paddingBottom = `${pb + shift}px`;
+  };
+  element.querySelectorAll("td, th").forEach((el) => shiftUp(el, 5));
+  element.querySelectorAll("span, div").forEach((el) => {
+    const cs = window.getComputedStyle(el);
+    if (
+      cs.display.indexOf("inline") === 0 &&
+      parseFloat(cs.borderTopWidth) > 0 &&
+      parseFloat(cs.borderBottomWidth) > 0
+    ) {
+      shiftUp(el, 6);
+    }
+  });
+
   try {
     // 캔버스로 렌더링 (고해상도)
     const canvas = await html2canvas(element, {
