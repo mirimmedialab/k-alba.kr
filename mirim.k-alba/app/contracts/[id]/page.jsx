@@ -1118,6 +1118,9 @@ export default function ContractDetailPage() {
                     <Button variant="primary" size="lg" onClick={submitBreakTime} disabled={savingBreak}>
                       확인
                     </Button>
+                    <Button variant="secondary" size="lg" onClick={() => { setBreakEdit(false); setChatInput(""); }} disabled={savingBreak} style={{ flexShrink: 0 }}>
+                      취소
+                    </Button>
                   </div>
                 )}
               </div>
