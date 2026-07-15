@@ -54,3 +54,6 @@ ALIMTALK_TPL_COMPLETED=KALBACOMPLETED
 ## 비용
 
 알림톡 약 8~9원/건 (VAT 별도). 실패 시 SMS 대체발송은 SENS 콘솔 → 알림톡 설정에서 켤 수 있습니다 (문자 단가 별도).
+
+---
+2026-07-14: 템플릿 5종 검수 승인 완료, Vercel 환경변수 등록 완료 → 알림톡 활성화.
