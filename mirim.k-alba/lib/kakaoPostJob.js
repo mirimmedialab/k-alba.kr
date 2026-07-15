@@ -59,6 +59,9 @@ const STEPS = [
   { key: "work_hours", core: false, type: "buttons",
     q: "⏰ 근무 시간대는요? (선택)",
     options: ["오전 (06~12시)", "오후 (12~18시)", "저녁 (18~24시)", "야간 (24~06시)", "시간 협의"] },
+  { key: "break_time", core: false, type: "buttons",
+    q: "☕ 휴게시간은 얼마나 주시나요? (무급·선택)\n근로기준법 제54조: 근로 4시간엔 30분,\n8시간엔 1시간 이상을 근무 도중에 줘야 해요.\n휴게시간은 무급이라 급여 계산에서 제외돼요.",
+    options: ["30분", "1시간", "없음 (일 4시간 미만)", "협의"] },
   { key: "work_days", core: false, type: "buttons",
     q: "📆 근무 요일은요? (선택)",
     options: ["평일 (월~금)", "주말 (토~일)", "요일 협의", "매일", "교대근무"] },
@@ -268,6 +271,14 @@ async function continueFlow(db, key, draftRow, input) {
     visa_types: Array.isArray(data.visa_types) ? data.visa_types : [],
     work_type: data.work_type || null,
     work_hours: data.work_hours || null,
+    // 휴게시간: "30분"→30, "1시간"→60, "없음"→0, 협의/미입력→null
+    break_minutes: (() => {
+      const b = String(data.break_time || "");
+      if (b.includes("30")) return 30;
+      if (b.includes("1시간")) return 60;
+      if (b.includes("없음")) return 0;
+      return null;
+    })(),
     work_days: data.work_days || null,
     korean_level: data.korean_level || null,
     headcount: data.headcount || null,
