@@ -51,7 +51,7 @@ export default function PostJobPage() {
   const scrollRef = useRef(null);
   const initRef = useRef(false);
   const isDesktop = useIsDesktop();
-  const [form, setForm] = useState({ jobType: "", title: "", workType: [], address: "", addressDetail: "", payType: "시급", payAmount: "", workHours: "", workDays: "", korean: "", visa: [], headcount: "", benefits: [], description: "", contactPhone: "", contactMobile: "", contactEmail: "" });
+  const [form, setForm] = useState({ jobType: "", title: "", workType: [], address: "", addressDetail: "", payType: "시급", payAmount: "", workHours: "", breakTime: "", workDays: "", korean: "", visa: [], headcount: "", benefits: [], description: "", contactPhone: "", contactMobile: "", contactEmail: "" });
   const [webAddrOpen, setWebAddrOpen] = useState(false);
   const [webErr, setWebErr] = useState("");
   const [webBusy, setWebBusy] = useState(false);
@@ -73,19 +73,19 @@ export default function PostJobPage() {
     }
   }, [bizGate.loading, bizGate.verified, isDesktop, router]);
 
-  // 스텝: 1=업종, 2=제목, 3=근무형태, 4=주소, 5=상세주소, 6=급여형태, 7=금액, 8=시간, 9=요일, 10=한국어, 11=비자, 12=인원, 13=복리후생, 14=설명
-  const TOTAL_STEPS = 14;
+  // 스텝: 1=업종, 2=제목, 3=근무형태, 4=주소, 5=상세주소, 6=급여형태, 7=금액, 8=시간, 9=휴게시간, 10=요일, 11=한국어, 12=비자, 13=인원, 14=복리후생, 15=설명
+  const TOTAL_STEPS = 15;
 
   const getStepType = (s) => ({
     1: "chips", 2: "input", 3: "multi", 4: "addressSearch", 5: "input",
     6: "chips", 7: "input", 8: "chipsInput", 9: "chips", 10: "chips",
-    11: "multi", 12: "chipsInput", 13: "multi", 14: "textarea"
+    11: "chips", 12: "multi", 13: "chipsInput", 14: "multi", 15: "textarea"
   })[s];
 
   const getStepKey = (s) => ({
     1: "jobType", 2: "title", 3: "workType", 4: "address", 5: "addressDetail",
-    6: "payType", 7: "payAmount", 8: "workHours", 9: "workDays", 10: "korean",
-    11: "visa", 12: "headcount", 13: "benefits", 14: "description"
+    6: "payType", 7: "payAmount", 8: "workHours", 9: "breakTime", 10: "workDays",
+    11: "korean", 12: "visa", 13: "headcount", 14: "benefits", 15: "description"
   })[s];
 
   const getStepOptions = (s) => ({
@@ -93,11 +93,12 @@ export default function PostJobPage() {
     3: ["정기 알바", "단기 알바", "주말 알바", "야간 알바", "일용직 알바", "재택/온라인"],
     6: ["시급", "일급", "월급"],
     8: ["오전 (06~12시)", "오후 (12~18시)", "저녁 (18~24시)", "야간 (24~06시)", "시간 협의"],
-    9: ["평일 (월~금)", "주말 (토~일)", "요일 협의", "매일", "교대근무"],
-    10: ["불필요 (못해도 OK)", "초급 (기본 인사)", "중급 (업무 지시 이해)", "고급 (능통)"],
-    11: ["D-2 유학", "E-9 비전문취업", "F-2 거주", "F-4 재외동포", "F-6 결혼이민", "H-2 방문취업", "비자 무관"],
-    12: ["1명", "2명", "3명", "5명", "10명 이상"],
-    13: ["식사 제공", "교통비 지원", "기숙사 제공", "4대보험", "유니폼 제공", "음료 무제한", "직원 할인", "인센티브", "없음"]
+    9: ["30분", "1시간", "없음 (일 4시간 미만)", "협의"],
+    10: ["평일 (월~금)", "주말 (토~일)", "요일 협의", "매일", "교대근무"],
+    11: ["불필요 (못해도 OK)", "초급 (기본 인사)", "중급 (업무 지시 이해)", "고급 (능통)"],
+    12: ["D-2 유학", "E-9 비전문취업", "F-2 거주", "F-4 재외동포", "F-6 결혼이민", "H-2 방문취업", "비자 무관"],
+    13: ["1명", "2명", "3명", "5명", "10명 이상"],
+    14: ["식사 제공", "교통비 지원", "기숙사 제공", "4대보험", "유니폼 제공", "음료 무제한", "직원 할인", "인센티브", "없음"]
   })[s] || [];
 
   const getBotMessage = (s, a) => {
@@ -125,12 +126,13 @@ export default function PostJobPage() {
       return t("postJob.botStep7", { pt: a.payType || p.payType, guide });
     }
     if (s === 8) return t("postJob.botStep8", { jt, ex: p.hoursEx });
-    if (s === 9) return t("postJob.botStep9", { jt, hint: p.daysHint });
-    if (s === 10) return t("postJob.botStep10", { jt, hint: p.koreanHint });
-    if (s === 11) return t("postJob.botStep11");
-    if (s === 12) return t("postJob.botStep12", { jt, hint: p.headHint });
-    if (s === 13) return p.beneHint ? t("postJob.botStep13", { jt, hint: p.beneHint }) : t("postJob.botStep13NoHint");
-    if (s === 14) return t("postJob.botStep14", { jt, ex: p.descEx });
+    if (s === 9) return t("postJob.botStepBreak", null, "휴게시간은 얼마나 주시나요? ☕\n\n근로기준법 제54조에 따라 근로 4시간엔 30분,\n8시간엔 1시간 이상을 근무 도중에\n줘야 해요. (무급 가능)\n\n휴게시간은 무급이라 실근로시간과\n급여 계산에서 제외됩니다.");
+    if (s === 10) return t("postJob.botStep9", { jt, hint: p.daysHint });
+    if (s === 11) return t("postJob.botStep10", { jt, hint: p.koreanHint });
+    if (s === 12) return t("postJob.botStep11");
+    if (s === 13) return t("postJob.botStep12", { jt, hint: p.headHint });
+    if (s === 14) return p.beneHint ? t("postJob.botStep13", { jt, hint: p.beneHint }) : t("postJob.botStep13NoHint");
+    if (s === 15) return t("postJob.botStep14", { jt, ex: p.descEx });
     return "";
   };
 
@@ -144,8 +146,8 @@ export default function PostJobPage() {
       return mkt ? String(mkt.median) : p.payEx;
     }
     if (s === 8) return p.hoursEx;
-    if (s === 12) return t("postJob.phHeadcount");
-    if (s === 14) return t("postJob.phDescription");
+    if (s === 13) return t("postJob.phHeadcount");
+    if (s === 15) return t("postJob.phDescription");
     return t("postJob.sendPlaceholder");
   };
 
@@ -281,6 +283,15 @@ export default function PostJobPage() {
       else cPhone = v;
     }
 
+    // 휴게시간: "30분"→30, "1시간"→60, "없음"→0, 협의/미입력→null
+    const parseBreakMin = (v) => {
+      const bs = String(v || "");
+      if (bs.includes("30")) return 30;
+      if (bs.includes("1시간")) return 60;
+      if (bs.includes("없음")) return 0;
+      return null;
+    };
+
     const jobData = {
       employer_id: user.id,
       title: a.title,
@@ -291,6 +302,7 @@ export default function PostJobPage() {
       address: a.address,
       address_detail: a.addressDetail,
       work_hours: a.workHours,
+      break_minutes: parseBreakMin(a.breakTime),
       work_days: a.workDays,
       korean_level: a.korean,
       visa_types: typeof a.visa === "string"
@@ -355,6 +367,7 @@ export default function PostJobPage() {
         payType: form.payType,
         payAmount: form.payAmount,
         workHours: form.workHours,
+        breakTime: form.breakTime,
         workDays: form.workDays,
         korean: form.korean,
         visa: form.visa.join(", "),
@@ -443,7 +456,7 @@ export default function PostJobPage() {
             setPosted(false);
             resetChat();
             // 데스크탑 폼 상태도 초기화 (이전 입력/제출 상태가 남지 않도록)
-            setForm({ jobType: "", title: "", workType: [], address: "", addressDetail: "", payType: "시급", payAmount: "", workHours: "", workDays: "", korean: "", visa: [], headcount: "", benefits: [], description: "" });
+            setForm({ jobType: "", title: "", workType: [], address: "", addressDetail: "", payType: "시급", payAmount: "", workHours: "", breakTime: "", workDays: "", korean: "", visa: [], headcount: "", benefits: [], description: "" });
             setWebErr("");
             setWebBusy(false);
           }}>
@@ -517,29 +530,34 @@ export default function PostJobPage() {
         </div>
 
         <div style={field}>
+          <label style={lab}>휴게시간 <span style={{ color: T.ink3, fontWeight: 500, fontSize: 12 }}>(무급 · 근로기준법 제54조: 4시간 근무 시 30분, 8시간 시 1시간 이상)</span></label>
+          <div style={rowS}>{getStepOptions(9).map((o) => <button key={o} type="button" onClick={() => setF("breakTime", o)} style={chip(form.breakTime === o)}>{o}</button>)}</div>
+        </div>
+
+        <div style={field}>
           <label style={lab}>{t("postJob.labelWorkDays")}</label>
-          <div style={rowS}>{getStepOptions(9).map((o) => <button key={o} type="button" onClick={() => setF("workDays", o)} style={chip(form.workDays === o)}>{o}</button>)}</div>
+          <div style={rowS}>{getStepOptions(10).map((o) => <button key={o} type="button" onClick={() => setF("workDays", o)} style={chip(form.workDays === o)}>{o}</button>)}</div>
         </div>
 
         <div style={field}>
           <label style={lab}>{t("postJob.labelKorean")}</label>
-          <div style={rowS}>{getStepOptions(10).map((o) => <button key={o} type="button" onClick={() => setF("korean", o)} style={chip(form.korean === o)}>{o}</button>)}</div>
+          <div style={rowS}>{getStepOptions(11).map((o) => <button key={o} type="button" onClick={() => setF("korean", o)} style={chip(form.korean === o)}>{o}</button>)}</div>
         </div>
 
         <div style={field}>
           <label style={lab}>{withReq("labelVisa")} <span style={{ color: T.ink3, fontWeight: 500 }}>{t("postJob.multipleAllowed")}</span></label>
-          <div style={rowS}>{getStepOptions(11).map((o) => <button key={o} type="button" onClick={() => toggle("visa", o)} style={chip(form.visa.includes(o))}>{o}</button>)}</div>
+          <div style={rowS}>{getStepOptions(12).map((o) => <button key={o} type="button" onClick={() => toggle("visa", o)} style={chip(form.visa.includes(o))}>{o}</button>)}</div>
         </div>
 
         <div style={field}>
           <label style={lab}>{t("postJob.labelHeadcount")}</label>
-          <div style={{ ...rowS, marginBottom: 8 }}>{getStepOptions(12).map((o) => <button key={o} type="button" onClick={() => setF("headcount", o)} style={chip(form.headcount === o)}>{o}</button>)}</div>
+          <div style={{ ...rowS, marginBottom: 8 }}>{getStepOptions(13).map((o) => <button key={o} type="button" onClick={() => setF("headcount", o)} style={chip(form.headcount === o)}>{o}</button>)}</div>
           <input value={form.headcount} onChange={(e) => setF("headcount", e.target.value)} placeholder={t("postJob.phHeadcountDirect")} style={inp} />
         </div>
 
         <div style={field}>
           <label style={lab}>{t("postJob.labelBenefits")} <span style={{ color: T.ink3, fontWeight: 500 }}>{t("postJob.multipleAllowed")}</span></label>
-          <div style={rowS}>{getStepOptions(13).map((o) => <button key={o} type="button" onClick={() => toggle("benefits", o)} style={chip(form.benefits.includes(o))}>{o}</button>)}</div>
+          <div style={rowS}>{getStepOptions(14).map((o) => <button key={o} type="button" onClick={() => toggle("benefits", o)} style={chip(form.benefits.includes(o))}>{o}</button>)}</div>
         </div>
 
         <div style={field}>
@@ -596,6 +614,7 @@ export default function PostJobPage() {
               [t("postJob.rowPay"), a.payAmount ? t("postJob.payAmountFmt", { pt: a.payType, amount: Number(String(a.payAmount).replace(/[^0-9]/g, "")).toLocaleString() }) : null],
               [t("postJob.rowLocation"), a.address ? `${a.address}${a.addressDetail && a.addressDetail !== "없음" ? " " + a.addressDetail : ""}` : null],
               [t("postJob.rowWorkHours"), a.workHours],
+              [t("postJob.rowBreak", null, "휴게시간"), a.breakTime],
               [t("postJob.rowWorkDays"), a.workDays],
               [t("postJob.rowKorean"), a.korean],
               [t("postJob.rowVisa"), a.visa],
