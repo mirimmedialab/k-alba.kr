@@ -85,9 +85,13 @@ export function buildContractFromJob(job, employerProfile = null, opts = {}) {
     .toISOString()
     .split("T")[0];
 
+  // 공고에 휴게시간(무급)이 있으면 실근로시간 기준으로 계산
+  const jobBreakMin = job.break_minutes === 30 || job.break_minutes === 60 ? job.break_minutes : null;
+
   let wageCalc;
   if (job.pay_type === "시급" && parsedHours) {
-    wageCalc = calcMonthlyWage(job.pay_amount, parsedHours.hours, parsedDays.length);
+    const netHours = Math.max(0, parsedHours.hours - (jobBreakMin || 0) / 60);
+    wageCalc = calcMonthlyWage(job.pay_amount, netHours, parsedDays.length);
   } else if (job.pay_type === "일급") {
     wageCalc = calcMonthlyDailyWage(job.pay_amount, parsedDays.length);
   } else {
@@ -115,6 +119,21 @@ export function buildContractFromJob(job, employerProfile = null, opts = {}) {
     work_days: parsedDays,
     work_start: parsedHours?.start || "09:00",
     work_end: parsedHours?.end || "18:00",
+    // 공고의 휴게시간 자동 반영 (계약 챗봇에서 양측 확인 후 확정)
+    break_minutes: jobBreakMin,
+    break_start: (() => {
+      if (!jobBreakMin) return null;
+      const [sh, sm] = (parsedHours?.start || "09:00").split(":").map(Number);
+      const [eh, em] = (parsedHours?.end || "18:00").split(":").map(Number);
+      let s = sh * 60 + sm;
+      let e = eh * 60 + em;
+      if (e <= s) e += 1440;
+      let st = Math.round(((s + e) / 2 - jobBreakMin / 2) / 30) * 30;
+      if (st < s) st = s;
+      if (st + jobBreakMin > e) st = e - jobBreakMin;
+      const mm = ((st % 1440) + 1440) % 1440;
+      return `${String(Math.floor(mm / 60)).padStart(2, "0")}:${String(mm % 60).padStart(2, "0")}`;
+    })(),
     // 급여
     pay_type: job.pay_type,
     pay_amount: job.pay_amount,
