@@ -101,11 +101,13 @@ export async function POST(request) {
 
     const site = process.env.NEXT_PUBLIC_SITE_URL || "https://k-alba.kr";
     const url = `${site}/contracts/${c.id}`;
+    // "14:00:00" → "14:00"
+    const hm = (t) => (typeof t === "string" && t.length >= 5 ? t.slice(0, 5) : t || "");
     const terms = [
       `🏪 ${c.company_name || "-"}`,
       `👤 ${c.worker_name || "-"}`,
       `💰 ${c.pay_type || "시급"} ${Number(c.pay_amount || 0).toLocaleString()}원`,
-      `📅 ${(c.work_days || []).join("·")} ${c.work_start || ""}~${c.work_end || ""}`,
+      `📅 ${(c.work_days || []).join("·")} ${hm(c.work_start)}~${hm(c.work_end)}`,
       `🗓 ${c.contract_start || "-"} ~ ${c.contract_end || "-"}`,
     ].join("<br/>");
 
@@ -175,7 +177,7 @@ export async function POST(request) {
         const templateCode = process.env[tplEnv];
         if (to && templateCode) alimJobs.push({ to, templateCode, content, buttons: btn });
       };
-      const summary = `· 근무: ${(c.work_days || []).join("·")} ${c.work_start || ""}~${c.work_end || ""}\n· 급여: ${c.pay_type || "시급"} ${Number(c.pay_amount || 0).toLocaleString()}원`;
+      const summary = `· 근무: ${(c.work_days || []).join("·")} ${hm(c.work_start)}~${hm(c.work_end)}\n· 급여: ${c.pay_type || "시급"} ${Number(c.pay_amount || 0).toLocaleString()}원`;
 
       switch (event) {
         case "sign_request":
