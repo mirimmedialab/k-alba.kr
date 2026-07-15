@@ -254,7 +254,7 @@ export default function ContractDetailPage() {
       `💰 급여: ${c.pay_type || "시급"} ₩${Number(c.pay_amount || 0).toLocaleString()}`,
     ];
     if ((c.pay_type || "시급") === "시급" && c.monthly_total) {
-      lines.push(`   └ 예상 월급여 약 ₩${Number(c.monthly_total).toLocaleString()} (주휴수당 포함)`);
+      lines.push(`   └ 예상 월급여 약 ₩${Number(c.monthly_total).toLocaleString()} (${Number(c.monthly_holiday || 0) > 0 ? "주휴수당 포함" : "주휴수당 미발생"})`);
     }
     lines.push(`📅 근무: ${(c.work_days || []).join("·")} ${c.work_start || ""}~${c.work_end || ""}${c.weekly_hours ? ` (주 ${c.weekly_hours}시간)` : ""}`);
     const bh = calcDailyHours(c);
@@ -595,6 +595,7 @@ export default function ContractDetailPage() {
   };
 
   // 휴게시간 확인 → 계약서에 반영 (양측 각자 확인)
+  // ※ 휴게시간은 무급 → 실근로시간·주휴수당·예상 월급여·보험 기준 재계산
   const confirmBreak = async (startStr) => {
     if (savingBreak) return;
     const minutes = contract.break_minutes || legalBreakMin(contract);
@@ -605,6 +606,23 @@ export default function ContractDetailPage() {
     const upd = { break_start: start, break_minutes: minutes };
     if (isEmployer) upd.employer_break_ok = true;
     else upd.worker_break_ok = true;
+
+    // 무급 휴게시간을 제외한 실근로시간으로 재계산
+    const workDayCount = (contract.work_days || []).length;
+    const netDaily = Math.max(0, calcDailyHours(contract) - minutes / 60);
+    const weeklyHours = Math.round(netDaily * workDayCount * 10) / 10;
+    const prevWeekly = contract.weekly_hours;
+    const prevTotal = contract.monthly_total;
+    upd.weekly_hours = weeklyHours;
+    upd.insurance_required = weeklyHours >= 15;
+    if ((contract.pay_type || "시급") === "시급" && contract.pay_amount) {
+      const basic = Math.round(contract.pay_amount * weeklyHours * 4.345);
+      const holiday = weeklyHours >= 15 ? Math.round(contract.pay_amount * (weeklyHours / 5) * 4.345) : 0;
+      upd.monthly_basic = basic;
+      upd.monthly_holiday = holiday;
+      upd.monthly_total = basic + holiday;
+    }
+
     const { error } = await updateContract(contract.id, upd);
     setSavingBreak(false);
     if (error) {
@@ -615,7 +633,15 @@ export default function ContractDetailPage() {
     setBreakEdit(false);
     const fresh = await getContract(contract.id);
     if (fresh) setContract(normalizeContract(fresh));
-    addBot(`☕ 휴게시간이 계약서에 반영되었습니다!\n🕐 ${start} ~ ${end} (${minutes}분, 무급)\n\n계약서 4항 근로시간 표에서\n확인할 수 있어요.`, () => {
+    let payNote = "";
+    if (prevWeekly && weeklyHours !== prevWeekly) {
+      payNote = `\n\n휴게시간은 무급이라 실근로시간이\n주 ${prevWeekly}시간 → 주 ${weeklyHours}시간으로 조정돼요.`;
+      if (upd.monthly_total != null && prevTotal && upd.monthly_total !== prevTotal) {
+        payNote += `\n💰 예상 월급여: 약 ₩${Number(prevTotal).toLocaleString()} → ₩${Number(upd.monthly_total).toLocaleString()}`;
+        payNote += upd.monthly_holiday > 0 ? "\n(주휴수당 포함)" : "\n(주 15시간 미만 — 주휴수당 미발생)";
+      }
+    }
+    addBot(`☕ 휴게시간이 계약서에 반영되었습니다!\n🕐 ${start} ~ ${end} (${minutes}분, 무급)${payNote}\n\n계약서 4항 근로시간 표에서\n확인할 수 있어요.`, () => {
       if (breakFirst) {
         setBreakFirst(false);
         addBot("혹시 수정할 내용이 있나요?\n없으면 '수정 없음'을 눌러 진행해 주세요.");
