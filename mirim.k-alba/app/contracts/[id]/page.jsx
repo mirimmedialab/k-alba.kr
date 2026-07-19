@@ -1393,7 +1393,7 @@ export default function ContractDetailPage() {
         )}
 
         {tab === "form" && <ContractForm contract={contract} />}
-        {tab === "preview" && <ContractPreview contract={contract} onSignClick={() => setTab("chat")} />}
+        {tab === "preview" && <ContractPreview contract={contract} onSignClick={() => setTab("chatbot")} />}
       </div>
 
       {/* 유학생 시간제취업 확인서 (숨김 — PDF 생성용) */}
