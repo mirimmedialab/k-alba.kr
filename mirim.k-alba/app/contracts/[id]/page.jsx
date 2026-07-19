@@ -1542,8 +1542,8 @@ function ContractForm({ contract }) {
         )}
         <div style={{ marginTop: 10, fontSize: 11, color: T.ink3, lineHeight: 1.7 }}>
           {contract.insurance_required
-            ? "✓ 4대보험 가입 대상 (주 15시간 이상)"
-            : "ⓘ 주 15시간 미만 — 산재보험만 적용"}
+            ? "✓ 의무 보험 자동 가입: 산재 + 건강보험 (주 15시간 이상 · 국민연금·고용보험은 비자에 따라 다름)"
+            : "ⓘ 주 15시간 미만 — 산재보험만 의무 적용"}
         </div>
       </div>
 
@@ -1746,8 +1746,19 @@ function ContractPreview({ contract, onSignClick }) {
   const [cy, cm, cd] = contractDate.split("-");
   const [sy, smm, sd] = (contract.contract_start || "--").split("-");
   const [ey, emm, ed] = (contract.contract_end || "--").split("-");
-  const insured = !!contract.insurance_required;
-  const employmentIns = weeklyHours >= 15;
+  // 4대보험 의무 자동 판정 (2026-07-19) — 의무인 보험은 자동 ☑
+  //  · 산재: 근로시간 무관 무조건 적용
+  //  · 건강: 월 60시간(주 15시간) 이상 의무
+  //  · 국민연금: 유학생(D-2/D-4) 제외, 그 외 주 15시간 이상 의무(국적 상호주의 확인 필요)
+  //  · 고용: 유학생 제외, F-2/F-5/F-6 당연가입, 그 외 취업비자는 임의가입(자동 체크 안 함)
+  const visaStr = String(contract.worker?.visa || "");
+  const isStudentVisa = /D-?2|D-?4/i.test(visaStr);
+  const isResidentVisa = /F-?2|F-?5|F-?6/i.test(visaStr);
+  const insHealth = weeklyHours >= 15;
+  const insPension = weeklyHours >= 15 && !isStudentVisa;
+  const insEmployment = visaStr
+    ? (!isStudentVisa && isResidentVisa && weeklyHours >= 15)
+    : weeklyHours >= 15;
   const holidayPay = Number(contract.monthly_holiday || 0);
   const tsplit = (v) => {
     const [h, m] = String(v || "").split(":");
@@ -1841,7 +1852,13 @@ function ContractPreview({ contract, onSignClick }) {
 
         <div style={line}>6. 연차유급휴가: 통상근로자의 근로시간에 비례하여 연차유급휴가 부여</div>
         <div style={line}>7. 사회보험 적용여부(해당란에 체크)</div>
-        <div style={sub}>{employmentIns ? "☑" : "☐"} 고용보험&nbsp;&nbsp;&nbsp;☑ 산재보험&nbsp;&nbsp;&nbsp;{insured ? "☑" : "☐"} 국민연금&nbsp;&nbsp;&nbsp;{insured ? "☑" : "☐"} 건강보험</div>
+        <div style={sub}>{insEmployment ? "☑" : "☐"} 고용보험&nbsp;&nbsp;&nbsp;☑ 산재보험&nbsp;&nbsp;&nbsp;{insPension ? "☑" : "☐"} 국민연금&nbsp;&nbsp;&nbsp;{insHealth ? "☑" : "☐"} 건강보험</div>
+        <div style={{ ...sub, fontSize: 10, color: "#777" }}>
+          ※ 의무 가입 보험은 자동 체크됨 (산재보험은 근로시간과 관계없이 항상 적용)
+          {isStudentVisa ? " · 유학생(D-2/D-4)은 국민연금·고용보험 의무가입 대상 아님" : ""}
+          {!isStudentVisa && visaStr && insPension ? " · 국민연금은 국적(상호주의)에 따라 제외될 수 있음" : ""}
+          {!isStudentVisa && visaStr && !isResidentVisa ? " · 고용보험은 신청 시 가입 가능(임의가입)" : ""}
+        </div>
         <div style={line}>8. 근로계약서 교부</div>
         <div style={sub}>- “사업주”는 근로계약을 체결함과 동시에 본 계약서를 사본하여 “근로자”의 교부요구와 관계없이 “근로자”에게 교부함(근로기준법 제17조 이행)</div>
         <div style={line}>9. 근로계약, 취업규칙 등의 성실한 이행의무</div>
