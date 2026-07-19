@@ -59,8 +59,11 @@ export async function generateContractPDF(elementId, filename = "k-alba-contract
   element.querySelectorAll("td, th").forEach((el) => shiftUp(el, 5));
   // 표 자체를 살짝 아래로 이동 (표 안 글자 위치는 유지, 2026-07-19)
   element.querySelectorAll("table").forEach((t) => {
-    const mt = parseFloat(window.getComputedStyle(t).marginTop) || 0;
-    t.style.marginTop = `${mt + 15}px`;
+    const cs2 = window.getComputedStyle(t);
+    const mt = parseFloat(cs2.marginTop) || 0;
+    const mb = parseFloat(cs2.marginBottom) || 0;
+    t.style.marginTop = `${mt + 15}px`;    // 제목과 표 사이 여백
+    t.style.marginBottom = `${mb + 12}px`; // 표와 다음 줄(주휴일 등) 사이 여백
   });
   element.querySelectorAll("span, div").forEach((el) => {
     const cs = window.getComputedStyle(el);
