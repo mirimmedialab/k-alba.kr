@@ -56,7 +56,7 @@ export async function generateContractPDF(elementId, filename = "k-alba-contract
     el.style.paddingTop = `${pt - shift}px`;
     el.style.paddingBottom = `${pb + shift}px`;
   };
-  element.querySelectorAll("td, th").forEach((el) => shiftUp(el, 5));
+  element.querySelectorAll("td, th").forEach((el) => shiftUp(el, 2)); // 5→2: 표 안 글자를 살짝 아래로 (2026-07-19)
   element.querySelectorAll("span, div").forEach((el) => {
     const cs = window.getComputedStyle(el);
     if (
