@@ -130,6 +130,13 @@ export default function ContractDetailPage() {
       initWorkerChat();
     } else if (isEmployer && contract.worker_signed && !contract.employer_signed) {
       initEmployerChat();
+    } else if (isEmployer && contract.employer_signed && !contract.worker_signed) {
+      // 사장님 선서명 완료 → 근로자 서명 대기
+      setMessages([
+        { from: "bot", text: "✅ 사장님 서명이 완료되었습니다!\n\n이제 근로자 서명을 기다리고 있어요. ⏳" },
+        { from: "bot", text: buildTermsText(contract) },
+        { from: "bot", text: "💬 '근로자에게 서명 요청'을 눌러\n카카오톡 알림을 보내보세요.\n근로자가 서명하면 계약이 완료됩니다." },
+      ]);
     } else if (isEmployer && !contract.worker_signed) {
       // 사장님: 휴게시간 의무 배정 → 조건 확인 → 계약서 보기 → 근로자 서명 요청 흐름
       const needBreakNow = breakRequired(contract) && !contract.employer_break_ok;
@@ -578,7 +585,7 @@ export default function ContractDetailPage() {
   const proceedAfterTerms = () => {
     setTermsConfirmed(true);
     if (isEmployer && !contract.worker_signed) {
-      addBot("좋아요! 계약 조건이 확정되었어요.\n\n📄 '계약서 보기'로 전문을 확인하고,\n💬 '근로자에게 서명 요청'을 눌러\n카카오톡으로 서명 요청을 보내주세요.");
+      addBot("좋아요! 계약 조건이 확정되었어요.\n\n📄 '계약서 보기'로 전문을 확인하세요.\n✍️ 사장님이 먼저 서명해도 되고,\n💬 근로자에게 먼저 서명 요청을 보내도 돼요.\n(서명 순서는 상관없어요)");
     } else {
       addBot("좋아요! 서명 전에 '📄 계약서 보기'를 눌러\n근로계약서 전문을 꼭 확인해 주세요.\n\n확인하셨으면 ✍️ 서명하기를 눌러주세요.");
     }
@@ -801,13 +808,13 @@ export default function ContractDetailPage() {
         updated.worker_signature = signatureDataUrl;
         updated.worker_sign_date = now;
         updated.worker_signature_at = now;
-        updated.status = "employer_signing";
+        updated.status = updated.employer_signed ? "completed" : "employer_signing";
       } else {
         updated.employer_signed = true;
         updated.employer_signature = signatureDataUrl;
         updated.employer_sign_date = now;
         updated.employer_signature_at = now;
-        if (updated.worker_signed) updated.status = "completed";
+        updated.status = updated.worker_signed ? "completed" : "worker_signing";
       }
       localStorage.setItem(`contract-${params.id}`, JSON.stringify(updated));
       setContract(updated);
@@ -863,19 +870,22 @@ export default function ContractDetailPage() {
 
       setSigning(false);
 
+      const bothDone = role === "worker" ? contract.employer_signed : contract.worker_signed;
       setTimeout(() => {
-        if (role === "worker") {
-          addBot("✅ 근로자 서명 완료!\n📱 사장님께 카카오톡으로 알림을 보냈어요!");
-          if (data.audit?.ip_recorded) {
-            addBot("🔒 전자서명이 기록되었습니다.");
-          }
-        } else {
+        if (bothDone) {
           addBot("🎉 계약 완료!\n📄 양측 서명이 모두 기록되었습니다.");
           if (data.pdf_url) {
             setTimeout(() => {
               addBot(`✅ PDF가 생성되었습니다! 아래 버튼으로 다운로드하세요.`);
             }, 800);
           }
+        } else if (role === "worker") {
+          addBot("✅ 근로자 서명 완료!\n📱 사장님께 카카오톡으로 알림을 보냈어요!");
+          if (data.audit?.ip_recorded) {
+            addBot("🔒 전자서명이 기록되었습니다.");
+          }
+        } else {
+          addBot("✅ 사장님 서명 완료!\n💬 이제 '근로자에게 서명 요청'으로\n카카오톡 알림을 보내보세요.");
         }
       }, 500);
     } catch (err) {
@@ -922,7 +932,7 @@ export default function ContractDetailPage() {
   const studentInfo = getStudentInfo(contract);
   const confReady = studentInfo.isStudent && studentInfo.missingWorker.length === 0 && studentInfo.missingEmployer.length === 0;
   const canWorkerSign = isWorker && !contract.worker_signed && !signBlocked;
-  const canEmployerSign = isEmployer && contract.worker_signed && !contract.employer_signed && !signBlocked;
+  const canEmployerSign = isEmployer && !contract.employer_signed && !signBlocked; // 서명 순서 무관 — 누가 먼저든 가능
   const needsApproval = isEmployer && contract.status === "pending_approval";
   const waitingApproval = isWorker && contract.status === "pending_approval";
 
@@ -1145,15 +1155,35 @@ export default function ContractDetailPage() {
                       <Button variant="secondary" size="lg" onClick={handleViewContract} style={{ flexShrink: 0 }}>
                         📄 계약서 보기
                       </Button>
+                      <Button variant="primary" size="lg" fullWidth onClick={() => handleSign("employer")} disabled={signing}>
+                        {signing ? "서명 중..." : "✍️ 사장님 서명"}
+                      </Button>
                       <Button variant="primaryDark" size="lg" fullWidth onClick={handleShare} disabled={sharing}>
-                        💬 근로자에게 서명 요청
+                        💬 서명 요청
                       </Button>
                     </div>
                     <p style={{ textAlign: "center", fontSize: 10, color: T.ink3, marginTop: 8 }}>
-                      근로자가 서명하면 사장님 최종 서명 차례가 됩니다
+                      서명 순서는 상관없어요 — 두 분 모두 서명하면 계약이 완료됩니다
                     </p>
                   </>
                 )}
+              </div>
+            )}
+
+            {/* 사장님 선서명 완료 → 근로자 서명 대기: 서명 요청 버튼 유지 */}
+            {isEmployer && contract.employer_signed && !contract.worker_signed && !signBlocked && !typing && !editing && (
+              <div style={{ padding: 14, background: "#fff", borderTop: `1px solid ${T.border}` }}>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Button variant="secondary" size="lg" onClick={handleViewContract} style={{ flexShrink: 0 }}>
+                    📄 계약서 보기
+                  </Button>
+                  <Button variant="primaryDark" size="lg" fullWidth onClick={handleShare} disabled={sharing}>
+                    💬 근로자에게 서명 요청
+                  </Button>
+                </div>
+                <p style={{ textAlign: "center", fontSize: 10, color: T.ink3, marginTop: 8 }}>
+                  근로자가 서명하면 계약이 완료됩니다
+                </p>
               </div>
             )}
 
@@ -1290,7 +1320,7 @@ export default function ContractDetailPage() {
             )}
 
             {/* 서명 버튼 영역 — 1)조건 확인 → 2)계약서 보기 → 3)서명 */}
-            {(canWorkerSign || canEmployerSign) && !typing && !editing && !breakAsk && (
+            {(canWorkerSign || (canEmployerSign && contract.worker_signed)) && !typing && !editing && !breakAsk && (
               <div style={{ padding: 14, background: "#fff", borderTop: `1px solid ${T.border}` }}>
                 {(canWorkerSign && !termsConfirmed) || (breakRequired(contract) && !(isEmployer ? contract.employer_break_ok : contract.worker_break_ok)) ? (
                   <>
