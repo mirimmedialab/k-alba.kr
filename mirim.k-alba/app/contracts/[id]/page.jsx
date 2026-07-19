@@ -137,15 +137,16 @@ export default function ContractDetailPage() {
         { from: "bot", text: `📝 ${contract.worker_name || "근로자"}님과의\n근로계약서가 준비되었습니다!` },
         { from: "bot", text: buildTermsText(contract) },
         ...(needBreakNow
-          ? [{ from: "bot", text: buildBreakConfirmText(contract) }]
+          ? []
           : [
               { from: "bot", text: buildBreakGuide(contract) },
               { from: "bot", text: "혹시 수정할 내용이 있나요?\n없으면 '수정 없음'을 눌러 진행해 주세요." },
             ]),
       ]);
       if (needBreakNow) {
+        // 확인 단계 없이 법정 휴게시간을 자동 반영 (반영 안내 메시지로 대체)
         setBreakFirst(true);
-        setBreakAsk(true);
+        setTimeout(() => confirmBreak(), 700);
       }
     } else if (isWorker && contract.worker_signed && !contract.employer_signed) {
       // 알바생 서명 완료 → 사장님 최종 서명 대기 중
@@ -587,8 +588,7 @@ export default function ContractDetailPage() {
     addUser("👍 수정할 내용 없어요. 이 조건으로 진행할게요");
     const myBreakOk = isEmployer ? contract.employer_break_ok : contract.worker_break_ok;
     if (breakRequired(contract) && !myBreakOk) {
-      setBreakAsk(true);
-      addBot(buildBreakConfirmText(contract));
+      confirmBreak(); // 확인 단계 없이 자동 반영 → 반영 안내 후 다음 단계로
       return;
     }
     proceedAfterTerms();
@@ -602,7 +602,6 @@ export default function ContractDetailPage() {
     const start = startStr || suggestBreak(contract).start;
     const end = breakEndFrom(start, minutes);
     setSavingBreak(true);
-    addUser(`✅ 휴게시간 ${start} ~ ${end} 확인했어요`);
     const upd = { break_start: start, break_minutes: minutes };
     if (isEmployer) upd.employer_break_ok = true;
     else upd.worker_break_ok = true;
@@ -641,7 +640,8 @@ export default function ContractDetailPage() {
         payNote += upd.monthly_holiday > 0 ? "\n(주휴수당 포함)" : "\n(주 15시간 미만 — 주휴수당 미발생)";
       }
     }
-    addBot(`☕ 휴게시간이 계약서에 반영되었습니다!\n🕐 ${start} ~ ${end} (${minutes}분, 무급)${payNote}\n\n계약서 4항 근로시간 표에서\n확인할 수 있어요.`, () => {
+    const daysTxt = (contract.work_days || []).join("·");
+    addBot(`📅 근무시간 ${daysTxt} ${contract.work_start || ""}~${contract.work_end || ""} 중\n☕ 휴게시간 🕐 ${start} ~ ${end} (${minutes}분, 무급)이\n계약서에 반영되었습니다${payNote}\n\n사장님은 휴게시간을 준수해야 합니다`, () => {
       if (breakFirst) {
         setBreakFirst(false);
         addBot("혹시 수정할 내용이 있나요?\n없으면 '수정 없음'을 눌러 진행해 주세요.");
