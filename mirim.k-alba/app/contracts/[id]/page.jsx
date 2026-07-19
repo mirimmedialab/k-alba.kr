@@ -1591,12 +1591,9 @@ function StudentConfirmationForm({ contract, info }) {
       id="student-confirmation-for-pdf"
       style={{ display: "none", background: "#fff", padding: "42px 40px", width: 700, fontFamily: "'Noto Sans KR', sans-serif", color: "#111" }}
     >
-      <h1 style={{ textAlign: "center", fontSize: 20, fontWeight: 900, letterSpacing: 3, border: "2px solid #111", padding: "12px 0", marginBottom: 0 }}>
+      <h1 style={{ textAlign: "center", fontSize: 20, fontWeight: 900, letterSpacing: 3, border: "2px solid #111", borderBottom: "1px solid #111", padding: "12px 0", margin: 0 }}>
         외국인 유학생 시간제 취업 확인서
       </h1>
-      <div style={{ textAlign: "center", fontSize: 9.5, color: "#777", padding: "4px 0 10px" }}>
-        Part-time Work of Foreign Student Confirmation Form
-      </div>
 
       {/* 대상자 */}
       <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 0 }}>
@@ -1666,23 +1663,24 @@ function StudentConfirmationForm({ contract, info }) {
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <tbody>
                   <tr>
-                    <td style={{ ...tdC, border: "none", borderBottom: "1px solid #111", fontWeight: 700 }} colSpan={6}>
-                      평 일 : 총 {fmtH(weekdayTotal)}시간
+                    <td style={{ ...tdC, border: "none", borderBottom: "1px solid #111", width: 52 }}></td>
+                    <td style={{ ...tdC, border: "none", borderBottom: "1px solid #111", borderLeft: "1px solid #111", background: "#F2F0EC", fontWeight: 700 }} colSpan={5}>
+                      평 일 : 총&nbsp;&nbsp;{fmtH(weekdayTotal)}&nbsp;&nbsp;시간
                     </td>
-                    <td style={{ ...tdC, border: "none", borderBottom: "1px solid #111", borderLeft: "1px solid #111", fontWeight: 700 }} colSpan={2}>
-                      주말 : 총 {fmtH(weekendTotal)}시간
+                    <td style={{ ...tdC, border: "none", borderBottom: "1px solid #111", borderLeft: "2px solid #111", background: "#F2F0EC", fontWeight: 700 }} colSpan={2}>
+                      주말 : 총&nbsp;&nbsp;{fmtH(weekendTotal)}&nbsp;&nbsp;시간
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ ...th, borderTop: "none" }}>요일</td>
+                    <td style={{ ...th, borderTop: "none", borderLeft: "none" }}>요일</td>
                     {["월", "화", "수", "목", "금", "토", "일"].map((d) => (
-                      <td key={d} style={{ ...th, borderTop: "none" }}>{d}</td>
+                      <td key={d} style={{ ...th, borderTop: "none", borderLeft: d === "토" ? "2px solid #111" : undefined }}>{d}</td>
                     ))}
                   </tr>
                   <tr>
-                    <td style={{ ...th }}>시간</td>
+                    <td style={{ ...th, borderLeft: "none", borderBottom: "none" }}>시간</td>
                     {["월", "화", "수", "목", "금", "토", "일"].map((d) => (
-                      <td key={d} style={{ ...tdC, fontSize: 9.5 }}>{days.includes(d) ? timeRange : ""}</td>
+                      <td key={d} style={{ ...tdC, fontSize: 9.5, borderBottom: "none", borderLeft: d === "토" ? "2px solid #111" : undefined }}>{days.includes(d) ? timeRange : ""}</td>
                     ))}
                   </tr>
                 </tbody>
@@ -1697,10 +1695,13 @@ function StudentConfirmationForm({ contract, info }) {
         위 유학생은 본교에 재학하고 있는 학생으로서 현재의 학습 및 연구 상황으로 볼 때, 상기 예정된
         시간제취업 활동을 통해서는 학업(또는 연구 활동)에 지장이 없을 것으로 판단되므로, 이에 확인합니다.
         <div style={{ textAlign: "center", marginTop: 10, fontSize: 12 }}>20&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.</div>
-        <div style={{ fontSize: 9, color: "#555", lineHeight: 1.7, marginTop: 8 }}>
-          ※ 시간제취업허가 [한국어능력기준 제출자] 허용시간은 어학연수생은 주당 20시간, 학부과정은 주당 20시간 이내(인증대학은 25시간), 석박사과정은 주당 30시간 이내임.<br />
-          ▶ 한국어능력기준(토픽 기준) : 어학연수 2급, 전문학사 3급, 학사(1~2학년) 3급, 학사(3~4학년) 4급, 석박사 4급 이상 ◀<br />
-          ※ 시간제취업 허가 전 취업할 경우 [유학생과 고용주] 모두 처벌될 수 있습니다. (허가된 근무처에서만 취업 활동 가능)
+        <div style={{ fontSize: 9.5, color: "#111", lineHeight: 1.8, marginTop: 10 }}>
+          ※ 시간제취업허가 <span style={{ color: "#1d4ed8" }}>[한국어능력기준 제출자]</span>허용시간은 어학연수생은 주당 20시간,<br />
+          &nbsp;&nbsp;&nbsp;학부과정은 주당 20시간 이내(인증대학은 25시간), 석박사과정은 주당 30 시간 이내임.<br />
+          ▶ 한국어능력기준(토픽 기준) : 어학연수 2급, 전문학사 3급, 학사(1~2학년) 3급, 학사(3~4학년) 4급, 석박사 4급이상 ◀<br />
+          <span style={{ color: "#1d4ed8" }}>- 한국어 능력기준 미달할 경우 허용시간은 어학연수생과 학부생 10시간, 석박사과정 15시간으로 제한 -</span><br />
+          <span style={{ color: "#d11", fontWeight: 700 }}>※ 시간제취업 허가 전 취업할 경우 [유학생과 고용주] 모두 처벌될 수 있습니다.</span><br />
+          &nbsp;&nbsp;<span style={{ color: "#1d4ed8", textDecoration: "underline", fontWeight: 700 }}>(허가된 근무처에서만 취업 활동 가능)</span>
         </div>
       </div>
 
@@ -1729,9 +1730,6 @@ function StudentConfirmationForm({ contract, info }) {
         </tbody>
       </table>
 
-      <div style={{ textAlign: "center", fontSize: 9, color: "#999", marginTop: 10 }}>
-        본 확인서는 K-ALBA에서 자동 생성되었습니다. 유학생담당자 확인란은 소속 대학에서 기재·날인 후 제출하세요.
-      </div>
     </div>
   );
 }
