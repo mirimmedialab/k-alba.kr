@@ -60,7 +60,7 @@ export async function generateContractPDF(elementId, filename = "k-alba-contract
   // 표 자체를 살짝 아래로 이동 (표 안 글자 위치는 유지, 2026-07-19)
   element.querySelectorAll("table").forEach((t) => {
     const mt = parseFloat(window.getComputedStyle(t).marginTop) || 0;
-    t.style.marginTop = `${mt + 6}px`;
+    t.style.marginTop = `${mt + 15}px`;
   });
   element.querySelectorAll("span, div").forEach((el) => {
     const cs = window.getComputedStyle(el);
