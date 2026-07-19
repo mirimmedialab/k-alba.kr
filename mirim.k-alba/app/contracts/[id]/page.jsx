@@ -1582,16 +1582,16 @@ function StudentConfirmationForm({ contract, info }) {
   const weekendTotal = days.filter((d) => WEEKEND.includes(d)).length * dailyH;
   const timeRange = contract.work_start && contract.work_end ? `${contract.work_start}~${contract.work_end}` : "";
 
-  const th = { border: "1px solid #111", background: "#F2F0EC", padding: "7px 8px", fontSize: 11, fontWeight: 700, textAlign: "center", verticalAlign: "middle" };
-  const td = { border: "1px solid #111", padding: "7px 10px", fontSize: 11, verticalAlign: "middle" };
+  const th = { border: "1px solid #111", background: "#fff", padding: "13px 6px", fontSize: 12, fontWeight: 500, textAlign: "center", verticalAlign: "middle", letterSpacing: 1 };
+  const td = { border: "1px solid #111", padding: "13px 10px", fontSize: 12, verticalAlign: "middle" };
   const tdC = { ...td, textAlign: "center" };
 
   return (
     <div
       id="student-confirmation-for-pdf"
-      style={{ display: "none", background: "#fff", padding: "42px 40px", width: 700, fontFamily: "'Noto Sans KR', sans-serif", color: "#111" }}
+      style={{ display: "none", background: "#fff", padding: "46px 44px", width: 700, fontFamily: "'Dotum', '돋움', 'Gulim', '굴림', 'Malgun Gothic', '맑은 고딕', sans-serif", color: "#111" }}
     >
-      <h1 style={{ textAlign: "center", fontSize: 20, fontWeight: 900, letterSpacing: 3, border: "2px solid #111", borderBottom: "1px solid #111", padding: "12px 0", margin: 0 }}>
+      <h1 style={{ textAlign: "center", fontSize: 22, fontWeight: 900, letterSpacing: 5, border: "2px solid #111", borderBottom: "1px solid #111", padding: "16px 0", margin: 0 }}>
         외국인 유학생 시간제 취업 확인서
       </h1>
 
@@ -1601,21 +1601,21 @@ function StudentConfirmationForm({ contract, info }) {
           <tr>
             <td style={{ ...th, width: 60 }} rowSpan={3}>대상자</td>
             <td style={{ ...th, width: 90 }}>성 명</td>
-            <td style={td}>{contract.worker_name || ""}</td>
+            <td style={tdC}>{contract.worker_name || ""}</td>
             <td style={{ ...th, width: 90 }}>외국인<br />등록번호</td>
-            <td style={{ ...td, width: 150 }}>{sf.alien_reg_no || wp.alien_reg_number || ""}</td>
+            <td style={{ ...tdC, width: 150 }}>{sf.alien_reg_no || wp.alien_reg_number || ""}</td>
           </tr>
           <tr>
             <td style={th}>학과(전공)</td>
-            <td style={td}>{sf.department || ""}</td>
+            <td style={tdC}>{sf.department || ""}</td>
             <td style={th}>이수학기</td>
-            <td style={td}>{sf.semester ? `${String(sf.semester).replace(/[^0-9]/g, "")}학기` : ""}</td>
+            <td style={tdC}>{sf.semester ? `${String(sf.semester).replace(/[^0-9]/g, "")}학기` : ""}</td>
           </tr>
           <tr>
             <td style={th}>전화번호</td>
-            <td style={td}>{contract.worker_phone || wp.phone || ""}</td>
+            <td style={tdC}>{contract.worker_phone || wp.phone || ""}</td>
             <td style={th}>e-mail</td>
-            <td style={td}>{wp.email || ""}</td>
+            <td style={tdC}>{wp.email || ""}</td>
           </tr>
         </tbody>
       </table>
@@ -1630,9 +1630,9 @@ function StudentConfirmationForm({ contract, info }) {
           </tr>
           <tr>
             <td style={th}>사업자<br />등록번호</td>
-            <td style={td}>{contract.business_number || ""}</td>
+            <td style={tdC}>{contract.business_number || ""}</td>
             <td style={{ ...th, width: 70 }}>업종</td>
-            <td style={{ ...td, width: 150 }}>{sf.industry || contract.job_type || ""}</td>
+            <td style={{ ...tdC, width: 150 }}>{sf.industry || contract.job_type || ""}</td>
           </tr>
           <tr>
             <td style={th}>주 소</td>
@@ -1649,13 +1649,13 @@ function StudentConfirmationForm({ contract, info }) {
               )}
             </td>
             <td style={th}>전화<br />번호</td>
-            <td style={td}>{contract.employer_phone || ""}</td>
+            <td style={tdC}>{contract.employer_phone || ""}</td>
           </tr>
           <tr>
             <td style={th}>취업기간</td>
-            <td style={td}>{contract.contract_start || ""} ~ {contract.contract_end || ""}</td>
+            <td style={tdC}>{contract.contract_start || ""} ~ {contract.contract_end || ""}</td>
             <td style={th}>급여<br />(시급)</td>
-            <td style={td}>{Number(contract.pay_amount || 0).toLocaleString()}원</td>
+            <td style={tdC}>{Number(contract.pay_amount || 0).toLocaleString()}원</td>
           </tr>
           <tr>
             <td style={th}>근무시간</td>
@@ -1664,10 +1664,10 @@ function StudentConfirmationForm({ contract, info }) {
                 <tbody>
                   <tr>
                     <td style={{ ...tdC, border: "none", borderBottom: "1px solid #111", width: 52 }}></td>
-                    <td style={{ ...tdC, border: "none", borderBottom: "1px solid #111", borderLeft: "1px solid #111", background: "#F2F0EC", fontWeight: 700 }} colSpan={5}>
+                    <td style={{ ...tdC, border: "none", borderBottom: "1px solid #111", borderLeft: "1px solid #111", fontWeight: 700 }} colSpan={5}>
                       평 일 : 총&nbsp;&nbsp;{fmtH(weekdayTotal)}&nbsp;&nbsp;시간
                     </td>
-                    <td style={{ ...tdC, border: "none", borderBottom: "1px solid #111", borderLeft: "2px solid #111", background: "#F2F0EC", fontWeight: 700 }} colSpan={2}>
+                    <td style={{ ...tdC, border: "none", borderBottom: "1px solid #111", borderLeft: "2px solid #111", fontWeight: 700 }} colSpan={2}>
                       주말 : 총&nbsp;&nbsp;{fmtH(weekendTotal)}&nbsp;&nbsp;시간
                     </td>
                   </tr>
@@ -1691,10 +1691,10 @@ function StudentConfirmationForm({ contract, info }) {
       </table>
 
       {/* 확인 문구 */}
-      <div style={{ border: "1px solid #111", borderTop: "none", padding: "14px 16px", fontSize: 11.5, lineHeight: 2 }}>
+      <div style={{ border: "1px solid #111", borderTop: "none", padding: "18px 22px", fontSize: 12.5, lineHeight: 2.3, textAlign: "justify", wordBreak: "keep-all" }}>
         위 유학생은 본교에 재학하고 있는 학생으로서 현재의 학습 및 연구 상황으로 볼 때, 상기 예정된
         시간제취업 활동을 통해서는 학업(또는 연구 활동)에 지장이 없을 것으로 판단되므로, 이에 확인합니다.
-        <div style={{ textAlign: "center", marginTop: 10, fontSize: 12 }}>20&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.</div>
+        <div style={{ textAlign: "center", marginTop: 12, fontSize: 13 }}>20&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;&nbsp;.</div>
         <div style={{ fontSize: 9.5, color: "#111", lineHeight: 1.8, marginTop: 10 }}>
           ※ 시간제취업허가 <span style={{ color: "#1d4ed8" }}>[한국어능력기준 제출자]</span>허용시간은 어학연수생은 주당 20시간,<br />
           &nbsp;&nbsp;&nbsp;학부과정은 주당 20시간 이내(인증대학은 25시간), 석박사과정은 주당 30 시간 이내임.<br />
@@ -1705,7 +1705,7 @@ function StudentConfirmationForm({ contract, info }) {
         </div>
       </div>
 
-      <div style={{ border: "1px solid #111", borderTop: "none", padding: "16px 0", textAlign: "center", fontSize: 15, fontWeight: 700, letterSpacing: 2 }}>
+      <div style={{ border: "1px solid #111", borderTop: "none", padding: "22px 0", textAlign: "center", fontSize: 18, fontWeight: 700, letterSpacing: 3 }}>
         ◌ ◌ 출입국·외국인청(사무소·출장소)장 귀하
       </div>
 
@@ -1715,13 +1715,13 @@ function StudentConfirmationForm({ contract, info }) {
           <tr>
             <td style={{ ...th, width: 100 }} rowSpan={3}>유학생담당자<br />확인란</td>
             <td style={{ ...th, width: 80 }}>소속</td>
-            <td style={{ ...td, width: 160 }}>{sf.university || wp.organization || ""}</td>
+            <td style={{ ...tdC, width: 160 }}>{sf.university || wp.organization || ""}</td>
             <td style={{ ...th, width: 60 }} rowSpan={3}>성명</td>
             <td style={td} rowSpan={3}><span style={{ color: "#999", fontSize: 10 }}>(인 또는 서명)</span></td>
           </tr>
           <tr>
             <td style={th}>인증대학<br />여부</td>
-            <td style={td}>해당 ☐&nbsp;&nbsp;비해당 ☐</td>
+            <td style={tdC}>해당☐&nbsp;&nbsp;비해당☐</td>
           </tr>
           <tr>
             <td style={th}>직위<br />(연락처)</td>
