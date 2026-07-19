@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
 import { AddressSearchModal } from "@/components/AddressSearch";
-import { JOB_PRESETS, getMarketPay } from "@/data/marketData";
+import { JOB_PRESETS, getMarketPay, getVisaGuide, VISA_GUIDE_FOOT } from "@/data/marketData";
 import { createJob, getCurrentUser, getProfile } from "@/lib/supabase";
 import BusinessVerify from "@/components/ui/BusinessVerify";
 import { Button, KIcon } from "@/components/ui";
@@ -129,7 +129,13 @@ export default function PostJobPage() {
     if (s === 9) return t("postJob.botStepBreak", null, "휴게시간은 얼마나 주시나요? ☕\n\n근로기준법 제54조에 따라 근로 4시간엔 30분,\n8시간엔 1시간 이상을 근무 도중에\n줘야 해요. (무급 가능)\n\n휴게시간은 무급이라 실근로시간과\n급여 계산에서 제외됩니다.");
     if (s === 10) return t("postJob.botStep9", { jt, hint: p.daysHint });
     if (s === 11) return t("postJob.botStep10", { jt, hint: p.koreanHint });
-    if (s === 12) return t("postJob.botStep11");
+    if (s === 12) {
+      const g = getVisaGuide(a.jobType);
+      const guide = g
+        ? `\n\n💡 ${a.jobType} 업종 비자별 취업 가능 여부:\n✅ 가능: ${g.ok.join(", ")}\n${g.cond.length ? `⚠️ 조건부: ${g.cond.join(", ")}\n` : ""}⛔ 불가: ${g.no.join(", ")}\n(${VISA_GUIDE_FOOT})`
+        : "";
+      return t("postJob.botStep11") + guide;
+    }
     if (s === 13) return t("postJob.botStep12", { jt, hint: p.headHint });
     if (s === 14) return p.beneHint ? t("postJob.botStep13", { jt, hint: p.beneHint }) : t("postJob.botStep13NoHint");
     if (s === 15) return t("postJob.botStep14", { jt, ex: p.descEx });
@@ -546,6 +552,15 @@ export default function PostJobPage() {
 
         <div style={field}>
           <label style={lab}>{withReq("labelVisa")} <span style={{ color: T.ink3, fontWeight: 500 }}>{t("postJob.multipleAllowed")}</span></label>
+          {(() => { const g = getVisaGuide(form.jobType); if (!g) return null; return (
+            <div style={{ background: "#f6f8fc", border: `1px solid ${T.border}`, borderRadius: 10, padding: "10px 12px", fontSize: 12, lineHeight: 1.8, marginBottom: 8 }}>
+              <div style={{ fontWeight: 700, marginBottom: 2 }}>💡 {form.jobType} 업종 — 비자별 취업 가능 여부 (자동 안내)</div>
+              <div>✅ <b>가능:</b> {g.ok.join(", ")}</div>
+              {g.cond.length > 0 && <div>⚠️ <b>조건부:</b> {g.cond.join(", ")}</div>}
+              <div>⛔ <b>불가:</b> {g.no.join(", ")}</div>
+              <div style={{ color: T.ink3, fontSize: 11, marginTop: 2 }}>{VISA_GUIDE_FOOT}</div>
+            </div>
+          ); })()}
           <div style={rowS}>{getStepOptions(12).map((o) => <button key={o} type="button" onClick={() => toggle("visa", o)} style={chip(form.visa.includes(o))}>{o}</button>)}</div>
         </div>
 
