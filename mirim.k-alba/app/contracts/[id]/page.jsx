@@ -1363,7 +1363,7 @@ export default function ContractDetailPage() {
         )}
 
         {tab === "form" && <ContractForm contract={contract} />}
-        {tab === "preview" && <ContractPreview contract={contract} />}
+        {tab === "preview" && <ContractPreview contract={contract} onSignClick={() => setTab("chat")} />}
       </div>
 
       {/* 유학생 시간제취업 확인서 (숨김 — PDF 생성용) */}
@@ -1707,7 +1707,7 @@ function StudentConfirmationForm({ contract, info }) {
 }
 
 // ─── 계약서 미리보기: 고용노동부 표준서식 1:1 (1페이지) ───
-function ContractPreview({ contract }) {
+function ContractPreview({ contract, onSignClick }) {
   const workDays = contract.work_days || [];
   const weeklyHours = contract.weekly_hours || 0;
   const weeklyDays = workDays.length;
@@ -1830,7 +1830,7 @@ function ContractPreview({ contract }) {
             대 표 자 : {contract.employer_name || ""} &nbsp;
             {contract.employer_signed && contract.employer_signature
               ? <img src={contract.employer_signature} alt="서명" style={{ height: 28, verticalAlign: "middle" }} />
-              : <span style={{ color: "#888" }}>(서명)</span>}
+              : <span onClick={onSignClick} title="클릭하면 챗봇에서 서명을 진행할 수 있어요" style={{ color: "#2563eb", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 2 }}>(서명)</span>}
           </div>
           <div style={{ marginTop: 4 }}>(근로자) 주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소 : {contract.worker_address || ""}</div>
           <div style={{ marginLeft: 56 }}>연 락 처 : {contract.worker_phone || ""}</div>
@@ -1838,7 +1838,7 @@ function ContractPreview({ contract }) {
             성&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;명 : {contract.worker_name || ""} &nbsp;
             {contract.worker_signed && contract.worker_signature
               ? <img src={contract.worker_signature} alt="서명" style={{ height: 28, verticalAlign: "middle" }} />
-              : <span style={{ color: "#888" }}>(서명)</span>}
+              : <span onClick={onSignClick} title="클릭하면 챗봇에서 서명을 진행할 수 있어요" style={{ color: "#2563eb", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 2 }}>(서명)</span>}
           </div>
         </div>
       </div>
