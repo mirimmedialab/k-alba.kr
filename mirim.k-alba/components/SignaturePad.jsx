@@ -61,7 +61,7 @@ export default function SignaturePad({
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
     ctx.strokeStyle = penColor;
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 3.5; // 2.5→3.5: 계약서·PDF에서 서명이 선명하게 보이도록 (2026-07-19)
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, width, height);
 
