@@ -1152,13 +1152,13 @@ export default function ContractDetailPage() {
                 ) : (
                   <>
                     <div style={{ display: "flex", gap: 6 }}>
-                      <Button variant="secondary" size="lg" fullWidth onClick={handleViewContract} style={{ whiteSpace: "nowrap", padding: "0 8px", fontSize: 13 }}>
+                      <Button variant="secondary" size="lg" fullWidth onClick={handleViewContract} style={{ whiteSpace: "nowrap", padding: "14px 10px", fontSize: 15, fontWeight: 700 }}>
                         📄 계약서
                       </Button>
-                      <Button variant="primary" size="lg" fullWidth onClick={() => handleSign("employer")} disabled={signing} style={{ whiteSpace: "nowrap", padding: "0 8px", fontSize: 13 }}>
+                      <Button variant="primary" size="lg" fullWidth onClick={() => handleSign("employer")} disabled={signing} style={{ whiteSpace: "nowrap", padding: "14px 10px", fontSize: 15, fontWeight: 700 }}>
                         {signing ? "서명 중..." : "✍️ 사장님서명"}
                       </Button>
-                      <Button variant="primaryDark" size="lg" fullWidth onClick={handleShare} disabled={sharing} title="근로자에게 카카오톡으로 서명 요청을 보냅니다" style={{ whiteSpace: "nowrap", padding: "0 8px", fontSize: 13 }}>
+                      <Button variant="primaryDark" size="lg" fullWidth onClick={handleShare} disabled={sharing} title="근로자에게 카카오톡으로 서명 요청을 보냅니다" style={{ whiteSpace: "nowrap", padding: "14px 10px", fontSize: 15, fontWeight: 700 }}>
                         💬 알바서명
                       </Button>
                     </div>
