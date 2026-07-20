@@ -6,6 +6,7 @@ import { T } from "@/lib/theme";
 import { getContract, updateContract, signContract, getCurrentUser, supabase } from "@/lib/supabase";
 import { formatKoreanDate, MIN_WAGE } from "@/lib/contractUtils";
 import { generateContractPDF, buildContractFilename } from "@/lib/pdfGenerator";
+import { downloadPartworkConfirmationPDF } from "@/lib/partworkConfirmation";
 import { shareContractKakao } from "@/lib/kakaoShare";
 import { useT } from "@/lib/i18n";
 import { ContractDetailSkel } from "@/components/Wireframe";
@@ -746,10 +747,9 @@ export default function ContractDetailPage() {
     setDownloadingConf(true);
     addUser("🎓 시간제취업 확인서를 다운로드할게요");
     try {
-      await generateContractPDF(
-        "student-confirmation-for-pdf",
-        `K-ALBA_시간제취업확인서_${(contract.worker_name || "student").replace(/[\s\/\\]/g, "_")}.pdf`
-      );
+      // 공식 양식 PDF(공유 Storage) 방식 — 서식 개정 시 Storage 파일만 교체하면 됨 (2026-07-20)
+      const { sf, workerProfile } = getStudentInfo(contract);
+      await downloadPartworkConfirmationPDF(contract, sf, workerProfile);
       addBot("✅ 시간제취업 확인서 PDF가 저장되었습니다!\n\n유학생담당자 확인란은 학교 국제처에서\n기재·날인 후 출입국·외국인청에 제출하세요.");
     } catch (e) {
       alert("확인서 생성 중 오류가 발생했습니다: " + e.message);
