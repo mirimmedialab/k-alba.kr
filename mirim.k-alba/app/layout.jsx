@@ -2,6 +2,7 @@ import "./globals.css";
 import AppFrame from "@/components/AppFrame";
 import NativeBridge from "@/components/NativeBridge";
 import AppSplash from "@/components/AppSplash";
+import VisaChatWidget from "@/components/VisaChatWidget";
 import AttributionTracker from "@/components/AttributionTracker";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -117,6 +118,7 @@ export default function RootLayout({ children }) {
         <AttributionTracker />
         <AppFrame>{children}</AppFrame>
         <AppSplash />
+        <VisaChatWidget />
         <Analytics />
       </body>
     </html>
