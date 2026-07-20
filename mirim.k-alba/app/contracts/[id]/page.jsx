@@ -1830,7 +1830,9 @@ function ContractPreview({ contract, onSignClick }) {
           </tbody>
         </table>
         <div style={{ ...sub, marginBottom: 6 }}>
-          ㅇ 주휴일 : 매주 <span style={{ fontWeight: 700, padding: "0 6px" }}>{weeklyHours >= 15 ? "일" : "  "}</span> 요일
+          ㅇ 주휴일 : {weeklyHours >= 15
+            ? <>매주 <span style={{ fontWeight: 700, padding: "0 6px" }}>일</span> 요일</>
+            : <>해당없음 <span style={{ fontSize: 10 }}>(주 소정근로 15시간 미만)</span></>}
         </div>
 
         <div style={line}>5. 임   금</div>
