@@ -426,9 +426,10 @@ export default function ContractDetailPage() {
       work_end: contract.work_end,
       contract_start: contract.contract_start,
       contract_end: contract.contract_end,
+      rest_day: contract.rest_day || null,
     });
     addUser("✏️ 계약 조건을 수정할게요");
-    addBot("어떤 계약 조건을 수정할까요?\n아래에서 번호를 선택해주세요.\n\n1️⃣ 급여\n2️⃣ 근무 요일\n3️⃣ 근무 시간\n4️⃣ 계약 기간\n\n수정이 끝나면 '✅ 수정 완료'를 눌러주세요.");
+    addBot("어떤 계약 조건을 수정할까요?\n아래에서 번호를 선택해주세요.\n\n1️⃣ 급여\n2️⃣ 근무 요일\n3️⃣ 근무 시간\n4️⃣ 계약 기간\n5️⃣ 주휴일\n\n수정이 끝나면 '✅ 수정 완료'를 눌러주세요.");
   };
 
   const cancelEdit = () => {
@@ -445,6 +446,7 @@ export default function ContractDetailPage() {
     { n: 2, label: "2️⃣ 근무 요일" },
     { n: 3, label: "3️⃣ 근무 시간" },
     { n: 4, label: "4️⃣ 계약 기간" },
+    { n: 6, label: "5️⃣ 주휴일" },
   ];
 
   const pickEditField = (n) => {
@@ -464,12 +466,17 @@ export default function ContractDetailPage() {
       addUser("4️⃣ 계약 기간을 수정할게요");
       setEditStep(4);
       addBot(`계약 기간을 입력해주세요.\n현재: ${editData?.contract_start || "—"} ~ ${editData?.contract_end || "—"}\n\n(예: 2026-08-01 ~ 2027-01-31)`);
+    } else if (n === 6) {
+      addUser("5️⃣ 주휴일을 수정할게요");
+      setEditStep(6);
+      const rec = recommendRestDay({ work_days: editData?.work_days });
+      addBot(`주휴일 요일을 입력해주세요.\n현재: 매주 ${editData?.rest_day || rec}요일 (자동 추천: ${rec}요일)\n\n근무일이 아닌 요일 중 한 글자로 입력해주세요. (예: 일)`);
     }
   };
 
   const backToEditMenu = (doneMsg) => {
     setEditStep(0);
-    addBot(`${doneMsg}\n\n다른 항목도 수정할까요?\n1️⃣ 급여  2️⃣ 근무 요일  3️⃣ 근무 시간  4️⃣ 계약 기간\n\n끝났으면 '✅ 수정 완료'를 눌러주세요.`);
+    addBot(`${doneMsg}\n\n다른 항목도 수정할까요?\n1️⃣ 급여  2️⃣ 근무 요일  3️⃣ 근무 시간  4️⃣ 계약 기간  5️⃣ 주휴일\n\n끝났으면 '✅ 수정 완료'를 눌러주세요.`);
   };
 
   const finishEdit = () => {
@@ -524,6 +531,18 @@ export default function ContractDetailPage() {
       const we = `${String(parseInt(m[3], 10)).padStart(2, "0")}:${m[4] || "00"}`;
       setEditData((p) => ({ ...p, work_start: ws, work_end: we }));
       backToEditMenu(`✅ 근무 시간을 ${ws} ~ ${we}로 변경했어요!`);
+    } else if (editStep === 6) {
+      const day = v.replace(/요일/g, "").trim();
+      if (!REST_DAY_CANDIDATES.includes(day)) {
+        addBot("요일 한 글자로 입력해주세요. (예: 일)");
+        return;
+      }
+      if ((editData?.work_days || []).includes(day)) {
+        addBot(`⚠️ ${day}요일은 근무일이에요.\n근무일이 아닌 요일 중에서 선택해주세요.\n현재 근무일: ${(editData?.work_days || []).join("·")}`);
+        return;
+      }
+      setEditData((p) => ({ ...p, rest_day: day }));
+      backToEditMenu(`✅ 주휴일을 매주 ${day}요일로 변경했어요!`);
     } else if (editStep === 4) {
       const dm = v.match(/(\d{4}-\d{1,2}-\d{1,2})\s*[~\-]\s*(\d{4}-\d{1,2}-\d{1,2})/);
       if (!dm) {
@@ -569,6 +588,7 @@ export default function ContractDetailPage() {
       monthly_holiday,
       monthly_total,
       insurance_required: weeklyHours >= 15,
+      rest_day: editData.rest_day && !editData.work_days.includes(editData.rest_day) ? editData.rest_day : recommendRestDay({ work_days: editData.work_days }),
       // 조건이 바뀌면 휴게시간을 다시 확인해야 함
       break_start: null,
       break_minutes: null,
@@ -1253,13 +1273,13 @@ export default function ContractDetailPage() {
                     </div>
                   </div>
                 )}
-                {(editStep === 1 || editStep === 3 || editStep === 4) && (
+                {(editStep === 1 || editStep === 3 || editStep === 4 || editStep === 6) && (
                   <div style={{ display: "flex", gap: 8 }}>
                     <input
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter") submitEditInput(); }}
-                      placeholder={editStep === 1 ? "예: 12000" : editStep === 3 ? "예: 14:00~19:00" : "예: 2026-08-01 ~ 2027-01-31 (또는 '그대로')"}
+                      placeholder={editStep === 1 ? "예: 12000" : editStep === 3 ? "예: 14:00~19:00" : editStep === 6 ? "예: 일" : "예: 2026-08-01 ~ 2027-01-31 (또는 '그대로')"}
                       style={{ flex: 1, padding: "10px 14px", borderRadius: 10, border: `2px solid ${T.border}`, fontSize: 14, fontFamily: "inherit", outline: "none", minWidth: 0 }}
                     />
                     <Button variant="primary" size="md" onClick={submitEditInput}>전송</Button>
