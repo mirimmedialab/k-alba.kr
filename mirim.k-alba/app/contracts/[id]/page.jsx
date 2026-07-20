@@ -13,6 +13,12 @@ import { ContractDetailSkel } from "@/components/Wireframe";
 import SignaturePad from "@/components/SignaturePad";
 import { Button, Badge, Empty, KIcon, ButtonLoading } from "@/components/ui";
 
+// 주휴일 자동 추천: 근무일이 아닌 요일 중 일→토→월→화… 순으로 선택.
+// contracts.rest_day 컬럼이 도입되면 그 값을 우선 사용 (수동 지정 대응)
+const REST_DAY_CANDIDATES = ["일", "토", "월", "화", "수", "목", "금"];
+const recommendRestDay = (c) =>
+  c?.rest_day || REST_DAY_CANDIDATES.find((d) => !(c?.work_days || []).includes(d)) || "일";
+
 /**
  * /contracts/[id] 근로계약서 상세 (BI v2)
  *
@@ -1831,7 +1837,7 @@ function ContractPreview({ contract, onSignClick }) {
         </table>
         <div style={{ ...sub, marginBottom: 6 }}>
           ㅇ 주휴일 : {weeklyHours >= 15
-            ? <>매주 <span style={{ fontWeight: 700, padding: "0 6px" }}>일</span> 요일</>
+            ? <>매주 <span style={{ fontWeight: 700, padding: "0 6px" }}>{recommendRestDay(contract)}</span> 요일</>
             : <>해당없음 <span style={{ fontSize: 10 }}>(주 소정근로 15시간 미만)</span></>}
         </div>
 
@@ -1980,7 +1986,7 @@ function OldStdContractPreview({ contract }) {
             </tr>
           </tbody>
         </table>
-        <div style={{ ...line, marginLeft: 6, marginBottom: 10 }}>ㅇ 주휴일 : 매주 일요일 {weeklyHours >= 15 ? "(유급 · 주 15시간 이상)" : "(주 15시간 미만 — 미발생)"}</div>
+        <div style={{ ...line, marginLeft: 6, marginBottom: 10 }}>ㅇ 주휴일 : {weeklyHours >= 15 ? `매주 ${recommendRestDay(contract)}요일 (유급 · 주 15시간 이상)` : "해당없음 (주 소정근로 15시간 미만)"}</div>
 
         <div style={{ ...line, marginBottom: 2 }}><span style={num}>5. 임 금</span></div>
         <div style={{ marginLeft: 14 }}>
