@@ -69,6 +69,20 @@ export async function downloadPartworkConfirmationPDF(contract, sf = {}, wp = {}
       : sf.semester
     : "";
 
+  // 휴게시간 각주 — 요일별 시간(휴게 포함)과 총 시간(휴게 제외)의 기준을 명시
+  const bm = Number(contract.break_minutes) || 0;
+  let breakNote = "";
+  if (bm > 0) {
+    let breakRange = "";
+    if (contract.break_start) {
+      const [bh, bmin] = String(contract.break_start).split(":").map(Number);
+      const endTotal = bh * 60 + (bmin || 0) + bm;
+      const pad = (n) => String(n).padStart(2, "0");
+      breakRange = `${pad(bh)}:${pad(bmin || 0)}~${pad(Math.floor(endTotal / 60) % 24)}:${pad(endTotal % 60)}, `;
+    }
+    breakNote = `※ 요일별 시간은 휴게시간(${breakRange}${bm}분) 포함 출퇴근 시각이며, 평일·주말 총 시간은 휴게시간 제외 실근로시간임`;
+  }
+
   const payload = {
     name: contract.worker_name || "",
     arc_no: sf.alien_reg_no || wp.alien_reg_number || "",
@@ -86,6 +100,7 @@ export async function downloadPartworkConfirmationPDF(contract, sf = {}, wp = {}
     wage: hourly ? `시급 ${Number(hourly).toLocaleString()}원` : "",
     weekday_hours: weekdayTotal > 0 ? fmtH(weekdayTotal) : "",
     weekend_hours: weekendTotal > 0 ? fmtH(weekendTotal) : "",
+    break_note: breakNote,
   };
   for (const d of days) {
     const key = DAY_KEYS[d];
