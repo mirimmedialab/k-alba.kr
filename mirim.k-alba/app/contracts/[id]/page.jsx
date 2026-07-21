@@ -758,7 +758,7 @@ export default function ContractDetailPage() {
     if (!(sf.university || wp.organization)) missingWorker.push("university");
     if (!sf.department) missingWorker.push("department");
     if (!sf.semester) missingWorker.push("semester");
-    const missingEmployer = (sf.industry || c?.job_type) ? [] : ["industry"]; // 업종은 채용공고에서 이미 수집 — 있으면 재질문 생략
+    const missingEmployer = (sf.industry || c?.job_type || c?.job?.job_type) ? [] : ["industry"]; // 업종은 채용공고에서 이미 수집 — 있으면 재질문 생략
     return { isStudent, sf, missingWorker, missingEmployer, workerProfile: wp };
   };
 
@@ -1681,7 +1681,7 @@ function StudentConfirmationForm({ contract, info }) {
             <td style={th}>사업자<br />등록번호</td>
             <td style={tdC}>{contract.business_number || ""}</td>
             <td style={{ ...th, width: 70 }}>업종</td>
-            <td style={{ ...tdC, width: 150 }}>{sf.industry || contract.job_type || ""}</td>
+            <td style={{ ...tdC, width: 150 }}>{sf.industry || contract.job_type || contract.job?.job_type || ""}</td>
           </tr>
           <tr>
             <td style={th}>주 소</td>
