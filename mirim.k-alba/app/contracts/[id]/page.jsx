@@ -1675,17 +1675,17 @@ function StudentConfirmationForm({ contract, info }) {
           <tr>
             <td style={{ ...th, width: 60 }} rowSpan={6}>취업<br />예정<br />근무처</td>
             <td style={{ ...th, width: 90 }}>업 체 명</td>
-            <td style={td} colSpan={3}>{contract.company_name || ""}</td>
+            <td style={td} colSpan={3}>{contract.company_name || contract.employer?.company_name || ""}</td>
           </tr>
           <tr>
             <td style={th}>사업자<br />등록번호</td>
-            <td style={tdC}>{contract.business_number || ""}</td>
+            <td style={tdC}>{contract.business_number || contract.employer?.business_number || ""}</td>
             <td style={{ ...th, width: 70 }}>업종</td>
             <td style={{ ...tdC, width: 150 }}>{sf.industry || contract.job_type || contract.job?.job_type || ""}</td>
           </tr>
           <tr>
             <td style={th}>주 소</td>
-            <td style={td} colSpan={3}>{contract.business_address || ""}{contract.address_detail ? ` ${contract.address_detail}` : ""}</td>
+            <td style={td} colSpan={3}>{contract.business_address || contract.employer?.business_address || ""}{contract.address_detail ? ` ${contract.address_detail}` : ""}</td>
           </tr>
           <tr>
             <td style={th}>고 용 주</td>
@@ -1698,7 +1698,7 @@ function StudentConfirmationForm({ contract, info }) {
               )}
             </td>
             <td style={th}>전화<br />번호</td>
-            <td style={tdC}>{contract.employer_phone || ""}</td>
+            <td style={tdC}>{contract.employer_phone || contract.employer?.phone || ""}</td>
           </tr>
           <tr>
             <td style={th}>취업기간</td>
