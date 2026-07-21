@@ -756,8 +756,8 @@ export default function ContractDetailPage() {
     const missingWorker = [];
     if (!(sf.alien_reg_no || wp.alien_reg_number)) missingWorker.push("alien_reg_no");
     if (!(sf.university || wp.organization)) missingWorker.push("university");
-    if (!sf.department) missingWorker.push("department");
-    if (!sf.semester) missingWorker.push("semester");
+    if (!(sf.department || wp.department)) missingWorker.push("department");
+    if (!(sf.semester || wp.semester)) missingWorker.push("semester");
     const missingEmployer = (sf.industry || c?.job_type || c?.job?.job_type) ? [] : ["industry"]; // 업종은 채용공고에서 이미 수집 — 있으면 재질문 생략
     return { isStudent, sf, missingWorker, missingEmployer, workerProfile: wp };
   };
@@ -1656,9 +1656,9 @@ function StudentConfirmationForm({ contract, info }) {
           </tr>
           <tr>
             <td style={th}>학과(전공)</td>
-            <td style={tdC}>{sf.department || ""}</td>
+            <td style={tdC}>{sf.department || wp.department || ""}</td>
             <td style={th}>이수학기</td>
-            <td style={tdC}>{sf.semester ? `${String(sf.semester).replace(/[^0-9]/g, "")}학기` : ""}</td>
+            <td style={tdC}>{(sf.semester || wp.semester) ? `${String(sf.semester || wp.semester).replace(/[^0-9]/g, "")}학기` : ""}</td>
           </tr>
           <tr>
             <td style={th}>전화번호</td>
