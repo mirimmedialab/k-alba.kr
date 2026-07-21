@@ -56,6 +56,7 @@ export default function ProfilePage() {
 
   const [form, setForm] = useState({
     name: "", phone: "", visa: "", country: "", organization: "", address: "",
+    alien_reg_number: "", department: "", semester: "",
     korean_level: "", work_types: [], regions: [], job_types: [],
     home_experience: "", korea_experience: "",
     company_name: "", business_number: "", business_address: "",
@@ -79,6 +80,7 @@ export default function ProfilePage() {
         setProfile(p);
         setForm({
           name: p.name || "", phone: p.phone || "", visa: p.visa || "",
+          alien_reg_number: p.alien_reg_number || "", department: p.department || "", semester: p.semester || "",
           country: p.country || "", organization: p.organization || "",
           address: p.address || "", korean_level: p.korean_level || "",
           work_types: p.work_types || [], regions: p.regions || [],
@@ -246,6 +248,16 @@ export default function ProfilePage() {
             <Inp label={t("profile.visa")} options={VISA_OPTIONS} value={form.visa} onChange={(e) => setForm({ ...form, visa: e.target.value })} />
             <Inp label={t("profile.country")} options={COUNTRIES} value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
             <Inp label={t("profile.organization")} placeholder={t("profile.organizationPlaceholder")} value={form.organization} onChange={(e) => setForm({ ...form, organization: e.target.value })} />
+            {/^D-?[24]/i.test(form.visa || "") && (
+              <div style={{ background: T.mintL, borderRadius: 8, padding: "10px 12px", marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: T.navy, marginBottom: 8 }}>
+                  🎓 {t("profile.studentInfoHint", null, "유학생 정보 — 시간제취업 확인서 자동 생성에 사용돼요")}
+                </div>
+                <Inp label={t("profile.alienRegNo", null, "외국인등록번호")} placeholder="000000-0000000" value={form.alien_reg_number} onChange={(e) => setForm({ ...form, alien_reg_number: e.target.value })} />
+                <Inp label={t("profile.department", null, "학과(전공)")} value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} />
+                <Inp label={t("profile.semester", null, "학년/학기 (예: 2학년 1학기)")} value={form.semester} onChange={(e) => setForm({ ...form, semester: e.target.value })} />
+              </div>
+            )}
             <AddressSearchField label={t("profile.address")} value={form.address} onChange={(v) => setForm({ ...form, address: v })} />
           </>
         ) : (
@@ -255,6 +267,13 @@ export default function ProfilePage() {
             <div><strong>{t("profile.visaLabel")}</strong> {VISA_OPTIONS.find(v => v.v === form.visa)?.l || "-"}</div>
             <div><strong>{t("profile.countryLabel")}</strong> {form.country || "-"}</div>
             <div><strong>{t("profile.organizationLabel")}</strong> {form.organization || "-"}</div>
+            {/^D-?[24]/i.test(form.visa || "") && (
+              <>
+                <div><strong>{t("profile.alienRegNoLabel", null, "외국인등록번호:")}</strong> {form.alien_reg_number || "-"}</div>
+                <div><strong>{t("profile.departmentLabel", null, "학과:")}</strong> {form.department || "-"}</div>
+                <div><strong>{t("profile.semesterLabel", null, "학년/학기:")}</strong> {form.semester || "-"}</div>
+              </>
+            )}
             <div><strong>{t("profile.addressLabel")}</strong> {form.address || "-"}</div>
           </div>
         )}
