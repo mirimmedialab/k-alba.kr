@@ -191,6 +191,29 @@ export default function ContractDetailPage() {
     }
   }, [contract, user]);
 
+  // ─── 상대방 서명/승인 실시간 반영 (8초 폴링) ───
+  // 알림톡과 무관하게, 상대가 서명/승인하면 열려 있는 화면의 챗봇·버튼이 자동 갱신된다.
+  useEffect(() => {
+    if (!contract || !user) return;
+    if (String(params.id).startsWith("demo-")) return;
+    if (contract.worker_signed && contract.employer_signed) return; // 완료되면 중단
+    const iv = setInterval(async () => {
+      try {
+        const fresh = await getContract(params.id);
+        if (!fresh) return;
+        const changed =
+          fresh.status !== contract.status ||
+          !!fresh.worker_signed !== !!contract.worker_signed ||
+          !!fresh.employer_signed !== !!contract.employer_signed ||
+          (fresh.pdf_url || null) !== (contract.pdf_url || null);
+        if (changed) setContract(fresh);
+      } catch (_) {
+        /* 네트워크 일시 오류는 다음 폴링에서 재시도 */
+      }
+    }, 8000);
+    return () => clearInterval(iv);
+  }, [contract, user, params.id]);
+
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollIntoView({ behavior: "smooth" });
   }, [messages, typing]);
