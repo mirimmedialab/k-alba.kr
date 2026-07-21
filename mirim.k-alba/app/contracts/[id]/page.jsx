@@ -6,6 +6,7 @@ import { T } from "@/lib/theme";
 import { getContract, updateContract, signContract, getCurrentUser, supabase } from "@/lib/supabase";
 import { formatKoreanDate, MIN_WAGE } from "@/lib/contractUtils";
 import { generateContractPDF, buildContractFilename } from "@/lib/pdfGenerator";
+import { downloadStandardContractPDF } from "@/lib/contractStandardPdf";
 import { downloadPartworkConfirmationPDF } from "@/lib/partworkConfirmation";
 import { shareContractKakao } from "@/lib/kakaoShare";
 import { useT } from "@/lib/i18n";
@@ -1015,7 +1016,8 @@ export default function ContractDetailPage() {
         await new Promise((r) => setTimeout(r, 700));
       }
       const filename = buildContractFilename(contract);
-      await generateContractPDF("contract-preview-for-pdf", filename);
+      // 고용노동부 표준서식(단시간근로자) 기반 PDF (2026-07-21)
+      await downloadStandardContractPDF(contract, filename);
       setTab(prevTab);
       addBot("✅ 근로계약서 PDF가 저장되었습니다!\n다운로드 폴더를 확인해 주세요.");
     } catch (e) {
