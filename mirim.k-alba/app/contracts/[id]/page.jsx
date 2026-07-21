@@ -185,7 +185,7 @@ export default function ContractDetailPage() {
         } else if (si.missingWorker.length === 0 && si.missingEmployer.length === 0) {
           setTimeout(() => addBot("🎓 외국인 유학생 시간제취업 확인서도 준비되었습니다!\n아래 버튼으로 다운로드하세요.\n\n(유학생담당자 확인란은 학교 국제처에서\n서명을 받으시면 됩니다)"), 900);
         } else {
-          setTimeout(() => addBot("🎓 유학생 시간제취업 확인서에 필요한 정보를\n상대방이 입력하는 중이에요.\n입력이 끝나면 확인서를 다운로드할 수 있습니다."), 900);
+          setTimeout(() => addBot("🎓 아르바이트생이 유학생이라서\n유학생 시간제취업 확인서가 필요해서\n자동으로 만들고 있어요.\n완료되면 다운로드할 수 있습니다."), 900);
         }
       }
     }
