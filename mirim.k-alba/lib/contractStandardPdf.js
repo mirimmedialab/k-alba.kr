@@ -78,6 +78,7 @@ export async function downloadStandardContractPDF(contract, filename) {
   };
 
   const start = dParts(c.contract_start);
+  const end = dParts(c.contract_end);
   const signDate = dParts(c.employer_sign_date || c.worker_sign_date || new Date().toISOString());
   const paydayNum = String(c.pay_day || "").match(/\d{1,2}/);
 
@@ -85,6 +86,7 @@ export async function downloadStandardContractPDF(contract, filename) {
     employer_name: c.employer_name || ep.name || "",
     worker_name: c.worker_name || wp.name || "",
     start_y: start.y, start_m: start.m, start_d: start.d,
+    end_y: c.contract_end ? end.y : "", end_m: c.contract_end ? end.m : "", end_d: c.contract_end ? end.d : "",
     workplace: `${c.business_address || c.workplace || ep.business_address || ""}${c.address_detail ? ` ${c.address_detail}` : ""}`,
     job_desc: c.job_description || c.job_title || "",
     days: dayRows,
