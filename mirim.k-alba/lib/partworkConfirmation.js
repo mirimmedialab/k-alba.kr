@@ -59,9 +59,10 @@ export async function downloadPartworkConfirmationPDF(contract, sf = {}, wp = {}
       ? `${shortTime(contract.work_start)}-${shortTime(contract.work_end)}`
       : "";
 
+  const ep = contract.employer || {}; // 계약서에 업체정보가 비어 있으면 사장님 프로필에서 보완
   const hourly =
     contract.hourly_pay ||
-    (contract.pay_type === "시급" ? contract.pay_amount : null);
+    (/시급|hourly/i.test(String(contract.pay_type || "")) ? contract.pay_amount : null);
 
   const semester = sf.semester
     ? /^\d+$/.test(String(sf.semester).trim())
@@ -90,14 +91,15 @@ export async function downloadPartworkConfirmationPDF(contract, sf = {}, wp = {}
     semester,
     phone: wp.phone || contract.worker_phone || "",
     email: wp.email || "",
-    company: contract.business_name || contract.company_name || "",
-    biz_no: contract.business_number || "",
+    company: contract.business_name || contract.company_name || ep.company_name || "",
+    biz_no: contract.business_number || ep.business_number || "",
     biz_type: sf.industry || contract.job_type || "",
-    address: contract.business_address || contract.workplace || "",
-    employer: contract.employer_name || "",
-    work_phone: contract.employer_phone || "",
+    address: contract.business_address || contract.workplace || ep.business_address || "",
+    employer: contract.employer_name || ep.name || "",
+    work_phone: contract.employer_phone || ep.phone || "",
     period: `${fmtDate(contract.contract_start)} ~ ${fmtDate(contract.contract_end)}`,
     wage: hourly ? `시급 ${Number(hourly).toLocaleString()}원` : "",
+    employer_sign: contract.employer_signature || "", // 고용주 전자서명 오버레이(v8)
     weekday_hours: weekdayTotal > 0 ? fmtH(weekdayTotal) : "",
     weekend_hours: weekendTotal > 0 ? fmtH(weekendTotal) : "",
     break_note: breakNote,
