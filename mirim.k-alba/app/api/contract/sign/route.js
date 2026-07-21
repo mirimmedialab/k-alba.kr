@@ -149,6 +149,20 @@ export async function POST(request) {
       );
     }
 
+    // 알바생 작성 계약서는 사장님 승인 전 서명 불가
+    if (contract.status === "pending_approval") {
+      return NextResponse.json(
+        { ok: false, error: "사장님 승인 후 서명할 수 있습니다." },
+        { status: 400 }
+      );
+    }
+    if (contract.status === "rejected") {
+      return NextResponse.json(
+        { ok: false, error: "거절된 계약서입니다. 새 계약서를 작성해 주세요." },
+        { status: 400 }
+      );
+    }
+
     // 이미 서명한 경우 차단
     if (role === "worker" && contract.worker_signed) {
       return NextResponse.json(
@@ -291,6 +305,25 @@ export async function POST(request) {
       } catch (e) {
         console.error("[contract/sign] PDF generation failed:", e);
         // PDF 실패는 치명적이지 않음 - 나중에 재시도 가능
+      }
+    }
+
+    // ─── 5. 계약 최종 완료 시에만 양측에 자동 이메일 발송 ───
+    if (willBothSigned) {
+      try {
+        await fetch(
+          `${process.env.NEXT_PUBLIC_SITE_URL || "https://k-alba.kr"}/api/contract/notify`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-internal-auth": process.env.INTERNAL_API_KEY || "internal",
+            },
+            body: JSON.stringify({ contract_id, event: "completed" }),
+          }
+        );
+      } catch (e) {
+        console.error("[contract/sign] notify failed:", e);
       }
     }
 

@@ -332,6 +332,7 @@ export default function JobDetail({ jobId, embedded = false }) {
       ["급여", payDisplay(job, locale, t)],
       ["지역", locale !== "ko" ? romanizeRegion(job.area) : job.area],
       ["근무", (locale !== "ko" && tr && tr.work) ? tr.work : (String(job.hours || job.time || "").trim() || "-")],
+      job.break_minutes != null ? ["휴게시간", job.break_minutes === 0 ? "없음 (일 4시간 미만)" : `${job.break_minutes >= 60 ? "1시간" : `${job.break_minutes}분`} (무급)`] : null,
       ["업종", (locale !== "ko" && tr && tr.industry) ? tr.industry : job.type],
       job.headcount && String(job.headcount) !== "1"
         ? ["모집인원", /^\d+$/.test(String(job.headcount)) ? `${t("jobDetail.people", { n: job.headcount })}` : job.headcount]
@@ -483,6 +484,7 @@ export default function JobDetail({ jobId, embedded = false }) {
     ["급여", payDisplay(job, locale, t)],
     ["지역", locale !== "ko" ? romanizeRegion(job.area) : job.area],
     ["근무", (locale !== "ko" && tr && tr.work) ? tr.work : (String(job.hours || job.time || "").trim() || "-")],
+    job.break_minutes != null ? ["휴게시간", job.break_minutes === 0 ? "없음 (일 4시간 미만)" : `${job.break_minutes >= 60 ? "1시간" : `${job.break_minutes}분`} (무급)`] : null,
     ["업종", (locale !== "ko" && tr && tr.industry) ? tr.industry : job.type],
     job.headcount && String(job.headcount) !== "1" ? ["모집인원", /^\d+$/.test(String(job.headcount)) ? `${t("jobDetail.people", { n: job.headcount })}` : job.headcount] : null,
     job.benefits ? ["복리후생", (locale !== "ko" && tr && tr.benefits) ? tr.benefits : job.benefits] : null,

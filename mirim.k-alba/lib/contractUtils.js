@@ -73,7 +73,10 @@ export function parseWorkDays(workDays) {
 }
 
 // 계약서 기본 정보 생성 (공고 데이터로부터)
-export function buildContractFromJob(job, employerProfile = null) {
+// opts.createdBy: "employer"(기본, 사장님 작성) | "worker"(알바생 작성 → 사장님 승인 필요)
+// opts.workerProfile: 알바생 작성 시 본인 프로필 (worker_id/이름/연락처 자동 입력)
+export function buildContractFromJob(job, employerProfile = null, opts = {}) {
+  const { createdBy = "employer", workerProfile = null } = opts;
   const parsedHours = parseWorkHours(job.work_hours);
   const parsedDays = parseWorkDays(job.work_days);
   const today = new Date();
@@ -82,9 +85,13 @@ export function buildContractFromJob(job, employerProfile = null) {
     .toISOString()
     .split("T")[0];
 
+  // 공고에 휴게시간(무급)이 있으면 실근로시간 기준으로 계산
+  const jobBreakMin = job.break_minutes === 30 || job.break_minutes === 60 ? job.break_minutes : null;
+
   let wageCalc;
   if (job.pay_type === "시급" && parsedHours) {
-    wageCalc = calcMonthlyWage(job.pay_amount, parsedHours.hours, parsedDays.length);
+    const netHours = Math.max(0, parsedHours.hours - (jobBreakMin || 0) / 60);
+    wageCalc = calcMonthlyWage(job.pay_amount, netHours, parsedDays.length);
   } else if (job.pay_type === "일급") {
     wageCalc = calcMonthlyDailyWage(job.pay_amount, parsedDays.length);
   } else {
@@ -99,9 +106,10 @@ export function buildContractFromJob(job, employerProfile = null) {
     employer_phone: employerProfile?.phone || "",
     business_address: job.address || employerProfile?.business_address || "",
     address_detail: job.address_detail || "",
-    // 근로자 정보 (비워둠 - 지원자가 입력)
-    worker_name: "",
-    worker_phone: "",
+    // 근로자 정보 (알바생 작성 시 본인 프로필로 자동 입력)
+    worker_id: workerProfile?.id || null,
+    worker_name: workerProfile?.name || "",
+    worker_phone: workerProfile?.phone || "",
     // 계약 조건
     contract_type: "기간제 근로계약",
     contract_start: contractStart,
@@ -111,6 +119,21 @@ export function buildContractFromJob(job, employerProfile = null) {
     work_days: parsedDays,
     work_start: parsedHours?.start || "09:00",
     work_end: parsedHours?.end || "18:00",
+    // 공고의 휴게시간 자동 반영 (계약 챗봇에서 양측 확인 후 확정)
+    break_minutes: jobBreakMin,
+    break_start: (() => {
+      if (!jobBreakMin) return null;
+      const [sh, sm] = (parsedHours?.start || "09:00").split(":").map(Number);
+      const [eh, em] = (parsedHours?.end || "18:00").split(":").map(Number);
+      let s = sh * 60 + sm;
+      let e = eh * 60 + em;
+      if (e <= s) e += 1440;
+      let st = Math.round(((s + e) / 2 - jobBreakMin / 2) / 30) * 30;
+      if (st < s) st = s;
+      if (st + jobBreakMin > e) st = e - jobBreakMin;
+      const mm = ((st % 1440) + 1440) % 1440;
+      return `${String(Math.floor(mm / 60)).padStart(2, "0")}:${String(mm % 60).padStart(2, "0")}`;
+    })(),
     // 급여
     pay_type: job.pay_type,
     pay_amount: job.pay_amount,
@@ -127,7 +150,10 @@ export function buildContractFromJob(job, employerProfile = null) {
     // 연결 정보
     job_id: job.id,
     employer_id: job.employer_id || employerProfile?.id,
-    status: "draft", // draft | worker_signing | employer_signing | completed
+    // 작성 주체 — 사장님 작성이 원칙, 알바생 작성 시 사장님 승인(pending_approval) 필요
+    created_by: createdBy,
+    // status: draft | pending_approval | rejected | worker_signing | employer_signing | completed
+    status: createdBy === "worker" ? "pending_approval" : "draft",
   };
 }
 
