@@ -25,7 +25,8 @@ export default function RegionNudge() {
         if (cancelled || !p) return;
         const isWorker = (p.user_type || "worker") !== "employer";
         const hasRegions = Array.isArray(p.regions) && p.regions.filter(Boolean).length > 0;
-        if (isWorker && !hasRegions) setShow(true);
+        // 비자 미등록이면 VisaNudge가 우선 — 배너 중복 노출 방지
+        if (isWorker && !hasRegions && p.visa) setShow(true);
       } catch (_) {}
     })();
     return () => { cancelled = true; };
