@@ -27,6 +27,14 @@ function fmtH(h) {
   return (Math.round(h * 10) / 10).toString().replace(/\.0$/, "");
 }
 
+// 모바일·인앱 브라우저(카카오톡/네이버/라인/인스타 등)는 blob 다운로드가 막히는 경우가 많아
+// 서버가 Storage에 올린 실제 링크로 받도록 분기한다.
+function isMobileOrInApp() {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  return /Android|iPhone|iPad|iPod|KAKAOTALK|NAVER|Line\/|Instagram|FB[AV]|Daum|; ?wv\)/i.test(ua);
+}
+
 export async function downloadStandardContractPDF(contract, filename) {
   const c = contract || {};
   const wp = c.worker || {};
@@ -106,6 +114,14 @@ export async function downloadStandardContractPDF(contract, filename) {
     worker_sign: c.worker_signature || "",
   };
 
+  const dlName = filename || `K-ALBA_근로계약서_${(c.worker_name || "worker").replace(/[\s\/\\]/g, "_")}.pdf`;
+  // 모바일/인앱 브라우저: 서버가 Storage에 올린 실제 다운로드 링크(강제 다운로드)로 받는다
+  const viaUrl = isMobileOrInApp();
+  if (viaUrl) {
+    payload.upload = true;
+    payload.filename = dlName;
+  }
+
   const res = await fetch(FN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", apikey: FN_KEY, Authorization: `Bearer ${FN_KEY}` },
@@ -116,13 +132,23 @@ export async function downloadStandardContractPDF(contract, filename) {
     try { const j = await res.json(); if (j?.error) msg += `: ${j.error}`; } catch (_) { /* ignore */ }
     throw new Error(msg);
   }
+
+  if (viaUrl) {
+    const data = await res.json();
+    if (!data?.url) throw new Error("다운로드 링크 생성 실패");
+    // Content-Disposition: attachment 이므로 이동 없이 다운로드가 시작된다
+    window.location.href = data.url;
+    return;
+  }
+
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = filename || `K-ALBA_근로계약서_${(c.worker_name || "worker").replace(/[\s\/\\]/g, "_")}.pdf`;
+  a.download = dlName;
   document.body.appendChild(a);
   a.click();
   a.remove();
-  URL.revokeObjectURL(url);
+  // 즉시 revoke 시 일부 브라우저에서 다운로드가 취소되는 문제 방지
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
