@@ -100,6 +100,8 @@ export async function downloadStandardContractPDF(contract, filename) {
     days: dayRows,
     rest_day: restDay,
     hourly: c.pay_amount ? Number(c.pay_amount).toLocaleString() : "",
+    // 임금 지급주기 동그라미: 일급 지급 공고면 '일', 그 외 기본 '월' (금액은 시급 그대로)
+    pay_period: (c.job?.pay_type === "일급" || c.pay_type === "일급") ? "day" : "month",
     overtime: "50",
     payday: paydayNum ? paydayNum[0] : "말",
     method: "deposit",
