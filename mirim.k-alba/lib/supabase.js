@@ -116,13 +116,13 @@ export async function getCurrentUser() {
 // ────────────────────────────────
 export async function getProfile(userId) {
   if (!supabase) return null;
-  const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
+  const { data } = await supabase.from("profiles").select("*").eq("id", userId).single(); if (data) { const { data: _pv } = await supabase.from("profile_private").select("alien_reg_number, passport_number, passport_issue_date, passport_expiry_date, birth_date, bank_account_for_refund").eq("id", userId).maybeSingle(); if (_pv) Object.assign(data, _pv); }
   return data;
 }
 
 export async function updateProfile(userId, updates) {
   if (!supabase) return { error: { message: "Supabase not configured" } };
-  return await supabase.from("profiles").update(updates).eq("id", userId);
+  const _PF=["alien_reg_number","passport_number","passport_issue_date","passport_expiry_date","birth_date","bank_account_for_refund"]; const _priv={},_pub={}; for(const _k of Object.keys(updates||{})){(_PF.includes(_k)?_priv:_pub)[_k]=updates[_k];} if(Object.keys(_priv).length){await supabase.from("profile_private").upsert({id:userId,..._priv},{onConflict:"id"});} return await supabase.from("profiles").update(_pub).eq("id",userId);
 }
 
 // ────────────────────────────────
