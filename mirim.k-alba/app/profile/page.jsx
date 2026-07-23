@@ -269,7 +269,7 @@ export default function ProfilePage() {
             <div><strong>{t("profile.organizationLabel")}</strong> {form.organization || "-"}</div>
             {/^D-?[24]/i.test(form.visa || "") && (
               <>
-                <div><strong>{t("profile.alienRegNoLabel", null, "외국인등록번호:")}</strong> {form.alien_reg_number || "-"}</div>
+                <div><strong>{t("profile.alienRegNoLabel", null, "외국인등록번호:")}</strong> {form.alien_reg_number ? (String(form.alien_reg_number).slice(0,8) + "******") : "-"}</div>
                 <div><strong>{t("profile.departmentLabel", null, "학과:")}</strong> {form.department || "-"}</div>
                 <div><strong>{t("profile.semesterLabel", null, "학년/학기:")}</strong> {form.semester || "-"}</div>
               </>
