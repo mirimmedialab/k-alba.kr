@@ -54,6 +54,66 @@ const LANG_NOTICE: Record<Lang, string> = {
   mn: "🌏 7 хэл дэмжинэ (монгол, солонгос, англи...)\nӨөрийн хэлээр асуувал өөрийн хэлээр хариулна!",
 };
 
+// 준비 서류 안내 (업종 답변에 자동 첨부 — 취업 불가 응답에는 미표시)
+const DOC_UI: Record<Lang, { title: string; arc: string; permit: string; bank: string }> = {
+  ko: { title: "준비 서류", arc: "외국인등록증·여권", permit: "시간제취업허가 (K-ALBA에서 확인서 자동 작성 지원)", bank: "급여 이체용 통장" },
+  en: { title: "Documents to prepare", arc: "Alien Registration Card & passport", permit: "Part-time work permit (K-ALBA auto-fills the form)", bank: "Bank account for salary" },
+  vi: { title: "Giấy tờ cần chuẩn bị", arc: "Thẻ đăng ký người nước ngoài & hộ chiếu", permit: "Giấy phép làm thêm (K-ALBA tự động điền hồ sơ)", bank: "Tài khoản ngân hàng nhận lương" },
+  zh: { title: "需准备的材料", arc: "外国人登录证和护照", permit: "打工许可（K-ALBA自动填写申请表）", bank: "工资转账银行账户" },
+  ja: { title: "準備する書類", arc: "外国人登録証・パスポート", permit: "資格外活動許可（K-ALBAが書類自動作成）", bank: "給与振込用の銀行口座" },
+  uz: { title: "Tayyorlash kerak bo'lgan hujjatlar", arc: "Chet ellik ro'yxatga olish kartasi va pasport", permit: "Yarim stavka ish ruxsatnomasi (K-ALBA hujjatni avtomatik to'ldiradi)", bank: "Oylik uchun bank hisobi" },
+  mn: { title: "Бэлтгэх бичиг баримт", arc: "Гадаад иргэний бүртгэлийн үнэмлэх, паспорт", permit: "Цагийн ажлын зөвшөөрөл (K-ALBA маягтыг автоматаар бөглөнө)", bank: "Цалингийн банкны данс" },
+};
+
+const EXTRA_DOCS: Record<string, Record<Lang, string>> = {
+  restaurant: {
+    ko: "보건증(건강진단결과서) — 보건소 발급, 식품 취급 필수",
+    en: "Health certificate (bogeonjeung) — issued at a public health center, required for food handling",
+    vi: "Giấy khám sức khỏe (bogeonjeung) — cấp tại trung tâm y tế công, bắt buộc khi tiếp xúc thực phẩm",
+    zh: "健康证（보건증）— 保健所办理，接触食品必备",
+    ja: "保健証（健康診断結果書）— 保健所で発給、食品取扱いに必須",
+    uz: "Sog'liq guvohnomasi (bogeonjeung) — davlat sog'liqni saqlash markazidan, oziq-ovqat bilan ishlashda majburiy",
+    mn: "Эрүүл мэндийн үнэмлэх (богонжын) — эрүүл мэндийн төвөөс, хоол хүнстэй ажиллахад заавал",
+  },
+  convenience: {
+    ko: "보건증(건강진단결과서) — 조리식품 취급 시 필요 (보건소 발급)",
+    en: "Health certificate (bogeonjeung) — needed if handling prepared food (public health center)",
+    vi: "Giấy khám sức khỏe (bogeonjeung) — cần nếu bán đồ ăn chế biến (trung tâm y tế công)",
+    zh: "健康证（보건증）— 经营即食食品时需要（保健所办理）",
+    ja: "保健証 — 調理食品を扱う場合に必要（保健所で発給）",
+    uz: "Sog'liq guvohnomasi (bogeonjeung) — tayyor oziq-ovqat bilan ishlashda kerak",
+    mn: "Эрүүл мэндийн үнэмлэх — бэлэн хоол зарах бол шаардлагатай",
+  },
+  construction: {
+    ko: "건설업 기초안전보건교육 이수증",
+    en: "Basic construction safety training certificate",
+    vi: "Chứng chỉ đào tạo an toàn xây dựng cơ bản",
+    zh: "建筑业基础安全教育结业证",
+    ja: "建設業基礎安全保健教育修了証",
+    uz: "Qurilish xavfsizligi bo'yicha boshlang'ich o'quv sertifikati",
+    mn: "Барилгын аюулгүй байдлын үндсэн сургалтын гэрчилгээ",
+  },
+  delivery: {
+    ko: "원동기/2종 면허 + 유상운송 보험 (오토바이 배달 시)",
+    en: "Motorcycle license + paid-delivery insurance (for bike delivery)",
+    vi: "Bằng lái xe máy + bảo hiểm giao hàng (nếu giao bằng xe máy)",
+    zh: "摩托车驾照＋有偿运输保险（骑摩托配送时）",
+    ja: "原付/二輪免許＋有償運送保険（バイク配達の場合）",
+    uz: "Mototsikl guvohnomasi + yetkazib berish sug'urtasi (mototsiklda)",
+    mn: "Мотоциклийн үнэмлэх + хүргэлтийн даатгал (мотоциклоор бол)",
+  },
+};
+
+function docsSection(lang: Lang, visaCode: string, industryKey: string): string {
+  const d = DOC_UI[lang];
+  const lines = [`• ${d.arc}`];
+  if (visaCode === "D-2" || visaCode === "D-4") lines.push(`• ${d.permit}`);
+  lines.push(`• ${d.bank}`);
+  const extra = EXTRA_DOCS[industryKey]?.[lang];
+  if (extra) lines.push(`• ${extra}`);
+  return `📄 ${d.title}\n${lines.join("\n")}`;
+}
+
 const VISA_ALIASES: [string, string][] = [
   ["유학생", "D-2"], ["유학", "D-2"], ["대학생", "D-2"], ["대학원", "D-2"],
   ["어학연수", "D-4"], ["어학당", "D-4"], ["연수생", "D-4"], ["기술연수", "D-3"], ["구직", "D-10"],
@@ -178,16 +238,18 @@ Deno.serve(async (req: Request) => {
           const [itr] = await sb(`visa_industry_rules_i18n?visa_code=eq.${encodeURIComponent(code)}&industry_key=eq.${industryKey}&lang=eq.${lang}&select=industry_label,answer`);
           if (itr) { indLabel = itr.industry_label; indAnswer = itr.answer; }
         }
+        const docs = ir.status !== "prohibited" ? `\n\n${docsSection(lang, code, industryKey)}` : "";
         return json({
           type: "industry_answer", visa_code: code, visa_name: visaName, industry: industryKey, status: ir.status, status_label: sl[ir.status],
-          answer: `${code} (${visaName}) × ${indLabel} · ${sl[ir.status]}\n\n${indAnswer}\n\n${ui.src}: ${ir.source_note}`,
+          answer: `${code} (${visaName}) × ${indLabel} · ${sl[ir.status]}\n\n${indAnswer}${docs}\n\n${ui.src}: ${ir.source_note}`,
           quick_replies: [ui.detail, ui.other],
         });
       }
       // 매트릭스 미등록 → 비자 전체 규칙 기반
+      const dDocs = rule.employment_status !== "prohibited" ? `\n\n${docsSection(lang, code, industryKey)}` : "";
       return json({
         type: "industry_derived", visa_code: code, visa_name: visaName, industry: industryKey, status: rule.employment_status, status_label: sl[rule.employment_status],
-        answer: `${code} (${visaName}) · ${sl[rule.employment_status]}\n\n${shortAnswer}\n\nHiKorea / ☎1345`,
+        answer: `${code} (${visaName}) · ${sl[rule.employment_status]}\n\n${shortAnswer}${dDocs}\n\nHiKorea / ☎1345`,
         has_detail: true, quick_replies: [ui.detail, ui.other],
       });
     }
