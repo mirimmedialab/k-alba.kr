@@ -114,15 +114,41 @@ export async function getCurrentUser() {
 // ────────────────────────────────
 // Profile
 // ────────────────────────────────
+// 본인 전용(profile_private) 분리 필드 — 민감 6종 + 정밀 위치·주소 (2026-07-23)
+const PRIVATE_FIELDS = [
+  "alien_reg_number", "passport_number", "passport_issue_date", "passport_expiry_date",
+  "birth_date", "bank_account_for_refund",
+  "home_latitude", "home_longitude", "home_address_road", "home_address_detail",
+  "address_korea", "address_korea_phone", "address_home_country", "address_home_phone",
+];
+
 export async function getProfile(userId) {
   if (!supabase) return null;
-  const { data } = await supabase.from("profiles").select("*").eq("id", userId).single(); if (data) { const { data: _pv } = await supabase.from("profile_private").select("alien_reg_number, passport_number, passport_issue_date, passport_expiry_date, birth_date, bank_account_for_refund").eq("id", userId).maybeSingle(); if (_pv) Object.assign(data, _pv); }
+  const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
+  if (data) {
+    const { data: _pv } = await supabase.from("profile_private").select(PRIVATE_FIELDS.join(", ")).eq("id", userId).maybeSingle();
+    if (_pv) {
+      // 전환기: profiles의 구 값이 남아 있으면 private 값이 없을 때만 유지 (private 우선)
+      for (const k of PRIVATE_FIELDS) {
+        if (_pv[k] !== null && _pv[k] !== undefined) data[k] = _pv[k];
+      }
+    }
+  }
   return data;
 }
 
 export async function updateProfile(userId, updates) {
   if (!supabase) return { error: { message: "Supabase not configured" } };
-  const _PF=["alien_reg_number","passport_number","passport_issue_date","passport_expiry_date","birth_date","bank_account_for_refund"]; const _priv={},_pub={}; for(const _k of Object.keys(updates||{})){(_PF.includes(_k)?_priv:_pub)[_k]=updates[_k];} if(Object.keys(_priv).length){await supabase.from("profile_private").upsert({id:userId,..._priv},{onConflict:"id"});} return await supabase.from("profiles").update(_pub).eq("id",userId);
+  const _priv = {}, _pub = {};
+  for (const _k of Object.keys(updates || {})) {
+    (PRIVATE_FIELDS.includes(_k) ? _priv : _pub)[_k] = updates[_k];
+  }
+  if (Object.keys(_priv).length) {
+    const { error: pvErr } = await supabase.from("profile_private").upsert({ id: userId, ..._priv }, { onConflict: "id" });
+    if (pvErr) return { error: pvErr };
+  }
+  if (!Object.keys(_pub).length) return { error: null };
+  return await supabase.from("profiles").update(_pub).eq("id", userId);
 }
 
 // ────────────────────────────────

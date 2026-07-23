@@ -62,11 +62,21 @@ export function useNearbyJobs(options = {}) {
       }
     } catch (_) { /* GPS 실패 → 다음 단계 */ }
 
-    // 2) 프로필 거주지
+    // 2) 프로필 거주지 — 좌표는 profile_private(본인 전용)에 보관 (2026-07-23 개인정보 보호 이관)
+    //    전환기 폴백으로 profiles 구 컬럼도 확인
     if (useProfileFallback && supabase) {
       try {
         const { data: authData } = await supabase.auth.getUser();
         if (authData?.user) {
+          const { data: priv } = await supabase
+            .from("profile_private")
+            .select("home_latitude, home_longitude")
+            .eq("id", authData.user.id)
+            .maybeSingle();
+          if (priv?.home_latitude && priv?.home_longitude) {
+            setLocationSource("profile");
+            return { latitude: priv.home_latitude, longitude: priv.home_longitude };
+          }
           const { data: profile } = await supabase
             .from("profiles")
             .select("home_latitude, home_longitude")

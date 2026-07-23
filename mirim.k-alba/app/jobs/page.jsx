@@ -13,6 +13,7 @@ import { formatPay, shortWorkTime, localizeWorkText, formatPostedAt } from "@/li
 import { romanizeRegion, romanizeCompany } from "@/lib/koroman";
 import { getCurrentUser, getProfile } from "@/lib/supabase";
 import { Input, VisaBadge, PageLoading, Empty } from "@/components/ui";
+import StudentLocationNudge from "@/components/StudentLocationNudge";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 
 /**
@@ -503,6 +504,9 @@ export default function JobsPage() {
     </div>
   ) : null;
 
+  // D-2/D-4 유학생 학교·주소 입력 유도 배너 — 저장 시 '가까운순'으로 전환 (2026-07-23)
+  const studentNudge = <StudentLocationNudge onSaved={() => handleSortChange("nearest")} />;
+
   // '가까운순' 안내 배너 (반경 50km · 가까운 순 · 7개국어) — 모바일/데스크탑 공용
   const nearestBanner = sortMode === "nearest" ? (
     <div style={{ marginBottom: 12, padding: "10px 13px", background: T.accentBg, border: `1px solid ${T.border}`, borderLeft: `3px solid ${T.accent}`, borderRadius: 8, fontSize: 12.5, color: D.ink2, lineHeight: 1.55 }}>
@@ -541,6 +545,7 @@ export default function JobsPage() {
 
       <div style={{ padding: "10px 16px 0" }}>
         <JobsViewToggle current="list" style={{ marginBottom: 12 }} />
+        {studentNudge}
         {nearestBanner}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: D.navy }}>{t("jobs.totalJobs").replace("{count}", displayJobs.length)}</div>
@@ -651,6 +656,7 @@ export default function JobsPage() {
                   {t("jobs.totalJobs").replace("{count}", displayJobs.length)}
                 </div>
               </div>
+              {studentNudge}
               {nearestBanner}
               {listLoading ? (
                 <PageLoading message={t("jobs.loading")} minHeight={240} />
