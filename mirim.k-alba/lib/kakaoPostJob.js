@@ -112,7 +112,7 @@ function qrAnswer(label, value) {
 
 function welcomeFallback() {
   return reply({
-    outputs: [{ simpleText: { text: "무엇을 원하는지 잘 모르겠어요. 아래에서 골라주세요 🙂" } }],
+    outputs: [{ simpleText: { text: "무엇을 원하는지 잘 모르겠어요. 아래에서 골라주세요 🙂\n\n🌏 English · Tiếng Việt · 中文 · 日本語 · Oʻzbek · Монгол\nAsk in your language — I'll answer in it!" } }],
     quickReplies: [
       { action: "message", label: "🌏 외국인 알바생", messageText: "외국인 알바생" },
       { action: "message", label: "💼 사장님", messageText: "사장님" },
