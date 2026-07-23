@@ -153,7 +153,7 @@ export async function getJobs(filters = {}) {
 
 export async function getJob(id) {
   if (!supabase) return null;
-  const { data } = await supabase.from("jobs").select("*, employer:profiles(*)").eq("id", id).single();
+  const { data } = await supabase.from("jobs").select("*, employer:profiles(id, name, company_name, business_address, verified, avatar_url)").eq("id", id).single();
   return data;
 }
 
@@ -267,7 +267,7 @@ export async function getJobApplicants(jobId) {
   if (!supabase) return [];
   const { data } = await supabase
     .from("applications")
-    .select("*, applicant:profiles(*)")
+    .select("*, applicant:profiles(id, name, country, nationality, visa, korean_level, organization, phone, avatar_url)")
     .eq("job_id", jobId);
   return data || [];
 }
@@ -336,7 +336,7 @@ export async function getContract(id) {
   if (!supabase) return null;
   const { data } = await supabase
     .from("contracts")
-    .select("*, job:jobs(*), employer:profiles!contracts_employer_id_fkey(*), worker:profiles!contracts_worker_id_fkey(*)")
+    .select("*, job:jobs(*), employer:profiles!contracts_employer_id_fkey(id, name, company_name, phone, business_address, business_number, verified, default_signature), worker:profiles!contracts_worker_id_fkey(id, name, phone, address, visa, nationality, country, default_signature)")
     .eq("id", id)
     .single();
   return data;
