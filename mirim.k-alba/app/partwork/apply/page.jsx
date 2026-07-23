@@ -658,11 +658,11 @@ function PartWorkApplyContent() {
             id: user.id,
             phone: next.phone || null,
             email: next.email || null,
-            alien_reg_number: next.alien_reg_number || null,
-            passport_number: next.passport_number || null,
+
+            // moved to profile_private
             nationality: next.nationality || null,
           }, { onConflict: 'id' });
-      } catch(e) { console.warn('[profile save]', e); }
+        await supabase.from('profile_private').upsert({ id: user.id, alien_reg_number: next.alien_reg_number || null, passport_number: next.passport_number || null }, { onConflict: 'id' }); } catch(e) { console.warn('[profile save]', e); }
     }, 800);
   };
 
