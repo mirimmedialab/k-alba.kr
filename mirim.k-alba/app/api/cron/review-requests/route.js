@@ -93,7 +93,7 @@ export async function GET(req) {
         phone: c.employer_phone,
         tplEnv: "ALIMTALK_TPL_REVIEW_EMPLOYER",
         direction: "employer_to_worker",
-        content: `[K-ALBA] ${c.worker_name || "알바생"}님 평가 요청\n\n${c.employer_name || "사장님"}님, ${periodNote}\n${c.worker_name || "알바생"}님에 대한 평가(별점+한줄평)를 남겨주시면, 성실한 알바생을 찾는 다른 사장님들과 K-ALBA 매칭 품질에 큰 도움이 됩니다.\n\n소요시간 30초!`,
+        content: `[K-ALBA] ${c.worker_name || "알바생"}님 평가 요청\n\n${c.employer_name || "사장님"}님, ${periodNote}\n${c.worker_name || "알바생"}님에 대한 평가(별점+한줄평)를 남겨주시면, 성실한 알바생이 한국에서 대학 졸업후 취업자를 찾는데 큰 도움이 됩니다.\n\n소요시간 30초!`,
       },
       {
         target: "worker",
