@@ -7,7 +7,7 @@ import { getContract, updateContract, signContract, getCurrentUser, supabase } f
 import { formatKoreanDate, MIN_WAGE } from "@/lib/contractUtils";
 import { generateContractPDF, buildContractFilename } from "@/lib/pdfGenerator";
 import { downloadStandardContractPDF } from "@/lib/contractStandardPdf";
-import { downloadPartworkConfirmationPDF } from "@/lib/partworkConfirmation";
+import { downloadPartworkConfirmationPDF, maskAlienRegNo } from "@/lib/partworkConfirmation";
 import { shareContractKakao } from "@/lib/kakaoShare";
 import { useT } from "@/lib/i18n";
 import { ContractDetailSkel } from "@/components/Wireframe";
@@ -798,9 +798,14 @@ export default function ContractDetailPage() {
     addUser("🎓 시간제취업 확인서를 다운로드할게요");
     try {
       // 공식 양식 PDF(공유 Storage) 방식 — 서식 개정 시 Storage 파일만 교체하면 됨 (2026-07-20)
+      // 사장님 다운로드본은 외국인등록번호 뒷자리 마스킹 (개인정보 보호, 2026-07-23)
       const { sf, workerProfile } = getStudentInfo(contract);
-      await downloadPartworkConfirmationPDF(contract, sf, workerProfile);
-      addBot("✅ 시간제취업 확인서 PDF가 저장되었습니다!\n\n유학생담당자 확인란은 학교 국제처에서\n기재·날인 후 출입국·외국인청에 제출하세요.");
+      await downloadPartworkConfirmationPDF(contract, sf, workerProfile, { maskArcNo: isEmployer });
+      addBot(
+        isEmployer
+          ? "✅ 시간제취업 확인서 PDF가 저장되었습니다!\n\n개인정보 보호를 위해 외국인등록번호\n뒷자리는 가려져 있어요.\n(출입국 제출용 원본은 알바생이 직접 다운로드)"
+          : "✅ 시간제취업 확인서 PDF가 저장되었습니다!\n\n유학생담당자 확인란은 학교 국제처에서\n기재·날인 후 출입국·외국인청에 제출하세요."
+      );
     } catch (e) {
       alert("확인서 생성 중 오류가 발생했습니다: " + e.message);
     } finally {
@@ -1449,7 +1454,7 @@ export default function ContractDetailPage() {
 
       {/* 유학생 시간제취업 확인서 (숨김 — PDF 생성용) */}
       {contract.worker_signed && contract.employer_signed && studentInfo.isStudent && (
-        <StudentConfirmationForm contract={contract} info={studentInfo} />
+        <StudentConfirmationForm contract={contract} info={studentInfo} maskArcNo={isEmployer} />
       )}
 
       {/* 서명 모달 */}
@@ -1615,7 +1620,7 @@ function ContractForm({ contract }) {
 
 // ─── 계약서 미리보기 탭 (인쇄 양식 — 컬러 변경 금지) ───
 // ─── 외국인 유학생 시간제 취업 확인서 (출입국·외국인청 서식) — PDF 생성용 숨김 렌더 ───
-function StudentConfirmationForm({ contract, info }) {
+function StudentConfirmationForm({ contract, info, maskArcNo = false }) {
   const sf = info.sf || {};
   const wp = info.workerProfile || {};
   const days = contract.work_days || [];
@@ -1654,7 +1659,7 @@ function StudentConfirmationForm({ contract, info }) {
             <td style={{ ...th, width: 90 }}>성 명</td>
             <td style={tdC}>{contract.worker_name || ""}</td>
             <td style={{ ...th, width: 90 }}>외국인<br />등록번호</td>
-            <td style={{ ...tdC, width: 150 }}>{sf.alien_reg_no || wp.alien_reg_number || ""}</td>
+            <td style={{ ...tdC, width: 150 }}>{maskArcNo ? maskAlienRegNo(sf.alien_reg_no || wp.alien_reg_number || "") : (sf.alien_reg_no || wp.alien_reg_number || "")}</td>
           </tr>
           <tr>
             <td style={th}>학과(전공)</td>

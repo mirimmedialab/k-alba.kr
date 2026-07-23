@@ -39,7 +39,18 @@ function fmtDate(d) {
 
 const fmtH = (h) => (Math.round(h * 10) / 10).toString().replace(/\.0$/, "");
 
-export async function downloadPartworkConfirmationPDF(contract, sf = {}, wp = {}) {
+// 외국인등록번호 마스킹 — "123456-1234567" → "123456-1******"
+// 사장님(고용주) 다운로드본은 개인정보 보호를 위해 뒷자리를 가린다.
+// (출입국 제출용 원본은 알바생 본인·대학 담당자 다운로드에서만 생성)
+export function maskAlienRegNo(v) {
+  const s = String(v || "").trim();
+  if (!s) return "";
+  const keep = s.includes("-") ? 8 : 7; // 생년월일 + 성별자리까지만 표시
+  if (s.length <= keep) return s;
+  return s.slice(0, keep) + "*".repeat(s.length - keep);
+}
+
+export async function downloadPartworkConfirmationPDF(contract, sf = {}, wp = {}, opts = {}) {
   const days = contract.work_days || [];
 
   // 1일 실근로시간 (휴게시간 제외)
@@ -86,7 +97,9 @@ export async function downloadPartworkConfirmationPDF(contract, sf = {}, wp = {}
 
   const payload = {
     name: contract.worker_name || "",
-    arc_no: sf.alien_reg_no || wp.alien_reg_number || "",
+    arc_no: opts.maskArcNo
+      ? maskAlienRegNo(sf.alien_reg_no || wp.alien_reg_number || "")
+      : sf.alien_reg_no || wp.alien_reg_number || "",
     major: sf.department || "",
     semester,
     phone: wp.phone || contract.worker_phone || "",
