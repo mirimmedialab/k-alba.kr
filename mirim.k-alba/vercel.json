@@ -52,6 +52,9 @@
     "app/api/cron/flush-new-job-emails/route.js": {
       "maxDuration": 60
     },
+    "app/api/cron/review-requests/route.js": {
+      "maxDuration": 60
+    },
     "app/api/jobs/notify-new-job-email/route.js": {
       "maxDuration": 60
     },
@@ -72,6 +75,10 @@
     {
       "path": "/api/cron/flush-new-job-emails",
       "schedule": "0 23,1 * * *"
+    },
+    {
+      "path": "/api/cron/review-requests",
+      "schedule": "0 1 * * *"
     }
   ]
 }

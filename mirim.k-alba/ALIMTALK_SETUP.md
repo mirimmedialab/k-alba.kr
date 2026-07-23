@@ -57,3 +57,53 @@ ALIMTALK_TPL_COMPLETED=KALBACOMPLETED
 
 ---
 2026-07-14: 템플릿 5종 검수 승인 완료, Vercel 환경변수 등록 완료 → 알림톡 활성화.
+
+---
+
+## 상호 평가 알림톡 (2026-07-23 추가 — 템플릿 등록 필요)
+
+계약 종료 다음날(+ 2개월 이상 장기근무는 근무 2개월 시점) 양측에 평가 요청 알림톡 발송.
+매일 KST 10:00 Vercel Cron(`/api/cron/review-requests`)이 대상 계약을 찾아 발송하며,
+`review_requests` 테이블로 중복 발송을 막습니다. 이미 평가를 제출한 쪽에는 보내지 않습니다.
+
+### 1. SENS 콘솔에 템플릿 2종 등록 (검수 1~3영업일)
+
+**템플릿 코드: KALBAREVIEWEMP** (수신: 사장님)
+
+```
+[K-ALBA] #{알바생명}님 평가 요청
+
+#{사장님명}님, #{시점문구}
+#{알바생명}님에 대한 평가(별점+한줄평)를 남겨주시면, 성실한 알바생을 찾는 다른 사장님들과 K-ALBA 매칭 품질에 큰 도움이 됩니다.
+
+소요시간 30초!
+```
+버튼: 웹링크 「평가 남기기」 → `https://k-alba.kr/reviews/#{계약ID}`
+
+**템플릿 코드: KALBAREVIEWWRK** (수신: 알바생)
+
+```
+[K-ALBA] #{근무처명} 평가 요청
+
+#{알바생명}님, #{시점문구}
+#{근무처명}에 대한 평가(별점+한줄평)를 남겨주시면, 좋은 일자리를 찾는 다른 알바생들에게 큰 도움이 됩니다.
+
+소요시간 30초!
+```
+버튼: 웹링크 「평가 남기기」 → `https://k-alba.kr/reviews/#{계약ID}`
+
+※ #{시점문구}: "함께한 근무는 어떠셨나요?" (종료) / "근무 2개월이 되었어요! 지금까지 어떠셨나요?" (중간)
+
+### 2. 검수 승인 후 Vercel 환경변수 추가
+
+```
+ALIMTALK_TPL_REVIEW_EMPLOYER=KALBAREVIEWEMP
+ALIMTALK_TPL_REVIEW_WORKER=KALBAREVIEWWRK
+```
+
+### 3. DB 마이그레이션 적용
+
+`supabase/migrations_pending/20260723_create_reviews.sql` 실행
+(reviews + review_requests 테이블. Claude에게 요청하거나 SQL Editor에서 직접 실행)
+
+환경변수·테이블이 없으면 cron이 조용히 skip하므로, 순서 상관없이 배포해도 안전합니다.
