@@ -8,6 +8,7 @@ import { formatKoreanDate, MIN_WAGE } from "@/lib/contractUtils";
 import { generateContractPDF, buildContractFilename } from "@/lib/pdfGenerator";
 import { downloadStandardContractPDF } from "@/lib/contractStandardPdf";
 import { downloadPartworkConfirmationPDF, maskAlienRegNo } from "@/lib/partworkConfirmation";
+import { validateAlienRegNo, arnErrorMessage, formatArn } from "@/lib/arnValidate";
 import { shareContractKakao } from "@/lib/kakaoShare";
 import { useT } from "@/lib/i18n";
 import { ContractDetailSkel } from "@/components/Wireframe";
@@ -822,11 +823,20 @@ export default function ContractDetailPage() {
   };
 
   const submitConfInput = async () => {
-    const v = chatInput.trim();
+    let v = chatInput.trim();
     if (!v || !confAsk) return;
     setChatInput("");
     addUser(v);
     const key = confAsk.queue[confAsk.idx];
+    // 외국인등록번호는 형식·생년월일·체크섬 검증 후 통과해야 다음 단계로
+    if (key === "alien_reg_no") {
+      v = formatArn(v);
+      const chk = validateAlienRegNo(v);
+      if (!chk.valid) {
+        setTimeout(() => addBot(`⚠️ ${arnErrorMessage(chk.reason)}\n\n외국인등록증에 적힌 번호를\n다시 입력해 주세요. (예: 123456-1234567)`), 500);
+        return;
+      }
+    }
     const data = { ...confAsk.data, [key]: v };
     if (confAsk.idx + 1 < confAsk.queue.length) {
       setConfAsk({ ...confAsk, idx: confAsk.idx + 1, data });

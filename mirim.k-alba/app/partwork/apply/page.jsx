@@ -1,6 +1,7 @@
 "use client";
 import { Suspense, useState, useEffect, useMemo, useRef } from "react";
 import { formatPhoneInput } from "@/lib/phone";
+import { validateAlienRegNo, arnErrorMessage } from "@/lib/arnValidate";
 export const dynamic = "force-dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -491,6 +492,16 @@ function ConfirmationFormButton({ contract, form, profile, onProfileChange, inli
                   letterSpacing: f.key === 'alien_reg_number' ? '0.5px' : 'normal',
                 }}
               />
+              {f.key === 'alien_reg_number' && (() => {
+                const v = profile?.alien_reg_number || '';
+                if (v.replace(/[^0-9]/g, '').length < 13) return null;
+                const chk = validateAlienRegNo(v);
+                return chk.valid ? null : (
+                  <div style={{ fontSize: 10, color: '#DC2626', marginTop: 3, lineHeight: 1.4 }}>
+                    ⚠️ {arnErrorMessage(chk.reason)}
+                  </div>
+                );
+              })()}
             </label>
           ))}
           <div style={{ fontSize: 9, color: "#92400E", lineHeight: 1.6 }}>
@@ -1582,7 +1593,8 @@ function Screen3({ form, contract, validation, uploads, profile, onProfileChange
   const [studentSignature, setStudentSignature] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const profileComplete = !!(profile?.phone && profile?.email && profile?.alien_reg_number);
+  const profileComplete = !!(profile?.phone && profile?.email && profile?.alien_reg_number)
+    && validateAlienRegNo(profile?.alien_reg_number).valid;
   const docsComplete = !!(uploads?.enrollment && uploads?.grade && uploads?.topik_cert && uploads?.passport && uploads?.arc);
   const canSubmit = agreed && studentSignature && profileComplete && docsComplete && !submitting;
 

@@ -5,6 +5,7 @@ import { T } from "@/lib/theme";
 import { Inp, ChipSelect } from "@/components/UI";
 import { AddressSearchField } from "@/components/AddressSearch";
 import { getCurrentUser, getProfile, updateProfile, getWorkHistory, signOut, supabase } from "@/lib/supabase";
+import { validateAlienRegNo, arnErrorMessage, formatArn } from "@/lib/arnValidate";
 import { VISA_OPTIONS, COUNTRIES, KOREAN_LEVELS, WORK_TYPES, JOB_TYPES, REGIONS, BENEFITS } from "@/data/marketData";
 import { FormPageSkel } from "@/components/Wireframe";
 import LocationPicker from "@/components/LocationPicker";
@@ -114,6 +115,14 @@ export default function ProfilePage() {
   const pageStyle = { padding: isDesktop ? "40px 28px 64px" : 20, maxWidth: isDesktop ? 820 : 600, margin: "0 auto" };
 
   const handleSave = async () => {
+    // 외국인등록번호 유효성 검증 (형식·생년월일·체크섬)
+    if (form.alien_reg_number) {
+      const chk = validateAlienRegNo(form.alien_reg_number);
+      if (!chk.valid) {
+        alert("⚠️ " + arnErrorMessage(chk.reason));
+        return;
+      }
+    }
     setSaving(true);
     const { error } = await updateProfile(user.id, form);
     setSaving(false);
@@ -253,7 +262,14 @@ export default function ProfilePage() {
                 <div style={{ fontSize: 11, fontWeight: 700, color: T.navy, marginBottom: 8 }}>
                   🎓 {t("profile.studentInfoHint", null, "유학생 정보 — 시간제취업 확인서 자동 생성에 사용돼요")}
                 </div>
-                <Inp label={t("profile.alienRegNo", null, "외국인등록번호")} placeholder="000000-0000000" value={form.alien_reg_number} onChange={(e) => setForm({ ...form, alien_reg_number: e.target.value })} />
+                <div>
+                  <Inp label={t("profile.alienRegNo", null, "외국인등록번호")} placeholder="000000-0000000" value={form.alien_reg_number} onChange={(e) => setForm({ ...form, alien_reg_number: formatArn(e.target.value) })} />
+                  {form.alien_reg_number && form.alien_reg_number.replace(/[^0-9]/g, "").length >= 13 && !validateAlienRegNo(form.alien_reg_number).valid && (
+                    <div style={{ fontSize: 11, color: "#DC2626", marginTop: 4 }}>
+                      ⚠️ {arnErrorMessage(validateAlienRegNo(form.alien_reg_number).reason)}
+                    </div>
+                  )}
+                </div>
                 <Inp label={t("profile.department", null, "학과(전공)")} value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} />
                 <Inp label={t("profile.semester", null, "학년/학기 (예: 2학년 1학기)")} value={form.semester} onChange={(e) => setForm({ ...form, semester: e.target.value })} />
               </div>
