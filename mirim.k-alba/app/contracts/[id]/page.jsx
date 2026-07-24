@@ -9,6 +9,7 @@ import { generateContractPDF, buildContractFilename } from "@/lib/pdfGenerator";
 import { downloadStandardContractPDF } from "@/lib/contractStandardPdf";
 import { downloadPartworkConfirmationPDF, maskAlienRegNo } from "@/lib/partworkConfirmation";
 import { validateAlienRegNo, arnErrorMessage, formatArn } from "@/lib/arnValidate";
+import IdCardMasker from "@/components/IdCardMasker";
 import { shareContractKakao } from "@/lib/kakaoShare";
 import { useT } from "@/lib/i18n";
 import { ContractDetailSkel } from "@/components/Wireframe";
@@ -80,10 +81,14 @@ export default function ContractDetailPage() {
   // 유학생 시간제취업 확인서 정보 수집 Q&A
   const [confAsk, setConfAsk] = useState(null); // { queue: [...], idx, data: {} }
   const [downloadingConf, setDownloadingConf] = useState(false);
-  // 사업자등록증 업로드 (국제처 검토용) — null: 확인 중, {exists, file_name} 형태
+  // 사업자등록증 업로드 (국제처 검토용) — null: 확인 중, {exists, file_name, id_card} 형태
   const [bizCert, setBizCert] = useState(null);
   const [bizCertUploading, setBizCertUploading] = useState(false);
   const bizCertInputRef = useRef(null);
+  // 사장님 신분증 (마스킹 후 업로드)
+  const [idCardFile, setIdCardFile] = useState(null); // 마스킹 편집기에 넘길 원본 File
+  const [idCardUploading, setIdCardUploading] = useState(false);
+  const idCardInputRef = useRef(null);
   // 휴게시간 의무 배정 확인 (근로기준법 제54조) — 양측 모두 확인해야 서명 진행
   const [breakAsk, setBreakAsk] = useState(false);
   const [breakEdit, setBreakEdit] = useState(false);
@@ -211,8 +216,9 @@ export default function ContractDetailPage() {
         const res = await fetch("/api/employer/business-cert", { headers: { Authorization: `Bearer ${token}` } });
         const d = await res.json();
         setBizCert(d.ok ? d : { exists: false });
-        if (d.ok && !d.exists) {
-          setTimeout(() => addBot("🏢 한 가지 더!\n학교 국제처가 시간제취업 확인서를 검토할 때\n사업장의 사업자등록증 사본이 필요합니다.\n\n아래 [사업자등록증 업로드] 버튼으로\n한 번만 올려두시면, 이후 모든 유학생 채용에서\n국제처가 바로 확인할 수 있어요. (사진/PDF 가능)"), 1800);
+        if (d.ok && (!d.exists || !d.id_card?.exists)) {
+          const needs = [!d.exists && "사업자등록증 사본", !d.id_card?.exists && "대표자 신분증 사본(주민등록증/운전면허증)"].filter(Boolean).join("과 ");
+          setTimeout(() => addBot(`🏢 한 가지 더!\n학교 국제처가 시간제취업 확인서를 검토할 때\n${needs}이 필요합니다.\n\n아래 버튼으로 한 번만 올려두시면, 이후 모든\n유학생 채용에서 국제처가 바로 확인할 수 있어요.\n\n🔒 신분증은 주민등록번호 뒷자리를 화면에서\n직접 가린 뒤 업로드됩니다. (원본은 전송 안 됨)`), 1800);
         }
       } catch (_) { /* 무시 */ }
     })();
@@ -242,6 +248,44 @@ export default function ContractDetailPage() {
       alert("사업자등록증 업로드에 실패했습니다: " + err.message);
     } finally {
       setBizCertUploading(false);
+    }
+  };
+
+  // 신분증: 파일 선택 → 마스킹 편집기 → 가려진 이미지만 업로드
+  const handleIdCardPick = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("신분증은 사진(JPG/PNG) 파일만 가능합니다.\n마스킹을 위해 이미지로 올려주세요.");
+      return;
+    }
+    setIdCardFile(file); // 마스킹 편집기 오픈
+  };
+
+  const handleIdCardMasked = async (blob) => {
+    setIdCardFile(null);
+    if (idCardUploading) return;
+    setIdCardUploading(true);
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token;
+      const fd = new FormData();
+      fd.append("file", new File([blob], "id_card_masked.jpg", { type: "image/jpeg" }));
+      fd.append("doc_type", "id_card");
+      const res = await fetch("/api/employer/business-cert", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error || "업로드 실패");
+      setBizCert((prev) => ({ ...(prev || {}), ok: true, id_card: { exists: true, file_name: d.file_name } }));
+      addBot("✅ 신분증(마스킹본)이 등록되었습니다!\n주민등록번호 뒷자리가 가려진 이미지만\n안전하게 저장됐어요. 감사합니다 🙏");
+    } catch (err) {
+      alert("신분증 업로드에 실패했습니다: " + err.message);
+    } finally {
+      setIdCardUploading(false);
     }
   };
 
@@ -1546,13 +1590,19 @@ export default function ContractDetailPage() {
                       {bizCertUploading ? "업로드 중..." : bizCert?.exists ? "✅ 사업자등록증 제출됨 · 다시 올리기" : "🏢 사업자등록증 업로드"}
                     </Button>
                   )}
+                  {isEmployer && studentInfo.isStudent && (
+                    <Button variant="secondary" size="md" onClick={() => idCardInputRef.current?.click()} disabled={idCardUploading}>
+                      {idCardUploading ? "업로드 중..." : bizCert?.id_card?.exists ? "✅ 신분증 제출됨 · 다시 올리기" : "🪪 신분증 업로드 (민감정보 가림)"}
+                    </Button>
+                  )}
                 </div>
                 {isEmployer && studentInfo.isStudent && (
                   <>
                     <input ref={bizCertInputRef} type="file" accept="image/jpeg,image/png,image/webp,application/pdf" style={{ display: "none" }} onChange={handleBizCertUpload} />
-                    {!bizCert?.exists && (
+                    <input ref={idCardInputRef} type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }} onChange={handleIdCardPick} />
+                    {(!bizCert?.exists || !bizCert?.id_card?.exists) && (
                       <p style={{ fontSize: 10.5, color: T.ink3, marginTop: 8 }}>
-                        🏢 국제처의 시간제취업 확인서 검토에 사업자등록증 사본이 필요해요 (최초 1회)
+                        🏢 국제처 검토에 사업자등록증·대표자 신분증 사본이 필요해요 (최초 1회 · 신분증은 주민번호 뒷자리를 가린 뒤 저장됩니다)
                       </p>
                     )}
                   </>
@@ -1578,6 +1628,11 @@ export default function ContractDetailPage() {
         {tab === "form" && <ContractForm contract={contract} />}
         {tab === "preview" && <ContractPreview contract={contract} onSignClick={() => setTab("chatbot")} />}
       </div>
+
+      {/* 신분증 민감정보 마스킹 편집기 */}
+      {idCardFile && (
+        <IdCardMasker file={idCardFile} onDone={handleIdCardMasked} onCancel={() => setIdCardFile(null)} />
+      )}
 
       {/* 유학생 시간제취업 확인서 (숨김 — PDF 생성용) */}
       {contract.worker_signed && contract.employer_signed && studentInfo.isStudent && (

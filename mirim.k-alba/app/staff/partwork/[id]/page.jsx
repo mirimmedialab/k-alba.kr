@@ -409,6 +409,32 @@ export default function StaffPartworkDetailPage() {
               <span style={{ fontSize: 11, color: '#999' }}>미제출</span>
             )}
           </div>
+          {/* 대표자 신분증 (민감정보 마스킹본) */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0',
+            borderBottom: `1px solid ${T.border}`,
+          }}>
+            <span style={{ fontSize: 18 }}>🪪</span>
+            <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: T.ink }}>
+              대표자 신분증 (근무처)
+              <span style={{ marginLeft: 6, fontSize: 9, color: '#888' }}>주민번호 뒷자리 마스킹본</span>
+              {bizCert?.id_card?.exists && bizCert.id_card.uploaded_at && (
+                <span style={{ marginLeft: 6, fontSize: 10, color: T.ink3, fontWeight: 400 }}>
+                  {String(bizCert.id_card.uploaded_at).slice(0, 10)} 업로드
+                </span>
+              )}
+            </div>
+            {bizCert?.id_card?.exists ? (
+              <a href={bizCert.id_card.signed_url} target="_blank" rel="noopener noreferrer" style={{
+                padding: '6px 10px', background: '#1E40AF', color: '#FFF',
+                borderRadius: 6, fontSize: 11, fontWeight: 700, textDecoration: 'none',
+              }}>
+                📄 보기
+              </a>
+            ) : (
+              <span style={{ fontSize: 11, color: '#999' }}>미제출</span>
+            )}
+          </div>
         </Section>
 
         {/* 인증대학 체크 */}
