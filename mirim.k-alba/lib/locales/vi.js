@@ -782,6 +782,7 @@ export const vi = {
     empty: "Chưa có cuộc trò chuyện"
   },
   resume: {
+    expKorea: "🇰🇷 Kinh nghiệm tại Hàn Quốc", expHome: "🌏 Kinh nghiệm tại quê nhà", employerComment: "Đánh giá của chủ cửa hàng",
     view: "Xem hồ sơ", none: "Chưa có hồ sơ nào.",
     title: "Hồ sơ của tôi", subtitle: "Tải lên file hồ sơ, chúng tôi sẽ tự động điền",
     upload: "Tải lên hồ sơ (PDF·Word·TXT)", parsing: "Đang phân tích...",

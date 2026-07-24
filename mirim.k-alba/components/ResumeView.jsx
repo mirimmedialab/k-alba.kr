@@ -13,12 +13,19 @@ import { useT } from "@/lib/i18n";
 export default function ResumeView({ userId, name, onClose }) {
   const t = useT();
   const [resume, setResume] = useState(undefined); // undefined: 로딩, null: 없음
+  const [history, setHistory] = useState([]); // K-ALBA 검증 이력 + 사장님 평가
 
   useEffect(() => {
     if (!userId) return;
     (async () => {
       const { data } = await supabase.from("worker_resumes").select("*").eq("user_id", userId).maybeSingle();
       setResume(data || null);
+      try {
+        const { data: sess } = await supabase.auth.getSession();
+        const res = await fetch(`/api/resume/history?worker_id=${userId}`, { headers: { Authorization: `Bearer ${sess?.session?.access_token}` } });
+        const d = await res.json();
+        if (d.ok) setHistory(d.history || []);
+      } catch (_) {}
     })();
   }, [userId]);
 
@@ -46,20 +53,27 @@ export default function ResumeView({ userId, name, onClose }) {
                 <div style={{ fontSize: 13.5, color: T.ink, lineHeight: 1.7 }}>{resume.intro}</div>
               </Block>
             )}
-            {resume.experiences?.length > 0 && (
-              <Block title={t("resume.exp")}>
-                {resume.experiences.map((ex, i) => (
-                  <div key={i} style={{ padding: "10px 12px", background: T.cream, borderRadius: 8, marginBottom: 8 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
-                      <span style={{ fontSize: 13.5, fontWeight: 800, color: T.ink }}>{ex.place}</span>
-                      <span style={{ fontSize: 12, color: T.ink3 }}>{ex.period}</span>
+            {[
+              { region: "korea", label: t("resume.expKorea") },
+              { region: "home", label: t("resume.expHome") },
+            ].map(({ region, label }) => {
+              const items = (resume.experiences || []).filter((ex) => (ex.region || "korea") === region);
+              if (!items.length) return null;
+              return (
+                <Block key={region} title={label}>
+                  {items.map((ex, i) => (
+                    <div key={i} style={{ padding: "10px 12px", background: T.cream, borderRadius: 8, marginBottom: 8 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
+                        <span style={{ fontSize: 13.5, fontWeight: 800, color: T.ink }}>{ex.place}</span>
+                        <span style={{ fontSize: 12, color: T.ink3 }}>{ex.period}</span>
+                      </div>
+                      {ex.role && <div style={{ fontSize: 12.5, color: T.ink2, marginTop: 2 }}>{ex.role}</div>}
+                      {ex.description && <div style={{ fontSize: 12, color: T.ink3, marginTop: 4, lineHeight: 1.6 }}>{ex.description}</div>}
                     </div>
-                    {ex.role && <div style={{ fontSize: 12.5, color: T.ink2, marginTop: 2 }}>{ex.role}</div>}
-                    {ex.description && <div style={{ fontSize: 12, color: T.ink3, marginTop: 4, lineHeight: 1.6 }}>{ex.description}</div>}
-                  </div>
-                ))}
-              </Block>
-            )}
+                  ))}
+                </Block>
+              );
+            })}
             {resume.education?.length > 0 && (
               <Block title={t("resume.edu")}>
                 {resume.education.map((ed, i) => (
@@ -94,6 +108,32 @@ export default function ResumeView({ userId, name, onClose }) {
               </Block>
             )}
           </>
+        )}
+
+        {/* K-ALBA 검증 근무 이력 + 사장님 평가 (이력서 미등록이어도 표시) */}
+        {history.length > 0 && (
+          <div style={{ marginTop: 6 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: T.ink3, marginBottom: 6, letterSpacing: "0.02em" }}>✅ {t("resume.verified")}</div>
+            {history.map((c) => (
+              <div key={c.id} style={{ background: "#F0FAF4", border: "1px solid #CBEBD6", borderRadius: 10, padding: "11px 13px", marginBottom: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                  <div>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: T.ink }}>{c.workplace}</div>
+                    <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>{c.start} ~ {c.end}{c.job ? ` · ${c.job}` : ""}</div>
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: "#0E7A3D", background: "#DDF3E4", borderRadius: 999, padding: "4px 10px", whiteSpace: "nowrap" }}>✓ K-ALBA</span>
+                </div>
+                {c.review && (
+                  <div style={{ marginTop: 8, background: "#FFFFFF", borderRadius: 8, padding: "8px 11px" }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: T.ink3 }}>
+                      💬 {t("resume.employerComment")} <span style={{ color: "#E8A100" }}>{"★".repeat(c.review.rating)}{"☆".repeat(5 - c.review.rating)}</span>
+                    </div>
+                    {c.review.comment && <div style={{ fontSize: 12.5, color: T.ink, marginTop: 3, lineHeight: 1.6 }}>{c.review.comment}</div>}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>

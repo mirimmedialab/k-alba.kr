@@ -33,6 +33,10 @@ export function parseResumeText(raw) {
   for (const line of sections.experiences) {
     if (DATE_RANGE.test(line)) {
       if (exp) experiences.push(exp);
+  // 지역 추정: 한글이 포함된 근무처는 한국 경력, 아니면 자국 경력으로 초기 분류 (사용자가 수정 가능)
+  for (const e of experiences) {
+    e.region = /[가-힣]/.test(e.place || "") ? "korea" : "home";
+  }
       const period = (line.match(DATE_RANGE) || [""])[0].trim();
       const rest = line.replace(DATE_RANGE, "").replace(/[|·,]/g, " ").trim();
       exp = { place: rest.slice(0, 60) || "", role: "", period, description: "" };

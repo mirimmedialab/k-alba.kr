@@ -779,6 +779,7 @@ export const zh = {
     empty: "暂无对话"
   },
   resume: {
+    expKorea: "🇰🇷 在韩经历", expHome: "🌏 本国经历", employerComment: "雇主评价",
     view: "查看简历", none: "尚未登记简历。",
     title: "我的简历", subtitle: "上传简历文件，自动填写内容",
     upload: "上传简历文件 (PDF·Word·TXT)", parsing: "正在分析文件...",

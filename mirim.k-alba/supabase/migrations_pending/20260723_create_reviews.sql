@@ -1,5 +1,5 @@
 -- 상호 평가 (계약 종료/근무 2개월 시점 알림톡 → 별점+한줄평)
--- ⚠️ 미적용 상태 — Claude에게 "리뷰 마이그레이션 적용해줘"라고 요청하거나 Supabase SQL Editor에서 실행
+-- ✅ 2026-07-24 적용 완료 (select 정책은 reviewee 열람 허용으로 확장 적용됨)
 
 CREATE TABLE public.reviews (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

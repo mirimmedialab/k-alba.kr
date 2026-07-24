@@ -899,6 +899,7 @@ export const en = {
     empty: "No conversations yet"
   },
   resume: {
+    expKorea: "🇰🇷 Experience in Korea", expHome: "🌏 Experience in home country", employerComment: "Employer review",
     view: "View resume", none: "No resume registered yet.",
     title: "My Resume", subtitle: "Upload your resume file and we fill it in automatically",
     upload: "Upload resume file (PDF·Word·TXT)", parsing: "Analyzing file...",

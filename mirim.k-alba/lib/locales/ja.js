@@ -781,6 +781,7 @@ export const ja = {
     empty: "まだ会話がありません"
   },
   resume: {
+    expKorea: "🇰🇷 韓国での経歴", expHome: "🌏 母国での経歴", employerComment: "店主の評価",
     view: "履歴書を見る", none: "まだ履歴書が登録されていません。",
     title: "マイ履歴書", subtitle: "履歴書ファイルをアップロードすると自動入力されます",
     upload: "履歴書をアップロード (PDF·Word·TXT)", parsing: "ファイル分析中...",

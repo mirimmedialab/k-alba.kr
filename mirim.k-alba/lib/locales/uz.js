@@ -782,6 +782,7 @@ export const uz = {
     empty: "Hozircha suhbatlar yo'q"
   },
   resume: {
+    expKorea: "🇰🇷 Koreyadagi tajriba", expHome: "🌏 O'z yurtidagi tajriba", employerComment: "Ish beruvchi bahosi",
     view: "Rezyumeni ko'rish", none: "Hali rezyume yo'q.",
     title: "Mening rezyumem", subtitle: "Rezyume faylini yuklang, avtomatik to'ldiramiz",
     upload: "Rezyume yuklash (PDF·Word·TXT)", parsing: "Fayl tahlil qilinmoqda...",

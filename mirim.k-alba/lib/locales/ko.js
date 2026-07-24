@@ -904,6 +904,7 @@ export const ko = {
     empty: "아직 대화가 없습니다"
   },
   resume: {
+    expKorea: "🇰🇷 한국 경력", expHome: "🌏 자국(본국) 경력", employerComment: "사장님 평가",
     view: "이력서 보기", none: "등록된 이력서가 아직 없습니다.",
     title: "내 이력서", subtitle: "이력서 파일을 올리면 자동으로 채워드려요",
     upload: "이력서 파일 업로드 (PDF·Word·TXT)", parsing: "파일 분석 중...",

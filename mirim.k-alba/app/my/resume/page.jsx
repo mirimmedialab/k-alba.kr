@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { T } from "@/lib/theme";
-import { supabase, getCurrentUser, getMyContracts } from "@/lib/supabase";
+import { supabase, getCurrentUser } from "@/lib/supabase";
 import { useT } from "@/lib/i18n";
 import { PageLoading, Button } from "@/components/ui";
 
@@ -50,8 +50,12 @@ export default function MyResumePage() {
           certificates: data.certificates || [],
         });
       }
-      const contracts = await getMyContracts(u.id, "worker");
-      setVerified((contracts || []).filter((c) => c.worker_signed && c.employer_signed));
+      try {
+        const { data: sess } = await supabase.auth.getSession();
+        const res = await fetch("/api/resume/history", { headers: { Authorization: `Bearer ${sess?.session?.access_token}` } });
+        const d = await res.json();
+        if (d.ok) setVerified(d.history || []);
+      } catch (_) {}
       setLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -157,21 +161,38 @@ export default function MyResumePage() {
         />
       </Section>
 
-      {/* 경력 */}
-      <Section title={t("resume.exp")} onAdd={() => addListItem("experiences", { place: "", role: "", period: "", description: "" })} addLabel={t("resume.add")}>
-        {resume.experiences.map((ex, i) => (
-          <ItemCard key={i} onRemove={() => rmListItem("experiences", i)} removeLabel={t("resume.remove")}>
-            <Row>
-              <Field label={t("resume.expPlace")} value={ex.place} onChange={(v) => setListItem("experiences", i, "place", v)} flex={2} />
-              <Field label={t("resume.expPeriod")} value={ex.period} onChange={(v) => setListItem("experiences", i, "period", v)} flex={1.4} ph="2024.03 ~ 2025.06" />
-            </Row>
-            <Row>
-              <Field label={t("resume.expRole")} value={ex.role} onChange={(v) => setListItem("experiences", i, "role", v)} flex={1} />
-            </Row>
-            <Field label={t("resume.expDesc")} value={ex.description} onChange={(v) => setListItem("experiences", i, "description", v)} />
-          </ItemCard>
-        ))}
-      </Section>
+      {/* 경력 — 한국 / 자국 분리 */}
+      {[
+        { region: "korea", label: t("resume.expKorea") },
+        { region: "home", label: t("resume.expHome") },
+      ].map(({ region, label }) => (
+        <Section key={region} title={label} onAdd={() => addListItem("experiences", { place: "", role: "", period: "", description: "", region })} addLabel={t("resume.add")}>
+          {resume.experiences.map((ex, i) => ({ ex, i })).filter(({ ex }) => (ex.region || "korea") === region).map(({ ex, i }) => (
+            <ItemCard key={i} onRemove={() => rmListItem("experiences", i)} removeLabel={t("resume.remove")}>
+              <Row>
+                <Field label={t("resume.expPlace")} value={ex.place} onChange={(v) => setListItem("experiences", i, "place", v)} flex={2} />
+                <Field label={t("resume.expPeriod")} value={ex.period} onChange={(v) => setListItem("experiences", i, "period", v)} flex={1.4} ph="2024.03 ~ 2025.06" />
+              </Row>
+              <Row>
+                <Field label={t("resume.expRole")} value={ex.role} onChange={(v) => setListItem("experiences", i, "role", v)} flex={1} />
+              </Row>
+              <Field label={t("resume.expDesc")} value={ex.description} onChange={(v) => setListItem("experiences", i, "description", v)} />
+              <div style={{ display: "flex", gap: 6 }}>
+                {["korea", "home"].map((r) => (
+                  <button key={r} onClick={() => setListItem("experiences", i, "region", r)} style={{
+                    padding: "4px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                    border: `1.5px solid ${(ex.region || "korea") === r ? T.coral : T.border}`,
+                    background: (ex.region || "korea") === r ? "#FFF1EC" : T.paper,
+                    color: (ex.region || "korea") === r ? T.coral : T.ink3,
+                  }}>
+                    {r === "korea" ? "🇰🇷" : "🌏"} {r === "korea" ? t("resume.expKorea").replace("🇰🇷 ", "") : t("resume.expHome").replace("🌏 ", "")}
+                  </button>
+                ))}
+              </div>
+            </ItemCard>
+          ))}
+        </Section>
+      ))}
 
       {/* 학력 */}
       <Section title={t("resume.edu")} onAdd={() => addListItem("education", { school: "", major: "", period: "", status: "" })} addLabel={t("resume.add")}>
@@ -231,18 +252,24 @@ export default function MyResumePage() {
           <div style={{ background: T.cream, borderRadius: 10, padding: 16, fontSize: 13, color: T.ink2 }}>{t("resume.noVerified")}</div>
         ) : (
           verified.map((c) => (
-            <div key={c.id} style={{ background: "#F0FAF4", border: "1px solid #CBEBD6", borderRadius: 10, padding: "12px 14px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <div style={{ fontSize: 13.5, fontWeight: 700, color: T.ink }}>
-                  {c.workplace_name || c.employer?.company_name || c.job?.title || "-"}
+            <div key={c.id} style={{ background: "#F0FAF4", border: "1px solid #CBEBD6", borderRadius: 10, padding: "12px 14px", marginBottom: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, color: T.ink }}>{c.workplace}</div>
+                  <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>{c.start} ~ {c.end}{c.job ? ` · ${c.job}` : ""}</div>
                 </div>
-                <div style={{ fontSize: 12, color: T.ink3, marginTop: 2 }}>
-                  {(c.contract_start || "").slice(0, 10)} ~ {(c.contract_end || "").slice(0, 10)}
-                </div>
+                <span style={{ fontSize: 11, fontWeight: 800, color: "#0E7A3D", background: "#DDF3E4", borderRadius: 999, padding: "4px 10px", whiteSpace: "nowrap" }}>
+                  ✓ K-ALBA
+                </span>
               </div>
-              <span style={{ fontSize: 11, fontWeight: 800, color: "#0E7A3D", background: "#DDF3E4", borderRadius: 999, padding: "4px 10px", whiteSpace: "nowrap" }}>
-                ✓ K-ALBA
-              </span>
+              {c.review && (
+                <div style={{ marginTop: 8, background: "#FFFFFF", borderRadius: 8, padding: "8px 11px" }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: T.ink3 }}>
+                    💬 {t("resume.employerComment")} <span style={{ color: "#E8A100" }}>{"★".repeat(c.review.rating)}{"☆".repeat(5 - c.review.rating)}</span>
+                  </div>
+                  {c.review.comment && <div style={{ fontSize: 12.5, color: T.ink, marginTop: 3, lineHeight: 1.6 }}>{c.review.comment}</div>}
+                </div>
+              )}
             </div>
           ))
         )}
