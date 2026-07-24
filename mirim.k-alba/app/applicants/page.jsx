@@ -9,6 +9,7 @@ import { KakaoChatModal } from "@/components/KakaoChatModal";
 import { ListPageSkel } from "@/components/Wireframe";
 import { Button, Badge, Empty } from "@/components/ui";
 import { useIsDesktop } from "@/lib/useIsDesktop";
+import ResumeView from "@/components/ResumeView";
 import { useT } from "@/lib/i18n";
 
 /**
@@ -46,6 +47,7 @@ function ApplicantsContent() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [chatOpen, setChatOpen] = useState(false);
+  const [resumeFor, setResumeFor] = useState(null); // 이력서 모달 대상 지원자
   const [chatMode, setChatMode] = useState(null);
   const [activeApplicant, setActiveApplicant] = useState(null);
   const isDesktop = useIsDesktop();
@@ -343,6 +345,11 @@ function ApplicantsContent() {
               </div>
 
               {/* 액션 버튼 — Step 3-A Button (사장님 페이지 = primaryDark) */}
+              <div style={{ marginLeft: 40, marginBottom: a.status === "pending" ? 8 : 0 }}>
+                <Button variant="secondary" size="sm" onClick={() => setResumeFor(a)}>
+                  📄 {t("resume.view")}
+                </Button>
+              </div>
               {a.status === "pending" && (
                 <div style={{ display: "flex", gap: 6, marginLeft: 40, flexWrap: "wrap" }}>
                   <Button
@@ -365,6 +372,15 @@ function ApplicantsContent() {
           ))
         )}
       </div>
+
+      {/* 지원자 이력서 모달 */}
+      {resumeFor && (
+        <ResumeView
+          userId={resumeFor.applicant?.id}
+          name={resumeFor.applicant?.name || ""}
+          onClose={() => setResumeFor(null)}
+        />
+      )}
 
       {/* 사장님 카톡 챗봇 - 합격/불합격 (🎉/💌은 BI v2와 호환, 🤖만 금지) */}
       <KakaoChatModal

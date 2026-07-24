@@ -4,6 +4,7 @@ export const vi = {
   pay: { hour: "giờ", day: "ngày", month: "tháng", year: "năm", won: "won" },
   kr: { none: "Không yêu cầu tiếng Hàn", beginner: "Tiếng Hàn sơ cấp", intermediate: "Tiếng Hàn trung cấp", advanced: "Tiếng Hàn cao cấp" },
   nav: {
+    resume: "Hồ sơ",
     favorites: "♥ Việc đã lưu",
     map: "🗺️ Bản đồ",
     partwork: "🎓 Việc bán thời gian",
@@ -779,5 +780,20 @@ export const vi = {
     yesterday: "Hôm qua",
     daysAgo: "{n} ngày trước",
     empty: "Chưa có cuộc trò chuyện"
+  },
+  resume: {
+    view: "Xem hồ sơ", none: "Chưa có hồ sơ nào.",
+    title: "Hồ sơ của tôi", subtitle: "Tải lên file hồ sơ, chúng tôi sẽ tự động điền",
+    upload: "Tải lên hồ sơ (PDF·Word·TXT)", parsing: "Đang phân tích...",
+    parsed: "Đã tải hồ sơ! Kiểm tra, chỉnh sửa rồi lưu lại.",
+    intro: "Giới thiệu bản thân", introPh: "Giới thiệu ngắn gọn điểm mạnh và kinh nghiệm",
+    exp: "Kinh nghiệm làm việc", expPlace: "Nơi làm việc", expRole: "Công việc", expPeriod: "Thời gian", expDesc: "Chi tiết",
+    edu: "Học vấn", eduSchool: "Trường", eduMajor: "Chuyên ngành", eduPeriod: "Thời gian", eduStatus: "Trạng thái",
+    langs: "Ngôn ngữ", langName: "Ngôn ngữ", langLevel: "Trình độ",
+    skills: "Kỹ năng (phân cách bằng dấu phẩy)", certs: "Chứng chỉ (phân cách bằng dấu phẩy)",
+    add: "+ Thêm", remove: "Xóa", save: "Lưu hồ sơ", saved: "Đã lưu hồ sơ!",
+    verified: "Lịch sử làm việc được K-ALBA xác minh", verifiedDesc: "Hồ sơ làm việc ký qua hợp đồng điện tử K-ALBA, tự động hiển thị cho chủ cửa hàng.",
+    noVerified: "Chưa có lịch sử hợp đồng K-ALBA. Sẽ tự động tích lũy khi bạn bắt đầu làm việc!",
+    employerView: "Chủ cửa hàng của công việc bạn ứng tuyển có thể xem hồ sơ này.",
   },
 };

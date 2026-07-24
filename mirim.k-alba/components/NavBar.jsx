@@ -93,6 +93,7 @@ export default function NavBar() {
     { href: "/my/favorites", label: t("nav.favorites") },
     { href: "/my/applications", label: t("nav.myApplications") },
     { href: "/my/contracts", label: t("nav.contracts") },
+    { href: "/my/resume", label: t("nav.resume") },
     { href: "/profile", label: t("nav.profile") },
   ];
 

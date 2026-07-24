@@ -4,6 +4,7 @@ export const ja = {
   pay: { hour: "時間", day: "日", month: "月", year: "年", won: "ウォン" },
   kr: { none: "韓国語不問", beginner: "韓国語初級", intermediate: "韓国語中級", advanced: "韓国語上級" },
   nav: {
+    resume: "履歴書",
     favorites: "♥ お気に入り",
     map: "🗺️ 地図",
     partwork: "🎓 時間制就業",
@@ -778,5 +779,20 @@ export const ja = {
     yesterday: "昨日",
     daysAgo: "{n}日前",
     empty: "まだ会話がありません"
+  },
+  resume: {
+    view: "履歴書を見る", none: "まだ履歴書が登録されていません。",
+    title: "マイ履歴書", subtitle: "履歴書ファイルをアップロードすると自動入力されます",
+    upload: "履歴書をアップロード (PDF·Word·TXT)", parsing: "ファイル分析中...",
+    parsed: "履歴書を読み込みました！下で確認・修正して保存してください。",
+    intro: "自己紹介", introPh: "強みや経験を簡単に紹介してください",
+    exp: "アルバイト経歴", expPlace: "勤務先", expRole: "担当業務", expPeriod: "期間", expDesc: "詳細",
+    edu: "学歴", eduSchool: "学校", eduMajor: "専攻", eduPeriod: "期間", eduStatus: "状態",
+    langs: "語学力", langName: "言語", langLevel: "レベル",
+    skills: "スキル（カンマ区切り）", certs: "資格（カンマ区切り）",
+    add: "+ 追加", remove: "削除", save: "履歴書を保存", saved: "保存しました！",
+    verified: "K-ALBA認証勤務履歴", verifiedDesc: "K-ALBAの電子契約で締結された勤務記録です。店主に自動表示されます。",
+    noVerified: "まだK-ALBA契約履歴がありません。働き始めると自動的に蓄積されます！",
+    employerView: "応募先の店主がこの履歴書を閲覧できます。",
   },
 };

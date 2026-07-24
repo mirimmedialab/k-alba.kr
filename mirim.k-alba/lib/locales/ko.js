@@ -4,6 +4,7 @@ export const ko = {
   pay: { hour: "시간", day: "일", month: "월", year: "년", won: "원" },
   kr: { none: "한국어 무관", beginner: "한국어 초급", intermediate: "한국어 중급", advanced: "한국어 고급" },
   nav: {
+    resume: "이력서",
     map: "🗺️ 지도",
     partwork: "🎓 시간제취업",
     admin: "⚙️ 관리자",
@@ -901,5 +902,20 @@ export const ko = {
     yesterday: "어제",
     daysAgo: "{n}일 전",
     empty: "아직 대화가 없습니다"
+  },
+  resume: {
+    view: "이력서 보기", none: "등록된 이력서가 아직 없습니다.",
+    title: "내 이력서", subtitle: "이력서 파일을 올리면 자동으로 채워드려요",
+    upload: "이력서 파일 업로드 (PDF·Word·TXT)", parsing: "파일 분석 중...",
+    parsed: "이력서 내용을 불러왔어요! 아래에서 확인·수정 후 저장하세요.",
+    intro: "자기소개", introPh: "성실함, 경험, 강점을 짧게 소개해 주세요",
+    exp: "알바 경력", expPlace: "근무처", expRole: "담당 업무", expPeriod: "기간", expDesc: "상세 내용",
+    edu: "학력", eduSchool: "학교", eduMajor: "전공", eduPeriod: "기간", eduStatus: "상태",
+    langs: "언어 능력", langName: "언어", langLevel: "수준",
+    skills: "보유 기술 (쉼표로 구분)", certs: "자격증 (쉼표로 구분)",
+    add: "+ 추가", remove: "삭제", save: "이력서 저장", saved: "이력서가 저장되었습니다!",
+    verified: "K-ALBA 검증 근무 이력", verifiedDesc: "K-ALBA에서 전자계약으로 체결된 근무 기록입니다. 사장님에게 자동으로 함께 표시됩니다.",
+    noVerified: "아직 K-ALBA 계약 이력이 없어요. 첫 알바를 시작하면 자동으로 쌓입니다!",
+    employerView: "지원한 공고의 사장님에게 이 이력서가 표시됩니다.",
   },
 };

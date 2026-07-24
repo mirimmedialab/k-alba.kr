@@ -4,6 +4,7 @@ export const en = {
   pay: { hour: "hour", day: "day", month: "month", year: "year", won: "won" },
   kr: { none: "Korean not required", beginner: "Beginner Korean", intermediate: "Intermediate Korean", advanced: "Advanced Korean" },
   nav: {
+    resume: "Resume",
     favorites: "♥ Favorites",
     map: "🗺️ Map",
     partwork: "🎓 Part-time Work",
@@ -896,5 +897,20 @@ export const en = {
     yesterday: "Yesterday",
     daysAgo: "{n} days ago",
     empty: "No conversations yet"
+  },
+  resume: {
+    view: "View resume", none: "No resume registered yet.",
+    title: "My Resume", subtitle: "Upload your resume file and we fill it in automatically",
+    upload: "Upload resume file (PDF·Word·TXT)", parsing: "Analyzing file...",
+    parsed: "Resume loaded! Review and edit below, then save.",
+    intro: "About me", introPh: "Briefly introduce your strengths and experience",
+    exp: "Work experience", expPlace: "Workplace", expRole: "Role", expPeriod: "Period", expDesc: "Details",
+    edu: "Education", eduSchool: "School", eduMajor: "Major", eduPeriod: "Period", eduStatus: "Status",
+    langs: "Languages", langName: "Language", langLevel: "Level",
+    skills: "Skills (comma separated)", certs: "Certificates (comma separated)",
+    add: "+ Add", remove: "Remove", save: "Save resume", saved: "Resume saved!",
+    verified: "K-ALBA verified work history", verifiedDesc: "Work records signed via K-ALBA e-contracts. Shown to employers automatically.",
+    noVerified: "No K-ALBA contract history yet. It builds up automatically once you start working!",
+    employerView: "Employers of jobs you apply to can view this resume.",
   },
 };

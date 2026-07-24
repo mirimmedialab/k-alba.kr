@@ -4,6 +4,7 @@ export const uz = {
   pay: { hour: "soat", day: "kun", month: "oy", year: "yil", won: "won" },
   kr: { none: "Koreys tili shart emas", beginner: "Boshlang'ich koreys tili", intermediate: "O'rta koreys tili", advanced: "Yuqori koreys tili" },
   nav: {
+    resume: "Rezyume",
     favorites: "♥ Saqlanganlar",
     map: "🗺️ Xarita",
     partwork: "🎓 Yarim kunlik ish",
@@ -779,5 +780,20 @@ export const uz = {
     yesterday: "Kecha",
     daysAgo: "{n} kun oldin",
     empty: "Hozircha suhbatlar yo'q"
+  },
+  resume: {
+    view: "Rezyumeni ko'rish", none: "Hali rezyume yo'q.",
+    title: "Mening rezyumem", subtitle: "Rezyume faylini yuklang, avtomatik to'ldiramiz",
+    upload: "Rezyume yuklash (PDF·Word·TXT)", parsing: "Fayl tahlil qilinmoqda...",
+    parsed: "Rezyume yuklandi! Quyida tekshirib, tahrirlab saqlang.",
+    intro: "O'zim haqimda", introPh: "Kuchli tomonlaringiz va tajribangizni qisqacha yozing",
+    exp: "Ish tajribasi", expPlace: "Ish joyi", expRole: "Vazifa", expPeriod: "Davr", expDesc: "Tafsilotlar",
+    edu: "Ta'lim", eduSchool: "Maktab/Universitet", eduMajor: "Yo'nalish", eduPeriod: "Davr", eduStatus: "Holat",
+    langs: "Tillar", langName: "Til", langLevel: "Daraja",
+    skills: "Ko'nikmalar (vergul bilan)", certs: "Sertifikatlar (vergul bilan)",
+    add: "+ Qo'shish", remove: "O'chirish", save: "Rezyumeni saqlash", saved: "Saqlandi!",
+    verified: "K-ALBA tasdiqlagan ish tarixi", verifiedDesc: "K-ALBA elektron shartnomalari orqali imzolangan ish yozuvlari. Ish beruvchilarga avtomatik ko'rsatiladi.",
+    noVerified: "Hali K-ALBA shartnoma tarixi yo'q. Ishlay boshlaganingizda avtomatik to'planadi!",
+    employerView: "Siz ariza topshirgan ish beruvchilar bu rezyumeni ko'ra oladi.",
   },
 };

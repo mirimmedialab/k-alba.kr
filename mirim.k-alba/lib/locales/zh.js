@@ -4,6 +4,7 @@ export const zh = {
   pay: { hour: "小时", day: "天", month: "月", year: "年", won: "韩元" },
   kr: { none: "韩语不限", beginner: "韩语初级", intermediate: "韩语中级", advanced: "韩语高级" },
   nav: {
+    resume: "简历",
     favorites: "♥ 收藏职位",
     map: "🗺️ 地图",
     partwork: "🎓 非全日制就业",
@@ -776,5 +777,20 @@ export const zh = {
     yesterday: "昨天",
     daysAgo: "{n}天前",
     empty: "暂无对话"
+  },
+  resume: {
+    view: "查看简历", none: "尚未登记简历。",
+    title: "我的简历", subtitle: "上传简历文件，自动填写内容",
+    upload: "上传简历文件 (PDF·Word·TXT)", parsing: "正在分析文件...",
+    parsed: "简历已加载！请在下方确认、修改后保存。",
+    intro: "自我介绍", introPh: "简单介绍您的优势和经验",
+    exp: "打工经历", expPlace: "工作地点", expRole: "负责工作", expPeriod: "期间", expDesc: "详细内容",
+    edu: "学历", eduSchool: "学校", eduMajor: "专业", eduPeriod: "期间", eduStatus: "状态",
+    langs: "语言能力", langName: "语言", langLevel: "水平",
+    skills: "技能（用逗号分隔）", certs: "证书（用逗号分隔）",
+    add: "+ 添加", remove: "删除", save: "保存简历", saved: "简历已保存！",
+    verified: "K-ALBA认证工作经历", verifiedDesc: "通过K-ALBA电子合同签订的工作记录，自动展示给雇主。",
+    noVerified: "还没有K-ALBA合同记录。开始打工后会自动积累！",
+    employerView: "您应聘职位的雇主可以查看此简历。",
   },
 };
