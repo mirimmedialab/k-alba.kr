@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { T } from "@/lib/theme";
-import { getJobApplicants, updateApplicationStatus, getCurrentUser } from "@/lib/supabase";
+import { supabase, getJobApplicants, updateApplicationStatus, getCurrentUser } from "@/lib/supabase";
 import { KakaoChatModal } from "@/components/KakaoChatModal";
 import { ListPageSkel } from "@/components/Wireframe";
 import { Button, Badge, Empty } from "@/components/ui";
@@ -48,6 +48,7 @@ function ApplicantsContent() {
   const [filter, setFilter] = useState("all");
   const [chatOpen, setChatOpen] = useState(false);
   const [resumeFor, setResumeFor] = useState(null); // 이력서 모달 대상 지원자
+  const [trainMap, setTrainMap] = useState({}); // worker_id → {job, jobT, ko, koT} 교육 점수 합계
   const [chatMode, setChatMode] = useState(null);
   const [activeApplicant, setActiveApplicant] = useState(null);
   const isDesktop = useIsDesktop();
@@ -60,7 +61,28 @@ function ApplicantsContent() {
       }
       if (jobId) {
         const data = await getJobApplicants(jobId);
-        if (data && data.length > 0) setApplicants(data);
+        if (data && data.length > 0) {
+          setApplicants(data);
+          // 내 교육 과정 응시 점수 (RLS: 과정 소유자만 결과 조회 가능)
+          try {
+            const { data: myCourses } = await supabase.from("training_courses").select("id").eq("owner_id", u.id);
+            const ids = (myCourses || []).map((c) => c.id);
+            if (ids.length) {
+              const { data: rs } = await supabase
+                .from("training_results")
+                .select("worker_id, job_score, job_total, korean_score, korean_total")
+                .in("course_id", ids);
+              const m = {};
+              for (const r of rs || []) {
+                const cur = m[r.worker_id] || { job: 0, jobT: 0, ko: 0, koT: 0 };
+                cur.job += r.job_score; cur.jobT += r.job_total;
+                cur.ko += r.korean_score; cur.koT += r.korean_total;
+                m[r.worker_id] = cur;
+              }
+              setTrainMap(m);
+            }
+          } catch (_) {}
+        }
       }
       setLoading(false);
     });
@@ -314,6 +336,20 @@ function ApplicantsContent() {
                   {a.applicant.organization && (
                     <div style={{ fontSize: 12, color: T.ink3 }}>
                       {a.applicant.organization}
+                    </div>
+                  )}
+                  {trainMap[a.applicant.id] && (
+                    <div style={{ marginTop: 6, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {trainMap[a.applicant.id].jobT > 0 && (
+                        <span style={{ fontSize: 11, fontWeight: 800, color: T.coral, background: "#FFF1EC", borderRadius: 999, padding: "3px 9px" }}>
+                          🎓 직무 {Math.round((trainMap[a.applicant.id].job / trainMap[a.applicant.id].jobT) * 100)}%
+                        </span>
+                      )}
+                      {trainMap[a.applicant.id].koT > 0 && (
+                        <span style={{ fontSize: 11, fontWeight: 800, color: "#1A56DB", background: "#E8F0FE", borderRadius: 999, padding: "3px 9px" }}>
+                          🇰🇷 한국어 {Math.round((trainMap[a.applicant.id].ko / trainMap[a.applicant.id].koT) * 100)}%
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>

@@ -796,6 +796,7 @@ export const zh = {
     employerView: "您应聘职位的雇主可以查看此简历。",
   },
   training: {
+    translate: "查看翻译", showOriginal: "查看原文", translating: "翻译中...", translateUnavailable: "翻译服务尚未开通，请阅读原文学习。",
     title: "入职培训", subtitle: "完成工作场所提供的学习和测验",
     myCourses: "我的课程", noCourses: "暂无课程。申请职位后，雇主的培训会显示在这里。",
     by: "提供方", start: "开始学习", retake: "重新测验", done: "已完成", score: "分数",

@@ -916,6 +916,7 @@ export const en = {
     employerView: "Employers of jobs you apply to can view this resume.",
   },
   training: {
+    translate: "View translation", showOriginal: "View original", translating: "Translating...", translateUnavailable: "Translation is not available yet. Please study in the original language.",
     title: "Onboarding Training", subtitle: "Complete training and quizzes from your (future) workplace",
     myCourses: "My courses", noCourses: "No courses yet. When you apply to a job, the employer's training appears here.",
     by: "By", start: "Start learning", retake: "Retake", done: "Done", score: "Score",

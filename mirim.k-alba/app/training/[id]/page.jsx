@@ -4,7 +4,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { T } from "@/lib/theme";
 import { supabase, getCurrentUser } from "@/lib/supabase";
-import { useT } from "@/lib/i18n";
+import { useT, useLocale } from "@/lib/i18n";
 import { PageLoading, Button } from "@/components/ui";
 
 /**
@@ -25,6 +25,7 @@ export default function TrainingCoursePage() {
   const router = useRouter();
   const { id } = useParams();
   const t = useT();
+  const { locale } = useLocale();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [course, setCourse] = useState(null);
@@ -32,6 +33,9 @@ export default function TrainingCoursePage() {
   const [result, setResult] = useState(null);  // 제출 후 결과
   const [prev, setPrev] = useState(null);      // 기존 응시 결과
   const [submitting, setSubmitting] = useState(false);
+  const [trans, setTrans] = useState(null);        // 번역본 {sections, questions}
+  const [showTrans, setShowTrans] = useState(false);
+  const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -53,6 +57,32 @@ export default function TrainingCoursePage() {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  const handleTranslate = async () => {
+    if (showTrans) { setShowTrans(false); return; }
+    if (trans) { setShowTrans(true); return; }
+    if (translating) return;
+    setTranslating(true);
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      const res = await fetch("/api/training/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${sess?.session?.access_token}` },
+        body: JSON.stringify({ course_id: course.id, lang: locale }),
+      });
+      const d = await res.json();
+      if (!d.ok) {
+        alert(d.error === "translation_unconfigured" ? t("training.translateUnavailable") : d.error);
+        return;
+      }
+      setTrans({ sections: d.sections, questions: d.questions });
+      setShowTrans(true);
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      setTranslating(false);
+    }
+  };
 
   const handleSubmit = async () => {
     const qs = course.questions || [];
@@ -88,6 +118,8 @@ export default function TrainingCoursePage() {
   if (!course) return <div style={{ padding: 40, textAlign: "center", color: T.ink3 }}>404</div>;
 
   const qs = course.questions || [];
+  const viewSections = showTrans && trans ? trans.sections : (course.sections || []);
+  const viewQs = showTrans && trans ? trans.questions : qs;
 
   return (
     <div style={{ padding: "24px 20px 80px", maxWidth: 720, margin: "0 auto" }}>
@@ -96,11 +128,21 @@ export default function TrainingCoursePage() {
       <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 16 }}>
         {t("training.by")}: {course.owner?.company_name || course.owner?.name || "-"}
       </div>
-      {course.description && <p style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.7, marginBottom: 18 }}>{course.description}</p>}
+      {course.description && <p style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.7, marginBottom: 12 }}>{course.description}</p>}
+
+      {locale !== "ko" && (
+        <button onClick={handleTranslate} disabled={translating} style={{
+          marginBottom: 16, padding: "8px 14px", borderRadius: 999, fontSize: 12.5, fontWeight: 800,
+          border: `1.5px solid ${showTrans ? T.border : T.coral}`, cursor: "pointer", fontFamily: "inherit",
+          background: showTrans ? T.paper : "#FFF1EC", color: showTrans ? T.ink2 : T.coral,
+        }}>
+          {translating ? `⏳ ${t("training.translating")}` : showTrans ? `📄 ${t("training.showOriginal")}` : `🌐 ${t("training.translate")}`}
+        </button>
+      )}
 
       {/* 학습 섹션 */}
       <div style={{ fontSize: 15, fontWeight: 800, color: T.ink, marginBottom: 10 }}>📖 {t("training.sections")}</div>
-      {(course.sections || []).map((s, i) => {
+      {viewSections.map((s, i) => {
         const embed = toEmbed(s.video_url);
         return (
           <div key={i} style={{ background: T.paper, border: `1px solid ${T.border}`, borderRadius: 12, padding: 16, marginBottom: 12 }}>
@@ -127,7 +169,7 @@ export default function TrainingCoursePage() {
           <div style={{ fontSize: 15, fontWeight: 800, color: T.ink, marginBottom: 4 }}>📝 {t("training.quiz")}</div>
           <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 14 }}>{t("training.quizDesc")}</div>
 
-          {qs.map((q, qi) => (
+          {viewQs.map((q, qi) => (
             <div key={qi} style={{ background: T.cream, borderRadius: 12, padding: 16, marginBottom: 12 }}>
               <div style={{ fontSize: 13.5, fontWeight: 800, color: T.ink, marginBottom: 10, lineHeight: 1.6 }}>
                 <span style={{

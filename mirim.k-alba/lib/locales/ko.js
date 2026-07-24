@@ -921,6 +921,7 @@ export const ko = {
     employerView: "지원한 공고의 사장님에게 이 이력서가 표시됩니다.",
   },
   training: {
+    translate: "번역으로 보기", showOriginal: "원문 보기", translating: "번역 중...", translateUnavailable: "번역 서비스가 아직 준비되지 않았습니다. 원문으로 학습해 주세요.",
     title: "온보딩 교육", subtitle: "채용된 곳·지원한 곳의 교육을 듣고 평가를 완료하세요",
     myCourses: "내 교육 과정", noCourses: "아직 수강 가능한 교육이 없어요. 공고에 지원하면 사장님의 교육이 여기에 표시됩니다.",
     by: "제공", start: "학습 시작", retake: "다시 응시", done: "완료", score: "점수",

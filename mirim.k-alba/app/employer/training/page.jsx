@@ -5,6 +5,7 @@ import Link from "next/link";
 import { T } from "@/lib/theme";
 import { supabase, getCurrentUser } from "@/lib/supabase";
 import { PageLoading, Button } from "@/components/ui";
+import { QUESTION_BANKS } from "@/lib/trainingTemplates";
 
 /**
  * /employer/training — 사장님 온보딩 교육 관리 (과정 목록 + 빌더 + 결과 요약)
@@ -122,8 +123,19 @@ export default function EmployerTrainingPage() {
 
         {/* 평가 문항 */}
         <SecHead title="📝 평가 문항 (객관식)" onAdd={() => set({ questions: [...editing.questions, { q: "", choices: ["", "", "", ""], answer: 0, kind: "job" }] })} />
-        <div style={{ fontSize: 12, color: T.ink3, marginBottom: 10 }}>
+        <div style={{ fontSize: 12, color: T.ink3, marginBottom: 8 }}>
           유형을 <b>한국어</b>로 선택하면 한국어 평가 점수로 따로 집계됩니다. 정답 보기를 선택(◉)해 주세요.
+        </div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12, alignItems: "center" }}>
+          <span style={{ fontSize: 12, fontWeight: 800, color: T.ink2 }}>📚 기본 문항 불러오기:</span>
+          {Object.entries(QUESTION_BANKS).map(([k, bank]) => (
+            <button key={k} onClick={() => set({ questions: [...editing.questions.filter((q) => q.q.trim()), ...JSON.parse(JSON.stringify(bank.questions))] })} style={{
+              padding: "5px 11px", borderRadius: 999, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+              border: `1px solid ${T.border}`, background: T.paper, color: T.ink2,
+            }}>
+              {bank.label}
+            </button>
+          ))}
         </div>
         {editing.questions.map((q, i) => (
           <div key={i} style={card}>

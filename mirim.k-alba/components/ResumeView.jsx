@@ -14,6 +14,7 @@ export default function ResumeView({ userId, name, onClose }) {
   const t = useT();
   const [resume, setResume] = useState(undefined); // undefined: 로딩, null: 없음
   const [history, setHistory] = useState([]); // K-ALBA 검증 이력 + 사장님 평가
+  const [training, setTraining] = useState([]); // 온보딩 교육 응시 결과 (내 과정)
 
   useEffect(() => {
     if (!userId) return;
@@ -25,6 +26,13 @@ export default function ResumeView({ userId, name, onClose }) {
         const res = await fetch(`/api/resume/history?worker_id=${userId}`, { headers: { Authorization: `Bearer ${sess?.session?.access_token}` } });
         const d = await res.json();
         if (d.ok) setHistory(d.history || []);
+      } catch (_) {}
+      try {
+        const { data: trs } = await supabase
+          .from("training_results")
+          .select("id, job_score, job_total, korean_score, korean_total, completed_at, course:training_courses(title, owner_id)")
+          .eq("worker_id", userId);
+        setTraining((trs || []).filter((r) => r.course)); // RLS로 열람 가능한(내 소유) 과정만
       } catch (_) {}
     })();
   }, [userId]);
@@ -108,6 +116,30 @@ export default function ResumeView({ userId, name, onClose }) {
               </Block>
             )}
           </>
+        )}
+
+        {/* 온보딩 교육 응시 결과 (내가 만든 과정) */}
+        {training.length > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: T.ink3, marginBottom: 6, letterSpacing: "0.02em" }}>🎓 {t("training.title")}</div>
+            {training.map((r) => (
+              <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, background: T.cream, borderRadius: 8, padding: "9px 12px", marginBottom: 6 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: T.ink }}>{r.course.title}</div>
+                <div style={{ display: "flex", gap: 6, whiteSpace: "nowrap" }}>
+                  {r.job_total > 0 && (
+                    <span style={{ fontSize: 11, fontWeight: 800, color: T.coral, background: "#FFF1EC", borderRadius: 999, padding: "3px 9px" }}>
+                      직무 {r.job_score}/{r.job_total}
+                    </span>
+                  )}
+                  {r.korean_total > 0 && (
+                    <span style={{ fontSize: 11, fontWeight: 800, color: "#1A56DB", background: "#E8F0FE", borderRadius: 999, padding: "3px 9px" }}>
+                      한국어 {r.korean_score}/{r.korean_total}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         )}
 
         {/* K-ALBA 검증 근무 이력 + 사장님 평가 (이력서 미등록이어도 표시) */}

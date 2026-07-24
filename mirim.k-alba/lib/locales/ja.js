@@ -798,6 +798,7 @@ export const ja = {
     employerView: "応募先の店主がこの履歴書を閲覧できます。",
   },
   training: {
+    translate: "翻訳で見る", showOriginal: "原文を見る", translating: "翻訳中...", translateUnavailable: "翻訳サービスは準備中です。原文で学習してください。",
     title: "オンボーディング教育", subtitle: "勤務先・応募先の教育とテストを完了しましょう",
     myCourses: "マイコース", noCourses: "まだコースがありません。求人に応募すると店主の教育がここに表示されます。",
     by: "提供", start: "学習開始", retake: "再受験", done: "完了", score: "スコア",
