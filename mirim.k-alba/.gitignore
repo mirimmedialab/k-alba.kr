@@ -76,3 +76,9 @@ K-ALBA_앱출시_로드맵.docx
 # Android 서명 비밀 (절대 커밋 금지)
 android/keystore.properties
 *.jks
+
+# Android/iOS 빌드 산출물
+android/**/build/
+android/local.properties
+ios/App/Pods/
+ios/App/build/
