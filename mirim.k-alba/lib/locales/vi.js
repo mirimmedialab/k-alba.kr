@@ -799,6 +799,7 @@ export const vi = {
     employerView: "Chủ cửa hàng của công việc bạn ứng tuyển có thể xem hồ sơ này.",
   },
   training: {
+    startQuiz: "📝 Bắt đầu bài đánh giá", studyFirst: "Hãy học hết video và tài liệu trước khi bắt đầu bài đánh giá.",
     jobLocked: "💼 {n} câu hỏi công việc sẽ mở sau khi bạn được tuyển. Hiện tại chỉ làm phần đánh giá tiếng Hàn.",
     requested: "📩 Yêu cầu đánh giá — hãy hoàn thành trước buổi phỏng vấn!",
     listen: "🔊 Nghe", listenHint: "Nhấn để nghe tiếng Hàn rồi trả lời (có thể nghe lại)",

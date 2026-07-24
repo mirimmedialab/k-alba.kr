@@ -921,6 +921,7 @@ export const ko = {
     employerView: "지원한 공고의 사장님에게 이 이력서가 표시됩니다.",
   },
   training: {
+    startQuiz: "📝 평가 시작하기", studyFirst: "교육 영상과 매뉴얼을 모두 학습한 뒤 평가를 시작하세요.",
     jobLocked: "💼 직무 평가 {n}문항은 채용 확정 후 응시할 수 있어요. 지금은 한국어 사전평가만 진행됩니다.",
     requested: "📩 사전평가 요청 — 면접 전에 응시해 주세요!",
     listen: "🔊 듣기 재생", listenHint: "버튼을 눌러 한국어 음성을 듣고 답하세요 (여러 번 재생 가능)",

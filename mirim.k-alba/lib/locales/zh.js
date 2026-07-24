@@ -796,6 +796,7 @@ export const zh = {
     employerView: "您应聘职位的雇主可以查看此简历。",
   },
   training: {
+    startQuiz: "📝 开始测评", studyFirst: "请先学习完所有视频和手册，再开始测评。",
     jobLocked: "💼 {n}道岗位题在正式录用后开放。现在只进行韩语预测评。",
     requested: "📩 收到测评邀请 — 请在面试前完成！",
     listen: "🔊 播放听力", listenHint: "点击收听韩语音频后作答（可重复播放）",

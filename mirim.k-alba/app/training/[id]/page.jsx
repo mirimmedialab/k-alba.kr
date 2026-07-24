@@ -51,6 +51,7 @@ export default function TrainingCoursePage() {
   const [showTrans, setShowTrans] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const [quizStarted, setQuizStarted] = useState(false); // 학습 후 평가 시작 게이트
 
   useEffect(() => {
     (async () => {
@@ -139,7 +140,7 @@ export default function TrainingCoursePage() {
   const handleSubmit = async () => {
     const qs = course.questions || [];
     // 미채용 지원자는 한국어(사전평가) 문항만 응시
-    const eligible = qs.map((q, i) => ({ q, i })).filter(({ q }) => hired || q.kind === "korean");
+    const eligible = qs.map((q, i) => ({ q, i })).filter(({ q }) => (hired ? q.kind !== "korean" : q.kind === "korean"));
     if (eligible.some(({ i }) => answers[i] === undefined)) { alert(t("training.answerAll")); return; }
     if (submitting) return;
     setSubmitting(true);
@@ -150,11 +151,18 @@ export default function TrainingCoursePage() {
         if (q.kind === "korean") { koreanTotal++; if (ok) koreanScore++; }
         else { jobTotal++; if (ok) jobScore++; }
       });
+      // 이번에 응시하지 않은 파트는 기존 기록(사전평가 등)을 보존
+      if (hired && prev) { koreanScore = prev.korean_score || 0; koreanTotal = prev.korean_total || 0; }
+      if (!hired && prev) { jobScore = prev.job_score || 0; jobTotal = prev.job_total || 0; }
       const row = {
         course_id: course.id, worker_id: user.id,
         job_score: jobScore, job_total: jobTotal,
         korean_score: koreanScore, korean_total: koreanTotal,
-        answers: qs.map((_, i) => (answers[i] === undefined ? null : answers[i])),
+        answers: qs.map((q, i) => {
+          const taken = hired ? q.kind !== "korean" : q.kind === "korean";
+          if (taken) return answers[i] === undefined ? null : answers[i];
+          return prev?.answers?.[i] ?? null; // 미응시 파트: 이전 답안 보존
+        }),
         completed_at: new Date().toISOString(),
         // 재응시 시 이전 회차를 이력으로 보존 (성장 추이)
         attempts: prev
@@ -227,7 +235,13 @@ export default function TrainingCoursePage() {
           <div style={{ fontSize: 15, fontWeight: 800, color: T.ink, marginBottom: 4 }}>📝 {t("training.quiz")}</div>
           <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 14 }}>{t("training.quizDesc")}</div>
 
-          {[
+          {!quizStarted ? (
+            <div style={{ background: T.cream, borderRadius: 12, padding: 18, textAlign: "center" }}>
+              <div style={{ fontSize: 12.5, color: T.ink2, marginBottom: 12 }}>{t("training.studyFirst")}</div>
+              <Button variant="primary" size="md" onClick={() => setQuizStarted(true)}>{t("training.startQuiz")}</Button>
+            </div>
+          ) : null}
+          {quizStarted && [
             { kind: "korean", header: `🇰🇷 ${t("training.koreanScore")}` },
             { kind: "job", header: `💼 ${t("training.jobScore")}` },
           ].map(({ kind, header }) => {
@@ -240,6 +254,7 @@ export default function TrainingCoursePage() {
                 </div>
               );
             }
+            if (kind === "korean" && hired) return null; // 옵션 B: 채용 후에는 직무 평가만 (한국어는 사전평가 전용)
             return (
               <div key={kind} style={{ marginBottom: 6 }}>
                 <div style={{ fontSize: 13.5, fontWeight: 800, color: kind === "korean" ? "#1A56DB" : T.coral, margin: "12px 0 8px" }}>{header} ({grouped.length})</div>
@@ -295,11 +310,11 @@ export default function TrainingCoursePage() {
             );
           })}
 
-          {!result ? (
+          {quizStarted && !result ? (
             <Button variant="primary" size="lg" onClick={handleSubmit} disabled={submitting} style={{ width: "100%" }}>
               {submitting ? "..." : `✅ ${t("training.submit")}`}
             </Button>
-          ) : (
+          ) : result ? (
             <div style={{ background: "#F0FAF4", border: "1px solid #CBEBD6", borderRadius: 12, padding: 18, textAlign: "center" }}>
               <div style={{ fontSize: 15, fontWeight: 800, color: T.ink, marginBottom: 8 }}>🎉 {t("training.resultTitle")}</div>
               <div style={{ display: "flex", justifyContent: "center", gap: 22, marginBottom: 8 }}>
@@ -324,7 +339,7 @@ export default function TrainingCoursePage() {
                 📋 {t("report.title")}
               </button>
             </div>
-          )}
+          ) : null}
 
           {prev && !result && (
             <div style={{ marginTop: 10, textAlign: "center" }}>
