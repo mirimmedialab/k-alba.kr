@@ -916,6 +916,7 @@ export const en = {
     employerView: "Employers of jobs you apply to can view this resume.",
   },
   training: {
+    jobLocked: "💼 The {n} job questions unlock after you are hired. For now, only the Korean pre-assessment is available.",
     requested: "📩 Assessment requested — please complete before your interview!",
     listen: "🔊 Play audio", listenHint: "Tap to hear the Korean audio, then answer (replay allowed)",
     translate: "View translation", showOriginal: "View original", translating: "Translating...", translateUnavailable: "Translation is not available yet. Please study in the original language.",

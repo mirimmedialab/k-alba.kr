@@ -87,8 +87,17 @@ export default function TrainingListPage() {
                     {c.description && <div style={{ fontSize: 12.5, color: T.ink2, marginTop: 6, lineHeight: 1.6 }}>{c.description}</div>}
                   </div>
                   {r ? (
-                    <span style={{ fontSize: 11, fontWeight: 800, color: "#0E7A3D", background: "#DDF3E4", borderRadius: 999, padding: "5px 11px", whiteSpace: "nowrap" }}>
-                      ✓ {t("training.done")} {r.job_score + r.korean_score}/{r.job_total + r.korean_total}
+                    <span style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" }}>
+                      {r.korean_total > 0 && (
+                        <span style={{ fontSize: 11, fontWeight: 800, color: "#1A56DB", background: "#E8F0FE", borderRadius: 999, padding: "4px 10px", whiteSpace: "nowrap" }}>
+                          🇰🇷 {r.korean_score}/{r.korean_total}
+                        </span>
+                      )}
+                      {r.job_total > 0 && (
+                        <span style={{ fontSize: 11, fontWeight: 800, color: "#0E7A3D", background: "#DDF3E4", borderRadius: 999, padding: "4px 10px", whiteSpace: "nowrap" }}>
+                          💼 {r.job_score}/{r.job_total}
+                        </span>
+                      )}
                     </span>
                   ) : (
                     <span style={{ fontSize: 11, fontWeight: 800, color: T.coral, background: "#FFF1EC", borderRadius: 999, padding: "5px 11px", whiteSpace: "nowrap" }}>

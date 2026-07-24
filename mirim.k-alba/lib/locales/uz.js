@@ -799,6 +799,7 @@ export const uz = {
     employerView: "Siz ariza topshirgan ish beruvchilar bu rezyumeni ko'ra oladi.",
   },
   training: {
+    jobLocked: "💼 {n} ta kasbiy savol ishga qabul qilingach ochiladi. Hozircha faqat koreys tili baholanadi.",
     requested: "📩 Baholash so'rovi — suhbatdan oldin topshiring!",
     listen: "🔊 Tinglash", listenHint: "Tugmani bosib koreyscha audioni tinglang va javob bering (qayta eshitish mumkin)",
     translate: "Tarjimani ko'rish", showOriginal: "Aslini ko'rish", translating: "Tarjima qilinmoqda...", translateUnavailable: "Tarjima xizmati hali tayyor emas. Asl matnda o'qing.",

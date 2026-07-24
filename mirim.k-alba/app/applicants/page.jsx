@@ -453,7 +453,7 @@ function ApplicantsContent() {
         <div onClick={() => setAssessFor(null)} style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, maxWidth: 460, width: "100%", maxHeight: "80vh", overflow: "auto", padding: 20 }}>
             <div style={{ fontSize: 15, fontWeight: 800, color: T.ink, marginBottom: 4 }}>📝 {assessFor.applicant?.name}님에게 사전평가 요청</div>
-            <div style={{ fontSize: 12, color: T.ink3, marginBottom: 12 }}>면접 전에 직무·한국어 수준을 확인할 평가를 선택하세요. 지원자에게 알림이 전송됩니다.</div>
+            <div style={{ fontSize: 12, color: T.ink3, marginBottom: 12 }}>사전평가는 <b>직무 한국어 문항만</b> 응시됩니다 (직무 평가는 채용 확정 후 응시 가능). 지원자에게 알림이 전송됩니다.</div>
             {myCourses.map((c) => {
               const already = (reqMap[assessFor.applicant?.id] || []).includes(c.id);
               const nKo = (c.questions || []).filter((q) => q.kind === "korean").length;

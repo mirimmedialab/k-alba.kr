@@ -45,6 +45,7 @@ export default function TrainingCoursePage() {
   const [result, setResult] = useState(null);  // 제출 후 결과
   const [prev, setPrev] = useState(null);      // 기존 응시 결과
   const [submitting, setSubmitting] = useState(false);
+  const [hired, setHired] = useState(false);       // 채용 확정 여부 (계약 or 합격) — 직무 평가 응시 조건
   const [trans, setTrans] = useState(null);        // 번역본 {sections, questions}
   const [showTrans, setShowTrans] = useState(false);
   const [translating, setTranslating] = useState(false);
@@ -64,6 +65,26 @@ export default function TrainingCoursePage() {
         const { data: r } = await supabase
           .from("training_results").select("*").eq("course_id", c.id).eq("worker_id", u.id).maybeSingle();
         setPrev(r || null);
+        // 채용 확정 여부: 과정 소유 사장님과의 계약/합격, 또는 브랜드 매칭 사장님과의 계약/합격
+        try {
+          const { data: myContracts } = await supabase
+            .from("contracts")
+            .select("employer_id, employer:profiles!contracts_employer_id_fkey(company_name)")
+            .eq("worker_id", u.id);
+          const { data: myAccepted } = await supabase
+            .from("applications")
+            .select("job:jobs(employer_id, employer:profiles(company_name))")
+            .eq("applicant_id", u.id)
+            .eq("status", "accepted");
+          const employers = [
+            ...(myContracts || []).map((x) => ({ id: x.employer_id, company: x.employer?.company_name || "" })),
+            ...(myAccepted || []).map((x) => ({ id: x.job?.employer_id, company: x.job?.employer?.company_name || "" })),
+          ];
+          const isHired = c.brand_name
+            ? employers.some((e) => (e.company || "").includes(c.brand_name))
+            : employers.some((e) => e.id === c.owner_id);
+          setHired(isHired);
+        } catch (_) {}
       }
       setLoading(false);
     })();
@@ -115,12 +136,14 @@ export default function TrainingCoursePage() {
 
   const handleSubmit = async () => {
     const qs = course.questions || [];
-    if (qs.some((_, i) => answers[i] === undefined)) { alert(t("training.answerAll")); return; }
+    // 미채용 지원자는 한국어(사전평가) 문항만 응시
+    const eligible = qs.map((q, i) => ({ q, i })).filter(({ q }) => hired || q.kind === "korean");
+    if (eligible.some(({ i }) => answers[i] === undefined)) { alert(t("training.answerAll")); return; }
     if (submitting) return;
     setSubmitting(true);
     try {
       let jobScore = 0, jobTotal = 0, koreanScore = 0, koreanTotal = 0;
-      qs.forEach((q, i) => {
+      eligible.forEach(({ q, i }) => {
         const ok = answers[i] === q.answer;
         if (q.kind === "korean") { koreanTotal++; if (ok) koreanScore++; }
         else { jobTotal++; if (ok) jobScore++; }
@@ -129,7 +152,7 @@ export default function TrainingCoursePage() {
         course_id: course.id, worker_id: user.id,
         job_score: jobScore, job_total: jobTotal,
         korean_score: koreanScore, korean_total: koreanTotal,
-        answers: qs.map((_, i) => answers[i]),
+        answers: qs.map((_, i) => (answers[i] === undefined ? null : answers[i])),
         completed_at: new Date().toISOString(),
       };
       const { error } = await supabase.from("training_results").upsert(row, { onConflict: "course_id,worker_id" });
@@ -199,11 +222,18 @@ export default function TrainingCoursePage() {
           <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 14 }}>{t("training.quizDesc")}</div>
 
           {[
-            { kind: "job", header: `💼 ${t("training.jobScore")}` },
             { kind: "korean", header: `🇰🇷 ${t("training.koreanScore")}` },
+            { kind: "job", header: `💼 ${t("training.jobScore")}` },
           ].map(({ kind, header }) => {
             const grouped = viewQs.map((q, qi) => ({ q, qi })).filter(({ q }) => (q.kind === "korean" ? "korean" : "job") === kind);
             if (!grouped.length) return null;
+            if (kind === "job" && !hired) {
+              return (
+                <div key={kind} style={{ background: "#F5F5F5", border: `1px dashed ${T.border}`, borderRadius: 12, padding: "14px 16px", marginBottom: 12, fontSize: 12.5, color: T.ink3, lineHeight: 1.7 }}>
+                  🔒 {t("training.jobLocked", { n: grouped.length })}
+                </div>
+              );
+            }
             return (
               <div key={kind} style={{ marginBottom: 6 }}>
                 <div style={{ fontSize: 13.5, fontWeight: 800, color: kind === "korean" ? "#1A56DB" : T.coral, margin: "12px 0 8px" }}>{header} ({grouped.length})</div>
@@ -286,7 +316,8 @@ export default function TrainingCoursePage() {
 
           {prev && !result && (
             <div style={{ marginTop: 10, fontSize: 12.5, color: T.ink3, textAlign: "center" }}>
-              ✓ {t("training.done")}: {t("training.jobScore")} {prev.job_score}/{prev.job_total}
+              ✓ {t("training.done")}:
+              {prev.job_total > 0 && <> {t("training.jobScore")} {prev.job_score}/{prev.job_total}</>}
               {prev.korean_total > 0 && <> · {t("training.koreanScore")} {prev.korean_score}/{prev.korean_total}</>}
               {" — "}{t("training.retake")} ⬆
             </div>
