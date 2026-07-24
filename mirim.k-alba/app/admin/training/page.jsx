@@ -47,11 +47,29 @@ export default function AdminTrainingPage() {
     if (!editing.title.trim()) { alert("과정 제목을 입력해 주세요."); return; }
     setSaving(true);
     try {
+      const cleanedQs = editing.questions.filter((q) => q.q.trim() && q.choices.filter((c) => c.trim()).length >= 2)
+        .map((q) => ({ ...q, q: q.q.trim(), choices: q.choices.map((c) => c.trim()).filter(Boolean) }));
+      const cleanedSecs = editing.sections.filter((s) => s.title.trim() || s.body.trim() || s.video_url.trim() || Object.keys(s.i18n || {}).length);
+      // 직무 문항 자동 충원: 10개 미만이면 매뉴얼·영상 스크립트에서 자동 출제해 10~15문항으로 맞춤
+      let autoAdded = 0;
+      {
+        const jobCount = cleanedQs.filter((q) => q.kind !== "korean").length;
+        if (jobCount < 10) {
+          const existing = new Set(cleanedQs.map((q) => q.q));
+          const gen = generateQuizFromSections(cleanedSecs, { min: 10, max: 15 });
+          for (const g of gen) {
+            if (cleanedQs.filter((q) => q.kind !== "korean").length >= 15) break;
+            if (existing.has(g.q)) continue;
+            cleanedQs.push(g);
+            existing.add(g.q);
+            autoAdded++;
+          }
+        }
+      }
       const body = {
         ...editing,
-        sections: editing.sections.filter((s) => s.title.trim() || s.body.trim() || s.video_url.trim() || Object.keys(s.i18n || {}).length),
-        questions: editing.questions.filter((q) => q.q.trim() && q.choices.filter((c) => c.trim()).length >= 2)
-          .map((q) => ({ ...q, q: q.q.trim(), choices: q.choices.map((c) => c.trim()).filter(Boolean) })),
+        sections: cleanedSecs,
+        questions: cleanedQs,
       };
       const res = await fetch("/api/admin/training", {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
@@ -60,6 +78,7 @@ export default function AdminTrainingPage() {
       if (!d.ok) throw new Error(d.error);
       setEditing(null);
       await load();
+      if (autoAdded > 0) alert(`저장되었습니다. 직무 평가 문항 ${autoAdded}개가 매뉴얼·영상 내용에서 자동 출제되어 추가되었습니다.`);
     } catch (e) {
       alert("저장 실패: " + e.message);
     } finally {

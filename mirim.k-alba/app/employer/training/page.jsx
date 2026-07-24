@@ -67,12 +67,30 @@ export default function EmployerTrainingPage() {
     if (saving) return;
     setSaving(true);
     try {
+      const cleanedSecs = secs.map((s) => ({ ...s, title: s.title.trim(), body: s.body.trim(), video_url: s.video_url.trim() }));
+      const cleanedQs = qs.map((q) => ({ ...q, q: q.q.trim(), choices: q.choices.map((c) => c.trim()).filter(Boolean) }));
+      // 직무 문항 자동 충원: 10개 미만이면 매뉴얼 내용에서 자동 출제해 10~15문항으로 맞춤
+      let autoAdded = 0;
+      {
+        const jobCount = cleanedQs.filter((q) => q.kind !== "korean").length;
+        if (jobCount < 10) {
+          const existing = new Set(cleanedQs.map((q) => q.q));
+          const gen = generateQuizFromSections(cleanedSecs, { min: 10, max: 15 });
+          for (const g of gen) {
+            if (cleanedQs.filter((q) => q.kind !== "korean").length >= 15) break;
+            if (existing.has(g.q)) continue;
+            cleanedQs.push(g);
+            existing.add(g.q);
+            autoAdded++;
+          }
+        }
+      }
       const row = {
         owner_id: user.id,
         title: editing.title.trim(),
         description: editing.description?.trim() || null,
-        sections: secs.map((s) => ({ title: s.title.trim(), body: s.body.trim(), video_url: s.video_url.trim() })),
-        questions: qs.map((q) => ({ q: q.q.trim(), choices: q.choices.map((c) => c.trim()).filter(Boolean), answer: q.answer, kind: q.kind })),
+        sections: cleanedSecs,
+        questions: cleanedQs,
         open_to_applicants: !!editing.open_to_applicants,
         is_active: !!editing.is_active,
         updated_at: new Date().toISOString(),
@@ -84,7 +102,7 @@ export default function EmployerTrainingPage() {
       if (error) throw error;
       setEditing(null);
       await load(user.id);
-      alert("저장되었습니다!");
+      alert(autoAdded > 0 ? `저장되었습니다! 직무 평가 문항 ${autoAdded}개가 매뉴얼 내용에서 자동 출제되어 추가되었습니다.` : "저장되었습니다!");
     } catch (e) {
       alert("저장 실패: " + e.message);
     } finally {
