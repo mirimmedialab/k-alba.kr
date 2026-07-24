@@ -5,6 +5,7 @@ import { Panel } from "../_ui";
 import { QUESTION_BANKS } from "@/lib/trainingTemplates";
 import { parseSubtitleText } from "@/lib/srt";
 import { generateQuizFromSections, generateKoreanQuizFromSections } from "@/lib/quizGen";
+import { generateIndustryKoreanQuiz, KOREAN_INDUSTRIES } from "@/lib/koreanBanks";
 
 /**
  * /admin/training — 본사(브랜드) 공통 교육 관리
@@ -197,18 +198,23 @@ export default function AdminTrainingPage() {
           }} style={{ ...pill, border: "1px solid #7C3AED", color: "#7C3AED", background: "#F8F5FF", fontWeight: 800 }}>
             🤖 매뉴얼·영상에서 자동 출제 (10~15문항)
           </button>
-          <button onClick={() => {
-            const auto = generateKoreanQuizFromSections(editing.sections, { max: 10 });
-            if (!auto.length) { alert("매뉴얼에서 서비스 표현을 찾지 못했습니다. '어서오세요' 같은 인사·표현을 본문에 포함해 주세요."); return; }
-            const keep = editing.questions.filter((q) => q.q.trim() && !(q.auto && q.kind === "korean"));
-            set({ questions: [...keep, ...auto] });
-            alert(`직무 한국어 문항 ${auto.length}개를 자동 출제했습니다. 내용을 검토·수정 후 저장하세요.`);
-          }} style={{
-            padding: "5px 11px", borderRadius: 999, fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
-            border: "1px solid #1A56DB", background: "#EFF4FE", color: "#1A56DB",
-          }}>
-            🇰🇷 직무 한국어 자동 출제 (~10문항)
-          </button>
+          <span style={{ fontSize: 12, fontWeight: 800, color: "#1A56DB" }}>🇰🇷 직무 한국어 출제(20~30문항·듣기/읽기 포함):</span>
+          {KOREAN_INDUSTRIES.map((ind) => (
+            <button key={ind.key} onClick={() => {
+              const bank = generateIndustryKoreanQuiz(ind.key, { max: 30 });
+              const fromManual = generateKoreanQuizFromSections(editing.sections, { max: 5 });
+              const seenQ = new Set(bank.map((q) => q.q));
+              const auto = [...bank, ...fromManual.filter((q) => !seenQ.has(q.q))].slice(0, 30);
+              const keep = editing.questions.filter((q) => q.q.trim() && !(q.auto && q.kind === "korean"));
+              set({ questions: [...keep, ...auto] });
+              alert(`${ind.label} 직무 한국어 ${auto.length}문항(표현·상황·읽기·듣기)을 출제했습니다. 검토·수정 후 저장하세요.`);
+            }} style={{
+              padding: "5px 11px", borderRadius: 999, fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+              border: "1px solid #1A56DB", background: "#EFF4FE", color: "#1A56DB",
+            }}>
+              {ind.label}
+            </button>
+          ))}
           <span style={{ fontSize: 12, fontWeight: 800, color: T.ink2 }}>📚 기본 문항:</span>
           {Object.entries(QUESTION_BANKS).map(([k, bank]) => (
             <button key={k} onClick={() => set({ questions: [...editing.questions.filter((q) => q.q.trim()), ...JSON.parse(JSON.stringify(bank.questions))] })} style={pill}>

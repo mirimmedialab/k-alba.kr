@@ -799,6 +799,7 @@ export const uz = {
     employerView: "Siz ariza topshirgan ish beruvchilar bu rezyumeni ko'ra oladi.",
   },
   training: {
+    listen: "🔊 Tinglash", listenHint: "Tugmani bosib koreyscha audioni tinglang va javob bering (qayta eshitish mumkin)",
     translate: "Tarjimani ko'rish", showOriginal: "Aslini ko'rish", translating: "Tarjima qilinmoqda...", translateUnavailable: "Tarjima xizmati hali tayyor emas. Asl matnda o'qing.",
     title: "Onboarding ta'limi", subtitle: "Ish joyingiz taqdim etgan darslar va testlarni yakunlang",
     myCourses: "Mening kurslarim", noCourses: "Hozircha kurslar yo'q. Ishga ariza topshirsangiz, ish beruvchi ta'limi shu yerda chiqadi.",

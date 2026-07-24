@@ -799,6 +799,7 @@ export const vi = {
     employerView: "Chủ cửa hàng của công việc bạn ứng tuyển có thể xem hồ sơ này.",
   },
   training: {
+    listen: "🔊 Nghe", listenHint: "Nhấn để nghe tiếng Hàn rồi trả lời (có thể nghe lại)",
     translate: "Xem bản dịch", showOriginal: "Xem bản gốc", translating: "Đang dịch...", translateUnavailable: "Dịch vụ dịch chưa sẵn sàng. Vui lòng học bằng bản gốc.",
     title: "Đào tạo hội nhập", subtitle: "Hoàn thành bài học và bài kiểm tra của nơi làm việc",
     myCourses: "Khóa học của tôi", noCourses: "Chưa có khóa học. Khi bạn ứng tuyển, khóa đào tạo của chủ cửa hàng sẽ hiện ở đây.",

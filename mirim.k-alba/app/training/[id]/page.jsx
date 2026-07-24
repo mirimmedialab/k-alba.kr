@@ -14,6 +14,18 @@ import { PageLoading, Button } from "@/components/ui";
  * 결과는 training_results upsert → 사장님 리포트에서 열람.
  */
 
+// 한국어 듣기 재생 (브라우저 음성합성)
+function speakKorean(text) {
+  try {
+    if (!window.speechSynthesis) { alert("이 기기에서는 음성 재생이 지원되지 않습니다."); return; }
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "ko-KR";
+    u.rate = 0.88;
+    window.speechSynthesis.speak(u);
+  } catch (_) {}
+}
+
 // 유튜브 URL → embed 변환
 function toEmbed(url) {
   if (!url) return null;
@@ -207,6 +219,22 @@ export default function TrainingCoursePage() {
                 </span>
                 Q{qi + 1}. {q.q}
               </div>
+              {q.passage && (
+                <div style={{ background: "#FFFFFF", border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 13px", marginBottom: 10, fontSize: 13, color: T.ink, lineHeight: 1.8, whiteSpace: "pre-wrap", fontFamily: "inherit" }}>
+                  📄 {q.passage}
+                </div>
+              )}
+              {q.tts && (
+                <div style={{ marginBottom: 10 }}>
+                  <button onClick={() => speakKorean(q.tts)} style={{
+                    padding: "9px 16px", borderRadius: 999, fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+                    border: "1.5px solid #1A56DB", background: "#EFF4FE", color: "#1A56DB",
+                  }}>
+                    {t("training.listen")}
+                  </button>
+                  <div style={{ fontSize: 11, color: T.ink3, marginTop: 5 }}>{t("training.listenHint")}</div>
+                </div>
+              )}
               {(q.choices || []).map((ch, ci) => {
                 const selected = answers[qi] === ci;
                 const showAnswer = result != null;
