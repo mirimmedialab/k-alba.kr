@@ -796,6 +796,7 @@ export const zh = {
     employerView: "您应聘职位的雇主可以查看此简历。",
   },
   training: {
+    transcript: "📊 综合成绩单", doneCourses: "已完成", avgKorean: "韩语平均", avgJob: "岗位平均",
     startQuiz: "📝 开始测评", studyFirst: "请先学习完所有视频和手册，再开始测评。",
     jobLocked: "💼 {n}道岗位题在正式录用后开放。现在只进行韩语预测评。",
     requested: "📩 收到测评邀请 — 请在面试前完成！",
@@ -811,6 +812,7 @@ export const zh = {
     watchVideo: "▶ 观看培训视频", kindKorean: "韩语", kindJob: "岗位",
   },
   report: {
+    print: "🖨 打印 / 保存PDF",
     wrong: "查看错题", myAnswer: "我的答案", correct: "正确答案", trend: "成长趋势", attempt: "第{n}次", rank: "位于前{n}%",
     title: "测评结果报告", korean: "🇰🇷 韩语测评", job: "💼 岗位测评",
     byType: "分类详情", strengths: "优势", weaknesses: "需加强", avg: "课程平均", mine: "我的分数",

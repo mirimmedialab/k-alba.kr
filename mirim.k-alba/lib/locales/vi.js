@@ -799,6 +799,7 @@ export const vi = {
     employerView: "Chủ cửa hàng của công việc bạn ứng tuyển có thể xem hồ sơ này.",
   },
   training: {
+    transcript: "📊 Bảng điểm tổng hợp", doneCourses: "Đã hoàn thành", avgKorean: "TB tiếng Hàn", avgJob: "TB công việc",
     startQuiz: "📝 Bắt đầu bài đánh giá", studyFirst: "Hãy học hết video và tài liệu trước khi bắt đầu bài đánh giá.",
     jobLocked: "💼 {n} câu hỏi công việc sẽ mở sau khi bạn được tuyển. Hiện tại chỉ làm phần đánh giá tiếng Hàn.",
     requested: "📩 Yêu cầu đánh giá — hãy hoàn thành trước buổi phỏng vấn!",
@@ -814,6 +815,7 @@ export const vi = {
     watchVideo: "▶ Xem video đào tạo", kindKorean: "Tiếng Hàn", kindJob: "Công việc",
   },
   report: {
+    print: "🖨 In / Lưu PDF",
     wrong: "Xem câu sai", myAnswer: "Câu trả lời của tôi", correct: "Đáp án đúng", trend: "Tiến bộ", attempt: "Lần {n}", rank: "Top {n}% người làm bài",
     title: "Báo cáo kết quả", korean: "🇰🇷 Tiếng Hàn", job: "💼 Kiến thức công việc",
     byType: "Chi tiết theo loại", strengths: "Điểm mạnh", weaknesses: "Cần cải thiện", avg: "Trung bình khóa", mine: "Điểm của tôi",

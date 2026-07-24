@@ -51,6 +51,21 @@ export default function TrainingListPage() {
       <h1 style={{ fontSize: 24, fontWeight: 800, color: T.ink, margin: "6px 0 4px" }}>🎓 {t("training.title")}</h1>
       <p style={{ fontSize: 13, color: T.ink3, margin: "0 0 20px" }}>{t("training.subtitle")}</p>
 
+      {Object.keys(results).length > 0 && (() => {
+        const rs = Object.values(results);
+        const done = rs.length;
+        const koT = rs.reduce((s, r) => s + r.korean_total, 0), koS = rs.reduce((s, r) => s + r.korean_score, 0);
+        const jbT = rs.reduce((s, r) => s + r.job_total, 0), jbS = rs.reduce((s, r) => s + r.job_score, 0);
+        return (
+          <div style={{ background: T.paper, border: `1px solid ${T.border}`, borderRadius: 12, padding: "14px 16px", marginBottom: 16, display: "flex", gap: 18, flexWrap: "wrap" }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: T.ink, alignSelf: "center" }}>{t("training.transcript")}</div>
+            <Metric label={t("training.doneCourses")} value={done} color={T.ink} />
+            {koT > 0 && <Metric label={t("training.avgKorean")} value={Math.round((koS / koT) * 100) + "%"} color="#1A56DB" />}
+            {jbT > 0 && <Metric label={t("training.avgJob")} value={Math.round((jbS / jbT) * 100) + "%"} color={T.coral} />}
+          </div>
+        );
+      })()}
+
       {courses.length === 0 ? (
         <div style={{ background: T.cream, borderRadius: 12, padding: 20, fontSize: 13.5, color: T.ink2, lineHeight: 1.7 }}>
           {t("training.noCourses")}
@@ -110,6 +125,15 @@ export default function TrainingListPage() {
           );
         })
       )}
+    </div>
+  );
+}
+
+function Metric({ label, value, color }) {
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div style={{ fontSize: 20, fontWeight: 800, color }}>{value}</div>
+      <div style={{ fontSize: 11, fontWeight: 700, color: T.ink3 }}>{label}</div>
     </div>
   );
 }

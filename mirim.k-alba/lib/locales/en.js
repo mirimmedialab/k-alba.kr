@@ -916,6 +916,7 @@ export const en = {
     employerView: "Employers of jobs you apply to can view this resume.",
   },
   training: {
+    transcript: "📊 My Transcript", doneCourses: "Completed", avgKorean: "Avg. Korean", avgJob: "Avg. Job",
     startQuiz: "📝 Start assessment", studyFirst: "Start the assessment after studying all videos and the manual.",
     jobLocked: "💼 The {n} job questions unlock after you are hired. For now, only the Korean pre-assessment is available.",
     requested: "📩 Assessment requested — please complete before your interview!",
@@ -931,6 +932,7 @@ export const en = {
     watchVideo: "▶ Watch training video", kindKorean: "Korean", kindJob: "Job",
   },
   report: {
+    print: "🖨 Print / Save PDF",
     wrong: "Review incorrect answers", myAnswer: "My answer", correct: "Correct", trend: "Progress", attempt: "Attempt {n}", rank: "Top {n}% of takers",
     title: "Assessment Report", korean: "🇰🇷 Korean", job: "💼 Job Knowledge",
     byType: "Breakdown by type", strengths: "Strengths", weaknesses: "Needs improvement", avg: "Course average", mine: "My score",

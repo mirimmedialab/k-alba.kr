@@ -921,6 +921,7 @@ export const ko = {
     employerView: "지원한 공고의 사장님에게 이 이력서가 표시됩니다.",
   },
   training: {
+    transcript: "📊 종합 성적표", doneCourses: "완료한 평가", avgKorean: "평균 한국어", avgJob: "평균 직무",
     startQuiz: "📝 평가 시작하기", studyFirst: "교육 영상과 매뉴얼을 모두 학습한 뒤 평가를 시작하세요.",
     jobLocked: "💼 직무 평가 {n}문항은 채용 확정 후 응시할 수 있어요. 지금은 한국어 사전평가만 진행됩니다.",
     requested: "📩 사전평가 요청 — 면접 전에 응시해 주세요!",
@@ -936,6 +937,7 @@ export const ko = {
     watchVideo: "▶ 교육 영상 보기", kindKorean: "한국어", kindJob: "직무",
   },
   report: {
+    print: "🖨 인쇄 / PDF 저장",
     wrong: "오답 확인", myAnswer: "내 답", correct: "정답", trend: "성장 추이", attempt: "{n}차", rank: "응시자 중 상위 {n}%",
     title: "평가 결과 보고서", korean: "🇰🇷 한국어 평가", job: "💼 직무 평가",
     byType: "유형별 상세", strengths: "강점", weaknesses: "보완 필요", avg: "과정 평균", mine: "내 점수",

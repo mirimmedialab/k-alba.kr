@@ -798,6 +798,7 @@ export const ja = {
     employerView: "応募先の店主がこの履歴書を閲覧できます。",
   },
   training: {
+    transcript: "📊 総合成績表", doneCourses: "完了した評価", avgKorean: "平均韓国語", avgJob: "平均職務",
     startQuiz: "📝 テストを開始", studyFirst: "動画とマニュアルをすべて学習してからテストを始めてください。",
     jobLocked: "💼 職務問題{n}問は採用確定後に受験できます。今は韓国語事前評価のみ実施されます。",
     requested: "📩 事前評価のリクエスト — 面接前に受験してください！",
@@ -813,6 +814,7 @@ export const ja = {
     watchVideo: "▶ 教育動画を見る", kindKorean: "韓国語", kindJob: "職務",
   },
   report: {
+    print: "🖨 印刷 / PDF保存",
     wrong: "誤答の確認", myAnswer: "自分の答え", correct: "正解", trend: "成長推移", attempt: "{n}回目", rank: "受験者の上位{n}%",
     title: "評価結果レポート", korean: "🇰🇷 韓国語評価", job: "💼 職務評価",
     byType: "タイプ別詳細", strengths: "強み", weaknesses: "要改善", avg: "コース平均", mine: "自分のスコア",

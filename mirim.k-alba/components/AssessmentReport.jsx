@@ -124,10 +124,21 @@ export default function AssessmentReport({ course, result, workerName, courseAvg
 
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 1100, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: "#F7F8FB", borderRadius: 14, maxWidth: 560, width: "100%", maxHeight: "90vh", overflow: "auto", padding: 20 }}>
+      <div className="kalba-report" onClick={(e) => e.stopPropagation()} style={{ background: "#F7F8FB", borderRadius: 14, maxWidth: 560, width: "100%", maxHeight: "90vh", overflow: "auto", padding: 20 }}>
+        <style>{`@media print {
+          body * { visibility: hidden !important; }
+          .kalba-report, .kalba-report * { visibility: visible !important; }
+          .kalba-report { position: absolute !important; inset: 0 !important; max-height: none !important; overflow: visible !important; border-radius: 0 !important; }
+          .kalba-report .no-print { display: none !important; }
+        }`}</style>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
           <div style={{ fontSize: 16, fontWeight: 800, color: T.ink }}>📋 {t("report.title")}</div>
-          <button onClick={onClose} style={{ border: "none", background: "transparent", fontSize: 18, cursor: "pointer", color: T.ink3 }}>✕</button>
+          <div className="no-print" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <button onClick={() => window.print()} style={{ border: `1px solid ${T.border}`, background: "#fff", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", color: T.ink2 }}>
+              {t("report.print")}
+            </button>
+            <button onClick={onClose} style={{ border: "none", background: "transparent", fontSize: 18, cursor: "pointer", color: T.ink3 }}>✕</button>
+          </div>
         </div>
         <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 14 }}>
           {workerName ? `${workerName} · ` : ""}{course.title} · {t("report.date")}: {(result.completed_at || "").slice(0, 10)}

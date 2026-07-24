@@ -799,6 +799,7 @@ export const uz = {
     employerView: "Siz ariza topshirgan ish beruvchilar bu rezyumeni ko'ra oladi.",
   },
   training: {
+    transcript: "📊 Umumiy natijalar", doneCourses: "Bajarilgan", avgKorean: "O'rtacha koreys tili", avgJob: "O'rtacha kasbiy",
     startQuiz: "📝 Baholashni boshlash", studyFirst: "Avval barcha video va qo'llanmani o'rganib, keyin baholashni boshlang.",
     jobLocked: "💼 {n} ta kasbiy savol ishga qabul qilingach ochiladi. Hozircha faqat koreys tili baholanadi.",
     requested: "📩 Baholash so'rovi — suhbatdan oldin topshiring!",
@@ -814,6 +815,7 @@ export const uz = {
     watchVideo: "▶ O'quv videosini ko'rish", kindKorean: "Koreys tili", kindJob: "Kasb",
   },
   report: {
+    print: "🖨 Chop etish / PDF",
     wrong: "Xatolarni ko'rish", myAnswer: "Mening javobim", correct: "To'g'ri javob", trend: "O'sish", attempt: "{n}-urinish", rank: "Eng yaxshi {n}% ichida",
     title: "Baholash hisoboti", korean: "🇰🇷 Koreys tili", job: "💼 Kasbiy bilim",
     byType: "Turlar bo'yicha", strengths: "Kuchli tomonlar", weaknesses: "Yaxshilash kerak", avg: "Kurs o'rtachasi", mine: "Mening ballim",
