@@ -1,0 +1,236 @@
+"use client";
+import { useState, useEffect } from "react";
+import { T } from "@/lib/theme";
+import { Panel } from "../_ui";
+import { QUESTION_BANKS } from "@/lib/trainingTemplates";
+
+/**
+ * /admin/training — 본사(브랜드) 공통 교육 관리
+ *
+ * - 브랜드명 기준으로 같은 상호의 모든 가맹점(사장님)·그 지원자/알바생에게 동일 교육 노출
+ * - 평가 문항 확인·수정, 전 언어(en/vi/zh-CN/ja) 번역 사전 생성
+ * - 인증: 어드민 쿠키 (API /api/admin/training)
+ */
+
+const EMPTY = {
+  brand_name: "", title: "", description: "", open_to_applicants: true, is_active: true,
+  sections: [{ title: "", body: "", video_url: "" }],
+  questions: [{ q: "", choices: ["", "", "", ""], answer: 0, kind: "job" }],
+};
+
+const LANG_LABEL = { en: "영어", vi: "베트남어", "zh-CN": "중국어", ja: "일본어" };
+
+export default function AdminTrainingPage() {
+  const [loading, setLoading] = useState(true);
+  const [courses, setCourses] = useState([]);
+  const [papago, setPapago] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [translating, setTranslating] = useState(0); // course id being translated
+
+  const load = async () => {
+    const res = await fetch("/api/admin/training", { cache: "no-store" });
+    const d = await res.json();
+    if (d.ok) { setCourses(d.courses); setPapago(d.papago); }
+    setLoading(false);
+  };
+  useEffect(() => { load(); }, []);
+
+  const handleSave = async () => {
+    if (!editing.brand_name.trim()) { alert("브랜드명을 입력해 주세요. (예: 메가MGC커피 — 가맹점 상호와 부분일치로 매칭됩니다)"); return; }
+    if (!editing.title.trim()) { alert("과정 제목을 입력해 주세요."); return; }
+    setSaving(true);
+    try {
+      const body = {
+        ...editing,
+        sections: editing.sections.filter((s) => s.title.trim() || s.body.trim() || s.video_url.trim()),
+        questions: editing.questions.filter((q) => q.q.trim() && q.choices.filter((c) => c.trim()).length >= 2)
+          .map((q) => ({ ...q, q: q.q.trim(), choices: q.choices.map((c) => c.trim()).filter(Boolean) })),
+      };
+      const res = await fetch("/api/admin/training", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+      });
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error);
+      setEditing(null);
+      await load();
+    } catch (e) {
+      alert("저장 실패: " + e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTranslate = async (id) => {
+    if (translating) return;
+    setTranslating(id);
+    try {
+      const res = await fetch(`/api/admin/training?action=translate&id=${id}`, { method: "POST" });
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error === "translation_unconfigured" ? "파파고 API 키가 설정되지 않았습니다 (NCP_PAPAGO_KEY_ID / NCP_PAPAGO_KEY)" : d.error);
+      alert(`번역 완료: ${d.translated.map((l) => LANG_LABEL[l] || l).join(", ")}`);
+      await load();
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      setTranslating(0);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm("이 과정을 삭제할까요? 응시 결과도 함께 삭제됩니다.")) return;
+    const res = await fetch(`/api/admin/training?id=${id}`, { method: "DELETE" });
+    const d = await res.json();
+    if (!d.ok) { alert(d.error); return; }
+    await load();
+  };
+
+  if (loading) return <div style={{ padding: 40, color: T.ink3 }}>불러오는 중…</div>;
+
+  // ── 빌더 ──
+  if (editing) {
+    const set = (patch) => setEditing((e) => ({ ...e, ...patch }));
+    const setSec = (i, f, v) => set({ sections: editing.sections.map((s, j) => (j === i ? { ...s, [f]: v } : s)) });
+    const setQ = (i, patch) => set({ questions: editing.questions.map((q, j) => (j === i ? { ...q, ...patch } : q)) });
+    return (
+      <div style={{ maxWidth: 860 }}>
+        <button onClick={() => setEditing(null)} style={linkBtn}>← 목록으로</button>
+        <h1 style={h1}>{editing.id ? "✏️ 본사 교육 수정" : "➕ 본사 공통 교육 만들기"}</h1>
+
+        <div style={{ display: "flex", gap: 12 }}>
+          <L label="브랜드명 * (가맹점 상호와 부분일치 매칭)" flex={1}>
+            <input value={editing.brand_name} onChange={(e) => set({ brand_name: e.target.value })} style={inp({ width: "100%" })} placeholder="예: 메가MGC커피" />
+          </L>
+          <L label="과정 제목 *" flex={1.6}>
+            <input value={editing.title} onChange={(e) => set({ title: e.target.value })} style={inp({ width: "100%" })} placeholder="예: 신입 크루 기본 교육" />
+          </L>
+        </div>
+        <L label="소개"><textarea value={editing.description || ""} onChange={(e) => set({ description: e.target.value })} rows={2} style={inp({ width: "100%", resize: "vertical" })} /></L>
+        <div style={{ display: "flex", gap: 16, margin: "4px 0 16px" }}>
+          <label style={chk}><input type="checkbox" checked={editing.open_to_applicants} onChange={(e) => set({ open_to_applicants: e.target.checked })} /> 지원자에게도 공개 (면접 전 서면평가)</label>
+          <label style={chk}><input type="checkbox" checked={editing.is_active} onChange={(e) => set({ is_active: e.target.checked })} /> 활성화</label>
+        </div>
+
+        <SecHead title="📖 학습 내용 (매뉴얼·영상)" onAdd={() => set({ sections: [...editing.sections, { title: "", body: "", video_url: "" }] })} />
+        {editing.sections.map((s, i) => (
+          <div key={i} style={card}>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input value={s.title} onChange={(e) => setSec(i, "title", e.target.value)} style={inp({ flex: 1 })} placeholder={`섹션 ${i + 1} 제목`} />
+              <button onClick={() => set({ sections: editing.sections.filter((_, j) => j !== i) })} style={xBtn}>✕</button>
+            </div>
+            <input value={s.video_url} onChange={(e) => setSec(i, "video_url", e.target.value)} style={inp({ width: "100%", marginTop: 8 })} placeholder="교육 영상 URL (유튜브 — 선택)" />
+            <textarea value={s.body} onChange={(e) => setSec(i, "body", e.target.value)} rows={4} style={inp({ width: "100%", marginTop: 8, resize: "vertical", lineHeight: 1.6 })} placeholder="매뉴얼 본문" />
+          </div>
+        ))}
+
+        <SecHead title="📝 평가 문항 (객관식 · 직무/한국어 구분)" onAdd={() => set({ questions: [...editing.questions, { q: "", choices: ["", "", "", ""], answer: 0, kind: "job" }] })} />
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12, alignItems: "center" }}>
+          <span style={{ fontSize: 12, fontWeight: 800, color: T.ink2 }}>📚 기본 문항:</span>
+          {Object.entries(QUESTION_BANKS).map(([k, bank]) => (
+            <button key={k} onClick={() => set({ questions: [...editing.questions.filter((q) => q.q.trim()), ...JSON.parse(JSON.stringify(bank.questions))] })} style={pill}>
+              {bank.label}
+            </button>
+          ))}
+        </div>
+        {editing.questions.map((q, i) => (
+          <div key={i} style={card}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <select value={q.kind} onChange={(e) => setQ(i, { kind: e.target.value })} style={inp({ width: 110 })}>
+                <option value="job">직무</option>
+                <option value="korean">한국어</option>
+              </select>
+              <input value={q.q} onChange={(e) => setQ(i, { q: e.target.value })} style={inp({ flex: 1 })} placeholder={`문제 ${i + 1}`} />
+              <button onClick={() => set({ questions: editing.questions.filter((_, j) => j !== i) })} style={xBtn}>✕</button>
+            </div>
+            {q.choices.map((c, ci) => (
+              <div key={ci} style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 7 }}>
+                <input type="radio" name={`ans-${i}`} checked={q.answer === ci} onChange={() => setQ(i, { answer: ci })} title="정답" />
+                <input value={c} onChange={(e) => setQ(i, { choices: q.choices.map((cc, cj) => (cj === ci ? e.target.value : cc)) })} style={inp({ flex: 1 })} placeholder={`보기 ${ci + 1}`} />
+              </div>
+            ))}
+          </div>
+        ))}
+
+        <button onClick={handleSave} disabled={saving} style={saveBtn}>{saving ? "저장 중…" : "💾 저장하기"}</button>
+      </div>
+    );
+  }
+
+  // ── 목록 ──
+  return (
+    <div style={{ maxWidth: 960 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <h1 style={h1}>🎓 본사 공통 교육</h1>
+        <button onClick={() => setEditing(JSON.parse(JSON.stringify(EMPTY)))} style={saveBtn}>➕ 새 본사 교육</button>
+      </div>
+      <p style={{ fontSize: 13, color: T.ink3, margin: "0 0 16px", lineHeight: 1.7 }}>
+        브랜드명이 상호에 포함된 <b>모든 가맹점</b>과 그 지원자·알바생에게 동일한 교육이 노출됩니다.
+        각 점주는 자기 매장 지원자·알바생의 응시 결과만 볼 수 있습니다.
+        {!papago && <span style={{ color: "#B3261E", fontWeight: 700 }}> · ⚠️ 파파고 API 키 미설정 — 번역 생성 불가</span>}
+      </p>
+
+      <Panel>
+        {courses.length === 0 ? (
+          <div style={{ padding: 24, fontSize: 13.5, color: T.ink2 }}>등록된 본사 교육이 없습니다.</div>
+        ) : (
+          courses.map((c) => (
+            <div key={c.id} style={{ padding: "14px 18px", borderBottom: `1px solid ${T.border}` }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 14.5, fontWeight: 800, color: T.ink }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: "#7C3AED", background: "#F3EEFE", borderRadius: 999, padding: "2px 9px", marginRight: 8 }}>{c.brand_name}</span>
+                    {c.title}
+                    {!c.is_active && <span style={{ fontSize: 10.5, fontWeight: 800, color: "#8C6D1F", background: "#FBF3D9", borderRadius: 999, padding: "2px 8px", marginLeft: 8 }}>비활성</span>}
+                  </div>
+                  <div style={{ fontSize: 12, color: T.ink3, marginTop: 4 }}>
+                    섹션 {(c.sections || []).length} · 문항 {(c.questions || []).length}
+                    {" · "}응시 {c.result_count}명
+                    {c.avg && c.avg.jobT > 0 && <> · 평균 직무 {Math.round((c.avg.job / c.avg.jobT) * 100)}%</>}
+                    {c.avg && c.avg.koT > 0 && <> · 평균 한국어 {Math.round((c.avg.ko / c.avg.koT) * 100)}%</>}
+                    {" · 번역: "}
+                    {c.translated_langs.length ? c.translated_langs.map((l) => LANG_LABEL[l] || l).join("·") : "없음"}
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <button onClick={() => handleTranslate(c.id)} disabled={translating === c.id} style={pill}>
+                    {translating === c.id ? "⏳ 번역 중…" : "🌐 전 언어 번역 생성"}
+                  </button>
+                  <button onClick={() => setEditing(JSON.parse(JSON.stringify(c)))} style={pill}>✏️ 수정·문항 확인</button>
+                  <button onClick={() => handleDelete(c.id)} style={{ ...pill, color: "#B3261E" }}>삭제</button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </Panel>
+    </div>
+  );
+}
+
+const h1 = { fontSize: 20, fontWeight: 800, color: T.ink, margin: "0 0 4px" };
+function L({ label, children, flex }) {
+  return (
+    <label style={{ display: "block", marginBottom: 12, flex }}>
+      <span style={{ display: "block", fontSize: 12, fontWeight: 800, color: T.ink2, marginBottom: 5 }}>{label}</span>
+      {children}
+    </label>
+  );
+}
+function SecHead({ title, onAdd }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "16px 0 8px" }}>
+      <div style={{ fontSize: 14, fontWeight: 800, color: T.ink }}>{title}</div>
+      <button onClick={onAdd} style={{ ...linkBtn, color: T.coral }}>+ 추가</button>
+    </div>
+  );
+}
+const inp = (extra = {}) => ({
+  padding: "9px 11px", borderRadius: 7, border: `1px solid ${T.border}`, fontSize: 13.5,
+  fontFamily: "inherit", color: T.ink, background: T.paper, boxSizing: "border-box", ...extra,
+});
+const card = { background: T.paper, border: `1px solid ${T.border}`, borderRadius: 10, padding: 13, marginBottom: 10 };
+const linkBtn = { border: "none", background: "transparent", fontSize: 13, fontWeight: 700, color: T.ink3, cursor: "pointer", fontFamily: "inherit", padding: 0 };
+const xBtn = { border: "none", background: "transparent", color: T.ink3, fontSize: 14, cursor: "pointer", fontFamily: "inherit" };
+const chk = { display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 700, color: T.ink2, cursor: "pointer" };
+const pill = { padding: "6px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", border: `1px solid ${T.border}`, background: T.paper, color: T.ink2 };
+const saveBtn = { padding: "10px 18px", borderRadius: 8, fontSize: 13.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", border: "none", background: T.ink, color: "#fff" };

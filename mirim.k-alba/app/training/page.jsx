@@ -26,7 +26,7 @@ export default function TrainingListPage() {
       if (!u) { router.replace("/login"); return; }
       const { data: cs } = await supabase
         .from("training_courses")
-        .select("id, title, description, owner:profiles!training_courses_owner_id_fkey(company_name, name), sections, questions")
+        .select("id, title, description, brand_name, owner:profiles!training_courses_owner_id_fkey(company_name, name), sections, questions")
         .order("created_at", { ascending: false });
       setCourses(cs || []);
       const { data: rs } = await supabase
@@ -64,9 +64,12 @@ export default function TrainingListPage() {
               }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 15.5, fontWeight: 800, color: T.ink }}>{c.title}</div>
+                    <div style={{ fontSize: 15.5, fontWeight: 800, color: T.ink }}>
+                      {c.brand_name && <span style={{ fontSize: 10.5, fontWeight: 800, color: "#7C3AED", background: "#EFE7FD", borderRadius: 999, padding: "2px 8px", marginRight: 7, verticalAlign: "2px" }}>🏢 {c.brand_name}</span>}
+                      {c.title}
+                    </div>
                     <div style={{ fontSize: 12, color: T.ink3, marginTop: 3 }}>
-                      {t("training.by")}: {c.owner?.company_name || c.owner?.name || "-"}
+                      {t("training.by")}: {c.brand_name || c.owner?.company_name || c.owner?.name || "-"}
                       {" · "}{(c.sections || []).length} {t("training.sections")} · {nQ} {t("training.quiz")}
                     </div>
                     {c.description && <div style={{ fontSize: 12.5, color: T.ink2, marginTop: 6, lineHeight: 1.6 }}>{c.description}</div>}

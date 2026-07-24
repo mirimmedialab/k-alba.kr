@@ -126,7 +126,7 @@ export default function TrainingCoursePage() {
       <Link href="/training" style={{ color: T.ink3, fontSize: 13, fontWeight: 600 }}>← {t("training.title")}</Link>
       <h1 style={{ fontSize: 22, fontWeight: 800, color: T.ink, margin: "14px 0 2px" }}>{course.title}</h1>
       <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 16 }}>
-        {t("training.by")}: {course.owner?.company_name || course.owner?.name || "-"}
+        {t("training.by")}: {course.brand_name || course.owner?.company_name || course.owner?.name || "-"}
       </div>
       {course.description && <p style={{ fontSize: 13.5, color: T.ink2, lineHeight: 1.7, marginBottom: 12 }}>{course.description}</p>}
 

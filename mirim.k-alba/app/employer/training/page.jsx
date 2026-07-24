@@ -26,6 +26,7 @@ export default function EmployerTrainingPage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [courses, setCourses] = useState([]);
+  const [brandCourses, setBrandCourses] = useState([]); // 본사 제공 (RLS: 내 상호와 매칭)
   const [resultCount, setResultCount] = useState({});
   const [editing, setEditing] = useState(null); // null | course object (id 없으면 신규)
   const [saving, setSaving] = useState(false);
@@ -34,6 +35,10 @@ export default function EmployerTrainingPage() {
     const { data: cs } = await supabase
       .from("training_courses").select("*").eq("owner_id", uid).order("created_at", { ascending: false });
     setCourses(cs || []);
+    const { data: bcs } = await supabase
+      .from("training_courses").select("id, brand_name, title, description, sections, questions")
+      .not("brand_name", "is", null).order("created_at", { ascending: false });
+    setBrandCourses(bcs || []);
     const ids = (cs || []).map((c) => c.id);
     if (ids.length) {
       const { data: rs } = await supabase.from("training_results").select("course_id").in("course_id", ids);
@@ -174,6 +179,28 @@ export default function EmployerTrainingPage() {
       <Button variant="primaryDark" size="md" onClick={() => setEditing(JSON.parse(JSON.stringify(EMPTY_COURSE)))} style={{ marginBottom: 18 }}>
         ➕ 새 교육 과정 만들기
       </Button>
+
+      {brandCourses.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: T.ink, marginBottom: 8 }}>🏢 본사 제공 교육</div>
+          {brandCourses.map((c) => (
+            <div key={c.id} style={{ background: "#F8F5FF", border: "1px solid #E5DBFA", borderRadius: 12, padding: "14px 17px", marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <div>
+                  <div style={{ fontSize: 14.5, fontWeight: 800, color: T.ink }}>
+                    <span style={{ fontSize: 10.5, fontWeight: 800, color: "#7C3AED", background: "#EFE7FD", borderRadius: 999, padding: "2px 8px", marginRight: 7 }}>{c.brand_name} 본사</span>
+                    {c.title}
+                  </div>
+                  <div style={{ fontSize: 12, color: T.ink3, marginTop: 3 }}>
+                    섹션 {(c.sections || []).length} · 문항 {(c.questions || []).length} — 우리 매장 지원자·알바생에게 자동 노출됩니다
+                  </div>
+                </div>
+                <Link href={`/employer/training/${c.id}`}><Button variant="secondary" size="sm">📊 우리 매장 결과</Button></Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {courses.length === 0 ? (
         <div style={{ background: T.cream, borderRadius: 12, padding: 20, fontSize: 13.5, color: T.ink2 }}>

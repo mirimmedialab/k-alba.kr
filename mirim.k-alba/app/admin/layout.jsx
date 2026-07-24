@@ -20,6 +20,7 @@ const NAV = [
   { href: "/admin/jobs", label: "공고 관리", icon: "▤" },
   { href: "/admin/applications", label: "지원·매칭", icon: "⇄" },
   { href: "/admin/monitoring", label: "운영 모니터링", icon: "◈" },
+  { href: "/admin/training", label: "본사 교육", icon: "🎓" },
   { href: "/admin/campaigns", label: "이메일 캠페인", icon: "✉" },
   { href: "/admin/sync", label: "데이터 동기화", icon: "↻" },
 ];
