@@ -50,6 +50,7 @@ export default function StaffPartworkDetailPage() {
   const [staff, setStaff] = useState(null);
   const [application, setApplication] = useState(null);
   const [reviewLog, setReviewLog] = useState([]);
+  const [bizCert, setBizCert] = useState(null); // 근무처 사업자등록증 { exists, file_name, uploaded_at, signed_url }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -113,6 +114,19 @@ export default function StaffPartworkDetailPage() {
 
         setApplication(app);
         setStaffCertifiedCheck(app.staff_certified_check ?? staffRecord.university.certified ?? false);
+
+        // 근무처 사업자등록증 조회 (사장님이 업로드한 경우)
+        try {
+          const { data: sess } = await supabase.auth.getSession();
+          const token = sess?.session?.access_token;
+          if (token) {
+            const bcRes = await fetch(`/api/employer/business-cert?application_id=${appId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            const bc = await bcRes.json();
+            if (bc.ok) setBizCert(bc);
+          }
+        } catch (_) { /* 무시 */ }
 
         // 처리 이력 로드
         const { data: logs } = await supabase
@@ -369,6 +383,32 @@ export default function StaffPartworkDetailPage() {
               </div>
             );
           })}
+          {/* 근무처 사업자등록증 (사장님이 K-ALBA에 업로드) */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0',
+            borderBottom: `1px solid ${T.border}`,
+          }}>
+            <span style={{ fontSize: 18 }}>🏢</span>
+            <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: T.ink }}>
+              사업자등록증 (근무처)
+              <span style={{ marginLeft: 6, fontSize: 9, color: '#888' }}>사장님 제출</span>
+              {bizCert?.exists && bizCert.uploaded_at && (
+                <span style={{ marginLeft: 6, fontSize: 10, color: T.ink3, fontWeight: 400 }}>
+                  {String(bizCert.uploaded_at).slice(0, 10)} 업로드
+                </span>
+              )}
+            </div>
+            {bizCert?.exists ? (
+              <a href={bizCert.signed_url} target="_blank" rel="noopener noreferrer" style={{
+                padding: '6px 10px', background: '#1E40AF', color: '#FFF',
+                borderRadius: 6, fontSize: 11, fontWeight: 700, textDecoration: 'none',
+              }}>
+                📄 보기
+              </a>
+            ) : (
+              <span style={{ fontSize: 11, color: '#999' }}>미제출</span>
+            )}
+          </div>
         </Section>
 
         {/* 인증대학 체크 */}

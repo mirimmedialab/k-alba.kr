@@ -79,6 +79,10 @@ export default function ContractDetailPage() {
   // 유학생 시간제취업 확인서 정보 수집 Q&A
   const [confAsk, setConfAsk] = useState(null); // { queue: [...], idx, data: {} }
   const [downloadingConf, setDownloadingConf] = useState(false);
+  // 사업자등록증 업로드 (국제처 검토용) — null: 확인 중, {exists, file_name} 형태
+  const [bizCert, setBizCert] = useState(null);
+  const [bizCertUploading, setBizCertUploading] = useState(false);
+  const bizCertInputRef = useRef(null);
   // 휴게시간 의무 배정 확인 (근로기준법 제54조) — 양측 모두 확인해야 서명 진행
   const [breakAsk, setBreakAsk] = useState(false);
   const [breakEdit, setBreakEdit] = useState(false);
@@ -191,6 +195,54 @@ export default function ContractDetailPage() {
       }
     }
   }, [contract, user]);
+
+  // ─── 사업자등록증 상태 확인 + 챗봇 업로드 유도 (사장님 · 유학생 계약 완료 시) ───
+  useEffect(() => {
+    if (!user || !contract || !isEmployer) return;
+    if (!(contract.worker_signed && contract.employer_signed)) return;
+    if (!getStudentInfo(contract).isStudent) return;
+    if (bizCert !== null) return; // 이미 확인함
+    (async () => {
+      try {
+        const { data: sess } = await supabase.auth.getSession();
+        const token = sess?.session?.access_token;
+        if (!token) return;
+        const res = await fetch("/api/employer/business-cert", { headers: { Authorization: `Bearer ${token}` } });
+        const d = await res.json();
+        setBizCert(d.ok ? d : { exists: false });
+        if (d.ok && !d.exists) {
+          setTimeout(() => addBot("🏢 한 가지 더!\n학교 국제처가 시간제취업 확인서를 검토할 때\n사업장의 사업자등록증 사본이 필요합니다.\n\n아래 [사업자등록증 업로드] 버튼으로\n한 번만 올려두시면, 이후 모든 유학생 채용에서\n국제처가 바로 확인할 수 있어요. (사진/PDF 가능)"), 1800);
+        }
+      } catch (_) { /* 무시 */ }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, contract, isEmployer]);
+
+  const handleBizCertUpload = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || bizCertUploading) return;
+    setBizCertUploading(true);
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token;
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/employer/business-cert", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+      const d = await res.json();
+      if (!d.ok) throw new Error(d.error || "업로드 실패");
+      setBizCert({ ok: true, exists: true, file_name: d.file_name });
+      addBot("✅ 사업자등록증이 등록되었습니다!\n국제처 담당자가 시간제취업 확인서 검토 시\n바로 확인할 수 있어요. 감사합니다 🙏");
+    } catch (err) {
+      alert("사업자등록증 업로드에 실패했습니다: " + err.message);
+    } finally {
+      setBizCertUploading(false);
+    }
+  };
 
   // ─── 상대방 서명/승인 실시간 반영 (8초 폴링) ───
   // 알림톡과 무관하게, 상대가 서명/승인하면 열려 있는 화면의 챗봇·버튼이 자동 갱신된다.
@@ -1437,7 +1489,22 @@ export default function ContractDetailPage() {
                       {downloadingConf ? "생성 중..." : "🎓 시간제취업 확인서 PDF"}
                     </Button>
                   )}
+                  {isEmployer && studentInfo.isStudent && (
+                    <Button variant="secondary" size="md" onClick={() => bizCertInputRef.current?.click()} disabled={bizCertUploading}>
+                      {bizCertUploading ? "업로드 중..." : bizCert?.exists ? "✅ 사업자등록증 제출됨 · 다시 올리기" : "🏢 사업자등록증 업로드"}
+                    </Button>
+                  )}
                 </div>
+                {isEmployer && studentInfo.isStudent && (
+                  <>
+                    <input ref={bizCertInputRef} type="file" accept="image/jpeg,image/png,image/webp,application/pdf" style={{ display: "none" }} onChange={handleBizCertUpload} />
+                    {!bizCert?.exists && (
+                      <p style={{ fontSize: 10.5, color: T.ink3, marginTop: 8 }}>
+                        🏢 국제처의 시간제취업 확인서 검토에 사업자등록증 사본이 필요해요 (최초 1회)
+                      </p>
+                    )}
+                  </>
+                )}
                 {studentInfo.isStudent && !confReady && (
                   <p style={{ fontSize: 10.5, color: T.ink3, marginTop: 8 }}>
                     🎓 시간제취업 확인서는 정보 입력이 끝나면 다운로드할 수 있어요
