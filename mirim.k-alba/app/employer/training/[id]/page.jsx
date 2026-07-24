@@ -5,6 +5,7 @@ import Link from "next/link";
 import { T } from "@/lib/theme";
 import { supabase, getCurrentUser } from "@/lib/supabase";
 import { PageLoading } from "@/components/ui";
+import AssessmentReport from "@/components/AssessmentReport";
 
 /**
  * /employer/training/[id] — 과정별 응시 결과 리포트 (사장님)
@@ -17,6 +18,7 @@ export default function TrainingResultsPage() {
   const [loading, setLoading] = useState(true);
   const [course, setCourse] = useState(null);
   const [rows, setRows] = useState([]);
+  const [reportFor, setReportFor] = useState(null); // 보고서 모달 대상 result row
 
   useEffect(() => {
     (async () => {
@@ -73,17 +75,32 @@ export default function TrainingResultsPage() {
                   {r.worker?.country || "-"} · {r.worker?.visa || "-"} · {(r.completed_at || "").slice(0, 10)}
                 </div>
               </div>
-              <div style={{ display: "flex", gap: 14 }}>
-                {r.job_total > 0 && (
-                  <ScoreChip label="직무" score={r.job_score} total={r.job_total} pct={pct(r.job_score, r.job_total)} color={T.coral} bg="#FFF1EC" />
-                )}
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                 {r.korean_total > 0 && (
                   <ScoreChip label="한국어" score={r.korean_score} total={r.korean_total} pct={pct(r.korean_score, r.korean_total)} color="#1A56DB" bg="#E8F0FE" />
                 )}
+                {r.job_total > 0 && (
+                  <ScoreChip label="직무" score={r.job_score} total={r.job_total} pct={pct(r.job_score, r.job_total)} color={T.coral} bg="#FFF1EC" />
+                )}
+                <button onClick={() => setReportFor(r)} style={{
+                  padding: "8px 13px", borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+                  border: `1px solid ${T.border}`, background: T.paper, color: T.ink2, whiteSpace: "nowrap",
+                }}>
+                  📋 보고서
+                </button>
               </div>
             </div>
           </div>
         ))
+      )}
+      {reportFor && (
+        <AssessmentReport
+          course={course}
+          result={reportFor}
+          workerName={reportFor.worker?.name}
+          courseAvg={{ koreanPct: avg("korean_score", "korean_total"), jobPct: avg("job_score", "job_total") }}
+          onClose={() => setReportFor(null)}
+        />
       )}
     </div>
   );

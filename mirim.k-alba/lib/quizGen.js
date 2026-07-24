@@ -62,7 +62,7 @@ export function generateQuizFromSections(sections, { min = 10, max = 15 } = {}) 
   const questions = [];
   const seen = new Set();
   const add = (item) => {
-    if (!item) return;
+    if (!item || !item.q) return;
     const key = item.q.slice(0, 60);
     if (seen.has(key)) return;
     seen.add(key);
@@ -80,9 +80,9 @@ export function generateQuizFromSections(sections, { min = 10, max = 15 } = {}) 
       if (m) steps.push(m[2].replace(/\s+/g, " ").trim());
     }
     if (steps.length >= 3) {
-      add(mcq(`[${b.title}] 다음 중 가장 먼저 해야 할 일은?`, steps[0], steps.slice(1)));
-      add(mcq(`[${b.title}] 다음 중 마지막 단계는?`, steps[steps.length - 1], steps.slice(0, -1)));
-      if (steps.length >= 4) add(mcq(`[${b.title}] '${steps[0].slice(0, 24)}' 바로 다음에 해야 할 일은?`, steps[1], [steps[2], steps[3], steps[0]].filter(Boolean)));
+      add({ ...mcq(`[${b.title}] 다음 중 가장 먼저 해야 할 일은?`, steps[0], steps.slice(1)) || {}, type: "process" });
+      add({ ...mcq(`[${b.title}] 다음 중 마지막 단계는?`, steps[steps.length - 1], steps.slice(0, -1)) || {}, type: "process" });
+      if (steps.length >= 4) add({ ...mcq(`[${b.title}] '${steps[0].slice(0, 24)}' 바로 다음에 해야 할 일은?`, steps[1], [steps[2], steps[3], steps[0]].filter(Boolean)) || {}, type: "process" });
     }
   }
 
@@ -106,7 +106,7 @@ export function generateQuizFromSections(sections, { min = 10, max = 15 } = {}) 
         if (!m) continue;
         const correct = parseInt(m[1].replace(/,/g, ""), 10).toLocaleString("ko-KR") + m[2];
         const qText = sent.replace(m[0], "____");
-        add(mcq(`빈칸에 알맞은 것은?  ${qText}`, correct, numberDistractors(m[1], m[2])));
+        add({ ...mcq(`빈칸에 알맞은 것은?  ${qText}`, correct, numberDistractors(m[1], m[2])) || {}, type: "figures" });
         if (questions.length >= max) break;
       }
       if (questions.length >= max) break;
@@ -127,7 +127,7 @@ export function generateQuizFromSections(sections, { min = 10, max = 15 } = {}) 
         if (!bestClean || bestClean.length < 2) continue;
         const qText = sent.replace(best, best.replace(bestClean, "____"));
         if (!qText.includes("____")) continue;
-        add(mcq(`빈칸에 알맞은 말은?  ${qText}`, bestClean, uniqKeywords.filter((x) => x !== bestClean)));
+        add({ ...mcq(`빈칸에 알맞은 말은?  ${qText}`, bestClean, uniqKeywords.filter((x) => x !== bestClean)) || {}, type: "concept" });
         if (questions.length >= max) break;
       }
       if (questions.length >= max) break;

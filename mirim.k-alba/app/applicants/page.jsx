@@ -68,8 +68,8 @@ function ApplicantsContent() {
           setApplicants(data);
           // 내 교육 과정 응시 점수 (RLS: 과정 소유자만 결과 조회 가능)
           try {
-            const { data: own } = await supabase.from("training_courses").select("id, title, brand_name, questions").eq("owner_id", u.id).eq("is_active", true);
-            const { data: brand } = await supabase.from("training_courses").select("id, title, brand_name, questions").not("brand_name", "is", null).eq("is_active", true);
+            const { data: own } = await supabase.from("training_courses").select("id, title, brand_name, questions, open_to_applicants").eq("owner_id", u.id).eq("is_active", true);
+            const { data: brand } = await supabase.from("training_courses").select("id, title, brand_name, questions, open_to_applicants").not("brand_name", "is", null).eq("is_active", true);
             const all = [...(own || []), ...(brand || []).filter((b) => !(own || []).some((o) => o.id === b.id))];
             setMyCourses(all);
             const { data: reqs } = await supabase.from("assessment_requests").select("course_id, applicant_id").eq("employer_id", u.id);
@@ -454,7 +454,7 @@ function ApplicantsContent() {
           <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, maxWidth: 460, width: "100%", maxHeight: "80vh", overflow: "auto", padding: 20 }}>
             <div style={{ fontSize: 15, fontWeight: 800, color: T.ink, marginBottom: 4 }}>📝 {assessFor.applicant?.name}님에게 사전평가 요청</div>
             <div style={{ fontSize: 12, color: T.ink3, marginBottom: 12 }}>사전평가는 <b>직무 한국어 문항만</b> 응시됩니다 (직무 평가는 채용 확정 후 응시 가능). 지원자에게 알림이 전송됩니다.</div>
-            {myCourses.map((c) => {
+            {myCourses.filter((c) => c.open_to_applicants && (c.questions || []).some((q) => q.kind === "korean")).map((c) => {
               const already = (reqMap[assessFor.applicant?.id] || []).includes(c.id);
               const nKo = (c.questions || []).filter((q) => q.kind === "korean").length;
               const nJob = (c.questions || []).length - nKo;

@@ -811,4 +811,12 @@ export const ja = {
     resultSaved: "結果が保存され、店主に共有されます。",
     watchVideo: "▶ 教育動画を見る", kindKorean: "韓国語", kindJob: "職務",
   },
+  report: {
+    title: "評価結果レポート", korean: "🇰🇷 韓国語評価", job: "💼 職務評価",
+    byType: "タイプ別詳細", strengths: "強み", weaknesses: "要改善", avg: "コース平均", mine: "自分のスコア",
+    noData: "受験データがありません。", date: "受験日",
+    t_listening: "リスニング", t_reading: "読解", t_expr: "表現理解", t_usage: "状況対応",
+    t_process: "手順理解", t_figures: "数値の正確さ", t_concept: "重要概念", t_general: "基本問題",
+    comment_good: "よくできています！", comment_weak: "復習しましょう",
+  },
 };

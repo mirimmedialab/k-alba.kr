@@ -812,4 +812,12 @@ export const uz = {
     resultSaved: "Natija saqlandi va ish beruvchiga yuborildi.",
     watchVideo: "▶ O'quv videosini ko'rish", kindKorean: "Koreys tili", kindJob: "Kasb",
   },
+  report: {
+    title: "Baholash hisoboti", korean: "🇰🇷 Koreys tili", job: "💼 Kasbiy bilim",
+    byType: "Turlar bo'yicha", strengths: "Kuchli tomonlar", weaknesses: "Yaxshilash kerak", avg: "Kurs o'rtachasi", mine: "Mening ballim",
+    noData: "Ma'lumot yo'q.", date: "Topshirilgan sana",
+    t_listening: "Tinglash", t_reading: "O'qish", t_expr: "Iboralarni tushunish", t_usage: "Vaziyatga javob",
+    t_process: "Jarayonlar", t_figures: "Raqamlar aniqligi", t_concept: "Asosiy tushunchalar", t_general: "Umumiy",
+    comment_good: "Ajoyib!", comment_weak: "Bu qismni takrorlang",
+  },
 };

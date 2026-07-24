@@ -810,4 +810,12 @@ export const mn = {
     resultSaved: "Үр дүн хадгалагдаж, эзэнд илгээгдлээ.",
     watchVideo: "▶ Сургалтын видео үзэх", kindKorean: "Солонгос хэл", kindJob: "Ажил",
   },
+  report: {
+    title: "Үнэлгээний тайлан", korean: "🇰🇷 Солонгос хэл", job: "💼 Ажлын мэдлэг",
+    byType: "Төрлөөр задаргаа", strengths: "Давуу тал", weaknesses: "Сайжруулах", avg: "Дундаж", mine: "Миний оноо",
+    noData: "Мэдээлэл алга.", date: "Шалгалт өгсөн огноо",
+    t_listening: "Сонсох", t_reading: "Унших", t_expr: "Илэрхийлэл ойлгох", t_usage: "Нөхцөл байдал",
+    t_process: "Дараалал ойлгох", t_figures: "Тоон нарийвчлал", t_concept: "Гол ойлголт", t_general: "Ерөнхий",
+    comment_good: "Маш сайн!", comment_weak: "Дахин давтана уу",
+  },
 };

@@ -6,6 +6,7 @@ import { T } from "@/lib/theme";
 import { supabase, getCurrentUser } from "@/lib/supabase";
 import { useT, useLocale } from "@/lib/i18n";
 import { PageLoading, Button } from "@/components/ui";
+import AssessmentReport from "@/components/AssessmentReport";
 
 /**
  * /training/[id] — 학습(영상+매뉴얼) → 평가 응시 → 결과 저장
@@ -49,6 +50,7 @@ export default function TrainingCoursePage() {
   const [trans, setTrans] = useState(null);        // 번역본 {sections, questions}
   const [showTrans, setShowTrans] = useState(false);
   const [translating, setTranslating] = useState(false);
+  const [showReport, setShowReport] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -311,11 +313,27 @@ export default function TrainingCoursePage() {
                 )}
               </div>
               <div style={{ fontSize: 12, color: T.ink3 }}>{t("training.resultSaved")}</div>
+              <button onClick={() => setShowReport(true)} style={{
+                marginTop: 10, padding: "9px 16px", borderRadius: 8, fontSize: 12.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+                border: `1px solid ${T.border}`, background: "#FFFFFF", color: T.ink,
+              }}>
+                📋 {t("report.title")}
+              </button>
             </div>
           )}
 
           {prev && !result && (
-            <div style={{ marginTop: 10, fontSize: 12.5, color: T.ink3, textAlign: "center" }}>
+            <div style={{ marginTop: 10, textAlign: "center" }}>
+              <button onClick={() => setShowReport(true)} style={{
+                padding: "9px 16px", borderRadius: 8, fontSize: 12.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+                border: `1px solid ${T.border}`, background: "#FFFFFF", color: T.ink,
+              }}>
+                📋 {t("report.title")}
+              </button>
+            </div>
+          )}
+          {prev && !result && (
+            <div style={{ marginTop: 4, fontSize: 12.5, color: T.ink3, textAlign: "center" }}>
               ✓ {t("training.done")}:
               {prev.job_total > 0 && <> {t("training.jobScore")} {prev.job_score}/{prev.job_total}</>}
               {prev.korean_total > 0 && <> · {t("training.koreanScore")} {prev.korean_score}/{prev.korean_total}</>}
@@ -323,6 +341,10 @@ export default function TrainingCoursePage() {
             </div>
           )}
         </div>
+      )}
+
+      {showReport && (prev || result) && (
+        <AssessmentReport course={course} result={result || prev} onClose={() => setShowReport(false)} />
       )}
     </div>
   );

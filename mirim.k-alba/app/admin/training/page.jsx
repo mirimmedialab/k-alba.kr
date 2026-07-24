@@ -133,7 +133,7 @@ export default function AdminTrainingPage() {
         </div>
         <L label="소개"><textarea value={editing.description || ""} onChange={(e) => set({ description: e.target.value })} rows={2} style={inp({ width: "100%", resize: "vertical" })} /></L>
         <div style={{ display: "flex", gap: 16, margin: "4px 0 16px" }}>
-          <label style={chk}><input type="checkbox" checked={editing.open_to_applicants} onChange={(e) => set({ open_to_applicants: e.target.checked })} /> 지원자에게도 공개 (면접 전 서면평가)</label>
+          <label style={chk}><input type="checkbox" checked={editing.open_to_applicants} onChange={(e) => set({ open_to_applicants: e.target.checked })} /> 사전평가로 사용 가능 (사장님이 지원자에게 요청 시에만 노출)</label>
           <label style={chk}><input type="checkbox" checked={editing.is_active} onChange={(e) => set({ is_active: e.target.checked })} /> 활성화</label>
         </div>
 

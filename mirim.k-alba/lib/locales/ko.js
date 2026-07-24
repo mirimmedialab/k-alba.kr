@@ -934,4 +934,12 @@ export const ko = {
     resultSaved: "결과가 저장되어 사장님에게 전달됩니다.",
     watchVideo: "▶ 교육 영상 보기", kindKorean: "한국어", kindJob: "직무",
   },
+  report: {
+    title: "평가 결과 보고서", korean: "🇰🇷 한국어 평가", job: "💼 직무 평가",
+    byType: "유형별 상세", strengths: "강점", weaknesses: "보완 필요", avg: "과정 평균", mine: "내 점수",
+    noData: "응시 데이터가 없습니다.", date: "응시일",
+    t_listening: "듣기", t_reading: "읽기", t_expr: "표현 이해", t_usage: "상황 대응",
+    t_process: "절차 이해", t_figures: "수치 정확성", t_concept: "핵심 개념", t_general: "기본 문항",
+    comment_good: "잘하고 있어요!", comment_weak: "다시 학습해 보세요",
+  },
 };

@@ -929,4 +929,12 @@ export const en = {
     resultSaved: "Your result is saved and shared with the employer.",
     watchVideo: "▶ Watch training video", kindKorean: "Korean", kindJob: "Job",
   },
+  report: {
+    title: "Assessment Report", korean: "🇰🇷 Korean", job: "💼 Job Knowledge",
+    byType: "Breakdown by type", strengths: "Strengths", weaknesses: "Needs improvement", avg: "Course average", mine: "My score",
+    noData: "No assessment data.", date: "Taken on",
+    t_listening: "Listening", t_reading: "Reading", t_expr: "Expressions", t_usage: "Situations",
+    t_process: "Procedures", t_figures: "Numbers & figures", t_concept: "Key concepts", t_general: "General",
+    comment_good: "Great job!", comment_weak: "Review this area",
+  },
 };

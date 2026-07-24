@@ -809,4 +809,12 @@ export const zh = {
     resultSaved: "结果已保存并发送给雇主。",
     watchVideo: "▶ 观看培训视频", kindKorean: "韩语", kindJob: "岗位",
   },
+  report: {
+    title: "测评结果报告", korean: "🇰🇷 韩语测评", job: "💼 岗位测评",
+    byType: "分类详情", strengths: "优势", weaknesses: "需加强", avg: "课程平均", mine: "我的分数",
+    noData: "暂无测评数据。", date: "应试日期",
+    t_listening: "听力", t_reading: "阅读", t_expr: "表达理解", t_usage: "情景应对",
+    t_process: "流程理解", t_figures: "数字准确性", t_concept: "核心概念", t_general: "基础题",
+    comment_good: "做得很好！", comment_weak: "请复习此部分",
+  },
 };

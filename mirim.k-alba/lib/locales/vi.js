@@ -812,4 +812,12 @@ export const vi = {
     resultSaved: "Kết quả đã lưu và gửi cho chủ cửa hàng.",
     watchVideo: "▶ Xem video đào tạo", kindKorean: "Tiếng Hàn", kindJob: "Công việc",
   },
+  report: {
+    title: "Báo cáo kết quả", korean: "🇰🇷 Tiếng Hàn", job: "💼 Kiến thức công việc",
+    byType: "Chi tiết theo loại", strengths: "Điểm mạnh", weaknesses: "Cần cải thiện", avg: "Trung bình khóa", mine: "Điểm của tôi",
+    noData: "Chưa có dữ liệu.", date: "Ngày làm bài",
+    t_listening: "Nghe", t_reading: "Đọc", t_expr: "Hiểu cách diễn đạt", t_usage: "Xử lý tình huống",
+    t_process: "Quy trình", t_figures: "Số liệu", t_concept: "Khái niệm chính", t_general: "Cơ bản",
+    comment_good: "Làm tốt lắm!", comment_weak: "Hãy ôn lại phần này",
+  },
 };
