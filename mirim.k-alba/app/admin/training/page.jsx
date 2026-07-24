@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { T } from "@/lib/theme";
 import { Panel } from "../_ui";
 import { QUESTION_BANKS } from "@/lib/trainingTemplates";
+import { parseSubtitleText } from "@/lib/srt";
 
 /**
  * /admin/training — 본사(브랜드) 공통 교육 관리
@@ -19,6 +20,10 @@ const EMPTY = {
 };
 
 const LANG_LABEL = { en: "영어", vi: "베트남어", "zh-CN": "중국어", ja: "일본어" };
+// 번역/자막 업로드 대상 언어 (K-ALBA locale 코드)
+const UPLOAD_LANGS = [
+  ["en", "영어"], ["vi", "베트남어"], ["zh", "중국어"], ["ja", "일본어"], ["uz", "우즈베크어"], ["mn", "몽골어"],
+];
 
 export default function AdminTrainingPage() {
   const [loading, setLoading] = useState(true);
@@ -43,7 +48,7 @@ export default function AdminTrainingPage() {
     try {
       const body = {
         ...editing,
-        sections: editing.sections.filter((s) => s.title.trim() || s.body.trim() || s.video_url.trim()),
+        sections: editing.sections.filter((s) => s.title.trim() || s.body.trim() || s.video_url.trim() || Object.keys(s.i18n || {}).length),
         questions: editing.questions.filter((q) => q.q.trim() && q.choices.filter((c) => c.trim()).length >= 2)
           .map((q) => ({ ...q, q: q.q.trim(), choices: q.choices.map((c) => c.trim()).filter(Boolean) })),
       };
@@ -120,6 +125,44 @@ export default function AdminTrainingPage() {
             </div>
             <input value={s.video_url} onChange={(e) => setSec(i, "video_url", e.target.value)} style={inp({ width: "100%", marginTop: 8 })} placeholder="교육 영상 URL (유튜브 — 선택)" />
             <textarea value={s.body} onChange={(e) => setSec(i, "body", e.target.value)} rows={4} style={inp({ width: "100%", marginTop: 8, resize: "vertical", lineHeight: 1.6 })} placeholder="매뉴얼 본문" />
+
+            {/* 언어별 번역/자막 업로드 (SRT·VTT·TXT) */}
+            <div style={{ marginTop: 10, background: "#F8F5FF", borderRadius: 8, padding: "9px 11px" }}>
+              <div style={{ fontSize: 11.5, fontWeight: 800, color: "#7C3AED", marginBottom: 6 }}>
+                🌐 번역·자막 파일 (SRT/VTT/TXT) — 언어 선택 후 업로드하면 해당 언어 학습자에게 번역본으로 표시됩니다
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+                {UPLOAD_LANGS.map(([code, label]) => {
+                  const has = !!(s.i18n && s.i18n[code]);
+                  return (
+                    <label key={code} style={{
+                      display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 999,
+                      fontSize: 11.5, fontWeight: 700, cursor: "pointer",
+                      border: `1px solid ${has ? "#7C3AED" : T.border}`,
+                      background: has ? "#EFE7FD" : T.paper, color: has ? "#7C3AED" : T.ink3,
+                    }}>
+                      {has ? "✓ " : "⬆ "}{label}
+                      <input type="file" accept=".srt,.vtt,.txt" style={{ display: "none" }} onChange={async (e) => {
+                        const f = e.target.files?.[0];
+                        e.target.value = "";
+                        if (!f) return;
+                        const text = parseSubtitleText(await f.text(), f.name);
+                        if (!text) { alert("파일에서 텍스트를 찾지 못했습니다."); return; }
+                        setSec(i, "i18n", { ...(s.i18n || {}), [code]: text });
+                      }} />
+                      {has && (
+                        <span onClick={(ev) => {
+                          ev.preventDefault();
+                          const next = { ...(s.i18n || {}) };
+                          delete next[code];
+                          setSec(i, "i18n", next);
+                        }} style={{ marginLeft: 2, fontWeight: 800 }}>✕</span>
+                      )}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         ))}
 
@@ -166,7 +209,6 @@ export default function AdminTrainingPage() {
       <p style={{ fontSize: 13, color: T.ink3, margin: "0 0 16px", lineHeight: 1.7 }}>
         브랜드명이 상호에 포함된 <b>모든 가맹점</b>과 그 지원자·알바생에게 동일한 교육이 노출됩니다.
         각 점주는 자기 매장 지원자·알바생의 응시 결과만 볼 수 있습니다.
-        {!papago && <span style={{ color: "#B3261E", fontWeight: 700 }}> · ⚠️ 파파고 API 키 미설정 — 번역 생성 불가</span>}
       </p>
 
       <Panel>
@@ -187,14 +229,16 @@ export default function AdminTrainingPage() {
                     {" · "}응시 {c.result_count}명
                     {c.avg && c.avg.jobT > 0 && <> · 평균 직무 {Math.round((c.avg.job / c.avg.jobT) * 100)}%</>}
                     {c.avg && c.avg.koT > 0 && <> · 평균 한국어 {Math.round((c.avg.ko / c.avg.koT) * 100)}%</>}
-                    {" · 번역: "}
-                    {c.translated_langs.length ? c.translated_langs.map((l) => LANG_LABEL[l] || l).join("·") : "없음"}
+                    {" · 번역(자막): "}
+                    {(() => {
+                      const langs = new Set();
+                      for (const s of c.sections || []) for (const k of Object.keys(s.i18n || {})) langs.add(k);
+                      const arr = [...langs];
+                      return arr.length ? arr.map((l) => (UPLOAD_LANGS.find(([k]) => k === l)?.[1] || l)).join("·") : "없음";
+                    })()}
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  <button onClick={() => handleTranslate(c.id)} disabled={translating === c.id} style={pill}>
-                    {translating === c.id ? "⏳ 번역 중…" : "🌐 전 언어 번역 생성"}
-                  </button>
                   <button onClick={() => setEditing(JSON.parse(JSON.stringify(c)))} style={pill}>✏️ 수정·문항 확인</button>
                   <button onClick={() => handleDelete(c.id)} style={{ ...pill, color: "#B3261E" }}>삭제</button>
                 </div>

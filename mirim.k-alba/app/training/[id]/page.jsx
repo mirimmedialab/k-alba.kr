@@ -61,6 +61,23 @@ export default function TrainingCoursePage() {
   const handleTranslate = async () => {
     if (showTrans) { setShowTrans(false); return; }
     if (trans) { setShowTrans(true); return; }
+
+    // 1순위: 본사/사장님이 업로드한 번역·자막 파일 (sections[].i18n)
+    const secs = course.sections || [];
+    const hasManual = secs.some((s) => s.i18n && (s.i18n[locale] || s.i18n.en));
+    if (hasManual) {
+      setTrans({
+        sections: secs.map((s) => ({
+          ...s,
+          body: (s.i18n && (s.i18n[locale] || s.i18n.en)) || s.body,
+        })),
+        questions: course.questions || [], // 문항은 원문 유지 (자막 번역 범위 밖)
+      });
+      setShowTrans(true);
+      return;
+    }
+
+    // 2순위: 자동 번역 API (설정된 경우)
     if (translating) return;
     setTranslating(true);
     try {
