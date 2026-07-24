@@ -930,6 +930,7 @@ export const en = {
     watchVideo: "▶ Watch training video", kindKorean: "Korean", kindJob: "Job",
   },
   report: {
+    wrong: "Review incorrect answers", myAnswer: "My answer", correct: "Correct", trend: "Progress", attempt: "Attempt {n}", rank: "Top {n}% of takers",
     title: "Assessment Report", korean: "🇰🇷 Korean", job: "💼 Job Knowledge",
     byType: "Breakdown by type", strengths: "Strengths", weaknesses: "Needs improvement", avg: "Course average", mine: "My score",
     noData: "No assessment data.", date: "Taken on",

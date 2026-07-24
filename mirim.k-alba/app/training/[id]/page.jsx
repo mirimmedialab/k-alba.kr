@@ -156,6 +156,10 @@ export default function TrainingCoursePage() {
         korean_score: koreanScore, korean_total: koreanTotal,
         answers: qs.map((_, i) => (answers[i] === undefined ? null : answers[i])),
         completed_at: new Date().toISOString(),
+        // 재응시 시 이전 회차를 이력으로 보존 (성장 추이)
+        attempts: prev
+          ? [...(prev.attempts || []), { job_score: prev.job_score, job_total: prev.job_total, korean_score: prev.korean_score, korean_total: prev.korean_total, completed_at: prev.completed_at }].slice(-10)
+          : [],
       };
       const { error } = await supabase.from("training_results").upsert(row, { onConflict: "course_id,worker_id" });
       if (error) throw error;

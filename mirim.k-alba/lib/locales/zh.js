@@ -810,6 +810,7 @@ export const zh = {
     watchVideo: "▶ 观看培训视频", kindKorean: "韩语", kindJob: "岗位",
   },
   report: {
+    wrong: "查看错题", myAnswer: "我的答案", correct: "正确答案", trend: "成长趋势", attempt: "第{n}次", rank: "位于前{n}%",
     title: "测评结果报告", korean: "🇰🇷 韩语测评", job: "💼 岗位测评",
     byType: "分类详情", strengths: "优势", weaknesses: "需加强", avg: "课程平均", mine: "我的分数",
     noData: "暂无测评数据。", date: "应试日期",

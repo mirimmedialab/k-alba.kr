@@ -99,6 +99,7 @@ export default function TrainingResultsPage() {
           result={reportFor}
           workerName={reportFor.worker?.name}
           courseAvg={{ koreanPct: avg("korean_score", "korean_total"), jobPct: avg("job_score", "job_total") }}
+          jobPctList={rows.filter((x) => x.job_total > 0).map((x) => Math.round((x.job_score / x.job_total) * 100))}
           onClose={() => setReportFor(null)}
         />
       )}

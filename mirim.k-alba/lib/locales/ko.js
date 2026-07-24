@@ -935,6 +935,7 @@ export const ko = {
     watchVideo: "▶ 교육 영상 보기", kindKorean: "한국어", kindJob: "직무",
   },
   report: {
+    wrong: "오답 확인", myAnswer: "내 답", correct: "정답", trend: "성장 추이", attempt: "{n}차", rank: "응시자 중 상위 {n}%",
     title: "평가 결과 보고서", korean: "🇰🇷 한국어 평가", job: "💼 직무 평가",
     byType: "유형별 상세", strengths: "강점", weaknesses: "보완 필요", avg: "과정 평균", mine: "내 점수",
     noData: "응시 데이터가 없습니다.", date: "응시일",

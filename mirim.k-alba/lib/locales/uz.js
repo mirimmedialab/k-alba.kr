@@ -813,6 +813,7 @@ export const uz = {
     watchVideo: "▶ O'quv videosini ko'rish", kindKorean: "Koreys tili", kindJob: "Kasb",
   },
   report: {
+    wrong: "Xatolarni ko'rish", myAnswer: "Mening javobim", correct: "To'g'ri javob", trend: "O'sish", attempt: "{n}-urinish", rank: "Eng yaxshi {n}% ichida",
     title: "Baholash hisoboti", korean: "🇰🇷 Koreys tili", job: "💼 Kasbiy bilim",
     byType: "Turlar bo'yicha", strengths: "Kuchli tomonlar", weaknesses: "Yaxshilash kerak", avg: "Kurs o'rtachasi", mine: "Mening ballim",
     noData: "Ma'lumot yo'q.", date: "Topshirilgan sana",

@@ -813,6 +813,7 @@ export const vi = {
     watchVideo: "▶ Xem video đào tạo", kindKorean: "Tiếng Hàn", kindJob: "Công việc",
   },
   report: {
+    wrong: "Xem câu sai", myAnswer: "Câu trả lời của tôi", correct: "Đáp án đúng", trend: "Tiến bộ", attempt: "Lần {n}", rank: "Top {n}% người làm bài",
     title: "Báo cáo kết quả", korean: "🇰🇷 Tiếng Hàn", job: "💼 Kiến thức công việc",
     byType: "Chi tiết theo loại", strengths: "Điểm mạnh", weaknesses: "Cần cải thiện", avg: "Trung bình khóa", mine: "Điểm của tôi",
     noData: "Chưa có dữ liệu.", date: "Ngày làm bài",
