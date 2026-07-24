@@ -816,10 +816,43 @@ export default function ContractDetailPage() {
     return { isStudent, sf, missingWorker, missingEmployer, workerProfile: wp };
   };
 
-  const startConfAsk = (queue) => {
-    setConfAsk({ queue, idx: 0, data: {} });
-    addBot(`🎓 ${contract.worker_name}님은 외국인 유학생이라\n'시간제취업 확인서'도 자동으로 만들어 드려요!\n\n확인서 작성에 필요한 정보를 몇 가지 여쭤볼게요.`);
-    setTimeout(() => addBot(CONF_PROMPTS[queue[0]]), 1800);
+  // 확인서 항목의 현재 값 (수정 모드 안내용)
+  const confCurrentValue = (key) => {
+    const { sf, workerProfile: wp } = getStudentInfo(contract);
+    switch (key) {
+      case "alien_reg_no": return sf.alien_reg_no || wp.alien_reg_number || "";
+      case "university": return sf.university || wp.organization || "";
+      case "department": return sf.department || wp.department || "";
+      case "semester": return sf.semester || wp.semester || "";
+      case "industry": return sf.industry || contract?.job_type || contract?.job?.job_type || "";
+      default: return "";
+    }
+  };
+
+  const confPrompt = (key, isEdit) => {
+    if (!isEdit) return CONF_PROMPTS[key];
+    const cur = confCurrentValue(key);
+    return `${CONF_PROMPTS[key]}\n\n현재 입력값: ${cur || "(없음)"}\n바꾸지 않으려면 '유지'라고 입력하세요.`;
+  };
+
+  const startConfAsk = (queue, { isEdit = false } = {}) => {
+    setConfAsk({ queue, idx: 0, data: {}, isEdit });
+    if (isEdit) {
+      addBot("✏️ 시간제취업 확인서 정보를 수정할게요.\n항목을 하나씩 보여드릴 테니, 새 값을 입력하거나\n바꾸지 않을 항목은 '유지'라고 입력해 주세요.");
+    } else {
+      addBot(`🎓 ${contract.worker_name}님은 외국인 유학생이라\n'시간제취업 확인서'도 자동으로 만들어 드려요!\n\n확인서 작성에 필요한 정보를 몇 가지 여쭤볼게요.`);
+    }
+    setTimeout(() => addBot(confPrompt(queue[0], isEdit)), 1800);
+  };
+
+  // 체결 후에도 확인서 부속 정보(student_form)는 수정 가능 — 서명된 계약 조건과 무관
+  const startConfEdit = () => {
+    if (confAsk) return;
+    const queue = isWorker
+      ? ["alien_reg_no", "university", "department", "semester"]
+      : ["industry"];
+    addUser("✏️ 확인서 정보를 수정할게요");
+    startConfAsk(queue, { isEdit: true });
   };
 
   const submitConfInput = async () => {
@@ -828,8 +861,9 @@ export default function ContractDetailPage() {
     setChatInput("");
     addUser(v);
     const key = confAsk.queue[confAsk.idx];
-    // 외국인등록번호는 형식·생년월일·체크섬 검증 후 통과해야 다음 단계로
-    if (key === "alien_reg_no") {
+    const keepAsIs = confAsk.isEdit && /^(유지|그대로|keep|skip)$/i.test(v);
+    if (!keepAsIs && key === "alien_reg_no") {
+      // 외국인등록번호는 형식·생년월일·체크섬 검증 후 통과해야 다음 단계로
       v = formatArn(v);
       const chk = validateAlienRegNo(v);
       if (!chk.valid) {
@@ -837,12 +871,17 @@ export default function ContractDetailPage() {
         return;
       }
     }
-    const data = { ...confAsk.data, [key]: v };
+    const data = keepAsIs ? { ...confAsk.data } : { ...confAsk.data, [key]: v };
     if (confAsk.idx + 1 < confAsk.queue.length) {
       setConfAsk({ ...confAsk, idx: confAsk.idx + 1, data });
-      addBot(CONF_PROMPTS[confAsk.queue[confAsk.idx + 1]]);
+      addBot(confPrompt(confAsk.queue[confAsk.idx + 1], confAsk.isEdit));
     } else {
+      const wasEdit = confAsk.isEdit;
       setConfAsk(null);
+      if (wasEdit && Object.keys(data).length === 0) {
+        addBot("변경된 항목이 없어요. 기존 정보가 그대로 유지됩니다.");
+        return;
+      }
       const merged = { ...(contract.student_form || {}), ...data };
       const { error } = await updateContract(contract.id, { student_form: merged });
       if (error) {
@@ -851,6 +890,9 @@ export default function ContractDetailPage() {
       }
       const fresh = await getContract(contract.id);
       if (fresh) setContract(normalizeContract(fresh));
+      if (wasEdit) {
+        addBot("✅ 확인서 정보가 수정되었습니다!\n아래 버튼으로 시간제취업 확인서를\n다시 다운로드해 주세요.");
+      }
     }
   };
 
@@ -1514,6 +1556,14 @@ export default function ContractDetailPage() {
                       </p>
                     )}
                   </>
+                )}
+                {studentInfo.isStudent && confReady && !confAsk && (
+                  <button onClick={startConfEdit} style={{
+                    marginTop: 8, background: "none", border: "none", color: T.ink3,
+                    fontSize: 11, cursor: "pointer", textDecoration: "underline", fontFamily: "inherit",
+                  }}>
+                    ✏️ 확인서 정보가 잘못됐나요? 수정하기
+                  </button>
                 )}
                 {studentInfo.isStudent && !confReady && (
                   <p style={{ fontSize: 10.5, color: T.ink3, marginTop: 8 }}>
