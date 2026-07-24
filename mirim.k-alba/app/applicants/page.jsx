@@ -49,6 +49,9 @@ function ApplicantsContent() {
   const [chatOpen, setChatOpen] = useState(false);
   const [resumeFor, setResumeFor] = useState(null); // 이력서 모달 대상 지원자
   const [trainMap, setTrainMap] = useState({}); // worker_id → {job, jobT, ko, koT} 교육 점수 합계
+  const [myCourses, setMyCourses] = useState([]); // 사전평가에 쓸 수 있는 과정 (본인 + 본사)
+  const [reqMap, setReqMap] = useState({});       // applicant_id → [course_id] 요청 이력
+  const [assessFor, setAssessFor] = useState(null); // 사전평가 요청 대상 지원자
   const [chatMode, setChatMode] = useState(null);
   const [activeApplicant, setActiveApplicant] = useState(null);
   const isDesktop = useIsDesktop();
@@ -65,7 +68,15 @@ function ApplicantsContent() {
           setApplicants(data);
           // 내 교육 과정 응시 점수 (RLS: 과정 소유자만 결과 조회 가능)
           try {
-            const { data: myCourses } = await supabase.from("training_courses").select("id").eq("owner_id", u.id);
+            const { data: own } = await supabase.from("training_courses").select("id, title, brand_name, questions").eq("owner_id", u.id).eq("is_active", true);
+            const { data: brand } = await supabase.from("training_courses").select("id, title, brand_name, questions").not("brand_name", "is", null).eq("is_active", true);
+            const all = [...(own || []), ...(brand || []).filter((b) => !(own || []).some((o) => o.id === b.id))];
+            setMyCourses(all);
+            const { data: reqs } = await supabase.from("assessment_requests").select("course_id, applicant_id").eq("employer_id", u.id);
+            const rm = {};
+            for (const r of reqs || []) (rm[r.applicant_id] = rm[r.applicant_id] || []).push(r.course_id);
+            setReqMap(rm);
+            const myCourses = all;
             const ids = (myCourses || []).map((c) => c.id);
             if (ids.length) {
               const { data: rs } = await supabase
@@ -87,6 +98,24 @@ function ApplicantsContent() {
       setLoading(false);
     });
   }, [jobId, router]);
+
+  const handleAssessRequest = async (applicant, course) => {
+    try {
+      const { error } = await supabase.from("assessment_requests").insert({
+        course_id: course.id, employer_id: (await getCurrentUser()).id, applicant_id: applicant.id,
+      });
+      if (error) {
+        if (String(error.message).includes("duplicate")) alert("이미 이 지원자에게 요청한 평가입니다.");
+        else alert("요청 실패: " + error.message);
+        return;
+      }
+      setReqMap((m) => ({ ...m, [applicant.id]: [...(m[applicant.id] || []), course.id] }));
+      setAssessFor(null);
+      alert(`${applicant.name}님에게 '${course.title}' 사전평가를 요청했습니다. 알림이 전송되었어요.`);
+    } catch (e) {
+      alert(e.message);
+    }
+  };
 
   const acceptSteps = activeApplicant ? [
     { type: "bot", text: t("applicants.acc1", { name: activeApplicant.applicant.name }) },
@@ -381,10 +410,20 @@ function ApplicantsContent() {
               </div>
 
               {/* 액션 버튼 — Step 3-A Button (사장님 페이지 = primaryDark) */}
-              <div style={{ marginLeft: 40, marginBottom: a.status === "pending" ? 8 : 0 }}>
+              <div style={{ marginLeft: 40, marginBottom: a.status === "pending" ? 8 : 0, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
                 <Button variant="secondary" size="sm" onClick={() => setResumeFor(a)}>
                   📄 {t("resume.view")}
                 </Button>
+                {myCourses.length > 0 && (
+                  <Button variant="secondary" size="sm" onClick={() => setAssessFor(a)}>
+                    📝 사전평가 요청
+                  </Button>
+                )}
+                {(reqMap[a.applicant.id] || []).length > 0 && !trainMap[a.applicant.id] && (
+                  <span style={{ fontSize: 11, fontWeight: 800, color: "#8C6D1F", background: "#FBF3D9", borderRadius: 999, padding: "3px 9px" }}>
+                    ⏳ 사전평가 응시 대기
+                  </span>
+                )}
               </div>
               {a.status === "pending" && (
                 <div style={{ display: "flex", gap: 6, marginLeft: 40, flexWrap: "wrap" }}>
@@ -408,6 +447,35 @@ function ApplicantsContent() {
           ))
         )}
       </div>
+
+      {/* 사전평가 과정 선택 모달 */}
+      {assessFor && (
+        <div onClick={() => setAssessFor(null)} style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, maxWidth: 460, width: "100%", maxHeight: "80vh", overflow: "auto", padding: 20 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: T.ink, marginBottom: 4 }}>📝 {assessFor.applicant?.name}님에게 사전평가 요청</div>
+            <div style={{ fontSize: 12, color: T.ink3, marginBottom: 12 }}>면접 전에 직무·한국어 수준을 확인할 평가를 선택하세요. 지원자에게 알림이 전송됩니다.</div>
+            {myCourses.map((c) => {
+              const already = (reqMap[assessFor.applicant?.id] || []).includes(c.id);
+              const nKo = (c.questions || []).filter((q) => q.kind === "korean").length;
+              const nJob = (c.questions || []).length - nKo;
+              return (
+                <button key={c.id} disabled={already} onClick={() => handleAssessRequest(assessFor.applicant, c)} style={{
+                  display: "block", width: "100%", textAlign: "left", padding: "12px 14px", marginBottom: 8,
+                  borderRadius: 10, border: `1px solid ${T.border}`, background: already ? "#F5F5F5" : "#FAFBFF",
+                  cursor: already ? "default" : "pointer", fontFamily: "inherit", opacity: already ? 0.6 : 1,
+                }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 800, color: T.ink }}>
+                    {c.brand_name && <span style={{ fontSize: 10, fontWeight: 800, color: "#7C3AED", background: "#EFE7FD", borderRadius: 999, padding: "2px 7px", marginRight: 6 }}>{c.brand_name} 본사</span>}
+                    {c.title} {already && "· ✓ 요청됨"}
+                  </div>
+                  <div style={{ fontSize: 11.5, color: T.ink3, marginTop: 3 }}>직무 {nJob}문항 · 한국어 {nKo}문항</div>
+                </button>
+              );
+            })}
+            <button onClick={() => setAssessFor(null)} style={{ width: "100%", padding: "10px 0", borderRadius: 8, border: `1px solid ${T.border}`, background: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", color: T.ink2 }}>닫기</button>
+          </div>
+        </div>
+      )}
 
       {/* 지원자 이력서 모달 */}
       {resumeFor && (

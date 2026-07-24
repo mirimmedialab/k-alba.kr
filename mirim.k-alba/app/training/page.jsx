@@ -19,6 +19,7 @@ export default function TrainingListPage() {
   const [loading, setLoading] = useState(true);
   const [courses, setCourses] = useState([]);
   const [results, setResults] = useState({}); // course_id → result
+  const [requested, setRequested] = useState(new Set()); // 사전평가 요청받은 course_id
 
   useEffect(() => {
     (async () => {
@@ -36,6 +37,8 @@ export default function TrainingListPage() {
       const map = {};
       for (const r of rs || []) map[r.course_id] = r;
       setResults(map);
+      const { data: reqs } = await supabase.from("assessment_requests").select("course_id").eq("applicant_id", u.id);
+      setRequested(new Set((reqs || []).map((r) => r.course_id)));
       setLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -53,7 +56,11 @@ export default function TrainingListPage() {
           {t("training.noCourses")}
         </div>
       ) : (
-        courses.map((c) => {
+        [...courses].sort((a, b) => {
+          const ap = requested.has(a.id) && !results[a.id] ? 0 : 1;
+          const bp = requested.has(b.id) && !results[b.id] ? 0 : 1;
+          return ap - bp;
+        }).map((c) => {
           const r = results[c.id];
           const nQ = (c.questions || []).length;
           return (
@@ -62,6 +69,11 @@ export default function TrainingListPage() {
                 background: T.paper, border: `1px solid ${T.border}`, borderRadius: 12,
                 padding: "16px 18px", marginBottom: 12, cursor: "pointer",
               }}>
+                {requested.has(c.id) && !r && (
+                  <div style={{ fontSize: 12, fontWeight: 800, color: "#8C1D18", background: "#FDEDE7", borderRadius: 8, padding: "6px 10px", marginBottom: 9 }}>
+                    {t("training.requested")}
+                  </div>
+                )}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 15.5, fontWeight: 800, color: T.ink }}>

@@ -916,6 +916,7 @@ export const en = {
     employerView: "Employers of jobs you apply to can view this resume.",
   },
   training: {
+    requested: "📩 Assessment requested — please complete before your interview!",
     listen: "🔊 Play audio", listenHint: "Tap to hear the Korean audio, then answer (replay allowed)",
     translate: "View translation", showOriginal: "View original", translating: "Translating...", translateUnavailable: "Translation is not available yet. Please study in the original language.",
     title: "Onboarding Training", subtitle: "Complete training and quizzes from your (future) workplace",
