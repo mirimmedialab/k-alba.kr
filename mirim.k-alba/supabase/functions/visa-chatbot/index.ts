@@ -67,8 +67,8 @@ const DOC_UI: Record<Lang, { title: string; arc: string; permit: string; bank: s
 
 const EXTRA_DOCS: Record<string, Record<Lang, string>> = {
   restaurant: {
-    ko: "보건증(건강진단결과서) — 보건소 발급, 식품 취급 필수",
-    en: "Health certificate (bogeonjeung) — issued at a public health center, required for food handling",
+    ko: "건강진단결과서(구 보건증) — 보건소 발급, 식품 취급 필수",
+    en: "Health certificate 'Geongang-jindan-gyeolgwaseo' (formerly bogeonjeung) — issued at a public health center, required for food handling",
     vi: "Giấy khám sức khỏe (bogeonjeung) — cấp tại trung tâm y tế công, bắt buộc khi tiếp xúc thực phẩm",
     zh: "健康证（보건증）— 保健所办理，接触食品必备",
     ja: "保健証（健康診断結果書）— 保健所で発給、食品取扱いに必須",
@@ -76,7 +76,7 @@ const EXTRA_DOCS: Record<string, Record<Lang, string>> = {
     mn: "Эрүүл мэндийн үнэмлэх (богонжын) — эрүүл мэндийн төвөөс, хоол хүнстэй ажиллахад заавал",
   },
   convenience: {
-    ko: "보건증(건강진단결과서) — 조리식품 취급 시 필요 (보건소 발급)",
+    ko: "건강진단결과서(구 보건증) — 조리식품 취급 시 필요 (보건소 발급)",
     en: "Health certificate (bogeonjeung) — needed if handling prepared food (public health center)",
     vi: "Giấy khám sức khỏe (bogeonjeung) — cần nếu bán đồ ăn chế biến (trung tâm y tế công)",
     zh: "健康证（보건증）— 经营即食食品时需要（保健所办理）",
@@ -103,6 +103,23 @@ const EXTRA_DOCS: Record<string, Record<Lang, string>> = {
     mn: "Мотоциклийн үнэмлэх + хүргэлтийн даатгал (мотоциклоор бол)",
   },
 };
+
+// 건강진단결과서(구 보건증) 발급 절차 상세 안내 (2026-07 보건소 기준 확인)
+const HEALTH_GUIDE: Record<Lang, string> = {
+  ko: "📋 건강진단결과서(구 보건증) 발급 안내\n\n식당·카페·편의점 등 식품을 다루는 알바는 근무 시작 전에 꼭 필요해요.\n\n1️⃣ 준비물: 외국인등록증 (⚠️ 여권은 안 돼요!) + 수수료 3,000원\n2️⃣ 방문: 가까운 보건소 (병원도 가능하지만 1~3만원으로 비쌈)\n3️⃣ 검사: 폐결핵(흉부X선)·장티푸스·파라티푸스 — 15~20분이면 끝\n4️⃣ 수령: 약 5일 후(주말 제외) 보건소 방문 또는 e보건소(e-health.go.kr) 온라인 발급\n\n⏰ 유효기간: 1년 — 만료 전 재검사 (재발급 300원, 인터넷 무료)\n💡 사장님께 제출할 사본도 준비하세요!",
+  en: "📋 Health certificate (formerly 'bogeonjeung') — how to get it\n\nRequired BEFORE starting any job handling food (restaurant, cafe, convenience store).\n\n1️⃣ Bring: Alien Registration Card (⚠️ passport NOT accepted!) + 3,000 KRW fee\n2️⃣ Visit: a nearby public health center 'bogeonso' (hospitals work too but cost 10,000-30,000 KRW)\n3️⃣ Tests: chest X-ray (TB), typhoid, paratyphoid — takes 15-20 min\n4️⃣ Pick up: ~5 business days later at the center, or online at e-health.go.kr\n\n⏰ Valid for 1 year — retest before it expires (reissue 300 KRW, free online)\n💡 Prepare a copy for your employer!",
+  vi: "📋 Hướng dẫn làm Giấy khám sức khỏe (bogeonjeung)\n\nBắt buộc TRƯỚC khi bắt đầu làm việc liên quan thực phẩm (nhà hàng, cafe, cửa hàng tiện lợi).\n\n1️⃣ Mang theo: Thẻ đăng ký người nước ngoài (⚠️ hộ chiếu KHÔNG được!) + phí 3.000 KRW\n2️⃣ Đến: trung tâm y tế công 'bogeonso' gần nhất (bệnh viện cũng được nhưng 10.000-30.000 KRW)\n3️⃣ Khám: X-quang phổi (lao), thương hàn, phó thương hàn — chỉ 15-20 phút\n4️⃣ Nhận: sau ~5 ngày làm việc tại trung tâm, hoặc online tại e-health.go.kr\n\n⏰ Hiệu lực: 1 năm — khám lại trước khi hết hạn (cấp lại 300 KRW, online miễn phí)\n💡 Chuẩn bị bản sao nộp cho chủ quán!",
+  zh: "📋 健康证（건강진단결과서·原보건증）办理指南\n\n在餐厅、咖啡店、便利店等接触食品的工作开始前必须办理。\n\n1️⃣ 准备：外国人登录证（⚠️ 护照不可以！）+ 手续费3,000韩元\n2️⃣ 前往：附近保健所（医院也可以但要1~3万韩元）\n3️⃣ 检查：肺结核(胸部X光)、伤寒、副伤寒 — 只需15~20分钟\n4️⃣ 领取：约5个工作日后到保健所领取，或在e-health.go.kr在线打印\n\n⏰ 有效期：1年 — 到期前需重新检查（补发300韩元，网上免费）\n💡 记得准备一份复印件交给老板！",
+  ja: "📋 健康診断結果書（旧 保健証）の取得方法\n\n飲食店・カフェ・コンビニなど食品を扱うバイトは勤務開始前に必須です。\n\n1️⃣ 持ち物：外国人登録証（⚠️ パスポートは不可！）＋手数料3,000ウォン\n2️⃣ 訪問：最寄りの保健所（病院でも可能ですが1~3万ウォン）\n3️⃣ 検査：肺結核(胸部X線)・腸チフス・パラチフス — 15~20分で終了\n4️⃣ 受取：約5営業日後に保健所で受取、またはe-health.go.krでオンライン発給\n\n⏰ 有効期間：1年 — 期限前に再検査（再発給300ウォン、ネットは無料）\n💡 店長に提出するコピーも準備しましょう！",
+  uz: "📋 Sog'liq guvohnomasi (bogeonjeung) olish tartibi\n\nOziq-ovqat bilan ishlaydigan joyda (restoran, kafe, do'kon) ishlashdan OLDIN majburiy.\n\n1️⃣ Olib boring: Chet ellik ro'yxatga olish kartasi (⚠️ pasport bo'lmaydi!) + 3,000 von to'lov\n2️⃣ Boring: yaqin sog'liqni saqlash markazi 'bogeonso'ga (kasalxonada 10-30 ming von)\n3️⃣ Tekshiruv: o'pka rentgeni (sil), qorin tifi, paratif — 15-20 daqiqa\n4️⃣ Olish: ~5 ish kunidan keyin markazdan yoki e-health.go.kr saytidan\n\n⏰ Muddati: 1 yil — tugashidan oldin qayta tekshiruv (qayta olish 300 von, internetda bepul)\n💡 Ish beruvchiga nusxa tayyorlang!",
+  mn: "📋 Эрүүл мэндийн үнэмлэх (богонжын) авах заавар\n\nХоол хүнстэй ажиллах газарт (ресторан, кафе, дэлгүүр) ажиллахаас ӨМНӨ заавал хэрэгтэй.\n\n1️⃣ Авч очих: Гадаад иргэний бүртгэлийн үнэмлэх (⚠️ паспорт болохгүй!) + 3,000 воны хураамж\n2️⃣ Очих газар: ойрын эрүүл мэндийн төв 'богонсо' (эмнэлэгт 1-3 түмэн вон)\n3️⃣ Шинжилгээ: уушгины рентген (сүрьеэ), балнад, паратиф — 15-20 минут\n4️⃣ Авах: ~5 ажлын өдрийн дараа төвөөс, эсвэл e-health.go.kr сайтаас\n\n⏰ Хүчинтэй хугацаа: 1 жил — дуусахаас өмнө дахин шинжилгээ (дахин авах 300 вон, онлайнаар үнэгүй)\n💡 Ажил олгогчид өгөх хуулбар бэлдээрэй!",
+};
+
+// '발급 방법' quick reply 라벨 (식품 업종 답변에 노출 — 클릭 시 위 가이드 응답)
+const HEALTH_QR: Record<Lang, string> = {
+  ko: "보건증 발급 방법", en: "How to get health cert", vi: "Cách làm giấy khám SK", zh: "如何办健康证", ja: "保健証の取り方", uz: "Guvohnoma olish yo'li", mn: "Үнэмлэх авах арга",
+};
+const HEALTH_KEYWORDS = /보건증|건강진단|health\s?cert|bogeonjeung|giấy khám|健康证|健康診断|保健証|guvohnoma|эрүүл мэндийн үнэмлэх/i;
 
 function docsSection(lang: Lang, visaCode: string, industryKey: string): string {
   const d = DOC_UI[lang];
@@ -208,6 +225,11 @@ Deno.serve(async (req: Request) => {
     const msg = String(message).trim();
     if (!msg || /^(안녕|하이|hello|hi|help|도움|처음|xin chào|你好|こんにち|salom|сайн)/i.test(msg)) return json(help);
 
+    // 건강진단결과서(구 보건증) 발급 절차 문의
+    if (HEALTH_KEYWORDS.test(msg)) {
+      return json({ type: "health_cert", answer: HEALTH_GUIDE[lang], quick_replies: [ui.other] });
+    }
+
     const code = extractVisaCode(msg);
     const industryKey = extractIndustry(msg);
 
@@ -239,18 +261,20 @@ Deno.serve(async (req: Request) => {
           if (itr) { indLabel = itr.industry_label; indAnswer = itr.answer; }
         }
         const docs = ir.status !== "prohibited" ? `\n\n${docsSection(lang, code, industryKey)}` : "";
+        const foodQr = docs && (industryKey === "restaurant" || industryKey === "convenience") ? [HEALTH_QR[lang]] : [];
         return json({
           type: "industry_answer", visa_code: code, visa_name: visaName, industry: industryKey, status: ir.status, status_label: sl[ir.status],
           answer: `${code} (${visaName}) × ${indLabel} · ${sl[ir.status]}\n\n${indAnswer}${docs}\n\n${ui.src}: ${ir.source_note}`,
-          quick_replies: [ui.detail, ui.other],
+          quick_replies: [...foodQr, ui.detail, ui.other],
         });
       }
       // 매트릭스 미등록 → 비자 전체 규칙 기반
       const dDocs = rule.employment_status !== "prohibited" ? `\n\n${docsSection(lang, code, industryKey)}` : "";
+      const dFoodQr = dDocs && (industryKey === "restaurant" || industryKey === "convenience") ? [HEALTH_QR[lang]] : [];
       return json({
         type: "industry_derived", visa_code: code, visa_name: visaName, industry: industryKey, status: rule.employment_status, status_label: sl[rule.employment_status],
         answer: `${code} (${visaName}) · ${sl[rule.employment_status]}\n\n${shortAnswer}${dDocs}\n\nHiKorea / ☎1345`,
-        has_detail: true, quick_replies: [ui.detail, ui.other],
+        has_detail: true, quick_replies: [...dFoodQr, ui.detail, ui.other],
       });
     }
 
