@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { T } from "@/lib/theme";
-import { getContract, updateContract, signContract, getCurrentUser, supabase } from "@/lib/supabase";
+import { getContract, updateContract, signContract, getCurrentUser, getProfile, updateProfile, supabase } from "@/lib/supabase";
 import { formatKoreanDate, MIN_WAGE } from "@/lib/contractUtils";
 import { generateContractPDF, buildContractFilename } from "@/lib/pdfGenerator";
 import { downloadStandardContractPDF } from "@/lib/contractStandardPdf";
@@ -846,8 +846,18 @@ export default function ContractDetailPage() {
     industry: "사업장의 업종을 알려주세요.\n(예: 편의점, 음식점, 카페 등)",
   };
 
+  // 🔒 본인 외국인등록번호 (profile_private) — student_form에는 저장하지 않음
+  const [myArn, setMyArn] = useState("");
+  useEffect(() => {
+    if (!user || !contract) return;
+    if (contract.worker_id !== user.id) return;
+    getProfile(user.id).then((p) => setMyArn(p?.alien_reg_number || "")).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, contract?.worker_id]);
+
   const getStudentInfo = (c) => {
-    const wp = c?.worker || {};
+    const wp0 = c?.worker || {};
+    const wp = { ...wp0, alien_reg_number: wp0.alien_reg_number || myArn };
     const visa = wp.visa || "";
     const isStudent = visa.includes("D-2") || visa.includes("D-4") || visa.includes("D2") || visa.includes("D4");
     const sf = c?.student_form || {};
@@ -926,7 +936,18 @@ export default function ContractDetailPage() {
         addBot("변경된 항목이 없어요. 기존 정보가 그대로 유지됩니다.");
         return;
       }
-      const merged = { ...(contract.student_form || {}), ...data };
+      // 🔒 외국인등록번호는 계약 JSON(양측 열람)이 아닌 본인 전용 profile_private에 저장
+      const { alien_reg_no: arnValue, ...rest } = data;
+      if (arnValue && isWorker) {
+        const { error: pErr } = await updateProfile(user.id, { alien_reg_number: arnValue });
+        if (pErr) {
+          alert("외국인등록번호 저장 중 오류가 발생했습니다: " + pErr.message);
+          return;
+        }
+        setMyArn(arnValue);
+      }
+      const merged = { ...(contract.student_form || {}), ...rest };
+      delete merged.alien_reg_no; // 과거 저장분도 제거 (마이그레이션과 동일 방향)
       const { error } = await updateContract(contract.id, { student_form: merged });
       if (error) {
         alert("정보 저장 중 오류가 발생했습니다: " + error.message);
