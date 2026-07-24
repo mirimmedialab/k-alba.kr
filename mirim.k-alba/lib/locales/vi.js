@@ -246,6 +246,7 @@ export const vi = {
     agree: "Tôi đồng ý với Điều khoản dịch vụ và Chính sách bảo mật",
     loginKakao: "Đăng nhập với KakaoTalk", loginGoogle: "Đăng nhập với Google",
     signupKakao: "Đăng ký với KakaoTalk", signupGoogle: "Đăng ký với Google",
+    loginApple: "Đăng nhập bằng Apple", signupApple: "Đăng ký bằng Apple",
     orEmail: "hoặc với email", signupBtn: "Đăng ký bằng Email",
     signingUp: "Đang đăng ký...", loggingIn: "Đang đăng nhập...", loginBtn: "Đăng nhập",
     noAccount: "Chưa có tài khoản?", hasAccount: "Đã có tài khoản?",

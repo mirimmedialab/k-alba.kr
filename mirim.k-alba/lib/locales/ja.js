@@ -246,6 +246,7 @@ export const ja = {
     agree: "利用規約とプライバシーポリシーに同意します",
     loginKakao: "KakaoTalkでログイン", loginGoogle: "Googleでログイン",
     signupKakao: "KakaoTalkで登録", signupGoogle: "Googleで登録",
+    loginApple: "Appleでサインイン", signupApple: "Appleで登録",
     orEmail: "またはメールで", signupBtn: "メールで登録",
     signingUp: "登録中...", loggingIn: "ログイン中...", loginBtn: "ログイン",
     noAccount: "アカウントがありませんか?", hasAccount: "既にアカウントがありますか?",

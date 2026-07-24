@@ -246,6 +246,7 @@ export const mn = {
     agree: "Үйлчилгээний нөхцөл болон Нууцлалын бодлогыг зөвшөөрч байна",
     loginKakao: "KakaoTalk-аар нэвтрэх", loginGoogle: "Google-ээр нэвтрэх",
     signupKakao: "KakaoTalk-аар бүртгүүлэх", signupGoogle: "Google-ээр бүртгүүлэх",
+    loginApple: "Apple-ээр нэвтрэх", signupApple: "Apple-ээр бүртгүүлэх",
     orEmail: "эсвэл и-мэйлээр", signupBtn: "И-мэйлээр бүртгүүлэх",
     signingUp: "Бүртгүүлж байна...", loggingIn: "Нэвтэрч байна...", loginBtn: "Нэвтрэх",
     noAccount: "Данс байхгүй юу?", hasAccount: "Аль хэдийн данс байна уу?",

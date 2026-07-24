@@ -275,6 +275,8 @@ export const ko = {
     loginGoogle: "Google로 로그인",
     signupKakao: "카카오톡으로 가입",
     signupGoogle: "Google로 가입",
+    loginApple: "Apple로 로그인",
+    signupApple: "Apple로 가입",
     orEmail: "또는 이메일로",
     signupBtn: "이메일로 가입하기",
     signingUp: "가입 중...",

@@ -1,0 +1,55 @@
+{
+	"appId": "kr.co.mirimmedialab.kalba",
+	"appName": "K-ALBA",
+	"webDir": "public",
+	"server": {
+		"url": "https://www.k-alba.kr",
+		"cleartext": false,
+		"androidScheme": "https",
+		"allowNavigation": [
+			"k-alba.kr",
+			"*.k-alba.kr",
+			"*.supabase.co",
+			"dapi.kakao.com",
+			"apis-navi.kakaomobility.com",
+			"apis.openapi.sk.com"
+		]
+	},
+	"plugins": {
+		"Geolocation": {
+			"permissions": [
+				"location"
+			]
+		},
+		"PushNotifications": {
+			"presentationOptions": [
+				"badge",
+				"sound",
+				"alert"
+			]
+		},
+		"SplashScreen": {
+			"launchAutoHide": true,
+			"launchShowDuration": 3000,
+			"launchFadeOutDuration": 200,
+			"backgroundColor": "#0A1628",
+			"androidScaleType": "CENTER_CROP",
+			"showSpinner": false
+		},
+		"StatusBar": {
+			"style": "DARK",
+			"backgroundColor": "#0A1628"
+		}
+	},
+	"ios": {
+		"contentInset": "automatic",
+		"scrollEnabled": true,
+		"backgroundColor": "#0A1628"
+	},
+	"android": {
+		"allowMixedContent": false,
+		"captureInput": false,
+		"webContentsDebuggingEnabled": true,
+		"backgroundColor": "#0A1628"
+	}
+}

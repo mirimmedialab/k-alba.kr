@@ -275,6 +275,8 @@ export const en = {
     loginGoogle: "Log in with Google",
     signupKakao: "Sign up with KakaoTalk",
     signupGoogle: "Sign up with Google",
+    loginApple: "Sign in with Apple",
+    signupApple: "Sign up with Apple",
     orEmail: "or with email",
     signupBtn: "Sign up with Email",
     signingUp: "Signing up...",

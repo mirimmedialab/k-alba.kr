@@ -246,6 +246,7 @@ export const zh = {
     agree: "同意服务条款和隐私政策",
     loginKakao: "使用 KakaoTalk 登录", loginGoogle: "使用 Google 登录",
     signupKakao: "使用 KakaoTalk 注册", signupGoogle: "使用 Google 注册",
+    loginApple: "通过 Apple 登录", signupApple: "通过 Apple 注册",
     orEmail: "或使用邮箱", signupBtn: "使用邮箱注册",
     signingUp: "正在注册...", loggingIn: "正在登录...", loginBtn: "登录",
     noAccount: "没有账户吗?", hasAccount: "已有账户?",

@@ -8,6 +8,11 @@ import { useT, useLocale } from "@/lib/i18n";
 import { authErrorMessage } from "@/lib/authErrors";
 import { Button, Input, Select, KWordmark, ButtonLoading } from "@/components/ui";
 import KakaoLogo from "@/components/KakaoLogo";
+import AppleLogo from "@/components/AppleLogo";
+
+// Apple 로그인 노출 여부 — Supabase Apple provider 설정 완료 후 Vercel 환경변수
+// NEXT_PUBLIC_APPLE_LOGIN_ENABLED=1 로 켠다 (설정 전엔 버튼 숨김)
+const APPLE_LOGIN_ENABLED = process.env.NEXT_PUBLIC_APPLE_LOGIN_ENABLED === "1";
 import { VISA_OPTIONS } from "@/data/marketData";
 import EmailField, { isValidEmail } from "@/components/ui/EmailField";
 
@@ -303,6 +308,16 @@ export default function SignupPage() {
           </svg>
           {t("auth.signupGoogle")}
         </button>
+        {APPLE_LOGIN_ENABLED && (
+        <button
+          type="button"
+          onClick={() => handleSocial("apple")}
+          disabled={loading}
+          style={{ width: "100%", padding: "13px 16px", borderRadius: 4, border: "none", background: "#000000", fontSize: 14, fontWeight: 600, color: "#FFFFFF", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8 }}
+        >
+          <AppleLogo size={17} /> {t("auth.signupApple")}
+        </button>
+        )}
 
         <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0" }}>
           <div style={{ flex: 1, height: 1, background: T.border }} />

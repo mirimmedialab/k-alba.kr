@@ -246,6 +246,7 @@ export const uz = {
     agree: "Xizmat shartlari va Maxfiylik siyosatiga roziman",
     loginKakao: "KakaoTalk orqali kirish", loginGoogle: "Google orqali kirish",
     signupKakao: "KakaoTalk orqali ro'yxatdan o'tish", signupGoogle: "Google orqali ro'yxatdan o'tish",
+    loginApple: "Apple orqali kirish", signupApple: "Apple orqali ro'yxatdan o'tish",
     orEmail: "yoki email bilan", signupBtn: "Email bilan ro'yxatdan o'tish",
     signingUp: "Ro'yxatdan o'tilmoqda...", loggingIn: "Kirilmoqda...", loginBtn: "Kirish",
     noAccount: "Hisobingiz yo'qmi?", hasAccount: "Allaqachon hisobingiz bormi?",
