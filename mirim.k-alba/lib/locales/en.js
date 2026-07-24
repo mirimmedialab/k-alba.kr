@@ -4,6 +4,7 @@ export const en = {
   pay: { hour: "hour", day: "day", month: "month", year: "year", won: "won" },
   kr: { none: "Korean not required", beginner: "Beginner Korean", intermediate: "Intermediate Korean", advanced: "Advanced Korean" },
   nav: {
+    training: "Training",
     resume: "Resume",
     favorites: "♥ Favorites",
     map: "🗺️ Map",
@@ -913,5 +914,15 @@ export const en = {
     verified: "K-ALBA verified work history", verifiedDesc: "Work records signed via K-ALBA e-contracts. Shown to employers automatically.",
     noVerified: "No K-ALBA contract history yet. It builds up automatically once you start working!",
     employerView: "Employers of jobs you apply to can view this resume.",
+  },
+  training: {
+    title: "Onboarding Training", subtitle: "Complete training and quizzes from your (future) workplace",
+    myCourses: "My courses", noCourses: "No courses yet. When you apply to a job, the employer's training appears here.",
+    by: "By", start: "Start learning", retake: "Retake", done: "Done", score: "Score",
+    sections: "Learning material", quiz: "Quiz", quizDesc: "Answer the questions after studying. Results are shared with the employer.",
+    submit: "Submit", answerAll: "Please answer all questions.",
+    resultTitle: "Result", jobScore: "Job knowledge", koreanScore: "Korean test",
+    resultSaved: "Your result is saved and shared with the employer.",
+    watchVideo: "▶ Watch training video", kindKorean: "Korean", kindJob: "Job",
   },
 };

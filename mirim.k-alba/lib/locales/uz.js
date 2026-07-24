@@ -4,6 +4,7 @@ export const uz = {
   pay: { hour: "soat", day: "kun", month: "oy", year: "yil", won: "won" },
   kr: { none: "Koreys tili shart emas", beginner: "Boshlang'ich koreys tili", intermediate: "O'rta koreys tili", advanced: "Yuqori koreys tili" },
   nav: {
+    training: "Ta'lim",
     resume: "Rezyume",
     favorites: "♥ Saqlanganlar",
     map: "🗺️ Xarita",
@@ -796,5 +797,15 @@ export const uz = {
     verified: "K-ALBA tasdiqlagan ish tarixi", verifiedDesc: "K-ALBA elektron shartnomalari orqali imzolangan ish yozuvlari. Ish beruvchilarga avtomatik ko'rsatiladi.",
     noVerified: "Hali K-ALBA shartnoma tarixi yo'q. Ishlay boshlaganingizda avtomatik to'planadi!",
     employerView: "Siz ariza topshirgan ish beruvchilar bu rezyumeni ko'ra oladi.",
+  },
+  training: {
+    title: "Onboarding ta'limi", subtitle: "Ish joyingiz taqdim etgan darslar va testlarni yakunlang",
+    myCourses: "Mening kurslarim", noCourses: "Hozircha kurslar yo'q. Ishga ariza topshirsangiz, ish beruvchi ta'limi shu yerda chiqadi.",
+    by: "Taqdim etuvchi", start: "O'qishni boshlash", retake: "Qayta topshirish", done: "Bajarildi", score: "Ball",
+    sections: "O'quv materiali", quiz: "Test", quizDesc: "O'qib bo'lgach savollarga javob bering. Natija ish beruvchiga yuboriladi.",
+    submit: "Topshirish", answerAll: "Barcha savollarga javob bering.",
+    resultTitle: "Natija", jobScore: "Kasbiy bilim", koreanScore: "Koreys tili testi",
+    resultSaved: "Natija saqlandi va ish beruvchiga yuborildi.",
+    watchVideo: "▶ O'quv videosini ko'rish", kindKorean: "Koreys tili", kindJob: "Kasb",
   },
 };

@@ -4,6 +4,7 @@ export const vi = {
   pay: { hour: "giờ", day: "ngày", month: "tháng", year: "năm", won: "won" },
   kr: { none: "Không yêu cầu tiếng Hàn", beginner: "Tiếng Hàn sơ cấp", intermediate: "Tiếng Hàn trung cấp", advanced: "Tiếng Hàn cao cấp" },
   nav: {
+    training: "Đào tạo",
     resume: "Hồ sơ",
     favorites: "♥ Việc đã lưu",
     map: "🗺️ Bản đồ",
@@ -796,5 +797,15 @@ export const vi = {
     verified: "Lịch sử làm việc được K-ALBA xác minh", verifiedDesc: "Hồ sơ làm việc ký qua hợp đồng điện tử K-ALBA, tự động hiển thị cho chủ cửa hàng.",
     noVerified: "Chưa có lịch sử hợp đồng K-ALBA. Sẽ tự động tích lũy khi bạn bắt đầu làm việc!",
     employerView: "Chủ cửa hàng của công việc bạn ứng tuyển có thể xem hồ sơ này.",
+  },
+  training: {
+    title: "Đào tạo hội nhập", subtitle: "Hoàn thành bài học và bài kiểm tra của nơi làm việc",
+    myCourses: "Khóa học của tôi", noCourses: "Chưa có khóa học. Khi bạn ứng tuyển, khóa đào tạo của chủ cửa hàng sẽ hiện ở đây.",
+    by: "Cung cấp bởi", start: "Bắt đầu học", retake: "Làm lại", done: "Hoàn thành", score: "Điểm",
+    sections: "Nội dung học", quiz: "Bài kiểm tra", quizDesc: "Trả lời câu hỏi sau khi học. Kết quả sẽ gửi cho chủ cửa hàng.",
+    submit: "Nộp bài", answerAll: "Vui lòng trả lời tất cả câu hỏi.",
+    resultTitle: "Kết quả", jobScore: "Hiểu biết công việc", koreanScore: "Kiểm tra tiếng Hàn",
+    resultSaved: "Kết quả đã lưu và gửi cho chủ cửa hàng.",
+    watchVideo: "▶ Xem video đào tạo", kindKorean: "Tiếng Hàn", kindJob: "Công việc",
   },
 };

@@ -4,6 +4,7 @@ export const zh = {
   pay: { hour: "小时", day: "天", month: "月", year: "年", won: "韩元" },
   kr: { none: "韩语不限", beginner: "韩语初级", intermediate: "韩语中级", advanced: "韩语高级" },
   nav: {
+    training: "培训",
     resume: "简历",
     favorites: "♥ 收藏职位",
     map: "🗺️ 地图",
@@ -793,5 +794,15 @@ export const zh = {
     verified: "K-ALBA认证工作经历", verifiedDesc: "通过K-ALBA电子合同签订的工作记录，自动展示给雇主。",
     noVerified: "还没有K-ALBA合同记录。开始打工后会自动积累！",
     employerView: "您应聘职位的雇主可以查看此简历。",
+  },
+  training: {
+    title: "入职培训", subtitle: "完成工作场所提供的学习和测验",
+    myCourses: "我的课程", noCourses: "暂无课程。申请职位后，雇主的培训会显示在这里。",
+    by: "提供方", start: "开始学习", retake: "重新测验", done: "已完成", score: "分数",
+    sections: "学习内容", quiz: "测验", quizDesc: "学习后请答题。结果将发送给雇主。",
+    submit: "提交", answerAll: "请回答所有问题。",
+    resultTitle: "测验结果", jobScore: "岗位理解", koreanScore: "韩语测试",
+    resultSaved: "结果已保存并发送给雇主。",
+    watchVideo: "▶ 观看培训视频", kindKorean: "韩语", kindJob: "岗位",
   },
 };

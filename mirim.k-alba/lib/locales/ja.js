@@ -4,6 +4,7 @@ export const ja = {
   pay: { hour: "時間", day: "日", month: "月", year: "年", won: "ウォン" },
   kr: { none: "韓国語不問", beginner: "韓国語初級", intermediate: "韓国語中級", advanced: "韓国語上級" },
   nav: {
+    training: "教育",
     resume: "履歴書",
     favorites: "♥ お気に入り",
     map: "🗺️ 地図",
@@ -795,5 +796,15 @@ export const ja = {
     verified: "K-ALBA認証勤務履歴", verifiedDesc: "K-ALBAの電子契約で締結された勤務記録です。店主に自動表示されます。",
     noVerified: "まだK-ALBA契約履歴がありません。働き始めると自動的に蓄積されます！",
     employerView: "応募先の店主がこの履歴書を閲覧できます。",
+  },
+  training: {
+    title: "オンボーディング教育", subtitle: "勤務先・応募先の教育とテストを完了しましょう",
+    myCourses: "マイコース", noCourses: "まだコースがありません。求人に応募すると店主の教育がここに表示されます。",
+    by: "提供", start: "学習開始", retake: "再受験", done: "完了", score: "スコア",
+    sections: "学習内容", quiz: "テスト", quizDesc: "学習後に問題に答えてください。結果は店主に共有されます。",
+    submit: "提出", answerAll: "すべての問題に答えてください。",
+    resultTitle: "テスト結果", jobScore: "職務理解", koreanScore: "韓国語テスト",
+    resultSaved: "結果が保存され、店主に共有されます。",
+    watchVideo: "▶ 教育動画を見る", kindKorean: "韓国語", kindJob: "職務",
   },
 };

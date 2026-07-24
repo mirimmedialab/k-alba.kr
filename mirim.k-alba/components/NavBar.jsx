@@ -94,12 +94,14 @@ export default function NavBar() {
     { href: "/my/applications", label: t("nav.myApplications") },
     { href: "/my/contracts", label: t("nav.contracts") },
     { href: "/my/resume", label: t("nav.resume") },
+    { href: "/training", label: t("nav.training") },
     { href: "/profile", label: t("nav.profile") },
   ];
 
   const employerLinks = [
     { href: "/jobs/post", label: t("nav.postJob") },
     { href: "/my/jobs", label: t("nav.myJobs") },
+    { href: "/employer/training", label: t("nav.training") },
     { href: "/jobs", label: t("jobs.jobList") }, // 사장님도 다른 공고 열람(시세·조건 비교)
     { href: "/my/contracts", label: t("nav.contracts") },
     { href: "/profile", label: t("nav.profile") },

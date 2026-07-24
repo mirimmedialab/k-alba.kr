@@ -4,6 +4,7 @@ export const ko = {
   pay: { hour: "시간", day: "일", month: "월", year: "년", won: "원" },
   kr: { none: "한국어 무관", beginner: "한국어 초급", intermediate: "한국어 중급", advanced: "한국어 고급" },
   nav: {
+    training: "교육",
     resume: "이력서",
     map: "🗺️ 지도",
     partwork: "🎓 시간제취업",
@@ -918,5 +919,15 @@ export const ko = {
     verified: "K-ALBA 검증 근무 이력", verifiedDesc: "K-ALBA에서 전자계약으로 체결된 근무 기록입니다. 사장님에게 자동으로 함께 표시됩니다.",
     noVerified: "아직 K-ALBA 계약 이력이 없어요. 첫 알바를 시작하면 자동으로 쌓입니다!",
     employerView: "지원한 공고의 사장님에게 이 이력서가 표시됩니다.",
+  },
+  training: {
+    title: "온보딩 교육", subtitle: "채용된 곳·지원한 곳의 교육을 듣고 평가를 완료하세요",
+    myCourses: "내 교육 과정", noCourses: "아직 수강 가능한 교육이 없어요. 공고에 지원하면 사장님의 교육이 여기에 표시됩니다.",
+    by: "제공", start: "학습 시작", retake: "다시 응시", done: "완료", score: "점수",
+    sections: "학습 내용", quiz: "평가 문제", quizDesc: "학습을 마친 뒤 문제를 풀어주세요. 결과는 사장님에게 전달됩니다.",
+    submit: "제출하기", answerAll: "모든 문제에 답해주세요.",
+    resultTitle: "평가 결과", jobScore: "직무 이해도", koreanScore: "한국어 평가",
+    resultSaved: "결과가 저장되어 사장님에게 전달됩니다.",
+    watchVideo: "▶ 교육 영상 보기", kindKorean: "한국어", kindJob: "직무",
   },
 };
