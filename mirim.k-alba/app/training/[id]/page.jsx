@@ -186,7 +186,16 @@ export default function TrainingCoursePage() {
           <div style={{ fontSize: 15, fontWeight: 800, color: T.ink, marginBottom: 4 }}>📝 {t("training.quiz")}</div>
           <div style={{ fontSize: 12.5, color: T.ink3, marginBottom: 14 }}>{t("training.quizDesc")}</div>
 
-          {viewQs.map((q, qi) => (
+          {[
+            { kind: "job", header: `💼 ${t("training.jobScore")}` },
+            { kind: "korean", header: `🇰🇷 ${t("training.koreanScore")}` },
+          ].map(({ kind, header }) => {
+            const grouped = viewQs.map((q, qi) => ({ q, qi })).filter(({ q }) => (q.kind === "korean" ? "korean" : "job") === kind);
+            if (!grouped.length) return null;
+            return (
+              <div key={kind} style={{ marginBottom: 6 }}>
+                <div style={{ fontSize: 13.5, fontWeight: 800, color: kind === "korean" ? "#1A56DB" : T.coral, margin: "12px 0 8px" }}>{header} ({grouped.length})</div>
+                {grouped.map(({ q, qi }) => (
             <div key={qi} style={{ background: T.cream, borderRadius: 12, padding: 16, marginBottom: 12 }}>
               <div style={{ fontSize: 13.5, fontWeight: 800, color: T.ink, marginBottom: 10, lineHeight: 1.6 }}>
                 <span style={{
@@ -217,7 +226,10 @@ export default function TrainingCoursePage() {
                 );
               })}
             </div>
-          ))}
+                ))}
+              </div>
+            );
+          })}
 
           {!result ? (
             <Button variant="primary" size="lg" onClick={handleSubmit} disabled={submitting} style={{ width: "100%" }}>

@@ -6,6 +6,7 @@ import { T } from "@/lib/theme";
 import { supabase, getCurrentUser } from "@/lib/supabase";
 import { PageLoading, Button } from "@/components/ui";
 import { QUESTION_BANKS } from "@/lib/trainingTemplates";
+import { generateQuizFromSections } from "@/lib/quizGen";
 
 /**
  * /employer/training — 사장님 온보딩 교육 관리 (과정 목록 + 빌더 + 결과 요약)
@@ -132,6 +133,18 @@ export default function EmployerTrainingPage() {
           유형을 <b>한국어</b>로 선택하면 한국어 평가 점수로 따로 집계됩니다. 정답 보기를 선택(◉)해 주세요.
         </div>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12, alignItems: "center" }}>
+          <button onClick={() => {
+            const auto = generateQuizFromSections(editing.sections, { min: 10, max: 15 });
+            if (!auto.length) { alert("매뉴얼 본문이 부족해 자동 출제할 수 없습니다. 학습 내용을 먼저 채워주세요."); return; }
+            const manual = editing.questions.filter((q) => !q.auto && q.q.trim());
+            set({ questions: [...manual, ...auto] });
+            alert(`직무 문항 ${auto.length}개를 자동 출제했습니다. 내용을 검토·수정 후 저장하세요.`);
+          }} style={{
+            padding: "5px 11px", borderRadius: 999, fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
+            border: "1px solid #7C3AED", background: "#F8F5FF", color: "#7C3AED",
+          }}>
+            🤖 매뉴얼에서 자동 출제 (10~15문항)
+          </button>
           <span style={{ fontSize: 12, fontWeight: 800, color: T.ink2 }}>📚 기본 문항 불러오기:</span>
           {Object.entries(QUESTION_BANKS).map(([k, bank]) => (
             <button key={k} onClick={() => set({ questions: [...editing.questions.filter((q) => q.q.trim()), ...JSON.parse(JSON.stringify(bank.questions))] })} style={{
