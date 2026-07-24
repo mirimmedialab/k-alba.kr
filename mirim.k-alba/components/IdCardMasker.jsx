@@ -17,6 +17,22 @@ import { T } from "@/lib/theme";
  */
 const MAX_W = 1200; // 업로드 이미지 최대 폭 (용량·화질 균형)
 
+// 신분증 종류별 민감정보 예상 위치 가이드 (이미지 대비 상대좌표)
+// ※ 촬영 각도·여백에 따라 실제 위치는 달라질 수 있어 '대략적 안내'로만 표시
+const GUIDES = {
+  rrn: {
+    label: "주민등록증",
+    zones: [{ x: 0.28, y: 0.27, w: 0.30, h: 0.13, name: "주민번호 뒷자리" }],
+  },
+  license: {
+    label: "운전면허증",
+    zones: [
+      { x: 0.40, y: 0.32, w: 0.32, h: 0.12, name: "주민번호 뒷자리" },
+      { x: 0.30, y: 0.15, w: 0.36, h: 0.11, name: "면허번호" },
+    ],
+  },
+};
+
 export default function IdCardMasker({ file, onDone, onCancel }) {
   const canvasRef = useRef(null);
   const imgRef = useRef(null);
@@ -24,6 +40,7 @@ export default function IdCardMasker({ file, onDone, onCancel }) {
   const [drag, setDrag] = useState(null);       // 드래그 중 박스
   const [ready, setReady] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [docKind, setDocKind] = useState("rrn"); // rrn: 주민등록증 | license: 운전면허증
 
   // 이미지 로드 → 캔버스 크기 결정
   useEffect(() => {
@@ -56,6 +73,25 @@ export default function IdCardMasker({ file, onDone, onCancel }) {
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#000";
     for (const r of rects) ctx.fillRect(r.x, r.y, r.w, r.h);
+    // 예상 위치 가이드 (점선 — 실제 업로드 이미지에는 포함되지 않음)
+    for (const z of GUIDES[docKind].zones) {
+      const gx = z.x * canvas.width, gy = z.y * canvas.height;
+      const gw = z.w * canvas.width, gh = z.h * canvas.height;
+      ctx.save();
+      ctx.strokeStyle = "#F59E0B";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([7, 5]);
+      ctx.strokeRect(gx, gy, gw, gh);
+      ctx.setLineDash([]);
+      const fs = Math.max(11, canvas.width * 0.022);
+      ctx.font = `700 ${fs}px sans-serif`;
+      const tw = ctx.measureText(`📍 ${z.name}`).width;
+      ctx.fillStyle = "rgba(245,158,11,0.92)";
+      ctx.fillRect(gx, Math.max(0, gy - fs - 8), tw + 12, fs + 8);
+      ctx.fillStyle = "#fff";
+      ctx.fillText(`📍 ${z.name}`, gx + 6, Math.max(fs, gy - 6));
+      ctx.restore();
+    }
     if (drag) {
       ctx.fillStyle = "rgba(0,0,0,0.75)";
       ctx.fillRect(drag.x, drag.y, drag.w, drag.h);
@@ -63,7 +99,7 @@ export default function IdCardMasker({ file, onDone, onCancel }) {
       ctx.lineWidth = 2;
       ctx.strokeRect(drag.x, drag.y, drag.w, drag.h);
     }
-  }, [rects, drag]);
+  }, [rects, drag, docKind]);
 
   useEffect(() => { if (ready) redraw(); }, [ready, redraw]);
 
@@ -132,11 +168,41 @@ export default function IdCardMasker({ file, onDone, onCancel }) {
         <div style={{ fontSize: 15, fontWeight: 800, color: T.ink, marginBottom: 4 }}>
           🪪 신분증 민감정보 가리기
         </div>
-        <div style={{ fontSize: 12, color: T.ink2, lineHeight: 1.6, marginBottom: 10 }}>
-          <strong>주민등록번호 뒷자리(7자리)</strong>를 손가락이나 마우스로 드래그해서 가려주세요.
-          운전면허증은 <strong>면허번호 일부</strong>도 가리는 것을 권장합니다.
+        <div style={{ fontSize: 12, color: T.ink2, lineHeight: 1.6, marginBottom: 8 }}>
+          주황 점선(📍 예상 위치)을 참고해 <strong>주민등록번호 뒷자리(7자리)</strong>를
+          드래그로 가려주세요. 사진 각도에 따라 위치가 다를 수 있으니 실제 번호 위에 맞춰주세요.
           <br />
           <span style={{ color: "#059669", fontWeight: 700 }}>🔒 가려진 이미지만 저장되며, 원본은 휴대폰/PC를 벗어나지 않아요.</span>
+        </div>
+
+        {/* 신분증 종류 선택 → 가이드 위치 변경 */}
+        <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+          {Object.entries(GUIDES).map(([k, g]) => (
+            <button key={k} onClick={() => setDocKind(k)} style={{
+              padding: "6px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700,
+              fontFamily: "inherit", cursor: "pointer",
+              border: `1.5px solid ${docKind === k ? "#F59E0B" : "#E5E5E5"}`,
+              background: docKind === k ? "#FEF3C7" : "#FAFAFA",
+              color: docKind === k ? "#92400E" : "#666",
+            }}>
+              {g.label}
+            </button>
+          ))}
+          <button onClick={() => {
+            const canvas = canvasRef.current;
+            if (!canvas) return;
+            const zs = GUIDES[docKind].zones.map((z) => ({
+              x: z.x * canvas.width, y: z.y * canvas.height,
+              w: z.w * canvas.width, h: z.h * canvas.height,
+            }));
+            setRects((rs) => [...rs, ...zs]);
+          }} style={{
+            marginLeft: "auto", padding: "6px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700,
+            fontFamily: "inherit", cursor: "pointer", border: "1.5px solid #059669",
+            background: "#ECFDF5", color: "#047857",
+          }}>
+            📍 가이드 위치 바로 가리기
+          </button>
         </div>
 
         {!ready ? (
