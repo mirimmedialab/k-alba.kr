@@ -50,7 +50,8 @@ export default function StaffPartworkDetailPage() {
   const [staff, setStaff] = useState(null);
   const [application, setApplication] = useState(null);
   const [reviewLog, setReviewLog] = useState([]);
-  const [bizCert, setBizCert] = useState(null); // 근무처 사업자등록증 { exists, file_name, uploaded_at, signed_url }
+  const [bizCert, setBizCert] = useState(null);
+  const [hikorea, setHikorea] = useState(null); // 하이코리아 신고 상태 // 근무처 사업자등록증 { exists, file_name, uploaded_at, signed_url }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -65,6 +66,18 @@ export default function StaffPartworkDetailPage() {
   const [busy, setBusy] = useState(false);
 
   // 로드
+  // 하이코리아 온라인 신고 상태 (immigration_applications)
+  useEffect(() => {
+    if (!application?.id) return;
+    supabase
+      .from("immigration_applications")
+      .select("hikorea_status, hikorea_applied_at, hikorea_permitted_at")
+      .eq("partwork_application_id", application.id)
+      .maybeSingle()
+      .then(({ data }) => setHikorea(data || null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [application?.id]);
+
   useEffect(() => {
     if (!appId) return;
     (async () => {
@@ -383,6 +396,25 @@ export default function StaffPartworkDetailPage() {
               </div>
             );
           })}
+          {/* 하이코리아 온라인 신고 상태 (학생 본인 체크 기준) */}
+          {hikorea && (
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '10px 12px', borderRadius: 8, marginBottom: 8,
+              background: hikorea.hikorea_status === 'permitted' ? '#F0FAF4' : hikorea.hikorea_status === 'applied' ? '#FBF3D9' : '#F5F5F5',
+              border: `1px solid ${hikorea.hikorea_status === 'permitted' ? '#CBEBD6' : hikorea.hikorea_status === 'applied' ? '#F3E0A0' : '#E5E5E5'}`,
+            }}>
+              <span style={{ fontSize: 12.5, fontWeight: 700, color: '#333' }}>🌐 하이코리아 온라인 신고 (학생 체크)</span>
+              <span style={{ fontSize: 12, fontWeight: 800,
+                color: hikorea.hikorea_status === 'permitted' ? '#0E7A3D' : hikorea.hikorea_status === 'applied' ? '#8C6D1F' : '#888' }}>
+                {hikorea.hikorea_status === 'permitted'
+                  ? `✓ 허가 완료 (${(hikorea.hikorea_permitted_at || '').slice(0, 10)})`
+                  : hikorea.hikorea_status === 'applied'
+                  ? `신청 완료 · 심사 중 (${(hikorea.hikorea_applied_at || '').slice(0, 10)})`
+                  : '미신청'}
+              </span>
+            </div>
+          )}
           {/* 근무처 사업자등록증 (사장님이 K-ALBA에 업로드) */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0',

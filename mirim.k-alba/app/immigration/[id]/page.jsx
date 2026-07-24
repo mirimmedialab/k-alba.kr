@@ -118,6 +118,16 @@ export default function ImmigrationApplicationPage() {
   // 행정정보 공동이용 동의
   const allConsents = imm?.consent_admin_share_self;
 
+  // 하이코리아 신고 상태 갱신 (본인 체크)
+  const updateHikorea = async (status) => {
+    const patch = { hikorea_status: status };
+    if (status === 'applied') patch.hikorea_applied_at = new Date().toISOString();
+    if (status === 'permitted') patch.hikorea_permitted_at = new Date().toISOString();
+    const { error } = await supabase.from('immigration_applications').update(patch).eq('id', imm.id);
+    if (error) { alert(error.message); return; }
+    setImm((m) => ({ ...m, ...patch }));
+  };
+
   // PDF 생성 + 완료 처리
   const handleGenerate = async () => {
     const missing = validateRequired();
@@ -570,7 +580,91 @@ export default function ImmigrationApplicationPage() {
           ① 위 정보 입력 완료 후 「PDF 생성」 클릭<br/>
           ② 생성된 PDF 인쇄 또는 모바일 저장<br/>
           ③ 여권사진(35×45mm), 시간제취업확인서, 표준근로계약서와 함께<br/>
-          &nbsp;&nbsp;&nbsp;관할 출입국·외국인청에 제출 (또는 하이코리아 온라인)
+          &nbsp;&nbsp;&nbsp;관할 출입국·외국인청에 제출 (또는 아래 하이코리아 온라인 신고)
+        </div>
+
+        {/* 🌐 하이코리아 온라인 신고 (전자민원) */}
+        <div style={{ background: '#FFF', border: '1px solid #E4E2DE', borderRadius: 10,
+                       padding: 16, marginBottom: 14 }}>
+          <div style={{ fontSize: 14.5, fontWeight: 800, color: '#16243F', marginBottom: 4 }}>
+            🌐 하이코리아 온라인 신고 (방문 없이 신청)
+            {imm.hikorea_status === 'applied' && <span style={{ fontSize: 11, fontWeight: 800, color: '#8C6D1F', background: '#FBF3D9', borderRadius: 999, padding: '2px 9px', marginLeft: 8 }}>신청 완료 · 심사 중</span>}
+            {imm.hikorea_status === 'permitted' && <span style={{ fontSize: 11, fontWeight: 800, color: '#0E7A3D', background: '#DDF3E4', borderRadius: 999, padding: '2px 9px', marginLeft: 8 }}>✓ 허가 완료</span>}
+          </div>
+          <div style={{ fontSize: 12, color: '#666', lineHeight: 1.7, marginBottom: 10 }}>
+            Apply online at HiKorea without visiting the immigration office.
+            <b> 근무 시작 최소 5일 전</b>에 신청하세요. (Apply at least 5 days before your first working day)
+          </div>
+
+          <div style={{ fontSize: 12.5, fontWeight: 800, color: '#16243F', marginBottom: 6 }}>① 신청 절차 · Steps</div>
+          <ol style={{ fontSize: 12, color: '#444', lineHeight: 1.9, paddingLeft: 18, margin: '0 0 10px' }}>
+            <li>하이코리아(hikorea.go.kr) 회원가입 · 로그인 (Sign up &amp; log in)</li>
+            <li>전자민원 → 「체류자격 외 활동허가(유학생 시간제취업)」 선택 (E-application → Part-time work permit)</li>
+            <li>아래 서류를 스캔/촬영해 업로드 (Upload scanned documents)</li>
+            <li>신청 제출 → 처리 결과는 문자·하이코리아에서 확인 (Submit and wait for SMS)</li>
+          </ol>
+
+          <div style={{ fontSize: 12.5, fontWeight: 800, color: '#16243F', marginBottom: 6 }}>② 필요 서류 · Documents</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+            <div style={{ flex: 1, minWidth: 220, background: '#F0FAF4', border: '1px solid #CBEBD6', borderRadius: 8, padding: 10 }}>
+              <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0E7A3D', marginBottom: 4 }}>✅ K-ALBA에서 준비됨 (Ready in K-ALBA)</div>
+              <div style={{ fontSize: 11.5, color: '#333', lineHeight: 1.8 }}>
+                · 통합신청서 PDF (이 페이지에서 생성)<br/>
+                · 시간제취업 확인서 (계약 화면에서 다운로드)<br/>
+                · 표준근로계약서 PDF<br/>
+                · 사업자등록증 · 대표자 신분증 사본 (사장님 업로드분)
+              </div>
+            </div>
+            <div style={{ flex: 1, minWidth: 220, background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: 8, padding: 10 }}>
+              <div style={{ fontSize: 11.5, fontWeight: 800, color: '#9A3412', marginBottom: 4 }}>📎 본인이 준비 (Prepare yourself)</div>
+              <div style={{ fontSize: 11.5, color: '#333', lineHeight: 1.8 }}>
+                · 여권 사본 (Passport)<br/>
+                · 외국인등록증 앞·뒤 사본 (ARC both sides)<br/>
+                · 재학증명서 · 성적증명서 (Enrollment &amp; transcript)<br/>
+                · 어학능력 증빙 (TOPIK 등, 해당 시)
+              </div>
+            </div>
+          </div>
+
+          <a href="https://www.hikorea.go.kr" target="_blank" rel="noreferrer" style={{
+            display: 'block', textAlign: 'center', padding: '12px 0', borderRadius: 8,
+            background: '#16243F', color: '#FFF', fontSize: 13.5, fontWeight: 800,
+            textDecoration: 'none', marginBottom: 8 }}>
+            🌐 하이코리아 바로가기 · Go to HiKorea
+          </a>
+
+          <div style={{ display: 'flex', gap: 8 }}>
+            {imm.hikorea_status === 'not_applied' && (
+              <button onClick={() => updateHikorea('applied')} style={{
+                flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid #BFDBFE',
+                background: '#EFF6FF', color: '#1E40AF', fontSize: 12.5, fontWeight: 800,
+                cursor: 'pointer', fontFamily: 'inherit' }}>
+                ✅ 온라인 신청을 완료했어요 (I applied online)
+              </button>
+            )}
+            {imm.hikorea_status === 'applied' && (
+              <>
+                <button onClick={() => updateHikorea('permitted')} style={{
+                  flex: 2, padding: '10px 0', borderRadius: 8, border: '1px solid #CBEBD6',
+                  background: '#F0FAF4', color: '#0E7A3D', fontSize: 12.5, fontWeight: 800,
+                  cursor: 'pointer', fontFamily: 'inherit' }}>
+                  🎉 허가를 받았어요 (Permit granted)
+                </button>
+                <button onClick={() => updateHikorea('not_applied')} style={{
+                  flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid #E4E2DE',
+                  background: '#FFF', color: '#888', fontSize: 12, fontWeight: 700,
+                  cursor: 'pointer', fontFamily: 'inherit' }}>
+                  되돌리기
+                </button>
+              </>
+            )}
+            {imm.hikorea_status === 'permitted' && (
+              <div style={{ flex: 1, textAlign: 'center', padding: '10px 0', borderRadius: 8,
+                background: '#F0FAF4', color: '#0E7A3D', fontSize: 12.5, fontWeight: 800 }}>
+                🎉 시간제취업 허가 완료! 이제 합법적으로 근무할 수 있어요.
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
